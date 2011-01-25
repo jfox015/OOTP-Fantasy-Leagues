@@ -1,0 +1,98 @@
+@charset "utf-8";
+/* CSS Document */
+
+#listPicker { width:655px; float:left; }
+
+.listPickerBox { float:left; min-height:125px; max-height: 300px; overflow:auto; display:block; width:98%; border: 1px solid #a0a0a0; background:#F1F2F5; padding:4px; }
+
+.listPickerBox .listcolumn { width:31%; float:left; text-align:left; padding:4px; }
+.listPickerBox .listcolumn ul {list-style:none;margin:3px;padding:0px; }
+.listPickerBox .listcolumn ul li {list-style:none;margin:3px;padding:3px; }
+.listPickerBox .listcolumn:first-child, #activeList.listcolumn:last-child {width:30%; }
+.listPickerBox .emptyList { width:100% }
+
+#optionsContainer { width:100%; float:left; }
+
+#optionsBar { width:655px; float:left;  }
+
+#options { width:655px; float:left; background:#B6CACF; }
+#options ul, .subOptionsBar ul {list-style:none;margin:3px;padding:0px;  }
+#options ul li, .subOptionsBar ul li { list-style:none;margin:3px;padding:3px; float:left; }
+#options ul li a { padding-top:4px;text-align:center;display:block; min-width:180px; height:25px; font-weight:bold;color:#2C2C7C;font-size:12px; }
+.collections #options ul li a, .collections #options ul li select { width:75px;}
+
+.subOptionsBar ul li a {padding-right:2px;font-weight:nomral;color:#2C2C7C;font-size:12px; }
+#options ul li a:hover, .subOptionsBar ul li a:hover { background:none; }
+#options ul li a.active, .subOptionsBar ul li a.active { background:#CAD3EE; color:#0D1048; }
+
+#subBars { width:100%; float:left; position:relative; min-height:35px; }
+
+#subBars #optionsPos, #subBars #optionsAlpha { width:98%; position:absolute; top:0px; left:0px; }
+
+#optionsPos .optionsPos { width:55%; }
+
+#subBars #optionsAlpha { padding:8px 0 0 8px; display: none; }
+
+/************************************************/
+/* 			Query Results Table 				*/
+/************************************************/
+						   
+
+
+#SQLResultTable {
+	background-color: #666666;
+	font-size: 11px;
+	font-weight: normal;
+	color: #000000;
+	
+	margin: 8px 0px;
+	width: 100%;
+	
+}
+
+#SQLResultTable tr.lightRow { 
+	background-color: #FFF; 
+		
+}
+
+#SQLResultTable tr.darkRow { 
+	background-color: #E6EBEF;
+}
+
+#SQLResultTable th.columnHeader, #SQLResultTable th.columnHeaderActive {
+	background-color: #D2D2D2;
+	text-align: center;
+	font-weight: bold; 
+	padding: 3px 3px;
+}
+			   
+#SQLResultTable td { 
+	text-align: left;
+	padding: 3px 5px;
+}
+
+.resultNavBlock { 
+	font-size: 11px;
+	color: #000000;
+	width: 100%; 
+}
+
+.resultNav, .resultNavSelected, .resultNavUnselected { 
+	background-color: #FFF;
+	padding: 0px 3px;
+	font-family: Arial, Verdana, Helvetica;
+	font-size: 11px;
+	font-weight: normal;
+	text-align: center;
+	color: #000;
+}
+
+.resultNavSelected {
+	background-color: #36C;
+	color: #FFF;
+}
+
+a.resultNavLink:link, a.resultNavLink:active, a.resultNavLink:visited {
+	text-decoration: underline;
+	color: #000;
+}

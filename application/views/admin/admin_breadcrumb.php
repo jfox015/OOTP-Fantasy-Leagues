@@ -1,0 +1,1 @@
+<?php echo anchor('/','Home')." -&gt; ".anchor('/admin','Admin Dashboard')." -&gt; ".$subTitle; ?>

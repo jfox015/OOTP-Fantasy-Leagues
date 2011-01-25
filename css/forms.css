@@ -1,0 +1,159 @@
+@charset "utf-8";
+/* CSS Document */
+/* -----------------  GENERAL FORM STYLES  -------------------------------------------------------*/
+
+form { display:inline;}
+fieldset { border: 0px; }
+legend {width:98%; padding: 4px; color:#3E5264; font-weight:bold; font-size:13px; }   
+label { font-weight: bold; display: inline; float: left;margin:5px 10px 0px 0px; min-width:205px; text-align:right; }
+label.required { color:#AC0000; }
+input, select, .formData { display:inline; float:left; }
+.formData { padding-top:5px; }
+input.login { width: 100px; border: none; font: bold 11px Arial, Helvetica, sans-serif;color:#202b31; 
+background:#eee; padding:1px 3px 1px 3px; }
+input.searchsubmit { margin-top:2px;}
+.field_caption { display:inline; float:left; margin-left:205px; }
+.button_bar { width:100%;text-align:center; }
+.button_bar input { display:inline; float:none; }
+textarea { font-size:11px; font-family:Verdana, Geneva, sans-serif;display:inline; float:left; }
+input.error {
+	padding:2px;margin:0px;
+}
+.form_span {
+	height:10px;
+	display:block;
+	padding-top:4px;
+}
+.richEditor {
+	width:600px;
+	float:left;
+	margin:3px;
+	padding:0px;
+	clear:none;
+	width:auto;
+	height:auto;
+}
+.nicEdit-panel {
+		width:329px;
+		float:left;
+		clear:right;
+}
+
+.formLabel {
+	text-align:right;
+	font-weight:bold;
+}
+.profile_val {display:inline; float:left; }
+
+input[type=buttom], input[type=submit], input[type=reset], .button {
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+	border:1px solid #333;
+    background:#202b31;
+    color:#fff;
+    font-weight:bold;
+    font-size:12px;
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    cursor:pointer;
+}
+input[type=buttom]:hover, input[type=submit]:hover, input[type=reset]:hover, .button:hover {
+    color:#ffc;
+}
+.content-form {
+    width:100%;
+    margin:0 auto;
+    padding:0px;
+    text-align:center;
+}
+input[type=text].longtext {
+	width:325px;
+}
+input[type=text].shorttext {
+	width:50px;
+}
+
+#dialog {
+    border:1px solid #A0A0A0;
+    width:500px;
+    min-height:125px;
+}
+#editor {
+    border:1px solid #A0A0A0;
+    width:650px;
+    min-height:125px;
+}
+.dialog_head {
+    width:97%;
+    padding:10px;
+    font-weight:bold;
+    background:#38596B;
+    color:#fff;
+    float:left;
+    text-align:left;
+}
+.dialog_body {
+    width:98%;
+    padding:5px;
+    float:left;
+    text-align:left;
+}
+
+.dialog_foot {
+    width:98%;
+    padding:5px;
+    float:left;
+}
+
+.dlg-changepass label {
+    min-width:155px;
+}
+.dlg-changepass input[type=text] {
+    width:175px;
+}
+.error p, .error p.error { margin:0px; padding:0px; border:none;background:none; }
+
+
+#draftForm label, #draftForm .field_caption {
+	min-width:250px;
+}
+.radioGroup label, .dateLists label, #draftForm .radioGroup label, #draftForm .dateLists label{
+    margin:3px 3px 0px 0px; min-width:1px; text-align:left; clear:none;
+}
+.radioGroup label:first-child, .dateLists label:first-child { 
+	margin:5px 10px 0px 0px; min-width:195px; text-align:right; 
+}
+#draftForm .radioGroup label:first-child, #draftForm .dateLists label:first-child { 
+	min-width:250px; 
+}
+.dateLists select {
+    font-size:11px;
+    min-width:1px;
+    width:auto;
+    margin-right:5px; 
+	display: inline;
+	float: left;
+}
+
+.creditRow {
+    float:left;
+    width:98%;
+    padding:3px;
+    margin-bottom:3px;
+}
+.textbox select, .textbox option { font-size:10px; }
+
+#manualForm {
+	display:none;
+	position:absolute;
+	top:150px;
+	left:150px;
+	width:450px;
+	height:100px;
+}
+.draft_settings label {
+	min-width:0px;
+}
+.styledTextBox {
+	font-size:10px;
+	text-align:right;
+}

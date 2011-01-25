@@ -1,0 +1,57 @@
+@charset "utf-8";
+/* CSS Document */
+
+/* CONTENT TEMPLATE FOR COMICS/ISSUES DISPLAY */
+#subPage { float: left; width:100%; text-align:left; }
+
+#subPage #head { float:left; width:100%; margin-bottom:15px; }
+#subPage #head h1 { }
+
+#subPage #content { float:left; width:100%; margin-bottom:15px; }
+
+#subPage #content h2 { color:#930; font-size:16px; font-weight:bold; }
+
+#detailColumn { float:left; width:60%; padding:8px; }
+#subPage #foot label, #detailColumn label { text-align:right; min-width:0px; margin:0px 5px 0 0;padding:0px; }
+
+#metaColumn { float:right; width:35%; padding:8px; margin:0px 0px 15px 0px; }
+
+#contentBox { background:#efefef; float:left; width:96%;  border: 1px solid #a0a0a0; padding:8px; }
+#contentBox .title { background:#c1c1c1;float:left; padding:4px;width:98%; text-align:left; color:#036; font-weight:bold; font-size:14px; }
+#contentBox .row { float:left; display:block;margin:3px 5px 3px 5px;padding:3px 5px 3px 5px; }
+#contentBox label { text-align:left;width:100%; margin:0px 5px 0 0;padding:0px;display:block; }
+#contentBox span { width:100%;float:left; display:block;margin:0px 5px 0 55px; }
+#contentBox .empty { width:100%;float:left;display:block;margin:0px 0px 0 0px; text-align:center; } 
+#contentBox .tools { float:left;width:100%;text-align:right; display:block; }
+
+#contentBox select { width:auto; border:none; padding:2px; }
+
+#subPage #foot { float:left; width:100%; margin-bottom:15px; }
+
+#content ul { margin-left:35px; }
+
+.player_points td { color:red; }
+
+div.player{font-size:24px;font-weight:bold;text-transform:uppercase;}
+div.playerbio{height:105px;font-weight:normal;font-size:10px; line-height:18px;}
+.playerpic{margin-right:0px; padding:1px;border:1px solid #303030 ;background:#fff;}
+
+/* COMICS SPECIFIC STYLES */
+#issueListBox { float:left; width:96%;padding:8px;border:1px solid #a0a0a0; }
+#issueListBox h2 {font-size:18px; color:#566987; }
+#issueListBox h4, #issueListBox h4 { margin-top:5px;font-size:14px;width:96%; padding:4px;background-color:#E3E4EC; }
+
+#issueListBox h2 .view_link, #issueListBox h4 .view_link { float:right; text-align:right; }
+#issueListBox h2 .view_link a, #issueListBox h4 .view_link a { font-size:11px; font-weight:normal; text-decoration:underline; }
+#issueListBox .issueHeader, .issueDetails { display:inline; margin:0px; padding:0px; float:left; text-align:center; width:31%;}
+#issueListBox .issueHeader { font-size:14px; font-weight:bold;}
+
+.link_dispute { float:right;margin-right:12px;}
+
+#issuesThumbBox { width: 100%; height:208px; float: left; overflow:visible;}
+#volumeBar { width:100%; float: left; text-align:left; background-color:#AAAAFF; font-weight:bold;}
+#volumeContent { padding:5px; }
+#issueBar { padding:5px; width:100%; float: left; padding-bottom:5px; margin-bottom:8px;}
+#issue { text-align:center; float:left; width:125px;}
+#issueThumb { width: 95px; height:125px; padding:2px;}
+#issueDesc { font-family:Arial, Helvetica, sans-serif; font-size:11px; color:black; text-align:center;}

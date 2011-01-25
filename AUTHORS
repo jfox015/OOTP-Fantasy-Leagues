@@ -1,0 +1,45 @@
+/**
+*
+* OOTP Fantasy Leagues
+* © Copyright 2010, 2011 Jeff Fox
+* http://www.ootpfantasyleagues.com
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of both the MIT and GNU General Public Licenses.
+*
+*/
+
+Creator/Lead Developer:	jfox015 (Jeff Fox)
+
+
+Contributions by:      	fhommes (Frank Holmes) SQL Loading, Draft, PLayer Stats, Stats Engine, Template
+                       	getch (inpsired Frank)
+
+-- Copyrights --
+
+StatsLab:   		fhommes (Frank Holmes)
+
+OOTP Fantasy Leagues contains code from the following authors:
+
+CodeIgniter Verifier Class by Jacob "Pygon" Sparks
+
+DBAD licenced:
+CodeIgniter Curl Class 	(c) Philip Sturgeon 	http://philsturgeon.co.uk/code/codeigniter-curl
+
+MIT License:
+Form Generator Class 	(c) Frank Michel 	http://frankmichel.com/formgenlib
+SyntaxHighlighter 	(c) Alex Gorbatchev	http://alexgorbatchev.com/SyntaxHighlighter/
+NicEdit			(c) Brian Kirchoff	http://nicedit.com/
+
+GPL licenced:
+jQuery			(c) 2009 John Resig	http://jquery.com/
+jQuery MD5		(c) Muhammad Hussein Fattahizadeh http://www.semnanweb.com/jquery-plugin/md5.html
+jQuery UI		(c) http://jqueryui.com/about
+
+X11 Licensed:
+Sort Table		(c) Stuart Langridge 	http://www.kryogenix.org/code/browser/sorttable/
+
+BeerWare Licensed,
+Redux Authentication 2 (c) Mathew Davies 	thepixeldeveloper@googlemail.com
+
+

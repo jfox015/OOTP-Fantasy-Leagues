@@ -1,0 +1,257 @@
+/*  OOTP SQL Utilities Stylesheet */
+
+body {
+   background:url("../images/bnn_bg.jpg") #616161;
+}
+
+p.error {
+   font-weight:bold;
+   color:#FFFFFF;
+   background-color:#FF0000;
+}
+
+#pagebody {
+   width:959px;
+   margin-left:auto;
+   margin-right:auto;
+}
+
+/* Topbar with main menu options */
+#topbar {
+   float:left;
+   width:959px;
+   margin:0;
+   padding:0;
+}
+
+#mainmenu {
+   float:right;
+   margin:0;
+   padding:7px 8px 0 0;
+   font-family:Verdana,sans-serif;
+   font-size:11px;
+   font-weight:bold;
+   color:#0372CB;
+}
+#mainmenu ul {
+   style:none;
+   margin:0 2px 2px 2px;
+   padding:0;
+}
+#mainmenu li {
+   display:inline;
+   margin:0;
+   padding:0;
+}
+#mainmenu li a {
+   border-left:2px solid #0372CB;
+   padding:0 .3em 0 .5em;
+}
+#mainmenu li.first, #mainmenu li a.first {
+  border-left:0px;
+}
+
+/* Title bar */
+#pagetitle {
+   float:left;
+   clear:both;
+   background:#15203E;
+   padding:4px;
+   width:929px;
+}
+#lefttitle {
+   float:left;
+   color:#FFFFFF;
+}
+#lefttitle p {
+   padding:0;
+   margin:0;
+}
+#lefttitle p.lginfo {
+   font-size:18px;
+   font-weight:bold;
+}
+#lefttitle p.pgname {
+   font-size:22px;
+   font-weight:bold;
+}
+#righttitle {
+   float:right;
+   position:relative;
+   bottom:-35px;
+   height:100%;
+   calign:bottom;
+   color:#FFFFFF;
+}
+
+/* Sub Navigation */
+#subnav {
+   float:left;
+   clear:both;
+   width:959px;
+   margin:0;
+   padding:.3em 0 .1em 0;
+   color:#0372CB;
+   background-color:#000000;
+   text-align:right;
+   padding:7px 8 0 0;
+   background-image:url(../images/report_header_menu_bg.jpg);
+   background-repeat:repeat-x;
+}
+#subnav ul {
+   style:none;
+   margin:0 2px 2px 2px;
+   padding:0;
+}
+#subnav li {
+   display:inline;
+   margin:0;
+   padding:0;
+}
+#subnav li a, #subnav li.label {
+   border-left:2px solid #0372CB;
+   padding:0 .3em 0 .5em;
+}
+#subnav li.label {
+   color:#FFFFCC;
+   font-weight:bold;
+}
+#subnav .first, #subnav li.first {
+  border-left:0px;
+}
+
+/* Content Pane */
+#contentpane {
+   float:left;
+   clear:both;
+   min-width:939px;
+   background:#FFFFFF;
+   margin:0;
+   padding:10px;
+}
+
+.textbox {
+   float:left;
+   clear:left;
+   border:1px solid black;
+   margin:10px 0 0 0;
+   padding:0;
+}
+.textbox p {
+   float:left;
+   clear:left;
+   width:100%;
+   margin:0;
+   padding:1px;
+}
+.tablebox {
+   float:left;
+   clear:left;
+   margin:10px;
+   padding:0;
+   border:1px solid black;
+}
+.tablebox p{
+   float:left;
+   clear:left;
+   margin:0;
+   padding:1px;
+}
+.tablebox table {
+   float:left;
+   clear:left;
+   margin:0;
+   width:100%-20px;
+   border-collapse:collapse;
+}
+.tablebox th {
+   padding-left:3px;
+   padding-right:1px;
+}
+#first {
+   clear:both;
+}
+.boxscores {
+   float:left;
+   border:1px solid black;
+   margin:10px;
+   width:420px;
+}
+.boxscores table {
+   border:1px solid black;
+   margin:10px;
+}
+
+/* Bottombar and closing notes */
+#bottombar {
+   float:left;
+   clear:both;
+   min-width:959px;
+   background:url("../images/bg_bottom.jpg") repeat-x;
+   margin:0;
+   padding:0;
+}
+#bottombar img {
+   float:left;
+   border:0;
+   margin:0;
+   padding:0;
+}
+#bottombar a {
+	color:#fff;
+}
+#bottombar a:hover {
+	color:#ff0;
+}
+#credits {
+   margin-left:auto;
+   margin-right:auto;
+   margin-bottom:1em;
+   clear:both;
+   width:959px;
+   text-align:center;
+   padding:1em 0 0 0;
+   color:#FFFFFF;
+}
+
+/* Forms */
+label {
+   float:left;
+   clear:left;
+   margin:1em 4px 4px 4px;
+}
+input {
+   float:right;
+   clear:right;
+   margin:4px;
+}
+select {
+   float:right;
+   clear:right;
+   margin:4px;
+}
+form.inline label {
+   float:left;
+   clear:both;
+}
+form.inline input {
+   float:left;
+   clear:right;
+}
+form.inline input.submitButton {
+   margin-top:2px;
+}
+form.inline select {
+   float:left;
+   clear:right;
+}
+.pgTitle {
+  color:#0372CB;
+  font-weight:bold;
+}
+
+/* Bold Versions of Table Rows */
+.b1 		{ background-color:#E3E3E3;font-weight:bold;text-align:right;color:#000000;padding-right:4px; }
+.b1_l 		{ background-color:#E3E3E3;font-weight:bold;text-align:left;color:#000000; }
+.b2 		{ background-color:#F5F5F5;font-weight:bold;text-align:right;color:#000000;padding-right:4px; }
+.b2_l 		{ background-color:#F5F5F5;font-weight:bold;text-align:left;color:#000000; }

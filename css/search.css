@@ -1,0 +1,246 @@
+@charset "utf-8";
+/* CSS Document */ 
+
+.search_summary {
+ 	font-size:18px;
+    color:#333;
+    font-weight:bold;
+    float:left;
+    width:55%;
+}
+.search_result_count {
+ 	font-size:21px;
+    color:#BA501D; 
+}
+#toolbox {
+ 	display:block;
+    width:96%;
+    border:none;
+    padding:3px;
+    position:relative;
+    border:1px solid #a0a0a0;
+    background:#dedede;
+    margin-top:15px;
+}
+#toolbox #title {
+    width:96%;
+    padding:4px;
+    float:left;
+    font-size:14px;
+    color:#fff;
+    background:#333;
+    font-weight:bold;
+}
+#toolbox #row {
+    float:left;
+    margin-left:2px 2px 2px 2px;
+    font-size:12px;
+}
+#toolbox label {
+    float:none;
+    display:block;
+    font-weight:bold;
+ 	width:auto;
+    text-align:left;
+}
+#toolbox select, .resultCounter select, .headbar select {	
+    font-size:11px;
+}
+#toolbox select {
+    width:155px;
+}
+#toolbox input[type=text] {
+    width: 145px;
+    padding:2px;
+    font-size:12px;
+    margin:0px;
+    float:none;
+    min-width:none;
+}
+#toolbox .button_bar {
+ 	margin-top:8px;
+    text-align:right;
+    width:100%;
+}
+.search_results .col_l {
+    width: 68%;
+    float:left;
+}
+.search_results .col_r {
+    width: 28%;
+    float:right;
+}
+.headbar {
+ 	float:left;
+    width:96%;
+    padding:3px;
+    font-size:12px;
+    border:1px solid #a0a0a0;
+}
+.sortBox {
+ 	float:right;
+    text-align:right;
+    padding:3px;
+    margin:0px;
+}
+.sortBox select {
+ 	min-width:none;
+    width:auto;
+}
+#sortOrderIcon {
+	float:right;
+	padding:6px 3px 3px 6px;
+	margin:0px 0px 0px 6px;
+	width:16px;
+	height:16px;
+	cursor:pointer;
+}
+#sortOrderIcon.up {
+	background:url(../images/icons/icon_arrow_up.gif) center left no-repeat;
+}
+#sortOrderIcon.down {
+	background:url(../images/icons/icon_arrow_down.gif) center left no-repeat;
+}
+.results_browse {
+    padding:0px;
+    margin:0px;
+    float:left;
+    width:100%;
+}
+.results_browse dt {
+	color:#777;
+	}
+.results_browse dt b {
+	font-weight:bold;
+	color:#555;
+}
+.results_browse dd {
+	float:left;
+	width:100%;
+	padding:20px 0px 12px 0px;
+    margin: 0px;
+    display:block;
+    border-bottom:1px solid #909090;
+}
+.results_browse dd.epmty {
+    border-bottom:none;
+}
+.results_browse dd:hover {
+ 	background:#E0E8EB;
+}
+.results_browse dd.odd {
+ 	background:#efefef;   
+}
+.results_browse dd.even {
+ 	background:#ffffff;   
+}
+.results_browse dd .search_img { 
+	float:left;
+    width:90px;
+    height:80px;
+}
+.results_browse dd .results { 
+	float:left;
+}
+.results_browse dd a {
+	margin:0px;
+	padding:0px;
+	border:none;
+    text-decoration:none;
+	}
+.results_browse dd p b {
+	font-size:24px;
+	font-weight:normal;
+	padding:0;
+    margin: 0 0 8px 0;
+    
+}
+.results_browse dd p, .results_meta {
+	font-size:12px;
+}
+.results_browse dd p .results_meta b {
+    font-size:12px;
+    font-weight:bold;
+}
+.highlight {
+    font-weight:bolder !important;
+    font-size:larger !important;
+    color:#0074E8 !important;
+    background:#ffff66 !important;
+}
+.searchFooterBar {
+    float:left;
+    width:98%;
+    border:1px solid #a0a0a0;
+    background:#efefef;
+    padding:4px;
+}
+.footerItem, .headerItem {
+ 	float:left;   
+}
+.pageCount {
+    width:20%;
+    margin-top:5px;
+}
+.resultCounter {
+    text-align:right;
+    width:30%;
+}
+.resultCounter select {
+    width:auto;
+    float:none;
+    padding:2px;
+    display:inline;
+    font-size:12px;
+    margin:0px;
+}
+.results_paging {
+	width:45%;
+    text-align:center;
+}
+.results_paging #dt { 
+	width:auto;
+    float:none;
+    display:block;
+    margin:5px 0;
+    padding:0px;
+    min-width:none;
+    max-width:none;
+    min-height:none;
+}
+.results_paging .next, .results_paging .prev {
+	margin:0px;
+    padding:0px;
+    display:inline;
+}
+
+ul.pagelist {
+	display:block;
+	margin:2px 0px 2px 0px;
+	border-right:1px solid #ddd;
+    padding:0px;
+     display:inline;
+	}
+ul.pagelist li {
+	display:inline;
+	font-size:14px;
+	border-left:1px solid #ddd;
+}
+ul.pagelist li:first-child {
+    border:none;
+}
+ul.pagelist li a, ul.pagelist li a:visited, ul.pagelist li span {
+	padding:0 5px;
+	color:#000;
+	background:none;
+	}
+ul.pagelist li a:hover, ul.pagelist li a:focus, ul.pagelist li span.active {
+	color:#b0b0b0;
+	}
+
+.editOptions {
+	float:right;
+	width:185px;
+	text-align:right;
+}
+  
