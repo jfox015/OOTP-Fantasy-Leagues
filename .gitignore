@@ -1,0 +1,10 @@
+
+/.settings
+/.htaccess
+/.project
+/.buildpath
+/index.html
+/application/config/constants.php
+/application/config/database.php
+/application/config/config.php
+/install/ootpfl_db.php
