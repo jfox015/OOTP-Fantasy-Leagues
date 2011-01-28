@@ -22,7 +22,7 @@
                             <label>Close Date:</label>
                             <span><?php if ($thisItem['closeDate'] != EMPTY_DATE_TIME_STR) { echo(date('m/d/Y',strtotime($thisItem['closeDate']))); } else { echo("Not set"); }?></span><br />
                             <label>Status:</label>
-                    		<span <?php if ($thisItem['active'] == 1) { echo('style="color:#060"><img src="'.PATH_IMAGES.'icons/img_icon_ok.gif" />&nbsp;&nbsp;Active'); } else { echo('style="color:#C00"><img src="'.PATH_IMAGES.'icons/img_icon_error.gif" />&nbsp;&nbsp;(inactive)'); } ?></span><br />
+                    		<span <?php if ($thisItem['active'] == 1) { echo('style="color:#060"'); $icon = "ok"; $lbl = 'Active'; } else { echo('style="color:#C00"'); $icon = "error"; $lbl = '{inactive}'; } ?>><img src="<?php  echo(PATH_IMAGES); ?>icons/img_icon_<?php echo($icon); ?>.gif" />&nbsp;&nbsp;<?php echo($lbl); ?></span><br />
                         </div>
                         <br clear="all" class="clear" />
                     </div>
