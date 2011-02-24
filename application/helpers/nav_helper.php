@@ -79,8 +79,8 @@ function team_nav($team_id = false, $teamName = false, $show_admin = false) {
 	array_push($nav,array('url'=>'/team/stats/'.$team_id,'label'=>'Stats'));
 	if ($show_admin) {
 		array_push($nav,array('url'=>'/team/adddrop/id/'.$team_id,'label'=>'Add/Drop'));
-		/*array_push($nav,array('url'=>'/team/trade/id/'.$team_id,'label'=>'Trade'));
-		array_push($nav,array('url'=>'/team/serviceTime/id/'.$team_id,'label'=>'Service Time'));
+		array_push($nav,array('url'=>'/team/trade/id/'.$team_id,'label'=>'Trade'));
+		/*array_push($nav,array('url'=>'/team/serviceTime/id/'.$team_id,'label'=>'Service Time'));
 		array_push($nav,array('url'=>'/team/warnings/id/'.$team_id,'label'=>'Warnings'));*/
 	}
 	array_push($nav,array('url'=>'/team/transactions/team_id/'.$team_id,'label'=>'Transactions'));

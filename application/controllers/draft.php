@@ -788,42 +788,43 @@ class draft extends BaseEditor {
 								
 								// GET NEXT PICKING OWNER INFO
 								$nextOwnerEmail = '';
-								$nextOwnerDetails = $this->user_auth_model->accountDetails($teams[$dteam]['owner_id']);
-								if (isset($nextOwnerDetails)) {
-									$nextOwnerEmail = $nextOwnerDetails->email;
-								}
-								$this->user_meta_model->load($teams[$dteam]['owner_id'],'userId');
-								$nextOwnerName = '';
-								
-								if ($this->user_meta_model->id != -1) {
-									$nextOwnerName = $this->user_meta_model->firstName." " .$this->user_meta_model->lastName;
-								} // END if
-								## Generate Subject Line
-								$subject=$leagueName." Draft: Your pick is up!";
-								## Generate Message Text
-								$message = $nextOwnerName.',<br>
-								<br>
-								Your pick in the '.$leagueName.' Draft is now up.<br><br>
-								Please browse to the league draft selection page at: <a href="'.SITE_URL.'draft/selection/league_id/'.$this->league_model->id.'">'.SITE_URL.'draft/selection/league_id/'.$this->league_model->id.'</a> to make your pick.';
-								$mailTo = $nextOwnerName.' <'.$nextOwnerEmail.'>';
-								
-								## Send Message
-								if ((!empty($mailTo)) && (!empty($message)) && ($this->dataModel->replyList!="") && ($this->uriVars['action'] !='manualpick')) {
-									if (!$this->debug) {
-										mail($mailTo,$subject,$message.$this->makeEmailFooter($leagueName),$this->makeEmailHeader());
+								if (isset($teams[$dteam]['owner_id']) && !empty($teams[$dteam]['owner_id'])) {
+									$nextOwnerDetails = $this->user_auth_model->accountDetails($teams[$dteam]['owner_id']);
+									if (isset($nextOwnerDetails)) {
+										$nextOwnerEmail = $nextOwnerDetails->email;
 									}
+									$this->user_meta_model->load($teams[$dteam]['owner_id'],'userId');
+									$nextOwnerName = '';
+									
+									if ($this->user_meta_model->id != -1) {
+										$nextOwnerName = $this->user_meta_model->firstName." " .$this->user_meta_model->lastName;
+									} // END if
+									## Generate Subject Line
+									$subject=$leagueName." Draft: Your pick is up!";
+									## Generate Message Text
+									$message = $nextOwnerName.',<br>
+									<br>
+									Your pick in the '.$leagueName.' Draft is now up.<br><br>
+									Please browse to the league draft selection page at: <a href="'.SITE_URL.'draft/selection/league_id/'.$this->league_model->id.'">'.SITE_URL.'draft/selection/league_id/'.$this->league_model->id.'</a> to make your pick.';
+									$mailTo = $nextOwnerName.' <'.$nextOwnerEmail.'>';
+									
+									## Send Message
+									if ((!empty($mailTo)) && (!empty($message)) && ($this->dataModel->replyList!="") && ($this->uriVars['action'] !='manualpick')) {
+										if (!$this->debug) {
+											mail($mailTo,$subject,$message.$this->makeEmailFooter($leagueName),$this->makeEmailHeader());
+										}
+									}
+									if ($this->debug) {
+										echo("<br /><b>mail to:</b> ".$mailTo."<br />");
+										echo("<br /><b>nextOwnerEmail to:</b> ".$nextOwnerEmail."<br />");
+										echo($message.$this->makeEmailFooter($leagueName)."<br />");
+										echo("pickNum = ".$pickNum."<br />");
+										echo("Pick Number = ".($pickNum-1)."<br />");
+										echo("(pickNum-1) == nTeams = ".((($pickNum-1) == $nTeams) ? 'true' : 'false')."<br />");
+									}
+									unset($subject);
+									unset($message);
 								}
-								if ($this->debug) {
-									echo("<br /><b>mail to:</b> ".$mailTo."<br />");
-									echo("<br /><b>nextOwnerEmail to:</b> ".$nextOwnerEmail."<br />");
-									echo($message.$this->makeEmailFooter($leagueName)."<br />");
-									echo("pickNum = ".$pickNum."<br />");
-									echo("Pick Number = ".($pickNum-1)."<br />");
-									echo("(pickNum-1) == nTeams = ".((($pickNum-1) == $nTeams) ? 'true' : 'false')."<br />");
-								}
-								unset($subject);
-								unset($message);
-								
 								##### Return User to Draft List #
 								if ($pickingTeam==$nextTeam && $nextTeam!="" && $this->uriVars['action']!='manualpick') {
 									redirect('draft/selection/league_id/'.$this->uriVars['league_id']);
@@ -916,7 +917,7 @@ class draft extends BaseEditor {
 				$posIF = get_pos_num('IF');
 				$posMI = get_pos_num('MI');
 				$posCI = get_pos_num('CI');
-				if (in_array($rules,$posUtil) && !isset($teamQuotas[$dteam][$posUtil])) {
+				if (in_array($posUtil,$rules) && !isset($teamQuotas[$dteam][$posUtil])) {
 					$teamQuotas[$dteam][$posUtil] = 1;
 				} else {
 					if (isset($teamQuotas[$dteam][$pos])) {

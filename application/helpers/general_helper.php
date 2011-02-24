@@ -8,7 +8,33 @@
  *
  * 	@author 	All functions are written by Frank Holmes unless otherwise noted.
  */
- 
+function getUsername($userId, $access = false) {
+	$ci =& get_instance();
+	if (!isset($ci->user_auth_model)) {
+		$ci->load->model('user_auth_model');
+	}
+	return $ci->user_auth_model->getUsername($userId, $access);
+}
+function sendEmail($to,$fromEmail, $fromName,$subject,$message,$headers) {
+	$ci =& get_instance();
+	$this->ci->email->clear();
+	$ci->email->set_newline("\r\n");
+	$ci->email->from($fromEmail,$fromName);
+	$ci->email->to($to);
+	$tradeTypes = loadSimpleDataList('tradeStatus');
+	$ci->email->subject($subject);
+	$ci->email->message($message);
+	$ci->email->headers($headers);
+	if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
+		if ($this->email->send()) {
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		return $message;
+	}
+}
 /**
  *	PLAYERS STAT QUERY BUILDER
  *

@@ -170,7 +170,7 @@ function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 120
 					$query=fgets($fr);
 					if ($query=="") {continue;}
 					$query=str_replace(", , );",",1,1);",$query);
-					$query=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$query);
+					//$query=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$query);
 					$query=str_replace(", ,",",'',",$query);
 					$query=str_replace("#IND",0,$query);
 					if (($tableName=='players_career_batting_stats')||($tableName=='players_career_pitching_stats')) {
@@ -244,7 +244,7 @@ function splitFiles($sqlLoadPath,$filename = false, $delete = false, $max_file_s
 				$line=fgets($f);
 				if ($line=="") {continue;} // END if
 				$line=str_replace(", , );",",1,1);",$line); 
-				$line=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$line);
+				//$line=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$line);
 				$line=str_replace(", ,",",'',",$line);
 				$line=str_replace("#IND","0",$line);
 				$queries[$cnt]=$line;
@@ -301,7 +301,7 @@ function splitFiles($sqlLoadPath,$filename = false, $delete = false, $max_file_s
 						$line=fgets($f);
 						if ($line=="") {continue;}
 						$line=str_replace(", , );",",1,1);",$line); 
-						$line=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$line);
+						//$line=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$line);
 						$line=str_replace(", ,",",'',",$line);
 						$line=str_replace("#IND","0",$line);
 						$queries[$cnt]=$line;

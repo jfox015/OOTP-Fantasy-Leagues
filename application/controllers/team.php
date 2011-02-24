@@ -58,10 +58,13 @@ class team extends BaseEditor {
 	/*---------------------------------------
 	/	CONTROLLER SUBMISSION HANDLERS
 	/--------------------------------------*/
+	/**
+	 *	INIT.
+	 *	Overrides the default init function. Sets page views and sets default values.
+	 */
 	function init() {
 		parent::init();
 		$this->modelName = 'team_model';
-		
 		$this->views['EDIT'] = 'team/team_editor';
 		$this->views['VIEW'] = 'team/team_info';
 		$this->views['FAIL'] = 'team/team_message';
@@ -71,11 +74,16 @@ class team extends BaseEditor {
 		$this->views['AVATAR'] = 'team/team_avatar';
 		$this->views['STATS'] = 'team/team_stats';
 		$this->views['TRANSACTIONS'] = 'team/team_transactions';
+		$this->views['TRADE'] = 'team/team_trade';
+		$this->views['TRADE_REVIEW'] = 'team/team_trade_review';
+		$this->views['TRADE_HISTORY'] = 'team/team_trade_history';
 		$this->debug = false;
-		
 		$this->useWaivers = (isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) ? true : false;
 	}
-	
+	/**
+	 *	ADMIN.
+	 *	Calls the admin interface for teams.
+	 */
 	public function admin() {
 		$this->getURIData();
 		$this->data['subTitle'] = "Team Admin";
@@ -87,7 +95,10 @@ class team extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
 	    $this->displayView();	
 	}
-	
+	/**
+	 *	Add/DROP Page.
+	 *	Calls the add/drop page interface for teams.
+	 */
 	public function addDrop() {
 		$this->getURIData();
 		
@@ -214,6 +225,89 @@ class team extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['STATS'], $this->data, true);
 	    $this->displayView();
 	}
+	public function trade() {
+		$this->getURIData();
+		
+		$this->enqueStyle('list_picker.css');
+		
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		$this->data['team_id'] = $this->uriVars['id'];
+		$this->data['league_id'] = $this->dataModel->league_id;
+		
+		$this->params['subTitle'] = "Trades";
+		$this->data['subTitle'] = "Trade";
+		// GET DRAFT STATUS
+		$this->load->model('draft_model');
+		$this->draft_model->load($this->dataModel->league_id,'league_id');
+		
+		if ($this->draft_model->completed != 1) {
+			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		} else {
+			
+			if (!function_exists('getCurrentScoringPeriod')) {
+				$this->load->helper('admin');
+			}
+			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
+			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
+			
+			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+			
+			if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
+				$this->data['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
+			}
+			$this->data['team_id2'] = "";
+			if (isset($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
+				$this->data['team_id2'] = $this->uriVars['team_id2'];
+			}
+			
+			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
+			$this->params['pageType'] = PAGE_FORM;
+		}
+		$this->makeNav();
+		$this->displayView();
+	}
+	public function tradeAccept() {
+		$this->getURIData();
+		
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		$this->data['team_id'] = $this->uriVars['id'];
+		$this->data['league_id'] = $this->dataModel->league_id;
+		
+		$this->dataModel->processTradeResponse();
+		
+	}
+	public function tradeReject() {
+		
+	}
+	public function tradeProtest() {
+		
+	}
+	public function tradeCounterOffer() {
+		
+	}
+	protected function tradeDetails() {
+	
+	}
+	public function tradeReview() {
+		$this->getURIData();
+		
+		$this->makeNav();
+		$this->params['subTitle'] = $this->data['subTitle'] = "Review Trade";
+		$this->params['content'] = $this->load->view($this->views['TRADE_REVIEW'], $this->data, true);
+	    $this->params['pageType'] = PAGE_FORM;
+		$this->displayView();
+	}
+	public function tradeHistory() {
+		$this->getURIData();
+		$this->makeNav();
+		$this->params['subTitle'] = $this->data['subTitle'] = "Trade History";
+		$this->params['content'] = $this->load->view($this->views['TRADE_HISTORY'], $this->data, true);
+	    $this->params['pageType'] = PAGE_FORM;
+		$this->displayView();
+	}
 	public function transactions() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
@@ -260,8 +354,6 @@ class team extends BaseEditor {
 	    $this->params['pageType'] = PAGE_FORM;
 		$this->displayView();	
 	}
-	
-	
 	public function processTransaction() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
@@ -1022,6 +1114,9 @@ class team extends BaseEditor {
 		} // END if
 		if ($this->input->post('uid')) {
 			$this->uriVars['uid'] = $this->input->post('uid');
+		} // END if
+		if ($this->input->post('trade_id')) {
+			$this->uriVars['trade_id'] = $this->input->post('trade_id');
 		} // END if
 	}
 	protected function makeForm() {
