@@ -414,8 +414,12 @@ class team extends BaseEditor {
 			}
 			$sendList = array();
 			$receiveList = array();
+			$trans_type = (isset($this->uriVars['trans_type'])) ? $this->uriVars['trans_type'] : 1;
+			
 			$sendList['all'] = (isset($this->uriVars['tradeTo'])) ? explode("&",$this->uriVars['tradeTo']) : array();
 			$receiveList['all'] = (isset($this->uriVars['tradeFrom'])) ? explode("&",$this->uriVars['tradeFrom']) : array();
+			$this->data['tradeTo'] = (isset($this->uriVars['tradeTo'])) ? $this->uriVars['tradeTo'] : "";
+			$this->data['tradeFrom'] = (isset($this->uriVars['tradeFrom'])) ? $this->uriVars['tradeTo'] : "";
 			
 			$sendList['ids'] = array();
 			$receiveList['ids'] = array();
@@ -436,7 +440,7 @@ class team extends BaseEditor {
 			$this->load->model('player_model');
 			foreach($sendList['ids'] as $playerId) {
 				$playerData = $this->player_model->getPlayerDetails($playerId);
-				echo("Send player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
+				//echo("Send player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
 				if ($playerData['position'] == 1) {
 					$sendList['pitchers'] = $sendList['pitchers'] + array($playerData['player_id']=>array());
 				} else {
@@ -446,7 +450,7 @@ class team extends BaseEditor {
 			
 			foreach($receiveList['ids'] as $playerId) {
 				$playerData = $this->player_model->getPlayerDetails($playerId);
-				echo("recieve player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
+				//echo("recieve player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
 				if ($playerData['position'] == 1) {
 					$receiveList['pitchers'] = $receiveList['pitchers'] + array($playerData['player_id']=>array());
 				} else {
@@ -1352,7 +1356,9 @@ class team extends BaseEditor {
 		if ($this->input->post('trade_id')) {
 			$this->uriVars['trade_id'] = $this->input->post('trade_id');
 		} // END if
-		
+		if ($this->input->post('trans_type')) {
+			$this->uriVars['trans_type'] = $this->input->post('trans_type');
+		} // END if
 	}
 	protected function makeForm() {
 		$form = new Form();

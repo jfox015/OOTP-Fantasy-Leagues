@@ -14,22 +14,22 @@
 					if ($team == 'team_id2') {?>
 						<h2 style="float:left; display:inline-block"><?php
 						if (isset($thisItem['team_avatar2']) && !empty($thisItem['team_avatar2'])) { 
-							$avatar = PATH_TEAMS_AVATARS.$thisItem['team_avatar2'];
+							$tmpavatar = PATH_TEAMS_AVATARS.$thisItem['team_avatar2'];
 						} else {
-							$avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
+							$tmpavatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 						}
 						?>
-						<img src="<?php echo($avatar); ?>" width="48" height="48" border="0" align="absmiddle" />
+						<img src="<?php echo($tmpavatar); ?>" width="48" height="48" border="0" align="absmiddle" />
 						&nbsp;&nbsp;<?php print($team_name2); ?></h2>
 					<?php } else { ?>
 						<h2 style="float:left; display:inline-block">
-						<?php if (isset($thisItem['team_avatar']) && !empty($thisItem['team_avatar'])) { 
-							$avatar = PATH_TEAMS_AVATARS.$thisItem['team_avatar'];
+						<?php if (isset($avatar) && !empty($avatar)) { 
+							$tmpavatar = PATH_TEAMS_AVATARS.$avatar;
 						} else {
-							$avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
+							$tmpavatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 						}
 						?>
-						<img src="<?php echo($avatar); ?>" width="48" height="48" border="0" align="absmiddle" />
+						<img src="<?php echo($tmpavatar); ?>" width="48" height="48" border="0" align="absmiddle" />
 						&nbsp;&nbsp;<?php print($teamname." ".$teamnick); ?></h2>
 					<?php } ?>
                         <div class="textbox" style="width:915px;">
@@ -53,5 +53,6 @@
 				}
 			}
 			?>
+      		</div>
        </div>
 	</div>

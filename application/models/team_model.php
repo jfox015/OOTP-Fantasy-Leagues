@@ -487,7 +487,7 @@ class team_model extends base_model {
 		$players = array();
 		if ($team_id === false) $team_id = $this->team_id;
 		
-		echo("include list= ".sizeof($includeList)."<br />");
+		//echo("include list= ".sizeof($includeList)."<br />");
 		if (sizeof($includeList) > 0) {
 			$players = $includeList;
 		} else {
@@ -576,7 +576,7 @@ class team_model extends base_model {
 		} else if ($limit != -1 && $startIndex > 0) {
 			$sql.="LIMIT ".$startIndex.", ".$limit;
 		}
-		echo("sql = ".$sql."<br />");
+		//echo("sql = ".$sql."<br />");
 		$query = $this->db->query($sql);
 		$fields = $query->list_fields();
 		if ($query->num_rows() > 0) {

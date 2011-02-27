@@ -87,7 +87,7 @@
 			}
 			if (dropList == '') { dropList = "-1_NA_NA"; }
 			// PREPARE URL
-			document.location.href = "<?php echo($config['fantasy_web_root']); ?>team/tradeReview/league_id/"+league_id+"/team_id/"+team_id+"/tradeFrom/"+addList+"/team_id2/"+teamId2+"/tradeTo/"+dropList+cacheBuster();
+			document.location.href = "<?php echo($config['fantasy_web_root']); ?>team/tradeReview/league_id/"+league_id+"/trans_type/1/team_id/"+team_id+"/tradeFrom/"+addList+"/team_id2/"+teamId2+"/tradeTo/"+dropList+cacheBuster();
 			return false;
 		});
 		$('a[rel=listLoad]').live('click',function () { 
