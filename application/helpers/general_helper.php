@@ -66,7 +66,7 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 		// PITCHERS
 		switch ($query_type) {
 			case QUERY_BASIC:
-				$sql .= ''.$sqlOperator.'(w) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip,'.$sqlOperator.'(s) as s';
+				$sql .= 'if(w=0,0,'.$sqlOperator.'(w)) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip,'.$sqlOperator.'(s) as s';
 				break;
 			case QUERY_EXTENDED:
 				$sql .= ''.$sqlOperator.'(w) as w,'.$sqlOperator.'(l) as l,'.$sqlOperator.'(s) as s,'.$sqlOperator.'(cg) as cg,'.$sqlOperator.'(sho) as sho,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(g) as pg,'.$sqlOperator.'(gs) as gs,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(ha) as ha,'.$sqlOperator.'(r) as pr,'.$sqlOperator.'(er) as er,'.$sqlOperator.'(hra) as hra,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if (('.$sqlOperator.'(k)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(k)*9)/'.$sqlOperator.'(ip)) as k9, if (('.$sqlOperator.'(bb)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(bb)*9)/'.$sqlOperator.'(ip)) as bb9, if (('.$sqlOperator.'(hra)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(hra)*9)/'.$sqlOperator.'(ip)) as hr9,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip,if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(ha)/'.$sqlOperator.'(ab)) as oavg,if(('.$sqlOperator.'(ab)-'.$sqlOperator.'(k)-'.$sqlOperator.'(hra)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(ha)-'.$sqlOperator.'(hra))/('.$sqlOperator.'(ab)-'.$sqlOperator.'(k)-'.$sqlOperator.'(hra)+'.$sqlOperator.'(sf))) as babip';
@@ -101,14 +101,14 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
 									$statsOnly = false, $showTrans = false, $showDraft = false, $showGenInfo = false) {
 	$colnames = "";
 	if (!$statsOnly) {
-		if ($showTrans) {
+		if ($showTrans === true) {
 			$colnames .= "Add|";
 		}
-		if ($showDraft) {
+		if ($showDraft === true) {
 			$colnames .= "Draft|";
 		}
 		$colnames .= "Player|Team|POS|";
-		if ($showGenInfo) {
+		if ($showGenInfo === true) {
 			$colnames .= "Age|Throw|Bat|";
 		}
 	}
@@ -254,7 +254,7 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 							} else {
 								$link .= $id;
 							}
-							$val = anchor($link,$row['first_name']." ".$row['last_name']).' <span style="font-size:smaller;">'.makeElidgibilityString($row['positions']).'</span>';
+							$val = anchor($link,$row['first_name']." ".$row['last_name'],array('target'=>'_blank')).' <span style="font-size:smaller;">'.makeElidgibilityString($row['positions']).'</span>';
 							
 							// INJURY STATUS
 							$injStatus = "";

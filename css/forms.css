@@ -133,7 +133,6 @@ input[type=text].shorttext {
 	display: inline;
 	float: left;
 }
-
 .creditRow {
     float:left;
     width:98%;
@@ -157,3 +156,4 @@ input[type=text].shorttext {
 	font-size:10px;
 	text-align:right;
 }
+

@@ -15,7 +15,7 @@
 
 #optionsBar { width:655px; float:left;  }
 
-#options { width:655px; float:left; background:#B6CACF; }
+#options. #trade_options { width:655px; float:left; background:#B6CACF; }
 #options ul, .subOptionsBar ul {list-style:none;margin:3px;padding:0px;  }
 #options ul li, .subOptionsBar ul li { list-style:none;margin:3px;padding:3px; float:left; }
 #options ul li a { padding-top:4px;text-align:center;display:block; min-width:180px; height:25px; font-weight:bold;color:#2C2C7C;font-size:12px; }
@@ -95,4 +95,14 @@
 a.resultNavLink:link, a.resultNavLink:active, a.resultNavLink:visited {
 	text-decoration: underline;
 	color: #000;
+}
+/*-------------------------
+/	Trades
+/------------------------*/
+#trade_options select, #trade_options label {
+	margin:6px 3px 0 3px;
+	min-width:0px;
+	width:auto;
+	clear:none;
+	font-size:11px;
 }

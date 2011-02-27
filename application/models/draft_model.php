@@ -1036,39 +1036,7 @@ class draft_model extends base_model {
 		$alreadyDrafted = getDraftedPlayersByLeague($league_id);
 		
 		$this->db->flush_cache();
-		/*$select = 'players.player_id ,first_name, last_name,';
-		if ($playerType != 1) {
-			if ($stats_range < 4) {
-				$this->db->select($select.'role as pos,w,l,s,cg,sho,if((ip+(ipf/3))=0,0,9*er/(ip+(ipf/3))) as era,g as pg,gs,(ip+(ipf/3)) as ip,ha,r as pr,er,hra,pbb,pk,if((ip+(ipf/3))=0,0,(ha+bb)/(ip+(ipf/3))) as whip,if((ab=0),0,ha/ab) as oavg,if((ab-k-hra+sf)=0,0,(ha-hra)/(ab-k-hra+sf)) as babip');
-			} else {
-				$this->db->select($select.'role as pos,SUM(w) as w,SUM(l) as l,SUM(s) as s,SUM(cg) as cg,SUM(sho) as sho,if((SUM(ip)+(SUM(ipf)/3))=0,0,9*SUM(er)/(SUM(ip)+(SUM(ipf)/3))) as era,SUM(g) as pg,SUM(gs) as gs,(SUM(ip)+(SUM(ipf)/3)) as ip,SUM(ha) as ha,SUM(r) as pr,SUM(er) as er,SUM(hra) as hra,SUM(bb) as pbb,SUM(k) as pk,if((SUM(ip)+(SUM(ipf)/3))=0,0,(SUM(ha)+SUM(bb))/(SUM(ip)+(SUM(ipf)/3))) as whip,if(SUM(ab)=0,0,SUM(ha)/SUM(ab)) as oavg,if((SUM(ab)-SUM(k)-SUM(hra)+SUM(sf))=0,0,(SUM(ha)-SUM(hra))/(SUM(ab)-SUM(k)-SUM(hra)+SUM(sf))) as babip');
-			}
-			$tblName = 'players_career_pitching_stats';
-			$posType = 'role';
-		} else {
-			if ($stats_range < 4) {
-				$this->db->select($select.'position as pos,g,ab,r,h,d,t,hr,rbi,bb,k,sb,cs,if(ab=0,0,h/ab) as avg,if((ab+bb+hp+sf)=0,0,(h+bb+hp)/(ab+bb+hp+sf)) as obp,if(ab=0,0,(h+d+2*t+3*hr)/ab) as slg,if((ab+bb+hp+sf)=0,0,(h+bb+hp)/(ab+bb+hp+sf))+if(ab=0,0,(h+d+2*t+3*hr)/ab) as ops,if(pa=0,0,(0.72*bb+0.75*hp+0.9*(h-d-t-hr)+0.92*0+1.24*d+1.56*t+1.95*hr)/pa) as wOBA,pa');
-			} else {
-				$this->db->select($select.'position as pos,SUM(g) as g,SUM(ab) as ab,SUM(r) as r,SUM(h) as h,SUM(d) as d,SUM(t) as t,SUM(hr) as hr,SUM(rbi) as rbi,SUM(bb) as bb,SUM(k) as k,SUM(sb) as sb,SUM(cs) as cs,if(SUM(ab)=0,0,SUM(h)/SUM(ab)) as avg,if((SUM(ab)+SUM(bb)+SUM(hp)+SUM(sf))=0,0,(SUM(h)+SUM(bb)+SUM(hp))/(SUM(ab)+SUM(bb)+SUM(hp)+SUM(sf))) as obp,if(SUM(ab)=0,0,(SUM(h)+SUM(d)+2*SUM(t)+3*SUM(hr))/SUM(ab)) as slg,if((SUM(ab)+SUM(bb)+SUM(hp)+SUM(sf))=0,0,(SUM(h)+SUM(bb)+SUM(hp))/(SUM(ab)+SUM(bb)+SUM(hp)+SUM(sf)))+if(SUM(ab)=0,0,(SUM(h)+SUM(d)+2*SUM(t)+3*SUM(hr))/SUM(ab)) as ops,if(SUM(pa)=0,0,(0.72*SUM(bb)+0.75*SUM(hp)+0.9*(SUM(h)-SUM(d)-SUM(t)-SUM(hr))+0.92*0+1.24*SUM(d)+1.56*SUM(t)+1.95*SUM(hr))/SUM(pa)) as wOBA,SUM(pa) as pa');
-			}
-			$tblName = 'players_career_batting_stats';
-			$posType = 'position';
-		}
-		if ($position != -1) {
-			$this->db->where($posType,$position);
-		}
-		$this->db->join('players','players.player_id = '.$tblName.'.player_id','left');
-		$this->db->from($tblName);
-		$this->db->where('split_id',1);
-		//$this->db->where_not_in('player_id',$notAFreeAgent);
-		if (!empty($lgyear)) {
-			$this->db->where('year',$lgyear);
-		}
-		$this->db->where('league_id',$league_id);
-		$this->db->where('level_id',1);*/
-		$sql = 'SELECT fantasy_players.id, "add", "draft", age, throws, bats, fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';
-		//echo("Position type = ".$position_type."<br />");
-		//echo("Role type = ".$role_type."<br />");			
+		$sql = 'SELECT fantasy_players.id, "add", "draft", age, throws, bats, fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';		
 		$where = '';
 		if ($player_type == 1) {
 			if ($stats_range == 4) {

@@ -213,7 +213,7 @@ class team extends BaseEditor {
 			$this->data['player_stats'] = formatStatsForDisplay($stats['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
 			$this->data['formatted_stats']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 		} else {
-			$this->data['message']= "The ".$this->dataModel->teamname." roster is incomplete. No statsare available atthis time.";
+			$this->data['message']= "The ".$this->dataModel->teamname." roster is incomplete. No stats are available at this time.";
 		}
 		$this->data['league_id'] = $this->dataModel->league_id;
 		if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
@@ -225,6 +225,13 @@ class team extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['STATS'], $this->data, true);
 	    $this->displayView();
 	}
+	/*------------------------------------------
+	/	TRADE
+	/-----------------------------------------*/
+	/**
+	 *	TRADE
+	 *
+	 */
 	public function trade() {
 		$this->getURIData();
 		
@@ -252,16 +259,76 @@ class team extends BaseEditor {
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
 			
-			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
+				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
+			} else {
+				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+			}
+			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
 			
 			if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
 				$this->data['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
 			}
-			$this->data['team_id2'] = "";
-			if (isset($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
+			$this->data['team_id2'] = -1;
+			if (isset($this->uriVars['team_id2']) && !empty($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
 				$this->data['team_id2'] = $this->uriVars['team_id2'];
+			} else {
+				if (isset($this->data['fantasy_teams']) && sizeof($this->data['fantasy_teams']) > 0) {
+					foreach($this->data['fantasy_teams'] as $id => $teamName) {
+						if (!empty($id) && $id != " ") {
+							if ($id != $this->data['team_id']) {
+								$this->data['team_id2'] = $id;
+								break;
+							}
+						}
+					}
+				}
+			}
+			$this->prepForQuery();
+			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
+				$this->data['stats_range'] = 0;
+			} else {
+				$this->data['stats_range'] = $this->uriVars['stats_range'];
+			}
+			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
+				$this->data['stats_range'] = 1;	
+			}
+			if (!isset($this->uriVars['stats_source']) || !empty($this->uriVars['stats_source'])) {
+				$this->data['stats_source'] = "sp_all";
+			} else {
+				$this->data['stats_source'] = $this->uriVars['stats_source'];
+			}
+			$periodForQuery = $this->data['scoring_period']['id'];
+			if ($this->data['stats_range'] != 0) {
+				$periodForQuery = -1;
 			}
 			
+			
+			if (!isset($this->uriVars['type']) || empty($this->uriVars['type'])) {
+				$this->data['type'] = 1;
+			} else {
+				$this->data['type'] = $this->uriVars['type'];
+			}
+			$this->data['title'] = array();
+			$this->data['formatted_stats'] = array();
+			$this->data['limit'] = -1;
+			$this->data['startIndex'] = 0;
+			$this->data['showTeam'] = -1;
+			$this->data['showTrans'] = 1;
+			
+			$stats['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id2'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules);
+			$this->data['list_title'] = "Pitching";
+			$this->data['colnames']=player_stat_column_headers(2, QUERY_BASIC, true,false, true);
+			$this->data['fields'] = player_stat_fields_list(2, QUERY_BASIC, true,false, true);
+			$this->data['player_stats'] = formatStatsForDisplay($stats['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
+			$this->data['formatted_stats']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+			// BATTERS
+			$stats['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id2'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules);
+			$this->data['list_title'] = "Batting";
+			$this->data['colnames']=player_stat_column_headers(1, QUERY_BASIC, true,false, true);
+			$this->data['fields'] = player_stat_fields_list(1, QUERY_BASIC, true,false, true);
+			$this->data['player_stats'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
+			$this->data['formatted_stats']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
 		}
@@ -291,13 +358,176 @@ class team extends BaseEditor {
 	protected function tradeDetails() {
 	
 	}
+	public function tradeOffer() {
+		$this->getURIData();
+		$this->load->model($this->modelName,'dataModel');
+		
+		if (!function_exists('getCurrentScoringPeriod')) {
+			$this->load->helper('admin');
+		} // END if
+		$error = false;
+		$result = '{';
+		$code= -1;
+		$status = '';
+		if (isset($this->uriVars['team_id']) && (isset($this->uriVars['tradeTo']) 
+			|| isset($this->uriVars['tradeFrom']))) {
+			
+			$this->dataModel->load($this->uriVars['team_id']);
+			
+			if (!isset($this->params['currUser'])) {
+				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
+			}
+			$sendList = (isset($this->uriVars['tradeTo'])) ? explode("&",$this->uriVars['tradeTo']) : array();
+			$receiveList = (isset($this->uriVars['tradeFrom'])) ? explode("&",$this->uriVars['tradeFrom']) : array();
+			
+			$teamRoster = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
+			
+			
+		} // END if
+	}
+	
 	public function tradeReview() {
 		$this->getURIData();
+		$this->load->model($this->modelName,'dataModel');
+
+		$this->params['subTitle'] = "Team Trades";
 		
+		if (isset($this->uriVars['team_id']) && (isset($this->uriVars['tradeTo']) 
+			|| isset($this->uriVars['tradeFrom']))) {
+			
+			$this->dataModel->load($this->uriVars['team_id']);
+			$this->data['team_id'] = $this->uriVars['team_id'];
+			$this->data['teamname'] = $this->dataModel->teamname;
+			$this->data['teamnick'] = $this->dataModel->teamnick;
+			$this->data['avatar'] = $this->dataModel->avatar;
+		
+			
+			$this->data['league_id'] = $this->dataModel->league_id;
+
+			if (!function_exists('getCurrentScoringPeriod')) {
+				$this->load->helper('admin');
+			}
+			$this->dataModel->load($this->uriVars['team_id']);
+			
+			if (!isset($this->params['currUser'])) {
+				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
+			}
+			$sendList = array();
+			$receiveList = array();
+			$sendList['all'] = (isset($this->uriVars['tradeTo'])) ? explode("&",$this->uriVars['tradeTo']) : array();
+			$receiveList['all'] = (isset($this->uriVars['tradeFrom'])) ? explode("&",$this->uriVars['tradeFrom']) : array();
+			
+			$sendList['ids'] = array();
+			$receiveList['ids'] = array();
+			foreach($sendList['all'] as $data) {
+				$tmpPlayer = explode("_",$data);
+				array_push($sendList['ids'], $tmpPlayer[0]);
+			}
+			foreach($receiveList['all'] as $data) {
+				$tmpPlayer = explode("_",$data);
+				array_push($receiveList['ids'], $tmpPlayer[0]);
+			}
+			// DETEMRINE WHICH PLAYERS FROM EACH LIST ARE PITCHERS AND BATTERS
+			$sendList['pitchers'] = array();
+			$receiveList['pitchers'] = array(); 
+			$sendList['batters'] = array(); 
+			$receiveList['batters'] = array(); 
+			
+			$this->load->model('player_model');
+			foreach($sendList['ids'] as $playerId) {
+				$playerData = $this->player_model->getPlayerDetails($playerId);
+				echo("Send player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
+				if ($playerData['position'] == 1) {
+					$sendList['pitchers'] = $sendList['pitchers'] + array($playerData['player_id']=>array());
+				} else {
+					$sendList['batters'] = $sendList['batters'] + array($playerData['player_id']=>array());
+				}
+			}
+			
+			foreach($receiveList['ids'] as $playerId) {
+				$playerData = $this->player_model->getPlayerDetails($playerId);
+				echo("recieve player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
+				if ($playerData['position'] == 1) {
+					$receiveList['pitchers'] = $receiveList['pitchers'] + array($playerData['player_id']=>array());
+				} else {
+					$receiveList['batters'] = $receiveList['batters'] + array($playerData['player_id']=>array());
+				}
+			}
+			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
+				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
+			} else {
+				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+			}
+			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
+			
+			$this->prepForQuery();
+			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
+				$this->data['stats_range'] = 0;
+			} else {
+				$this->data['stats_range'] = $this->uriVars['stats_range'];
+			}
+			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
+				$this->data['stats_range'] = 1;	
+			}
+			if (!isset($this->uriVars['stats_source']) || !empty($this->uriVars['stats_source'])) {
+				$this->data['stats_source'] = "sp_all";
+			} else {
+				$this->data['stats_source'] = $this->uriVars['stats_source'];
+			}
+			$periodForQuery = $this->data['scoring_period']['id'];
+			if ($this->data['stats_range'] != 0) {
+				$periodForQuery = -1;
+			}
+			$this->data['team_id2'] = -1;
+			$this->data['team_name2'] = "";
+			$this->data['team_avatar2'] = "";
+			if (isset($this->uriVars['team_id2']) && !empty($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
+				$this->data['team_id2'] = $this->uriVars['team_id2'];
+				$this->data['team_name2'] = $this->dataModel->getTeamName($this->data['team_id2']);
+				$this->data['team_avatar2'] = $this->dataModel->getAvatar($this->data['team_id2']);
+			}
+			
+			$this->data['limit'] = -1;
+			$this->data['startIdx'] = 0;
+			$this->data['showTeam'] = -1;
+			$this->data['title']['pitchers'] = "Pitching";
+			$this->data['colnames']=player_stat_column_headers(2, QUERY_STANDARD, true,false);
+			$this->data['fields'] = player_stat_fields_list(2, QUERY_STANDARD, true,false);
+			if (sizeof($receiveList['pitchers']) > 0) {
+				$stats['team_id2']['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id2'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$receiveList['pitchers']);
+				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id2']['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
+				$this->data['formatted_stats']['team_id2']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+			}
+			if (sizeof($sendList['pitchers']) > 0) {
+				$stats['team_id']['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id2'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$sendList['pitchers']);
+				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id']['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
+				$this->data['formatted_stats']['team_id']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+			}
+			// BATTERS
+			$this->data['title']['batters']  = "Batting";
+			$this->data['colnames']=player_stat_column_headers(1, QUERY_STANDARD, true,false);
+			$this->data['fields'] = player_stat_fields_list(1, QUERY_STANDARD, true,false);
+			
+			if (sizeof($receiveList['batters']) > 0) {
+				$stats['team_id2']['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$receiveList['batters']);
+				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id2']['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
+				$this->data['formatted_stats']['team_id2']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+			}
+			// BATTERS
+			if (sizeof($sendList['batters']) > 0) {
+				$stats['team_id']['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$sendList['batters']);
+				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id']['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
+				$this->data['formatted_stats']['team_id']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+			}
+			$this->data['subTitle'] = "Review Trade";
+			$this->params['content'] = $this->load->view($this->views['TRADE_REVIEW'], $this->data, true);
+			$this->params['pageType'] = PAGE_FORM;
+		} else {
+			$message = "error:Required params missing";
+			$this->data['subTitle'] = "Trade Error";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		}
 		$this->makeNav();
-		$this->params['subTitle'] = $this->data['subTitle'] = "Review Trade";
-		$this->params['content'] = $this->load->view($this->views['TRADE_REVIEW'], $this->data, true);
-	    $this->params['pageType'] = PAGE_FORM;
 		$this->displayView();
 	}
 	public function tradeHistory() {
@@ -365,21 +595,18 @@ class team extends BaseEditor {
 		$result = '{';
 		$code= -1;
 		$status = '';
-		if (!isset($this->uriVars['team_id']) || (!isset($this->uriVars['add']) 
-			&& !isset($this->uriVars['drop']))) {
-			$status = "error:Required params missing";
-			$code = 501;
-			$error = true;
-		} else {
+		if (isset($this->uriVars['team_id']) && (isset($this->uriVars['add']) 
+			|| isset($this->uriVars['drop']))) {
+			
 			$this->dataModel->load($this->uriVars['team_id']);
 			
 			if (!isset($this->params['currUser'])) {
 				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
 			}
-			$addList = (isset($this->uriVars['add'])) ? explode("&",$this->uriVars['add']) : $this->uriVars['add'];
-			$dropList = (isset($this->uriVars['drop'])) ? explode("&",$this->uriVars['drop']) : $this->uriVars['drop'];
-			$tradeToList = isset($this->uriVars['tradeTo']) ? (strpos($this->uriVars['tradeTo'],"&") ? explode("&",$this->uriVars['tradeTo']) : $this->uriVars['tradeTo']) : '';	
-			$tradeFromList = isset($this->uriVars['tradeFrom']) ? (strpos($this->uriVars['tradeFrom'],"&") ? explode("&",$this->uriVars['tradeFrom']) : $this->uriVars['tradeFrom']) : '';																  
+			$addList = (isset($this->uriVars['add'])) ? explode("&",$this->uriVars['add']) : array();
+			$dropList = (isset($this->uriVars['drop'])) ? explode("&",$this->uriVars['drop']) : array();
+			//$tradeToList = isset($this->uriVars['tradeTo']) ? (strpos($this->uriVars['tradeTo'],"&") ? explode("&",$this->uriVars['tradeTo']) : array()) : '';	
+			//$tradeFromList = isset($this->uriVars['tradeFrom']) ? (strpos($this->uriVars['tradeFrom'],"&") ? explode("&",$this->uriVars['tradeFrom']) : array()) : '';																  
 																		  
 			$teamRoster = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			
@@ -447,6 +674,7 @@ class team extends BaseEditor {
 											   'scoring_period_id'=>$this->params['config']['current_period']));
 				}
 			}
+			
 			if (!function_exists('updateOwnership')) {
 				$this->load->helper('roster');
 			}
@@ -530,6 +758,10 @@ class team extends BaseEditor {
 				$code = 301;
 				$status = $addStatusStr;
 			}
+		} else {
+			$status = "error:Required params missing";
+			$code = 501;
+			$error = true;
 		}
 		if (!$error) {
 			$result = $this->refreshPlayerList().',';
@@ -538,7 +770,6 @@ class team extends BaseEditor {
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
-	
 	public function administrativeAdd() {
 		$this->getURIData();
 		if (!function_exists('getCurrentScoringPeriod')) {
@@ -1088,6 +1319,9 @@ class team extends BaseEditor {
 		if ($this->input->post('stat_source')) {
 			$this->uriVars['stat_source'] = $this->input->post('stat_source');
 		} // END if
+		if ($this->input->post('stats_range')) {
+			$this->uriVars['stats_range'] = $this->input->post('stats_range');
+		} // END if
 		if ($this->input->post('list_type')) {
 			$this->uriVars['list_type'] = $this->input->post('list_type');
 		} // END if
@@ -1118,6 +1352,7 @@ class team extends BaseEditor {
 		if ($this->input->post('trade_id')) {
 			$this->uriVars['trade_id'] = $this->input->post('trade_id');
 		} // END if
+		
 	}
 	protected function makeForm() {
 		$form = new Form();

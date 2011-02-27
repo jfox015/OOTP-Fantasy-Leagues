@@ -5,7 +5,6 @@
 	var fader = null;
 	var team_id = <?php echo($team_id); ?>;
 	var league_id = <?php echo($league_id); ?>;
-	var fader = null;
 	var curr_type = "pos";
 	var curr_param = 2;
 	var max_add_drop = 3;

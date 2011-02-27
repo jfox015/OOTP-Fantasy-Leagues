@@ -49,7 +49,7 @@
                             <?php  
                             foreach($thisItem['fantasy_teams'] as $id => $teamName) {
                                 echo('<option value="'.$id.'"');
-                                if ($id == $team_id2) { echo(' selected="selected"'); }
+                                if ($id == $thisItem['team_id']) { echo(' selected="selected"'); }
                                 echo('>'.$teamName.'</option>');
                             }
                             ?>
