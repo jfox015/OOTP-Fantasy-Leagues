@@ -176,6 +176,25 @@ img.league_news_tall {
 .textbox .title {
 	padding:6px;
 }
+.space_small {
+	width:100%;
+	float:left;
+	display:block;
+	height: 6px;
+}
+.space_med {
+	width:100%;
+	float:left;
+	display:block;
+	height: 10px;
+}
+.space_large {
+	width:100%;
+	float:left;
+	display:block;
+	height: 18px;
+}
+
 /* hilighting */
 .hilight { background:#FF9; color:#C00; font-weight:bold; }
 /*Error messages*/

@@ -176,16 +176,21 @@ class team_model extends base_model {
 	 * @param $teamid			The ID of the team making the offer. Uses $this->id if FALSE
 	 * @param $leagueId			The league id. Uses $this->$league_id if FALSE
 	 */
-	public function makeTradeOffer($sendPlayers, $team2Id, $recievePlayers, $comments, $prevTradeId = false, 
-									$expiresIn = -1, $league_id = false, $team_id = false) {
+	public function makeTradeOffer($sendPlayers, $team2Id, $recievePlayers, $scoring_period_id, $comments = false, $prevTradeId = false, 
+									$expiresIn = false, $league_id = false, $team_id = false) {
 		
-		if (sizeof($sendPlayers) == 0 && sizeof($recievePlayers) == 0 && empty($team2Id)) return;
+		if (sizeof($sendPlayers) == 0 && sizeof($recievePlayers) == 0 && !isset($team2Id) &&!isset($scoring_period_id)) return;
 		
 		if ($league_id === false) $league_id = $this->league_id;
 		if ($team_id === false) $team_id = $this->id;
-		
-		$data = array('team_id' =>$team_id, 'send_players' => serlialzize($sendPlayers), 'team_2_id' => $team2Id,'receive_players' => $recievePlayers,
-					  'status'=>1, 'league_id'=> $league_id,'comments'=>$comments, 'previous_trade_id'=>$prevTradeId);
+		$expireDate = EMPTY_DATE_TIME_STR;
+		if ($expiresIn !== false) {
+			$day = 60*60*24;
+			$expireDate = time() + ($day * $expiresIn);
+		}
+		$data = array('team_1_id' =>$team_id, 'send_players' => serialize($sendPlayers), 'team_2_id' => $team2Id,'receive_players' => serialize($recievePlayers),
+					  'status'=>1, 'league_id'=> $league_id,'comments'=>$comments, 'previous_trade_id'=>$prevTradeId,
+					  'expiration_date'=>date('Y-m-d h:m:s', $expireDate),'in_period'=>intval($scoring_period_id));
 		
 		$this->db->insert($this->tables['TRADES'],$data);
 		
@@ -390,8 +395,9 @@ class team_model extends base_model {
 		if ($league_id === false) $league_id = $this->league_id;
 		if ($team_id === false) $team_id = $this->id;
 		
-		return $this->getTradeData($league_id, $team_id, TRADE_OFFERED, $limit, $startIndex);
+		return $this->getTradeData($league_id, $team_id, false, false, TRADE_OFFERED, $limit, $startIndex);
 	}
+	
 	/**
 	 * GET COMPLETED TRADES
 	 * Retrieves trade data from the TRADES table for all COMPLETED trades.
@@ -404,7 +410,7 @@ class team_model extends base_model {
 		if ($league_id === false) $league_id = $this->league_id;
 		if ($team_id === false) $team_id = $this->id;
 		
-		return $this->getTradeData($league_id, $team_id, TRADE_COMPLETED, $limit, $startIndex);
+		return $this->getTradeData($league_id, $team_id, false, false, TRADE_COMPLETED, $limit, $startIndex);
 	}
 	/**
 	 * GET TRADE DATA
@@ -417,16 +423,19 @@ class team_model extends base_model {
 	 * @see						getCompletedTrades(), getPendingTrades()
 	 * 
 	 */
-	protected function getTradeData($league_id, $trade_id = false, $team_id = false, $status = false, $limit = -1, $startIndex = 0) {
+	protected function getTradeData($league_id, $team_id = false, $team_2_id = false, $trade_id = false, $status = false, $limit = -1, $startIndex = 0) {
 		
 		if ($league_id === false) { $league_id = $this->league_id; }
 		
 		$trades = array();
-		$this->db->select("id, offer_date, team_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id"); 
+		$this->db->select($this->tables['TRADES'].".id, offer_date, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, comments"); 
 		$this->db->join($this->tables['TRADES_STATUS'],$this->tables['TRADES_STATUS'].".id = ".$this->tables['TRADES'].".status", "right outer");
 		$this->db->where("league_id",$league_id);
 		if ($team_id !== false) {
-			$this->db->where('team_id',$team_id);
+			$this->db->where('team_1_id',$team_id);
+		}
+		if ($team_2_id !== false) {
+			$this->db->where('team_2_id',$team_2_id);
 		}
 		if ($status !== false) {
 			$this->db->where('status',$status);
@@ -467,15 +476,18 @@ class team_model extends base_model {
 									$playerStr .= "&nbsp; ".anchor('/players/info/league_id/'.$league_id.'/player_id/'.$playerId,$playerDetails[$playerId]['first_name']." ".$playerDetails[$playerId]['last_name']);
 								} // END if
 								//echo($transStr."<br />");
-								if (!empty($playerStr)) { array_push($transArrays[$field], $playerStr); } 
+								if (!empty($playerStr)) { array_push($playerArrays[$field], $playerStr); } 
 							} // END foreach
 						} // END if
 					} // END if
 				} // END foreach
-				array_push($trades,array('id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_id'=>$row->team_id, 
+				// RESOLVE OTHER TEAM NAME
+				$team_1_name = $this->getTeamName($row->team_1_id);
+				$team_2_name = $this->getTeamName($row->team_2_id);
+				array_push($trades,array('id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
 													  'send_players'=>$playerArrays['send_players'], 'receive_players'=>$playerArrays['receive_players'], 
-													  'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period));
-			}
+													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
+													  'comments'=>$row->comments,'expiration_date'=>$row->expiration_date));			}
 		}
 		$query->free_result();
 		return $trades;

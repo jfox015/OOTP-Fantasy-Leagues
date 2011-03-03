@@ -226,7 +226,7 @@ class team extends BaseEditor {
 	    $this->displayView();
 	}
 	/*------------------------------------------
-	/	TRADE
+	/	TRADES FUNCTIONS
 	/-----------------------------------------*/
 	/**
 	 *	TRADE
@@ -303,7 +303,6 @@ class team extends BaseEditor {
 				$periodForQuery = -1;
 			}
 			
-			
 			if (!isset($this->uriVars['type']) || empty($this->uriVars['type'])) {
 				$this->data['type'] = 1;
 			} else {
@@ -329,8 +328,36 @@ class team extends BaseEditor {
 			$this->data['fields'] = player_stat_fields_list(1, QUERY_BASIC, true,false, true);
 			$this->data['player_stats'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
 			$this->data['formatted_stats']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+			
+			$sendList = array();
+			$receiveList = array();
+			
+			$sendList['all'] = (isset($this->uriVars['tradeTo'])) ? explode("&",$this->uriVars['tradeTo']) : array();
+			$receiveList['all'] = (isset($this->uriVars['tradeFrom'])) ? explode("&",$this->uriVars['tradeFrom']) : array();
+			
+			if(isset($sendList['all']) && sizeof($sendList['all']) > 0 && isset($receiveList['all']) && sizeof($receiveList['all']) > 0) {
+				$sendList['players'] = array();
+				$receiveList['players'] = array(); 
+				$this->load->model('player_model');
+				foreach($sendList['all'] as $data) {
+					$tmpPlayer = explode("_",$data);
+					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
+					array_push($sendList['players'], $playerData);
+				}
+				foreach($receiveList['all'] as $data) {
+					$tmpPlayer = explode("_",$data);
+					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
+					array_push($receiveList['players'], $playerData);
+				}
+				$this->data['sendList'] = $sendList['players'];
+				$this->data['receiveList'] = $receiveList['players'];
+			}
+			
+			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id']);
+			
 			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
+			
 		}
 		$this->makeNav();
 		$this->displayView();
@@ -343,11 +370,43 @@ class team extends BaseEditor {
 		$this->data['team_id'] = $this->uriVars['id'];
 		$this->data['league_id'] = $this->dataModel->league_id;
 		
-		$this->dataModel->processTradeResponse();
+		$this->load->model('league_model');
+		
+		$this->data['trade_id'] = $this->uriVars['trade_id'];
+		
+		$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_ACCEPTED,$this->league_model->commissioner_id,
+												$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
 		
 	}
 	public function tradeReject() {
+		$this->getURIData();
 		
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		$this->data['team_id'] = $this->uriVars['id'];
+		$this->data['league_id'] = $this->dataModel->league_id;
+		
+		$this->load->model('league_model');
+		
+		$this->data['trade_id'] = $this->uriVars['trade_id'];
+		
+		$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_REJECTED_OWNER,$this->league_model->commissioner_id,
+												$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
+	}
+	public function tradeRetract() {
+		$this->getURIData();
+		
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		$this->data['team_id'] = $this->uriVars['id'];
+		$this->data['league_id'] = $this->dataModel->league_id;
+		
+		$this->load->model('league_model');
+		
+		$this->data['trade_id'] = $this->uriVars['trade_id'];
+		
+		$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_RETRACTED,$this->league_model->commissioner_id,
+												$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
 	}
 	public function tradeProtest() {
 		
@@ -355,8 +414,21 @@ class team extends BaseEditor {
 	public function tradeCounterOffer() {
 		
 	}
-	protected function tradeDetails() {
-	
+	protected function tradeDetails($trade_id = false, $returnArray = false) {
+		$trade_details = array();
+		
+		if ($returnArray === true) {
+			return $trade_details;
+		} else {
+			$status = '';
+			if (isset($trade_details) && sizeof($trade_details) > 0) {
+				$code = 200;
+				$status .= "OK";
+			} // END if
+			$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
+			$this->output->set_header('Content-type: application/json'); 
+			$this->output->set_output($result);
+		}
 	}
 	public function tradeOffer() {
 		$this->getURIData();
@@ -369,21 +441,86 @@ class team extends BaseEditor {
 		$result = '{';
 		$code= -1;
 		$status = '';
-		if (isset($this->uriVars['team_id']) && (isset($this->uriVars['tradeTo']) 
-			|| isset($this->uriVars['tradeFrom']))) {
-			
-			$this->dataModel->load($this->uriVars['team_id']);
-			
-			if (!isset($this->params['currUser'])) {
-				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
+		$responseType = 1;
+		$displayPage = $this->views['TRADE'];
+		
+		$sendPlayers = array();
+		$team2Id = -1;
+		$recievePlayers = array();
+		$comments = '';
+		$expiresIn = 0;
+		$prevTradeId = false;
+		$league_id = false;
+		$team_id = -1;
+		$message = "Trade offer successfully submitted";
+		
+		$message_list_missing = "The listing of players to be exchanged is missing.";
+		
+		if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
+			$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
+		} else {
+			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+		}
+
+		if ($this->input->post('submitted')) {
+			$responseType = 2;
+			$displayPage = $this->views['TRADE_REVIEW'];
+			$this->data['subTitle'] = "Review Trade";
+			$this->form_validation->set_rules('id', 'Team id', 'required');
+			$this->form_validation->set_rules('team_id2', 'Recieving Team ID', 'required');
+			$this->form_validation->set_rules('tradeTo', 'Players to Send', 'required');
+			$this->form_validation->set_rules('tradeFrom', 'Players to Recieve', 'required');
+			if ($this->form_validation->run() == false) {
+				$error = true;
+				$message = $message_list_missing;
+			} else {
+				$sendList = explode("&",$this->input->post('tradeTo'));
+				$receiveList = explode("&",$this->input->post('tradeFrom'));
+				$this->uriVars['team_id'] = $team_id = $this->input->post('id');
+				$team2Id = $this->input->post('team_id2');
+				$comments = $this->input->post('comments');
+				$expiresIn = $this->input->post('expiresIn');
+				$prevTradeId = $this->input->post('prevTradeId');
 			}
-			$sendList = (isset($this->uriVars['tradeTo'])) ? explode("&",$this->uriVars['tradeTo']) : array();
-			$receiveList = (isset($this->uriVars['tradeFrom'])) ? explode("&",$this->uriVars['tradeFrom']) : array();
-			
-			$teamRoster = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
-			
-			
+		} else {
+			if (isset($this->uriVars['team_id']) && isset($this->uriVars['team_id2']) &&(isset($this->uriVars['tradeTo']) 
+			|| isset($this->uriVars['tradeFrom']))) {
+				$sendList = explode("&",$this->uriVars['tradeTo']);
+				$receiveList = explode("&",$this->uriVars['tradeFrom']);
+				$this->uriVars['team_id'] = $team_id = $this->uriVars['team_id'];
+				$team2Id = $this->uriVars['team_id2'];
+				if (isset($this->uriVars['prevTradeId'])) {
+					$prevTradeId = $this->uriVars['prevTradeId'];
+				}
+			} else {
+				$error = true;
+				$message = $message_list_missing;
+			}
+	
 		} // END if
+		if (!$error) {
+			$this->dataModel->load($team_id);
+			$this->dataModel->makeTradeOffer($sendList, $team2Id, $receiveList, $this->data['scoring_period']['id'], $comments, $prevTradeId,$expiresIn);
+		}
+		if ($responseType == 1) {
+			if (!$error) {
+				$status = $message;
+				$code = 200;
+			} else {
+				$status = "error:".$message;
+				$code = 301;
+			}
+			$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
+			$this->output->set_header('Content-type: application/json'); 
+			$this->output->set_output($result);
+		} else {
+			$this->data['message'] = $message;
+			$this->params['subTitle'] = "Team Trades";
+			$this->params['content'] = $this->load->view($displayPage, $this->data, true);
+			$this->params['pageType'] = PAGE_FORM;
+			$this->makeNav();
+			$this->displayView();
+		}
 	}
 	
 	public function tradeReview() {
@@ -392,18 +529,33 @@ class team extends BaseEditor {
 
 		$this->params['subTitle'] = "Team Trades";
 		
-		if (isset($this->uriVars['team_id']) && (isset($this->uriVars['tradeTo']) 
-			|| isset($this->uriVars['tradeFrom']))) {
+		if (isset($this->uriVars['team_id'])) { 
 			
 			$this->dataModel->load($this->uriVars['team_id']);
 			$this->data['team_id'] = $this->uriVars['team_id'];
 			$this->data['teamname'] = $this->dataModel->teamname;
 			$this->data['teamnick'] = $this->dataModel->teamnick;
 			$this->data['avatar'] = $this->dataModel->avatar;
-		
-			
 			$this->data['league_id'] = $this->dataModel->league_id;
-
+				 
+			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? explode("&",$this->uriVars['trade_id']) : -1;
+			
+			$sendList = array();
+			$receiveList = array();
+			$this->data['tradeTo'] = array();
+			$this->data['tradeFrom'] = array();
+			
+			if ($this->data['trade_id'] != -1) {
+				$trade = $this->dataModel->getTradeData($this->data['league_id'], $this->data['trade_id'], $this->data['team_id']);
+				$this->data['tradeTo'] = unserialize($trade['send_players']);
+				$this->data['tradeFrom'] = unserialize($trade['receive_players']);
+			} else { 
+				$this->data['tradeTo'] = (isset($this->uriVars['tradeTo'])) ? $this->uriVars['tradeTo'] : "";
+				$this->data['tradeFrom'] = (isset($this->uriVars['tradeFrom'])) ? $this->uriVars['tradeFrom'] : "";
+			}
+			$sendList['all'] = explode("&",$this->data['tradeTo']);
+			$receiveList['all'] = explode("&",$this->data['tradeFrom']);
+				
 			if (!function_exists('getCurrentScoringPeriod')) {
 				$this->load->helper('admin');
 			}
@@ -412,14 +564,7 @@ class team extends BaseEditor {
 			if (!isset($this->params['currUser'])) {
 				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
 			}
-			$sendList = array();
-			$receiveList = array();
-			$trans_type = (isset($this->uriVars['trans_type'])) ? $this->uriVars['trans_type'] : 1;
-			
-			$sendList['all'] = (isset($this->uriVars['tradeTo'])) ? explode("&",$this->uriVars['tradeTo']) : array();
-			$receiveList['all'] = (isset($this->uriVars['tradeFrom'])) ? explode("&",$this->uriVars['tradeFrom']) : array();
-			$this->data['tradeTo'] = (isset($this->uriVars['tradeTo'])) ? $this->uriVars['tradeTo'] : "";
-			$this->data['tradeFrom'] = (isset($this->uriVars['tradeFrom'])) ? $this->uriVars['tradeTo'] : "";
+			$this->data['trans_type'] = (isset($this->uriVars['trans_type'])) ? $this->uriVars['trans_type'] : 1;
 			
 			$sendList['ids'] = array();
 			$receiveList['ids'] = array();
@@ -977,7 +1122,7 @@ class team extends BaseEditor {
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
-	
+
 	public function pullList($returnArray = false, $league_id = false, $list_type = 1) {
 		$this->getURIData();
 		$result = "";
@@ -1359,6 +1504,7 @@ class team extends BaseEditor {
 		if ($this->input->post('trans_type')) {
 			$this->uriVars['trans_type'] = $this->input->post('trans_type');
 		} // END if
+		
 	}
 	protected function makeForm() {
 		$form = new Form();
