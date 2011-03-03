@@ -24,6 +24,7 @@ class team_model extends base_model {
 		
 		$this->tblName = 'fantasy_teams';
 		$this->tables['ROSTERS'] = 'fantasy_rosters';
+		$this->tables['PLAYERS'] = 'fantasy_players';
 		$this->tables['TRANSACTIONS'] = 'fantasy_transactions';
 		$this->tables['SCORING'] = 'fantasy_players_scoring';
 		$this->tables['WAIVERS'] = 'fantasy_players_waivers';
@@ -636,6 +637,48 @@ class team_model extends base_model {
 	/*----------------------------------------
 	/	ROSTERS
 	----------------------------------------*/
+	public function getPlayerRosterStatus($player_id,$score_period = false, $team_id = false) {
+		$status = array;
+		$code = -1;
+		$message = "";
+		
+		if ($player_id === false || $score_period === false) { return false; }
+		if ($team_id === false) { $team_id = $this->id; }
+		
+		$this->db->where('player_id',$id);
+		$this->db->where('team_id',$team_id);
+		$this->db->where('scoring_period_id',$score_period);
+		$count = $this->db->count_all_results($this->tables['ROSTERS']);
+		
+		if ($count > 0) {
+			$code = 200;
+			$message = "OK";
+		} else {
+			$code = 404;
+			$name = "[Name not found]";// GET PLAYER NAME
+			$this->db->select('first_name, last_name');
+			$this->db->where('id',$player_id);
+			$query = $this->db->get($this->tables['PLAYERS']);
+			if ($query->num_rows() > 0) {
+				$row = $query->row();
+				$name = $row->first_name." ".$row->last_name;
+			}
+			$query->free_result();
+			$message = "The player ".$name." is not on the current roster.";
+		}
+		return array('code'=>code,'message'=>$messaage);
+	}
+	
+	public function getPlayersRosterStatus($players,$score_period, $team_id = false) {
+		$status = array();
+		if ($players === false || !is_array($players) || sizeof($players) <= 0 ||
+		$score_period === false) { return false; }
+		
+		foreach($players as $player_id) {
+			$status = array_push($this->getPlayerRosterStatus($player_id,$score_period,$team_id));
+		}
+		return $status;
+	}
 	public function saveRosterChanges($roster,$score_period, $team_id = false) {
 		$success = true;
 		if (!isset($roster) || sizeof($roster) == 0) return; 

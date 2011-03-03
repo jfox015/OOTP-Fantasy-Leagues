@@ -365,6 +365,11 @@ class team extends BaseEditor {
 	public function tradeAccept() {
 		$this->getURIData();
 		
+		$code = -1;
+		$status = "";
+		$result = "{";
+		$responseType = 1;
+		
 		$this->load->model($this->modelName,'dataModel');
 		$this->dataModel->load($this->uriVars['id']);
 		$this->data['team_id'] = $this->uriVars['id'];
@@ -374,9 +379,39 @@ class team extends BaseEditor {
 		
 		$this->data['trade_id'] = $this->uriVars['trade_id'];
 		
-		$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_ACCEPTED,$this->league_model->commissioner_id,
-												$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
+		if (!function_exists('getCurrentScoringPeriod')) {
+			$this->load->helper('admin');
+		}
+		if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
+			$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
+		} else {
+			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+		}
 		
+		$trade = $this->dataModel->getTradeData($this->data['league_id'], $this->data['trade_id'], $this->data['team_id']);
+		$rosterMessages = $this->verifyRostersForTrade($this->data['team_id'], unserialize($trade['send_players']), $trsde['team_2_Id'], unserialize($trade['receive_players']), $this->data['scoring_period']['id']);
+		if (empty($rosterMessages)) {
+			$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_ACCEPTED,$this->league_model->commissioner_id,
+												$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
+			$code = 200;
+			$status = "OK";
+		} else {
+			$error = true;
+			$code = 301;
+			$status = "error:".$message;
+		}
+		if ($responseType == 1) {
+			$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
+			$this->output->set_header('Content-type: application/json'); 
+			$this->output->set_output($result);
+		} else {
+			$this->data['message'] = $message;
+			$this->params['subTitle'] = "Team Trades";
+			$this->params['content'] = $this->load->view($displayPage, $this->data, true);
+			$this->params['pageType'] = PAGE_FORM;
+			$this->makeNav();
+			$this->displayView();
+		}
 	}
 	public function tradeReject() {
 		$this->getURIData();
@@ -500,7 +535,14 @@ class team extends BaseEditor {
 		} // END if
 		if (!$error) {
 			$this->dataModel->load($team_id);
-			$this->dataModel->makeTradeOffer($sendList, $team2Id, $receiveList, $this->data['scoring_period']['id'], $comments, $prevTradeId,$expiresIn);
+			// TEST ALL PLAYERS ROSTER STATUS
+			$rosterMessages = $this->verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $this->data['scoring_period']['id']);
+			if (empty($rosterMessages)) {
+				$this->dataModel->makeTradeOffer($sendList, $team2Id, $receiveList, $this->data['scoring_period']['id'], $comments, $prevTradeId,$expiresIn);
+			} else {
+				$error = true;
+				$message = "Problems were found with this trade offer:<br />".$rosterMessages;
+			}
 		}
 		if ($responseType == 1) {
 			if (!$error) {
@@ -522,7 +564,33 @@ class team extends BaseEditor {
 			$this->displayView();
 		}
 	}
-	
+	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period) {
+		
+		$rosterMessages = "";
+		$sendIds = array();
+		foreach($sendList as $data) {
+			$tmpPlayer = explode("_",$data);
+			array_push($sendIds,$tmpPlayer[0]);
+		}
+		$receiveListIds = array();
+		foreach($receiveList as $data) {
+			$tmpPlayer = explode("_",$data);
+			array_push($receiveListIds,$tmpPlayer[0]);
+		}
+		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period. $team_id);
+		foreach($sendRosterStatus as $status) {
+			if($status['code'] == 404) {
+				$rosterMessages .= $this->dataModel->getTeamName($team_id).": ".$status['message']."<br />";
+			}
+		}
+		$recieveRosterStatus = $this->dataModel->getPlayersRosterStatus($receiveListIds,$scoring_period,$team2Id);
+		foreach($recieveRosterStatus as $status) {
+			if($status['code'] == 404) {
+				$rosterMessages .= $this->dataModel->getTeamName($team2Id).": ".$status['message']."<br />";
+			}
+		}
+		return $rosterMessages;
+	}
 	public function tradeReview() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
