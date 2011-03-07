@@ -1,4 +1,6 @@
 <?php
+$lang['email_footer'] = "<p>The Commish</p>
+<p>[LEAGUE_NAME] Fantasy League</p>";
 // ACCESS MESSAGING
 $lang['access_heading_not_authorized'] = "403 Error - Not authorized.";
 $lang['access_not_authorized'] = "We're sorry, but you are not authorized to view this content.";

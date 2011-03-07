@@ -1,4 +1,4 @@
-   
+	   
    
    <script type="text/javascript" charset="UTF-8">
 	$(document).ready(function(){		   
@@ -123,7 +123,11 @@
 							if ($playerData['position'] != 1) {
 								$ftyPos = get_pos($playerData['player_position']);
 							} else {
-								$ftyPos = get_pos($playerData['player_role']);
+								if (isset($playerData['player_role']) && !EMPTY($playerData['player_role'])) {
+									$ftyPos = get_pos($playerData['player_role']);
+								} else {
+									$ftyPos = "";
+								}
 							}
 							$pos = unserialize($playerData['positions']);
 							$gmPos = '';

@@ -13,7 +13,7 @@
 				} else {
 					queryStr = 'tradeFrom/'+ $('#tradeFrom').val() + '/tradeTo/'+ $('#tradeTo').val()+ '/id/'+teamId+'/team_id2/'+teamId2;
 				}
-				document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/trade/'+queryStr;
+				document.location.href = '<?php print($config['fantasy_web_root']); ?>team/trade/'+queryStr;
 			}
 		});
 		$('#btnCounter').click(function(){
@@ -23,7 +23,9 @@
 			alert("Reject offer");
 		});
 		$('#btnAccept').click(function(){
-			alert("accept offer");
+			$('#type').val(<?php print(TRADE_ACCEPTED); ?>);
+			alert($('#type').val());
+			$('#tradeForm').submit();
 		});
 		$('#btnRetract').click(function(){
 			alert("Retract offer");
@@ -53,11 +55,11 @@
 	}
 	</script>
    	<div id="subPage">
-        <div class="top-bar"> <div class="top-bar"><h1><?php echo($subTitle); ?></h1></div>
+        <div class="top-bar"> <div class="top-bar"><h1><?php print($subTitle); ?></h1></div>
 		<?php 
 		$errors = validation_errors();
 		if ($errors) {
-			echo '<span class="error">The following errors were found with your submission:<br/ ><b>'.$errors.'</b></span><p />';
+			print '<span class="error">The following errors were found with your submission:<br/ ><b>'.$errors.'</b></span><p />';
 		}
 		if (isset($message) && !empty($message)) {
 			print("<p><span>".$message."</span></p>");
@@ -94,7 +96,7 @@
 						$tmpavatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 					}
 					?>
-					<img src="<?php echo($tmpavatar); ?>" width="48" height="48" border="0" align="absmiddle" />
+					<img src="<?php print($tmpavatar); ?>" width="48" height="48" border="0" align="absmiddle" />
 					&nbsp;&nbsp;<?php print(trim($theName)); ?></h2>
                         <div class="textbox" style="width:915px;">
                         <?php
@@ -103,11 +105,11 @@
                                 <!-- HEADER -->
                             <table width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr class="title">
-                                <td height="17" style="padding:6px;"><?php echo($title[$player_type]); ?> Stats</td>
+                                <td height="17" style="padding:6px;"><?php print($title[$player_type]); ?> Stats</td>
                              </tr>
                              </table>
 							<?php
-                            echo($formatted_stats[$team][$player_type]);						 
+                            print($formatted_stats[$team][$player_type]);						 
 							}
 						}
                          ?>
@@ -126,7 +128,13 @@
 				?>
                     <div style="display:block;width:90%;position:relative; text-align:center; float:left;">
                     <div id="activeStatusBox"><div id="activeStatus"></div></div>
-                    <form action="<?php echo($config['fantasy_web_root']); ?>team/tradeOffer/" method="post" id="tradeForm" id="tradeForm">
+                    <?php 
+                    $action = "tradeResponse";
+                    if ($trans_type == 1) {
+                    	$action = "tradeOffer";
+                    }
+                    ?>
+                    <form action="<?php print($config['fantasy_web_root']); ?>team/<?php print($action); ?>/" method="post" id="tradeForm" id="tradeForm">
                  	<?php if ($trans_type != 3) { ?>
                     <label for="comments">Comments: </label> <textarea id="comments" name="comments" cols="54" rows="8"><?php if (isset($comments) && !empty($comments) && $comments != "") { print(trim($comments)); } ?></textarea>
                     <br class="clear" clear="all" />
@@ -152,11 +160,12 @@
 					<?php
                     } ?>
                     <br />
+                    <input type="hidden" name="id" value="<?php print($team_id); ?>" />
+                    <input type="hidden" name="referrer" value="team/team_trade_review" />
                    <?php
                    if (isset($trade_id) && !empty($trade_id) && $trade_id != -1) { ?>
                    <input type="hidden" name="trade_id" id="trade_id"  value="<?php print($trade_id); ?>" />
                    <?php } else { ?>
-                   <input type="hidden" name="id" value="<?php print($team_id); ?>" />
                    <input type="hidden" name="team_id2" value="<?php print($team_id2); ?>" />
                    <input type="hidden" name="tradeFrom" id="tradeFrom" value="<?php print($tradeFrom); ?>" />
                    <input type="hidden" name="tradeTo" id="tradeTo" value="<?php print($tradeTo); ?>" />
@@ -181,8 +190,13 @@
                    	else if ($trans_type == 3) { ?>
                         <input type="button" class="button" id="btnRetract" name="btnReject" value="Retract Offer" />
                         <input type="button" class="button" id="btnExpire" name="btnExpire" value="Expire Now" />
-                   	<?php } ?>                   	
+                   	<?php } 
+                   	if ($trans_type == 2 || $trans_type == 3) { 
+                   	?>
+                   		<input type="hidden" name="type" id="type" value="1" />
+                   	<?php } ?>
                    	<input type="hidden" name="submitted" value="1" />
+                   	
                     </div>
                     </form>
                     </div>

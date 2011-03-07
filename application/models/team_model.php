@@ -207,9 +207,16 @@ class team_model extends base_model {
 	 * @param $status			The trade status type
 	 * @param $leagueId			The league id. Uses $this->$league_id if FALSE
 	 */
-	public function processTradeResponse($trade_id, $status, $commish_id = false, $currUser = false, 
+	public function processTradeResponse($trade_id, $status, $comments = "", $commish_id = false, $currUser = false, 
 										 $isAdmin = false, $league_id = false){
 		
+		$outMess = "";
+		$data = array();
+		$error = FALSE;
+		$msg = ""; // USUALLY TEAM OFFERING TRADE
+		$msg2 = ""; // USUALLY TEAM RECIEVING TRADE OFFER
+		$msg3 = ""; // USUALLY LEAGUE COMMISSIONER
+		$msg4 = ""; // USUALLY SITE ADMINISTRATOR
 		if (!isset($trade_id) || !isset($status)) return false;
 		
 		if ($league_id === false) $league_id = $this->league_id;
@@ -219,17 +226,15 @@ class team_model extends base_model {
 		$query = $this->db->get('fantasy_leagues');
 		if ($query->num_rows() > 0) {
 			$row = $query->row();
-			$leagueName = $row->league_name;
+			$data['leagueName'] = $row->league_name;
 		}
 		$query->free_result();
 		
 		if (!function_exists('updateOwnership')) {
 			$this->load->helper('roster');
 		}
-								
-		$outMess = "";
-		$data = array();
-		$error = FALSE;
+
+		print("status val = ".$status."<br />");
 		// LOAD THE TRADE DATA
 		$trade = $this->getTrade($trade_id);
 		if (is_array($trade) && sizeof($trade) > 0) {
@@ -245,13 +250,21 @@ class team_model extends base_model {
 						if (is_array($players) && sizeof($players) > 0){
 							foreach($players as $playerStr) {
 								$tmpPlayer = explode("_",$playerStr);
+								print('TMP Player str = '.$playerStr.'<br />');
 								$this->db->flush_cache();
-								$this->db->where('id',$tmpPlayer[0]);
-								$this->db->set('player_position',$tmpPlayer[1]);
-								$this->db->set('player_role',$tmpPlayer[2]);
+								$this->db->where('player_id',$tmpPlayer[0]);
+								if ($tmpPlayer[1] == "LF" || $tmpPlayer[1] == "CF" || $tmpPlayer[1] == "RF") {
+									$tmpPlayer[1] = "OF";
+								}
+								$this->db->set('player_position',get_pos_num($tmpPlayer[1]));
+								if ($tmpPlayer[2] == "CL") {
+									$tmpPlayer[2] = "MR";
+								}
+								$this->db->set('player_role',get_pos_num($tmpPlayer[2]));
 								$this->db->set('player_status',-1);
 								$this->db->set('team_id',$trade[$team]);
 								$this->db->update($this->tables['ROSTERS']);
+								print($this->db->last_query()."<br />");
 								$ownership = updateOwnership($tmpPlayer[0]);
 								$pData = array('own'=>$ownership[0],'start'=>$ownership[1]);
 								$this->db->flush_cache();
@@ -264,12 +277,11 @@ class team_model extends base_model {
 							$error = true;
 						} // END if
 					} // END foreach
-					
 					$msg = $this->lang->line('team_trade_accepted');
 					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
 					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
 					$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$trade['team_1_id'],'adjust your lineup'),$msg);
-					$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
+					$msg = str_replace('[LEAGUE_NAME]', $data['leagueName'],$msg);
 					$data['messageBody']= $msg;
 					$this->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'], 
 										  $commish_id, $currUser, $isAdmin, $trade['in_period'], 
@@ -280,21 +292,40 @@ class team_model extends base_model {
 					break;
 				// REJECTED BY OWNER
 				case TRADE_REJECTED_OWNER:
+					$msg = $this->lang->line('team_trade_rejected_owner');
+					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
+					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
+					$msg = str_replace('[COMMENTS]', $comments,$msg);
 					break;
 				// REJECTED BY LEAGUE
 				case TRADE_REJECTED_LEAGUE:
+					$msg = $this->lang->line('team_trade_rejected_league');
+					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
+					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
 					break;
 				// REJECTED BY COMMISIONER
 				case TRADE_REJECTED_COMMISH:
+					$msg = $this->lang->line('team_trade_rejected_commish');
+					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
+					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
+					$msg = str_replace('[COMMENTS]', $comments,$msg);
 					break;
 				// REJECTED BY SITE ADMIN
 				case TRADE_REJECTED_ADMIN:
+					$msg = $this->lang->line('team_trade_rejected_admin');
+					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
+					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
+					$msg = str_replace('[COMMENTS]', $comments,$msg);
 					break;
 				// REJECTED BUT WITH A COUNTER OFFER
 				case TRADE_REJECTED_COUNTER:
 					break;
 				// RETRACTED
 				case TRADE_RETRACTED:
+					$msg = $this->lang->line('team_trade_retracted');
+					$msg = str_replace('[OFFERING_TEAM_NAME]', $this->getTeamName($trade['team_1_id']), $msg);
+					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_2_id'])), $msg);
+					$msg = str_replace('[COMMENTS]', $comments,$msg);
 					break;
 				// REMOVED BY ADMIN
 				case TRADE_REMOVED:
@@ -308,6 +339,8 @@ class team_model extends base_model {
 				default:
 					break;	
 			}
+			$msg .= str_replace('[LEAGUE_NAME]', $data['leagueName'],$this->lang->line('email_footer'));
+			$data['messageBody']= $msg;
 			$headers = "";
 			//print("email template path = ".$this->config->item('email_templates')."<br />");
 			$message = $this->load->view($this->config->item('email_templates').'trades_template', $data, true);
@@ -315,6 +348,10 @@ class team_model extends base_model {
 				// UPDATE THE TRADE 
 				$this->db->where('id',$trade_id);
 				$this->db->set('status',$status);
+				$this->db->set('response_date',date('Y-m-d h:m:s',time()));
+				if (!empty($comments)) {
+					$this->db->set('response',$comments);
+				}
 				$this->db->update($this->tables['TRADES']);
 				// SEND MESSAGES
 				
@@ -333,7 +370,7 @@ class team_model extends base_model {
 					if (!function_exists('write_file')) {
 						$this->load->helper('file');
 					}
-					write_file(PATH_MEDIA_WRITE.'/email_trd_'.$trade_id.substr(md5($trade_id.time()),0,8).".txt",$message);
+					write_file(PATH_MEDIA_WRITE.'/email_trd_'.$trade_id."_".substr(md5($trade_id.time()),0,8).".txt",$message);
 				}
 			}
 		} else {

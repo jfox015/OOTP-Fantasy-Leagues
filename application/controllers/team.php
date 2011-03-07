@@ -255,7 +255,7 @@ class team extends BaseEditor {
 			
 			if (!function_exists('getCurrentScoringPeriod')) {
 				$this->load->helper('admin');
-			}
+			} // END if
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
 			
@@ -263,12 +263,12 @@ class team extends BaseEditor {
 				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
 			} else {
 				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-			}
+			} // END if
 			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
 			
 			if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
 				$this->data['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
-			}
+			} // END if
 			$this->data['team_id2'] = -1;
 			if (isset($this->uriVars['team_id2']) && !empty($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
 				$this->data['team_id2'] = $this->uriVars['team_id2'];
@@ -289,25 +289,25 @@ class team extends BaseEditor {
 				$this->data['stats_range'] = 0;
 			} else {
 				$this->data['stats_range'] = $this->uriVars['stats_range'];
-			}
+			} // END if
 			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
 				$this->data['stats_range'] = 1;	
-			}
+			} // END if
 			if (!isset($this->uriVars['stats_source']) || !empty($this->uriVars['stats_source'])) {
 				$this->data['stats_source'] = "sp_all";
 			} else {
 				$this->data['stats_source'] = $this->uriVars['stats_source'];
-			}
+			} // END if
 			$periodForQuery = $this->data['scoring_period']['id'];
 			if ($this->data['stats_range'] != 0) {
 				$periodForQuery = -1;
-			}
+			} // END if
 			
 			if (!isset($this->uriVars['type']) || empty($this->uriVars['type'])) {
 				$this->data['type'] = 1;
 			} else {
 				$this->data['type'] = $this->uriVars['type'];
-			}
+			} // END if
 			$this->data['title'] = array();
 			$this->data['formatted_stats'] = array();
 			$this->data['limit'] = -1;
@@ -343,15 +343,15 @@ class team extends BaseEditor {
 					$tmpPlayer = explode("_",$data);
 					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
 					array_push($sendList['players'], $playerData);
-				}
+				} // END foreach
 				foreach($receiveList['all'] as $data) {
 					$tmpPlayer = explode("_",$data);
 					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
 					array_push($receiveList['players'], $playerData);
-				}
+				} // END foreach
 				$this->data['sendList'] = $sendList['players'];
 				$this->data['receiveList'] = $receiveList['players'];
-			}
+			} // END if
 			
 			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id']);
 			$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id']);
@@ -359,76 +359,86 @@ class team extends BaseEditor {
 			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
 			
-		}
+		} // END if
 		$this->makeNav();
 		$this->displayView();
 	}
 	public function tradeResponse() {
-		$this->getURIData();
 		
 		$code = -1;
 		$status = "";
 		$result = "{";
 		$responseType = 1;
+		$this->data['comments'] = "";
+		if ($this->input->post('submitted')) {
+			$this->data['trade_id'] = $this->input->post('trade_id') ? $this->input->post('trade_id') : -1;
+			$this->data['type'] = $this->input->post('type') ? $this->input->post('type') : -1;
+			$this->data['team_id'] = $this->input->post('id') ? $this->input->post('id') : -1;
+			$this->data['display_page'] = $this->input->post('referrer') ? $this->input->post('referrer') : $this->views['SUCCESS'];
+			$this->data['comments'] = $this->input->post('comments') ? $this->input->post('comments') : "";
+			$responseType = 2;
+		} else {
+			$this->getURIData();
+			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? $this->uriVars['trade_id'] : -1;
+			$this->data['type'] = (isset($this->uriVars['type'])) ? $this->uriVars['type'] : -1;
+			$this->data['team_id'] = (isset($this->uriVars['id'])) ? $this->uriVars['id'] : -1;
+		} // END if
 		
-		if (isset($this->uriVars['id']) && isset($this->uriVars['trade_id']) && isset($this->uriVars['type'])) {
+		if ($this->data['trade_id'] != -1 && $this->data['type'] != -1 && $this->data['team_id'] != -1) {
 			$this->load->model($this->modelName,'dataModel');
-			$this->dataModel->load($this->uriVars['id']);
-			$this->data['team_id'] = $this->uriVars['id'];
-			$this->data['league_id'] = $this->dataModel->league_id;
-			
 			$this->load->model('league_model');
-			
-			if ($this->input->post('submitted')) {
-				
-			
-			} else {
-				$this->data['trade_id'] = $this->uriVars['trade_id'];
-				$this->data['type'] = $this->uriVars['type'];
-			}
-			if (!function_exists('getCurrentScoringPeriod')) {
-				$this->load->helper('admin');
-			}
+
 			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
 				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
 			} else {
 				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-			}
+			} // END if
+			$this->dataModel->load($this->data['team_id']);
+			$this->data['league_id'] = $this->dataModel->league_id;
 			
 			$trade = $this->dataModel->getTrade($this->data['trade_id']);
-			$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $this->data['scoring_period']['id']);
-			if (empty($rosterMessages)) {
-				$processResponse = $this->dataModel->processTradeResponse($this->data['trade_id'],$this->data['type'],$this->league_model->commissioner_id,
-													$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
-				if (empty($processResponse)) {
-					$code = 200;
-					$status = "OK";
+			if ($this->data['scoring_period'] == $trade['in_period']) {
+				$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period']);
+				if (empty($rosterMessages)) {
+					$processResponse = $this->dataModel->processTradeResponse($this->data['trade_id'],$this->data['type'],$this->data['comments'],$this->league_model->commissioner_id,
+														$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
+					if (empty($processResponse)) {
+						$code = 200;
+						$status = "OK";
+					} else {
+						$code = 301;
+						$status = "error:".$processResponse;							
+					} // END if
 				} else {
+					$error = true;
 					$code = 301;
-					$status = "error:".$processResponse;							
-				}
+					$status = "error:".$rosterMessages;
+				} // END if
 			} else {
 				$error = true;
 				$code = 301;
-				$status = "error:".$rosterMessages;
-			}
+				$status = "error:The effective scoring period for this trade is passed the current period id. The trade has expired.";
+				$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_INVALID,$this->data['comments'],$this->league_model->commissioner_id,
+														$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
+			} // END if
 		} else {
 			$error = true;
 			$code = 404;
 			$status = "error:Required parameters were missing.";
-		}
+		} // END if
 		if ($responseType == 1) {
 			$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
 			$this->output->set_header('Content-type: application/json'); 
 			$this->output->set_output($result);
 		} else {
-			$this->data['message'] = $message;
+			$this->data['message'] = $status;
 			$this->params['subTitle'] = "Team Trades";
-			$this->params['content'] = $this->load->view($displayPage, $this->data, true);
+			$this->data['subTitle'] = "Trade Response Processed";
+			$this->params['content'] = $this->load->view($this->data['display_page'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
 			$this->makeNav();
 			$this->displayView();
-		}
+		} // END if
 	}
 	public function tradeReject() {
 		$this->getURIData();
