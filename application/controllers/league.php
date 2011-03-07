@@ -49,7 +49,7 @@ class league extends BaseEditor {
 		$this->views['INVITE'] = 'league/league_invite_owner';
 		$this->views['INVITES'] = 'league/league_invite_list';
 		$this->views['WAIVER_CLAIMS'] = 'league/league_waiver_claims';
-		$this->debug = false;
+		$this->debug = true;
 	}
 	/*---------------------------------------
 	/	CONTROLLER SUBMISSION HANDLERS
@@ -894,8 +894,12 @@ class league extends BaseEditor {
 						$headers 	.= "Content-type: text/html; charset=iso-8859-1\r\n";
 						$headers 	.= "To: ".$this->input->post('email')." \r\n";
 						$headers 	.= "From: ".$this->dataModel->league_name." \r\n";
-						
-						$success = mail($this->input->post('email'),$subject,$email_mesg,$headers);
+						if (defined('ENV') && ENV != "dev") {
+							$success = mail($this->input->post('email'),$subject,$email_mesg,$headers);
+						} else {
+							$success = true;
+							if ($this->debug === true) { $message = $email_mesg; }
+						}
 						if (!$success) {
 							$error = true;
 							$message = 'The mail message failed to send.';
@@ -915,9 +919,18 @@ class league extends BaseEditor {
 						}
 					}
 					if (!$error) {
-						//$this->session->set_flashdata('message', '<span class="success">Owner Invitation hase been sent successfully</span><br /><br />');
-						//echo($link.'/decline/1');
-						redirect('/league/inviteOwner/id/'.$this->dataModel->id.'/sent/1');
+						$outMess = '<span class="success">Owner Invitation has been sent successfully</span><br /><br />';
+						if($this->debug && !empty($message)) {
+							$outMess .= $message."<br />".$link.'/accept/1';
+							$this->data['subTitle'] = "Invitation Sent";
+							$this->data['theContent'] = $outMess;
+							$this->params['content'] = $this->load->view($this->views['SUCCESS'], $this->data, true);
+							$this->makeNav();
+							$this->displayView();
+						} else {
+							$this->session->set_flashdata('message', "The invitation was sent successfully.");
+							redirect('/league/inviteOwner/id/'.$this->dataModel->id.'/sent/1');
+						}
 					} else {
 						$message = "The invite could not be sent. Error: ".$message."<br /><br />";
 						$this->session->set_flashdata('message', '<span class="error">'.$message.'</span>');

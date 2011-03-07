@@ -279,11 +279,11 @@ class team extends BaseEditor {
 							if ($id != $this->data['team_id']) {
 								$this->data['team_id2'] = $id;
 								break;
-							}
-						}
-					}
-				}
-			}
+							} // END if
+						} // END if
+					} // END foreach
+				} // END if
+			} // END if
 			$this->prepForQuery();
 			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
 				$this->data['stats_range'] = 0;
@@ -354,6 +354,7 @@ class team extends BaseEditor {
 			}
 			
 			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id']);
+			$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id']);
 			
 			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
@@ -362,7 +363,7 @@ class team extends BaseEditor {
 		$this->makeNav();
 		$this->displayView();
 	}
-	public function tradeAccept() {
+	public function tradeResponse() {
 		$this->getURIData();
 		
 		$code = -1;
@@ -370,35 +371,42 @@ class team extends BaseEditor {
 		$result = "{";
 		$responseType = 1;
 		
-		$this->load->model($this->modelName,'dataModel');
-		$this->dataModel->load($this->uriVars['id']);
-		$this->data['team_id'] = $this->uriVars['id'];
-		$this->data['league_id'] = $this->dataModel->league_id;
-		
-		$this->load->model('league_model');
-		
-		$this->data['trade_id'] = $this->uriVars['trade_id'];
-		
-		if (!function_exists('getCurrentScoringPeriod')) {
-			$this->load->helper('admin');
-		}
-		if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
-			$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
-		} else {
-			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-		}
-		
-		$trade = $this->dataModel->getTradeData($this->data['league_id'], $this->data['trade_id'], $this->data['team_id']);
-		$rosterMessages = $this->verifyRostersForTrade($this->data['team_id'], unserialize($trade['send_players']), $trsde['team_2_Id'], unserialize($trade['receive_players']), $this->data['scoring_period']['id']);
-		if (empty($rosterMessages)) {
-			$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_ACCEPTED,$this->league_model->commissioner_id,
-												$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
-			$code = 200;
-			$status = "OK";
-		} else {
+		if (isset($this->uriVars['id']) && isset($this->uriVars['trade_id']) && isset($this->uriVars['type'])) {
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			$this->data['team_id'] = $this->uriVars['id'];
+			$this->data['league_id'] = $this->dataModel->league_id;
+			
+			$this->load->model('league_model');
+			
+			$this->data['trade_id'] = $this->uriVars['trade_id'];
+			$this->data['type'] = $this->uriVars['type'];
+			
+			if (!function_exists('getCurrentScoringPeriod')) {
+				$this->load->helper('admin');
+			}
+			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
+				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
+			} else {
+				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+			}
+			
+			$trade = $this->dataModel->getTrade($this->data['trade_id']);
+			$rosterMessages = $this->verifyRostersForTrade($this->data['team_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $this->data['scoring_period']['id']);
+			if (empty($rosterMessages)) {
+				$this->dataModel->processTradeResponse($this->data['trade_id'],$this->data['type'],$this->league_model->commissioner_id,
+													$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
+				$code = 200;
+				$status = "OK";
+			} else {
+				$error = true;
+				$code = 301;
+				$status = "error:".$message;
+			}
+		}else {
 			$error = true;
-			$code = 301;
-			$status = "error:".$message;
+			$code = 404;
+			$status = "error:Required parameters were missing.";
 		}
 		if ($responseType == 1) {
 			$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';

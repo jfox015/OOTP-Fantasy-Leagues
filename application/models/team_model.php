@@ -25,6 +25,7 @@ class team_model extends base_model {
 		$this->tblName = 'fantasy_teams';
 		$this->tables['ROSTERS'] = 'fantasy_rosters';
 		$this->tables['PLAYERS'] = 'fantasy_players';
+		$this->tables['OOTP_PLAYERS'] = 'players';
 		$this->tables['TRANSACTIONS'] = 'fantasy_transactions';
 		$this->tables['SCORING'] = 'fantasy_players_scoring';
 		$this->tables['WAIVERS'] = 'fantasy_players_waivers';
@@ -392,11 +393,9 @@ class team_model extends base_model {
 	 * @param $limit			The limit on rows to return. No limit if =1
 	 * @param $startIndex		The first row to return. Stars with first row if 0.
 	 */
-	public function getPendingTrades($league_id = false, $team_id = false, $limit = -1, $startIndex = 0) {
+	public function getPendingTrades($league_id = false, $team_id = false, $team_2_id = false, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
-		if ($team_id === false) $team_id = $this->id;
-		
-		return $this->getTradeData($league_id, $team_id, false, false, TRADE_OFFERED, $limit, $startIndex);
+		return $this->getTradeData($league_id, $team_id, $team_2_id, false, TRADE_OFFERED, $limit, $startIndex);
 	}
 	
 	/**
@@ -407,11 +406,31 @@ class team_model extends base_model {
 	 * @param $limit			The limit on rows to return. No limit if =1
 	 * @param $startIndex		The first row to return. Stars with first row if 0.
 	 */
-	public function getCompletedTrades($league_id = false, $team_id = false, $limit = -1, $startIndex = 0) {
+	public function getCompletedTrades($league_id = false, $team_id = false, $team_2_id = false, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
-		if ($team_id === false) $team_id = $this->id;
+		return $this->getTradeData($league_id, $team_id, $team_2_id, false, TRADE_COMPLETED, $limit, $startIndex);
+	}
+	public function getTrade($trade_id = false) {
+		$trade = array();
 		
-		return $this->getTradeData($league_id, $team_id, false, false, TRADE_COMPLETED, $limit, $startIndex);
+		if ($trade_id === false) return false;
+		
+		$this->db->select($this->tables['TRADES'].".id, offer_date, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, comments"); 
+		$this->db->join($this->tables['TRADES_STATUS'],$this->tables['TRADES_STATUS'].".id = ".$this->tables['TRADES'].".status", "right outer");
+		$this->db->where($this->tables['TRADES'].".id",$trade_id);
+		$query = $this->db->get($this->tables['TRADES']);
+		
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$team_1_name = $this->getTeamName($row->team_1_id);
+			$team_2_name = $this->getTeamName($row->team_2_id);
+			$trade = array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
+													  'send_players'=>unserialize($row->send_players), 'receive_players'=>unserialize($row->receive_players), 
+													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
+													  'comments'=>$row->comments,'expiration_date'=>$row->expiration_date);
+		}
+		$query->free_result();
+		return $trade;
 	}
 	/**
 	 * GET TRADE DATA
@@ -424,7 +443,7 @@ class team_model extends base_model {
 	 * @see						getCompletedTrades(), getPendingTrades()
 	 * 
 	 */
-	protected function getTradeData($league_id, $team_id = false, $team_2_id = false, $trade_id = false, $status = false, $limit = -1, $startIndex = 0) {
+	public function getTradeData($league_id, $team_id = false, $team_2_id = false, $trade_id = false, $status = false, $limit = -1, $startIndex = 0) {
 		
 		if ($league_id === false) { $league_id = $this->league_id; }
 		
@@ -485,7 +504,7 @@ class team_model extends base_model {
 				// RESOLVE OTHER TEAM NAME
 				$team_1_name = $this->getTeamName($row->team_1_id);
 				$team_2_name = $this->getTeamName($row->team_2_id);
-				array_push($trades,array('id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
+				array_push($trades,array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
 													  'send_players'=>$playerArrays['send_players'], 'receive_players'=>$playerArrays['receive_players'], 
 													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
 													  'comments'=>$row->comments,'expiration_date'=>$row->expiration_date));			}
@@ -638,14 +657,14 @@ class team_model extends base_model {
 	/	ROSTERS
 	----------------------------------------*/
 	public function getPlayerRosterStatus($player_id,$score_period = false, $team_id = false) {
-		$status = array;
+		$status = array();
 		$code = -1;
 		$message = "";
 		
 		if ($player_id === false || $score_period === false) { return false; }
 		if ($team_id === false) { $team_id = $this->id; }
 		
-		$this->db->where('player_id',$id);
+		$this->db->where('player_id',$player_id);
 		$this->db->where('team_id',$team_id);
 		$this->db->where('scoring_period_id',$score_period);
 		$count = $this->db->count_all_results($this->tables['ROSTERS']);
@@ -658,6 +677,7 @@ class team_model extends base_model {
 			$name = "[Name not found]";// GET PLAYER NAME
 			$this->db->select('first_name, last_name');
 			$this->db->where('id',$player_id);
+			$this->db->join($this->tables['OOTP_PLAYERS'],$this->tables['OOTP_PLAYERS'].".player_id = ".$this->tables['PLAYERS'].".player_id");
 			$query = $this->db->get($this->tables['PLAYERS']);
 			if ($query->num_rows() > 0) {
 				$row = $query->row();
@@ -666,7 +686,7 @@ class team_model extends base_model {
 			$query->free_result();
 			$message = "The player ".$name." is not on the current roster.";
 		}
-		return array('code'=>code,'message'=>$messaage);
+		return array('code'=>$code,'message'=>$message);
 	}
 	
 	public function getPlayersRosterStatus($players,$score_period, $team_id = false) {
@@ -675,7 +695,7 @@ class team_model extends base_model {
 		$score_period === false) { return false; }
 		
 		foreach($players as $player_id) {
-			$status = array_push($this->getPlayerRosterStatus($player_id,$score_period,$team_id));
+			$status = array_push($status,$this->getPlayerRosterStatus($player_id,$score_period,$team_id));
 		}
 		return $status;
 	}
