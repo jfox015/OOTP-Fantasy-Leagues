@@ -17,10 +17,19 @@
 			}
 		});
 		$('#btnCounter').click(function(){
-
+			alert("Counter offer");
 		});
 		$('#btnReject').click(function(){
-
+			alert("Reject offer");
+		});
+		$('#btnAccept').click(function(){
+			alert("accept offer");
+		});
+		$('#btnRetract').click(function(){
+			alert("Retract offer");
+		});
+		$('#btnExpire').click(function(){
+			alert("Expire offer");
 		});
 		$('#btnCancel').click(function(){
 			document.location.href = history.back(-1);
@@ -118,9 +127,12 @@
                     <div style="display:block;width:90%;position:relative; text-align:center; float:left;">
                     <div id="activeStatusBox"><div id="activeStatus"></div></div>
                     <form action="<?php echo($config['fantasy_web_root']); ?>team/tradeOffer/" method="post" id="tradeForm" id="tradeForm">
-                 
-                    <label for="comments">Comments: </label> <textarea id="comments" name="comments" cols="54" rows="8"><?php if (isset($comments) && !empty($comments) && $comments != "") { print(trim($comments)); } ?></textarea><br />
-                    
+                 	<?php if ($trans_type != 3) { ?>
+                    <label for="comments">Comments: </label> <textarea id="comments" name="comments" cols="54" rows="8"><?php if (isset($comments) && !empty($comments) && $comments != "") { print(trim($comments)); } ?></textarea>
+                    <br class="clear" clear="all" />
+                    <?php  
+                 	}
+                    if ($trans_type == 1) { ?>
                     <label for="expires">Expires in: </label> 
                     <?php 
                     $expireList = array(-1=>"Select One",0=>"No Expiration",1=>"1 Days",2=>"2 Days",3=>"3 Days",4=>"4 Days",5=>"5 Days"); 
@@ -135,12 +147,15 @@
                     		print('>'.$label.'</option>');
                     	}
                   	?>
-                    </select><br />
-					<br class="clear" clear="all" /><br />
+                    </select><br class="clear" clear="all" />
+					
 					<?php
-					if (isset($trade_id) && !empty($trade_id) && $trade_id != -1) { ?>
-                    <input type="hidden" name="trade_id" id="trade_id"  value="<?php print($trade_id); ?>" />
-                   <? } else { ?>
+                    } ?>
+                    <br />
+                   <?php
+                   if (isset($trade_id) && !empty($trade_id) && $trade_id != -1) { ?>
+                   <input type="hidden" name="trade_id" id="trade_id"  value="<?php print($trade_id); ?>" />
+                   <?php } else { ?>
                    <input type="hidden" name="id" value="<?php print($team_id); ?>" />
                    <input type="hidden" name="team_id2" value="<?php print($team_id2); ?>" />
                    <input type="hidden" name="tradeFrom" id="tradeFrom" value="<?php print($tradeFrom); ?>" />
@@ -156,20 +171,23 @@
 					<?php 
 					}
 					// TRADE RECIPIENT
-					if ($trans_type == 2) { ?>
+					 else if ($trans_type == 2) { ?>
                         <input type="button" class="button" id="btnReject" name="btnReject" value="Reject Offer" />
                         <input type="button" class="button" id="btnCounter" name="btnCounter" value="Make Counter Offer" />
                         <input type="button" class="button" id="btnAccept" name="btnAccept" value="Accept Offer" />
                         
-                   	<? } ?>
+                   	<?php } 
+                   	// TRADE OWNER REVIEW (READ ONLY)
+                   	else if ($trans_type == 3) { ?>
+                        <input type="button" class="button" id="btnRetract" name="btnReject" value="Retract Offer" />
+                        <input type="button" class="button" id="btnExpire" name="btnExpire" value="Expire Now" />
+                   	<?php } ?>                   	
                    	<input type="hidden" name="submitted" value="1" />
-                    
                     </div>
                     </form>
                     </div>
                  <?php 
 				}
-				
 			}
 			?>
       		</div>

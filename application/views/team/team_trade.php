@@ -1,6 +1,6 @@
 <script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.md5.js"></script>
 <script type="text/javascript" charset="UTF-8">
-	var ajaxWait = '<img src="cimages/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
+	var ajaxWait = '<img src="<?php echo(PATH_IMAGES); ?>icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
 	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
 	var fader = null;
 	var team_id = <?php echo($team_id); ?>;
@@ -74,40 +74,34 @@
 		$('input[rel=responsebtn]').live('click',function () {
 			var params = this.id.split("|");
 			var url = "<?php echo($config['fantasy_web_root']); ?>team/tradeResponse/id/"+team_id+"/type/"+params[0]+"/trade_id/"+params[1]+cacheBuster();
-			$('div#activeStatus').removeClass('error');
-			$('div#activeStatus').removeClass('success');
-			$('div#activeStatus').html(ajaxWait);
-			$('div#activeStatus').fadeIn("fast");
+			$('div#tradeStatus').removeClass('error');
+			$('div#tradeStatus').removeClass('success');
+			$('div#tradeStatus').html(ajaxWait);
+			$('div#tradeStatusBox').fadeIn("fast");
 			$.getJSON(url, function(data){
+				$('div#tradeStatus').empty();
 				if (data.code.indexOf("200") != -1) {
 					if (data.status.indexOf(":") != -1) {
 						var status = data.status.split(":");
-						$('div#activeStatus').addClass(status[0].toLowerCase());
-						$('div#activeStatus').html(status[1]);
+						$('div#tradeStatus').addClass(status[0].toLowerCase());
+						$('div#tradeStatus').html(status[1]);
 					} else {
-						var item = data.result.items[0];
-						player.id = item.id;
-						player.player_name = item.player_name;
-						player.position = item.position;
-						player.role = item.role;
-						$('div#activeStatus').html("");
-						$('div#activeStatusBox').fadeOut("fast");
-						cachePlayer(player);
-						if (params[3] == "add") {
-							toAddList(player);
-						} else {
-							toDropList(player);
-						}
-						updatePageLists();
+						$('div#tradeStatus').addClass('success');
+						$('div#tradeStatus').html("Your response has been completed.");
+						setTimeout('refreshPage()',3000);
 					}
 				} else {
-					$('div#activeStatus').addClass('error');
-					$('div#activeStatus').append('No information was returned for the selected transaction.');
+					$('div#tradeStatus').addClass('error');
+					$('div#tradeStatus').append('No information was returned for the selected transaction.');
 				}
 			});
 			return false;
 		});
-		
+		$('input[rel=reviewbtn]').live('click',function () {
+			var params = this.id.split("|");
+			document.location.href = "<?php echo($config['fantasy_web_root']); ?>team/tradeReview/team_id/"+team_id+"/league_id/"+league_id+"/trans_type/"+params[0]+"/trade_id/"+params[1]+cacheBuster();
+			
+		});
 		$('input#btnReview').live('click',function () {
 			// PREPARE PLAYER ID LISTS
 			var teamId2 = $('select#teams').val();	
@@ -409,7 +403,7 @@
 			if (addPlayers[i] != null && (addPlayers[i].id != '' && addPlayers[i].id != -1)) {
 				rowClass = ((rowCount % 2) == 0) ? 'sl_1' : 'sl_2';
 				addHTML += '<tr align=left class="'+rowClass+'">';
-				addHTML += '<td><img alt="Remove" title="Remove" rel="addListRemove" id="'+addPlayers[i]['id']+'" src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="16" height="16" align="absmiddle" border="0" />';
+				addHTML += '<td><img alt="Remove" title="Remove" rel="addListRemove" id="'+addPlayers[i]['id']+'" src="<?php echo(PATH_IMAGES); ?>icons/icon_fail.png" width="16" height="16" align="absmiddle" border="0" />';
 				addHTML += ' &nbsp;<a target="_blank" href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/'+league_id+'/player_id/'+addPlayers[i]['id']+'" title="Click to view bio" alt="Click to view bio">'+addPlayers[i]['player_name']+'</a>';
 				if (addPlayers[i]['position'] == "P") {
 					addHTML += ' '+addPlayers[i].role;
@@ -436,7 +430,7 @@
 			if (dropPlayers[i] != null && (dropPlayers[i].id != '' && dropPlayers[i].id != -1)) {
 				rowClass = ((rowCount % 2) == 0) ? 'sl_1' : 'sl_2';
 				dropHTML += '<tr align=left class="'+rowClass+'">';
-				dropHTML += '<td><img alt="Remove" title="Remove" rel="dropListRemove" id="'+dropPlayers[i]['id']+'" src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="16" height="16" align="absmiddle" border="0" />';
+				dropHTML += '<td><img alt="Remove" title="Remove" rel="dropListRemove" id="'+dropPlayers[i]['id']+'" src="<?php echo(PATH_IMAGES); ?>/icons/icon_fail.png" width="16" height="16" align="absmiddle" border="0" />';
 				dropHTML += ' &nbsp;<a target="_blank" href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/'+league_id+'/player_id/'+dropPlayers[i]['id']+'" title="Click to view bio" alt="Click to view bio">'+dropPlayers[i]['player_name']+'</a>';
 				if (dropPlayers[i]['position'] == "P") {
 					dropHTML += ' '+dropPlayers[i].role;
@@ -594,6 +588,9 @@
 	function fadeStatus(type) {
 		$('div#'+type+'StatusBox').fadeOut("normal",function() { clearTimeout(fader); $('div#'+type+'StatusBox').hide(); });
 	}
+	function refreshPage() { 
+		document.location.href = '<?php echo($_SERVER['PHP_SELF']); ?>';
+	}
 	function drawResults(data,rel,alt) {
 		var itemCount = data.result.items.length;
 		var colLimit = (Math.round(itemCount / 3)) + 1; 
@@ -636,7 +633,7 @@
 		$.each(data.result.items, function(i,item){
 			var bg = ((rownum % 2) == 0) ? '#E0E0E0' : '#fff';
 			outHTML += '<tr bgcolor="'+bg+'" align="center" style="background:'+bg+'">';
-			outHTML += '<td><a alt="'+alt+'" title="'+alt+'" rel="'+rel+'" id="'+item.id+'|'+item.position+'|'+item.role+'" href="#"><img src="<?php echo($config['fantasy_web_root']); ?>images/icons/add.png" width="16" height="16" alt="Add" title="Add" /></a></td>';
+			outHTML += '<td><a alt="'+alt+'" title="'+alt+'" rel="'+rel+'" id="'+item.id+'|'+item.position+'|'+item.role+'" href="#"><img src="<?php echo(PATH_IMAGES); ?>/icons/add.png" width="16" height="16" alt="Add" title="Add" /></a></td>';
 			outHTML += '<td align="left"><a href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/'+league_id+'/player_id/'+item.id+'" target="_blank">'+item.player_name+'</a>';
 			if (item.positions != null && item.positions != '') { outHTML += '&nbsp;<span style="font-size:smaller">'+item.positions+'</span> '; } 
 			if (item.injStatus != null && item.injStatus != '') { outHTML += '&nbsp;<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/red_cross.gif" width="7" height="7" align="absmiddle" alt="'+item.injStatus+'" title="'+item.injStatus+'" /> ';}
@@ -707,7 +704,7 @@
                 	<ul>
                 <?php } ?>
                     	<li><img alt="Send in Trade" title="Send in Trade" rel="itemRemove" id="<?php echo($player['id']); ?>" 
-                        src="<?php echo($config['fantasy_web_root']); ?>images/icons/arrow_right.png" width="16" 
+                        src="<?php echo(PATH_IMAGES); ?>icons/arrow_right.png" width="16" 
                         height="16" align="absmiddle" border="0" /> 
                         <?php if ($player['player_position'] == 1) {
 							$pos = $player['player_role'];
@@ -864,7 +861,10 @@
 				/	PENDING TRADES
 				/-----------------------------------------------------*/
 				if (isset($tradeList) && sizeof($tradeList) > 0) { ?>
-                <div class='textbox'>
+                
+                <br class="clear" clear="all" />
+                <div id="tradeStatusBox"><div id="tradeStatus"></div></div>
+            	<div class='textbox'>
                 <table cellpadding="3" cellspacing="1" border="0" width="265px">
                 <tr class='title'>
                     <td style='padding:3px' colspan="3">Pending Trade Offers</td>
@@ -889,7 +889,7 @@
                 	<td><a  target="_blank" href="<?php echo($config['fantasy_web_root']); ?>team/info/<?php print($tradeData['team_2_id']); ?>"><?php print($tradeData['team_2_name']); $rowNum++; ?></a></td>
                 </tr>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
-					<td><img src="<?php echo($config['fantasy_web_root']); ?>images/icons/arrow_right.png" width="16" 
+					<td><img src="<?php echo(PATH_IMAGES); ?>icons/arrow_right.png" width="16" 
                         height="16" align="absmiddle" border="0" /> <b>Send:</b></td>
 					<td><?php  foreach($tradeData['send_players'] as $playerStr) {
 						print($playerStr."<br />"); 
@@ -897,7 +897,7 @@
 				$rowNum++;?></td>
                 </tr>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
-					<td><img src="<?php echo($config['fantasy_web_root']); ?>images/icons/arrow_left.png" width="16" 
+					<td><img src="<?php echo(PATH_IMAGES); ?>icons/arrow_left.png" width="16" 
                         height="16" align="absmiddle" border="0" /> <b>Recieve:</b></td>
 					<td><?php  foreach($tradeData['receive_players'] as $playerStr) {
 						print($playerStr."<br />"); 
@@ -925,7 +925,13 @@
                 <?php } ?>
                 <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
                 	<td colspan="2">
-                	<?php if ($tradeData['team_1_id'] == $team_id) { ?>
+                	<?php 
+                	$transType = 3;
+                	if ($tradeData['team_2_id'] == $team_id) { 
+                		$transType = 2;
+                	} ?>
+                	<input type='button' rel="reviewbtn" id="<?php print($transType."|".$tradeData['trade_id']); ?>" class="button" value='Review Trade' style="float:left;margin-right:8px;" />
+	                <?php if ($transType == 3) { ?>
                 		<input type='button' rel="responsebtn" id="<?php print(TRADE_RETRACTED."|".$tradeData['trade_id']); ?>" class="button" value='Retract' style="float:left;margin-right:8px;" />
                 	<?php } else if ($tradeData['team_2_id'] == $team_id) { ?>
 	                	<input type='button' rel="responsebtn" id="<?php print(TRADE_REJECTED_OWNER."|".$tradeData['trade_id']); ?>" class="button" value='Reject' style="float:left;margin-right:8px;" />

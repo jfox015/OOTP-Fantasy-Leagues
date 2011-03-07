@@ -379,9 +379,13 @@ class team extends BaseEditor {
 			
 			$this->load->model('league_model');
 			
-			$this->data['trade_id'] = $this->uriVars['trade_id'];
-			$this->data['type'] = $this->uriVars['type'];
+			if ($this->input->post('submitted')) {
+				
 			
+			} else {
+				$this->data['trade_id'] = $this->uriVars['trade_id'];
+				$this->data['type'] = $this->uriVars['type'];
+			}
 			if (!function_exists('getCurrentScoringPeriod')) {
 				$this->load->helper('admin');
 			}
@@ -392,18 +396,23 @@ class team extends BaseEditor {
 			}
 			
 			$trade = $this->dataModel->getTrade($this->data['trade_id']);
-			$rosterMessages = $this->verifyRostersForTrade($this->data['team_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $this->data['scoring_period']['id']);
+			$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $this->data['scoring_period']['id']);
 			if (empty($rosterMessages)) {
-				$this->dataModel->processTradeResponse($this->data['trade_id'],$this->data['type'],$this->league_model->commissioner_id,
+				$processResponse = $this->dataModel->processTradeResponse($this->data['trade_id'],$this->data['type'],$this->league_model->commissioner_id,
 													$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
-				$code = 200;
-				$status = "OK";
+				if (empty($processResponse)) {
+					$code = 200;
+					$status = "OK";
+				} else {
+					$code = 301;
+					$status = "error:".$processResponse;							
+				}
 			} else {
 				$error = true;
 				$code = 301;
-				$status = "error:".$message;
+				$status = "error:".$rosterMessages;
 			}
-		}else {
+		} else {
 			$error = true;
 			$code = 404;
 			$status = "error:Required parameters were missing.";
@@ -585,7 +594,7 @@ class team extends BaseEditor {
 			$tmpPlayer = explode("_",$data);
 			array_push($receiveListIds,$tmpPlayer[0]);
 		}
-		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period. $team_id);
+		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period, $team_id);
 		foreach($sendRosterStatus as $status) {
 			if($status['code'] == 404) {
 				$rosterMessages .= $this->dataModel->getTeamName($team_id).": ".$status['message']."<br />";
@@ -614,7 +623,7 @@ class team extends BaseEditor {
 			$this->data['avatar'] = $this->dataModel->avatar;
 			$this->data['league_id'] = $this->dataModel->league_id;
 				 
-			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? explode("&",$this->uriVars['trade_id']) : -1;
+			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? $this->uriVars['trade_id'] : -1;
 			
 			$sendList = array();
 			$receiveList = array();
@@ -622,16 +631,16 @@ class team extends BaseEditor {
 			$this->data['tradeFrom'] = array();
 			
 			if ($this->data['trade_id'] != -1) {
-				$trade = $this->dataModel->getTradeData($this->data['league_id'], $this->data['trade_id'], $this->data['team_id']);
-				$this->data['tradeTo'] = unserialize($trade['send_players']);
-				$this->data['tradeFrom'] = unserialize($trade['receive_players']);
+				$trade = $this->dataModel->getTrade($this->data['trade_id']);
+				$sendList['all'] = $this->data['tradeTo'] = $trade['send_players'];
+				$receiveList['all'] = $this->data['tradeFrom'] = $trade['receive_players'];
 			} else { 
 				$this->data['tradeTo'] = (isset($this->uriVars['tradeTo'])) ? $this->uriVars['tradeTo'] : "";
 				$this->data['tradeFrom'] = (isset($this->uriVars['tradeFrom'])) ? $this->uriVars['tradeFrom'] : "";
+				$sendList['all'] = explode("&",$this->data['tradeTo']);
+				$receiveList['all'] = explode("&",$this->data['tradeFrom']);
 			}
-			$sendList['all'] = explode("&",$this->data['tradeTo']);
-			$receiveList['all'] = explode("&",$this->data['tradeFrom']);
-				
+			
 			if (!function_exists('getCurrentScoringPeriod')) {
 				$this->load->helper('admin');
 			}

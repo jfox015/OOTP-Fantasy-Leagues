@@ -39,7 +39,7 @@
                             <td class='hsc2_l'>
                             <table width="100%" cellpadding="0" cellspacing="2" border="0">
                             <?php 
-                            $transTypes = array('added'=>'Added','dropped'=>'Dropped','claimed'=>'Claimed off waivers','tradedTo'=>'Traded To','tradedFrom'=>'Traded From');
+                            $transTypes = array('added'=>'Added','dropped'=>'Dropped','claimed'=>'Claimed off waivers','tradedTo'=>'Sent','tradedFrom'=>'Received');
                            	
                             foreach ($transTypes as $field => $label) {
                                 if (isset($details[$field]) && sizeof($details[$field]) > 0) { ?>

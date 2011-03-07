@@ -213,34 +213,49 @@ class team_model extends base_model {
 		if (!isset($trade_id) || !isset($status)) return false;
 		
 		if ($league_id === false) $league_id = $this->league_id;
+		$leagueName = "";
+		$this->db->select('league_name');
+		$this->db->where('id',$league_id);
+		$query = $this->db->get('fantasy_leagues');
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$leagueName = $row->league_name;
+		}
+		$query->free_result();
 		
+		if (!function_exists('updateOwnership')) {
+			$this->load->helper('roster');
+		}
+								
 		$outMess = "";
 		$data = array();
 		$error = FALSE;
-		$leagueName = "";
 		// LOAD THE TRADE DATA
-		$trade = $this->getTradeData($league_id, $trade_id, NULL, NULL, $limit= 1);
+		$trade = $this->getTrade($trade_id);
 		if (is_array($trade) && sizeof($trade) > 0) {
 			// SWITCH ON THE STATUS TYPE
 			switch ($status) {
-				
 				// ACCEPTED TRADE
 				case TRADE_ACCEPTED:
 					
-					$playerTypes = array('send_players'=>'team_2_id','receive_players'=>'team_id');
+					// CHANGE PLAYERS ROSTERS AND UPDATE OWNERSHIP
+					$playerTypes = array('send_players'=>'team_2_id','receive_players'=>'team_1_id');
 					foreach($playerTypes as $tmpType => $team) {
-						$players = unserialize($trade[$tmpType]);
+						$players = $trade[$tmpType];
 						if (is_array($players) && sizeof($players) > 0){
-							foreach($players as $playerId) {
+							foreach($players as $playerStr) {
+								$tmpPlayer = explode("_",$playerStr);
 								$this->db->flush_cache();
-								$this->db->where('id',$playerId);
+								$this->db->where('id',$tmpPlayer[0]);
+								$this->db->set('player_position',$tmpPlayer[1]);
+								$this->db->set('player_role',$tmpPlayer[2]);
+								$this->db->set('player_status',-1);
 								$this->db->set('team_id',$trade[$team]);
 								$this->db->update($this->tables['ROSTERS']);
-								
-								$ownership = updateOwnership($playerId);
+								$ownership = updateOwnership($tmpPlayer[0]);
 								$pData = array('own'=>$ownership[0],'start'=>$ownership[1]);
 								$this->db->flush_cache();
-								$this->db->where('id',$playerId);
+								$this->db->where('id',$tmpPlayer[0]);
 								$this->db->update('fantasy_players',$pData); 
 							} // END foreach
 						} else {
@@ -249,24 +264,17 @@ class team_model extends base_model {
 							$error = true;
 						} // END if
 					} // END foreach
+					
 					$msg = $this->lang->line('team_trade_accepted');
 					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
-					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_id'])), $msg);
-					$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$trade['team_id'],'adjust your lineup'));
-					$this->db->select('leagueName');
-					$this->db->where('id',$league_id);
-					$query = $this->db->get('fantasy_leagues');
-					if ($query->num_rows() > 0) {
-						$row = $query->row();
-						$leagueName = $row->league_name;
-					}
-					$query->free_result();
+					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
+					$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$trade['team_1_id'],'adjust your lineup'),$msg);
 					$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
 					$data['messageBody']= $msg;
-					$this->logTransaction(NULL, NULL, NULL, $sendPlayers, $receivePlayers, 
+					$this->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'], 
 										  $commish_id, $currUser, $isAdmin, $trade['in_period'], 
-										  $league_id, $trade['team_id'], $this->getTeamOwnerId($trade['team_id']));
-					$this->logTransaction(NULL, NULL, NULL, $receivePlayers, $sendPlayers ,
+										  $league_id, $trade['team_1_id'], $this->getTeamOwnerId($trade['team_1_id']));
+					$this->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'] ,
 										  $commish_id, $currUser, $isAdmin, $trade['in_period'], 
 										  $league_id, $trade['team_2_id'], $this->getTeamOwnerId($trade['team_2_id']));				
 					break;
@@ -291,22 +299,45 @@ class team_model extends base_model {
 				// REMOVED BY ADMIN
 				case TRADE_REMOVED:
 					break;
+				// TRADE EXPIRED
+				case TRADE_EXPIRED:
+					break;
+				// INVLALID TRADE
+				case TRADE_INVALID:
+					break;
 				default:
 					break;	
 			}
 			$headers = "";
-			$message = $this->load->view($this->config->item('email_templates').'trade_template', $data, true);
-					
-			// SEND MESSAGES
-			
-			// SEND TO TEAM ONE
-			$tradeTypes = loadSimpleDataList('tradeStatus');
-			$emailSend = sendEmail($this->user_auth_model->getEmail($this->getTeamOwnerId($trade['team_id'])),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-			$this->params['config']['site_name']." Administrator",$leagueName.' Fantasy League - Trade Update - Offer '.$tradeTypes[$status],
-			$message,$headers);
-			
+			//print("email template path = ".$this->config->item('email_templates')."<br />");
+			$message = $this->load->view($this->config->item('email_templates').'trades_template', $data, true);
+			if (!$error) {
+				// UPDATE THE TRADE 
+				$this->db->where('id',$trade_id);
+				$this->db->set('status',$status);
+				$this->db->update($this->tables['TRADES']);
+				// SEND MESSAGES
+				
+				// SEND TO TEAM ONE
+				$tradeTypes = loadSimpleDataList('tradeStatus');
+				if (defined('ENV') && ENV != 'dev') {
+					$emailSend = sendEmail($this->user_auth_model->getEmail($this->getTeamOwnerId($trade['team_1_id'])),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+					$this->params['config']['site_name']." Administrator",$leagueName.' Fantasy League - Trade Update - Offer '.$tradeTypes[$status],
+					$message,$headers);
+					// SEND TO TEAM TWO
+					$emailSend = sendEmail($this->user_auth_model->getEmail($this->getTeamOwnerId($trade['team_2_id'])),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+					$this->params['config']['site_name']." Administrator",$leagueName.' Fantasy League - Trade Update - Offer '.$tradeTypes[$status],
+					$message,$headers);
+				} else {
+					// SAVE emails as TXT files
+					if (!function_exists('write_file')) {
+						$this->load->helper('file');
+					}
+					write_file(PATH_MEDIA_WRITE.'/email_trd_'.$trade_id.substr(md5($trade_id.time()),0,8).".txt",$message);
+				}
+			}
 		} else {
-			$outMess = "An error occured. The trade specified could not be found or no data was returned.";
+			$outMess = "The trade id ".$trade_id." could not be found or no data was returned.";
 		}
 		return $outMess;
 	}
@@ -461,7 +492,7 @@ class team_model extends base_model {
 			$this->db->where('status',$status);
 		}
 		if ($trade_id !== false) {
-			$this->db->where('id',$trade_id);
+			$this->db->where($this->tables['TRADES'].".id",$trade_id);
 		}
 		if ($limit != -1 && $startIndex == 0) {
 			$this->db->limit($limit);
@@ -656,46 +687,61 @@ class team_model extends base_model {
 	/*----------------------------------------
 	/	ROSTERS
 	----------------------------------------*/
-	public function getPlayerRosterStatus($player_id,$score_period = false, $team_id = false) {
+	/**
+	 * GET PLAYER ROSTER STATUS
+	 * Enter description here ...
+	 * @param  $player_id		
+	 * @param  $score_period
+	 * @param  $team_id
+	 */
+	public function getPlayerRosterStatus($player_id = false,$score_period = false, $team_id = false) {
 		$status = array();
 		$code = -1;
 		$message = "";
+		$count = 0;
 		
-		if ($player_id === false || $score_period === false) { return false; }
-		if ($team_id === false) { $team_id = $this->id; }
+		if ($player_id === false || $score_period === false || $team_id === false) { return false; }
 		
+		$this->db->flush_cache();
+		$name = "[Name not found]";// GET PLAYER NAME
+		$this->db->select('first_name, last_name');
+		$this->db->where('id',$player_id);
+		$this->db->join($this->tables['OOTP_PLAYERS'],$this->tables['OOTP_PLAYERS'].".player_id = ".$this->tables['PLAYERS'].".player_id");
+		$query = $this->db->get($this->tables['PLAYERS']);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$name = $row->first_name." ".$row->last_name;
+		}
+		$query->free_result();
+		
+		$this->db->flush_cache();
 		$this->db->where('player_id',$player_id);
 		$this->db->where('team_id',$team_id);
 		$this->db->where('scoring_period_id',$score_period);
 		$count = $this->db->count_all_results($this->tables['ROSTERS']);
-		
 		if ($count > 0) {
 			$code = 200;
 			$message = "OK";
 		} else {
 			$code = 404;
-			$name = "[Name not found]";// GET PLAYER NAME
-			$this->db->select('first_name, last_name');
-			$this->db->where('id',$player_id);
-			$this->db->join($this->tables['OOTP_PLAYERS'],$this->tables['OOTP_PLAYERS'].".player_id = ".$this->tables['PLAYERS'].".player_id");
-			$query = $this->db->get($this->tables['PLAYERS']);
-			if ($query->num_rows() > 0) {
-				$row = $query->row();
-				$name = $row->first_name." ".$row->last_name;
-			}
-			$query->free_result();
 			$message = "The player ".$name." is not on the current roster.";
 		}
 		return array('code'=>$code,'message'=>$message);
 	}
-	
-	public function getPlayersRosterStatus($players,$score_period, $team_id = false) {
+	/**
+	 * GET PLAYERS ROSTER STATUS
+	 * Tests and array of player ids against their roster status.
+	 * @param $players
+	 * @param $score_period
+	 * @param $team_id
+	 */
+	public function getPlayersRosterStatus($players,$score_period, $team_id) {
 		$status = array();
 		if ($players === false || !is_array($players) || sizeof($players) <= 0 ||
-		$score_period === false) { return false; }
+		$score_period === false || $team_id === false) { return false; }
 		
 		foreach($players as $player_id) {
-			$status = array_push($status,$this->getPlayerRosterStatus($player_id,$score_period,$team_id));
+			array_push($status,$this->getPlayerRosterStatus($player_id,$score_period,$team_id));
 		}
 		return $status;
 	}
