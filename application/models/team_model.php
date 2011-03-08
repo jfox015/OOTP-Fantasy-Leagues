@@ -187,6 +187,26 @@ class team_model extends base_model {
 	/	TRADES
 	----------------------------------------*/
 	/**
+	 * UPDATE TRADE
+	 * Updates the record for a trade after it has been processed.
+	 * @param $trade_id			The trade record ID
+	 * @param $status			The trade status type
+	 * @param $comments			(OPTIONAL) Response comments
+	 */
+	public function updateTrade($trade_id, $status, $comments = "") {
+		
+		if (!isset($trade_id) || !isset($status)) return false;
+		// UPDATE THE TRADE 
+		$this->db->where('id',$trade_id);
+		$this->db->set('status',$status);
+		$this->db->set('response_date',date('Y-m-d h:m:s',time()));
+		if (!empty($comments)) {
+			$this->db->set('response',$comments);
+		}
+		$this->db->update($this->tables['TRADES']);
+		return true;
+	}
+	/**
 	 * MAKE TRADE OFFER
 	 * Registeres a new trade offer in the TEAM_TRADES table.
 	 * @param $sendPlayers		Array of player Ids to be sent
@@ -216,184 +236,63 @@ class team_model extends base_model {
 		return true;
 	}
 	/**
-	 * PROCESS TRADE RESPONSE
+	 * PROCESS TRADE
 	 * This function handles all trades reponses submitted on the site. It switches on the response, takes 
 	 * approiate roster actions and logs transactions (if applicable) then composes and send messages to 
 	 * the users involved.
 	 * @param $trade_id			The trade record ID
 	 * @param $status			The trade status type
-	 * @param $leagueId			The league id. Uses $this->$league_id if FALSE
+	 * @param $comments			(OPTIONAL) Response comments
 	 */
-	public function processTradeResponse($trade_id, $status, $comments = "", $commish_id = false, $currUser = false, 
-										 $isAdmin = false, $league_id = false){
+	public function processTrade($trade_id, $status, $comments = ""){
 		
 		$outMess = "";
-		$data = array();
-		$error = FALSE;
-		$msg = ""; // USUALLY TEAM OFFERING TRADE
-		$msg2 = ""; // USUALLY TEAM RECIEVING TRADE OFFER
-		$msg3 = ""; // USUALLY LEAGUE COMMISSIONER
-		$msg4 = ""; // USUALLY SITE ADMINISTRATOR
+
 		if (!isset($trade_id) || !isset($status)) return false;
-		
-		if ($league_id === false) $league_id = $this->league_id;
-		$leagueName = "";
-		$this->db->select('league_name');
-		$this->db->where('id',$league_id);
-		$query = $this->db->get('fantasy_leagues');
-		if ($query->num_rows() > 0) {
-			$row = $query->row();
-			$data['leagueName'] = $row->league_name;
-		}
-		$query->free_result();
 		
 		if (!function_exists('updateOwnership')) {
 			$this->load->helper('roster');
 		}
-
-		print("status val = ".$status."<br />");
 		// LOAD THE TRADE DATA
 		$trade = $this->getTrade($trade_id);
 		if (is_array($trade) && sizeof($trade) > 0) {
-			// SWITCH ON THE STATUS TYPE
-			switch ($status) {
-				// ACCEPTED TRADE
-				case TRADE_ACCEPTED:
-					
-					// CHANGE PLAYERS ROSTERS AND UPDATE OWNERSHIP
-					$playerTypes = array('send_players'=>'team_2_id','receive_players'=>'team_1_id');
-					foreach($playerTypes as $tmpType => $team) {
-						$players = $trade[$tmpType];
-						if (is_array($players) && sizeof($players) > 0){
-							foreach($players as $playerStr) {
-								$tmpPlayer = explode("_",$playerStr);
-								print('TMP Player str = '.$playerStr.'<br />');
-								$this->db->flush_cache();
-								$this->db->where('player_id',$tmpPlayer[0]);
-								if ($tmpPlayer[1] == "LF" || $tmpPlayer[1] == "CF" || $tmpPlayer[1] == "RF") {
-									$tmpPlayer[1] = "OF";
-								}
-								$this->db->set('player_position',get_pos_num($tmpPlayer[1]));
-								if ($tmpPlayer[2] == "CL") {
-									$tmpPlayer[2] = "MR";
-								}
-								$this->db->set('player_role',get_pos_num($tmpPlayer[2]));
-								$this->db->set('player_status',-1);
-								$this->db->set('team_id',$trade[$team]);
-								$this->db->update($this->tables['ROSTERS']);
-								print($this->db->last_query()."<br />");
-								$ownership = updateOwnership($tmpPlayer[0]);
-								$pData = array('own'=>$ownership[0],'start'=>$ownership[1]);
-								$this->db->flush_cache();
-								$this->db->where('id',$tmpPlayer[0]);
-								$this->db->update('fantasy_players',$pData); 
-							} // END foreach
-						} else {
-							if ($tmpType == "send_players") { $lbl = "sent"; } else { $lbl = "received"; }
-							$outMess .= "No players to be ".$lbl." could be found.";
-							$error = true;
-						} // END if
+			// CHANGE PLAYERS ROSTERS AND UPDATE OWNERSHIP
+			$playerTypes = array('send_players'=>'team_2_id','receive_players'=>'team_1_id');
+			foreach($playerTypes as $tmpType => $team) {
+				$players = $trade[$tmpType];
+				if (is_array($players) && sizeof($players) > 0){
+					foreach($players as $playerStr) {
+						$tmpPlayer = explode("_",$playerStr);
+						//print('TMP Player str = '.$playerStr.'<br />');
+						$this->db->flush_cache();
+						$this->db->where('player_id',$tmpPlayer[0]);
+						if ($tmpPlayer[1] == "LF" || $tmpPlayer[1] == "CF" || $tmpPlayer[1] == "RF") {
+							$tmpPlayer[1] = "OF";
+						}
+						$this->db->set('player_position',get_pos_num($tmpPlayer[1]));
+						if ($tmpPlayer[2] == "CL") {
+							$tmpPlayer[2] = "MR";
+						}
+						$this->db->set('player_role',get_pos_num($tmpPlayer[2]));
+						$this->db->set('player_status',-1);
+						$this->db->set('team_id',$trade[$team]);
+						$this->db->update($this->tables['ROSTERS']);
+						//print($this->db->last_query()."<br />");
+						$ownership = updateOwnership($tmpPlayer[0]);
+						$pData = array('own'=>$ownership[0],'start'=>$ownership[1]);
+						$this->db->flush_cache();
+						$this->db->where('id',$tmpPlayer[0]);
+						$this->db->update('fantasy_players',$pData); 
 					} // END foreach
-					$msg = $this->lang->line('team_trade_accepted');
-					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
-					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
-					$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$trade['team_1_id'],'adjust your lineup'),$msg);
-					$msg = str_replace('[LEAGUE_NAME]', $data['leagueName'],$msg);
-					$data['messageBody']= $msg;
-					$this->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'], 
-										  $commish_id, $currUser, $isAdmin, $trade['in_period'], 
-										  $league_id, $trade['team_1_id'], $this->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
-					$this->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'] ,
-										  $commish_id, $currUser, $isAdmin, $trade['in_period'], 
-										  $league_id, $trade['team_2_id'], $this->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);				
-					break;
-				// REJECTED BY OWNER
-				case TRADE_REJECTED_OWNER:
-					$msg = $this->lang->line('team_trade_rejected_owner');
-					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
-					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
-					$msg = str_replace('[COMMENTS]', $comments,$msg);
-					break;
-				// REJECTED BY LEAGUE
-				case TRADE_REJECTED_LEAGUE:
-					$msg = $this->lang->line('team_trade_rejected_league');
-					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
-					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
-					break;
-				// REJECTED BY COMMISIONER
-				case TRADE_REJECTED_COMMISH:
-					$msg = $this->lang->line('team_trade_rejected_commish');
-					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
-					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
-					$msg = str_replace('[COMMENTS]', $comments,$msg);
-					break;
-				// REJECTED BY SITE ADMIN
-				case TRADE_REJECTED_ADMIN:
-					$msg = $this->lang->line('team_trade_rejected_admin');
-					$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
-					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
-					$msg = str_replace('[COMMENTS]', $comments,$msg);
-					break;
-				// REJECTED BUT WITH A COUNTER OFFER
-				case TRADE_REJECTED_COUNTER:
-					break;
-				// RETRACTED
-				case TRADE_RETRACTED:
-					$msg = $this->lang->line('team_trade_retracted');
-					$msg = str_replace('[OFFERING_TEAM_NAME]', $this->getTeamName($trade['team_1_id']), $msg);
-					$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_2_id'])), $msg);
-					$msg = str_replace('[COMMENTS]', $comments,$msg);
-					break;
-				// REMOVED BY ADMIN
-				case TRADE_REMOVED:
-					break;
-				// TRADE EXPIRED
-				case TRADE_EXPIRED:
-					break;
-				// INVLALID TRADE
-				case TRADE_INVALID:
-					break;
-				default:
-					break;	
-			}
-			$msg .= str_replace('[LEAGUE_NAME]', $data['leagueName'],$this->lang->line('email_footer'));
-			$data['messageBody']= $msg;
-			$headers = "";
-			//print("email template path = ".$this->config->item('email_templates')."<br />");
-			$message = $this->load->view($this->config->item('email_templates').'trades_template', $data, true);
-			if (!$error) {
-				// UPDATE THE TRADE 
-				$this->db->where('id',$trade_id);
-				$this->db->set('status',$status);
-				$this->db->set('response_date',date('Y-m-d h:m:s',time()));
-				if (!empty($comments)) {
-					$this->db->set('response',$comments);
-				}
-				$this->db->update($this->tables['TRADES']);
-				// SEND MESSAGES
-				
-				// SEND TO TEAM ONE
-				$tradeTypes = loadSimpleDataList('tradeStatus');
-				if (defined('ENV') && ENV != 'dev') {
-					$emailSend = sendEmail($this->user_auth_model->getEmail($this->getTeamOwnerId($trade['team_1_id'])),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-					$this->params['config']['site_name']." Administrator",$leagueName.' Fantasy League - Trade Update - Offer '.$tradeTypes[$status],
-					$message,$headers);
-					// SEND TO TEAM TWO
-					$emailSend = sendEmail($this->user_auth_model->getEmail($this->getTeamOwnerId($trade['team_2_id'])),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-					$this->params['config']['site_name']." Administrator",$leagueName.' Fantasy League - Trade Update - Offer '.$tradeTypes[$status],
-					$message,$headers);
 				} else {
-					// SAVE emails as TXT files
-					if (!function_exists('write_file')) {
-						$this->load->helper('file');
-					}
-					write_file(PATH_MEDIA_WRITE.'/email_trd_'.$trade_id."_".substr(md5($trade_id.time()),0,8).".txt",$message);
-				}
-			}
+					if ($tmpType == "send_players") { $lbl = "sent"; } else { $lbl = "received"; }
+					$outMess .= "No players to be ".$lbl." could be found.";
+				} // END if
+			} // END foreach
+			return $this->updateTrade($trade_id, $status, $comments);
 		} else {
-			$outMess = "The trade id ".$trade_id." could not be found or no data was returned.";
+			return $outMess;
 		}
-		return $outMess;
 	}
 	/**
 	 * LOG TRADE PROTESTS

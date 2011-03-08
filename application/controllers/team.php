@@ -95,139 +95,78 @@ class team extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
 	    $this->displayView();	
 	}
-	/**
-	 *	Add/DROP Page.
-	 *	Calls the add/drop page interface for teams.
-	 */
-	public function addDrop() {
-		$this->getURIData();
-		
-		$this->enqueStyle('list_picker.css');
-		
-		$this->load->model($this->modelName,'dataModel');
-		$this->dataModel->load($this->uriVars['id']);
-		$this->data['team_id'] = $this->uriVars['id'];
-		$this->data['league_id'] = $this->dataModel->league_id;
-		
-		// GET DRAFT STATUS
-		$this->load->model('draft_model');
-		$this->draft_model->load($this->dataModel->league_id,'league_id');
-		$this->data['subTitle'] = "Add/Drop Players";
-		if ($this->draft_model->completed != 1) {
-			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
-			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-			
-		} else {
-
-			if (!function_exists('getCurrentScoringPeriod')) {
-				$this->load->helper('admin');
-			}
-			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
-			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
-			
-			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-			$returnVar= 'playerList';
-			$this->data['list_type'] = (isset($this->uriVars['list_type'])) ? $this->uriVars['list_type'] : 2;
-			if (isset($this->data['list_type']) && $this->data['list_type'] == 2) {
-				$returnVar= 'formatted_stats';
-			}
-			if(isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) {
-				$this->data['waiver_order'] = $this->dataModel->getWaiverOrder();
-				$this->data['waiver_claims'] = $this->dataModel->getWaiverClaims();
-			}
-			
-			$this->data[$returnVar] = $this->pullList(true,$this->dataModel->league_id, $this->data['list_type']);
-			$this->data['league_id'] = $this->dataModel->league_id;
-			$this->params['pageType'] = PAGE_FORM;
-			$this->params['content'] = $this->load->view($this->views['ADD_DROP'], $this->data, true);
-		}
-		$this->makeNav();
-		$this->displayView();
-	}
-	public function removeClaim() {
+	public function avatar() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
 			$this->loadData();
-			if (isset($this->uriVars['id'])) {
-				$this->db->where('id',$this->uriVars['id']);
-				$this->db->delete('fantasy_teams_waiver_claims');
-				$message = '<span class="success">The selected waiver claim has been successfully removed.</span>';
+			$this->data['avatar'] = $this->dataModel->avatar;
+			$this->data['team_id'] = $this->dataModel->id;
+			$this->data['teamname'] = $this->dataModel->teamname;
+			$this->data['subTitle'] = 'Edit Team Avatar';
+			
+			//echo("Submitted = ".(($this->input->post('submitted')) ? 'true':'false')."<br />");
+			if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name']))) {
+				if ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name'])) {
+					$fv = & _get_validation_object();
+					$fv->setError('avatarFile','The avatar File field is required.');
+				}
+				$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
+				$this->params['pageType'] = PAGE_FORM;
+				$this->displayView();
 			} else {
-				$error = true;
-				$message = '<span class="error">A required claim identifier was not found. Please go back and try the operation again or contact the site adminitrator to report the problem.</span>';
+				if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || strpos($_FILES['avatarFile']['name'],'.jpeg') || strpos($_FILES['avatarFile']['name'],'.gif') || strpos($_FILES['avatarFile']['name'],'.png'))) {
+					$fv = & _get_validation_object();
+					$fv->setError('avatarFile','The file selected is not a valid image file.');  
+					$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				} else {
+					if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
+						$change = $this->dataModel->applyData($this->input, $this->params['currUser']); 
+						if ($change) {
+							$this->dataModel->save();
+							$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');
+							redirect('team/info/'.$this->dataModel->id);
+						} else {
+							$message = '<p class="error">Avatar Change Failed.';
+							$message .= '</p >';
+							$this->session->set_flashdata('message', $message);
+							redirect('team/avatar');
+						}
+					} else {
+						throw new UploadException($_FILES['avatarFiles']['error']);
+					}
+				}
 			}
-			$this->session->set_flashdata('message', $message);
-			redirect('team/addDrop/id/'.$this->uriVars['team_id']);
 		} else {
 	        $this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
-	    }	
+	    }
 	}
-	public function stats() {
-		
-		$this->getURIData();
-		$this->data['subTitle'] = "Set lineup";
-		$this->load->model($this->modelName,'dataModel');
-		
-		$team_id = -1;
-		if (isset($this->uriVars['id']) && !empty($this->uriVars['id']) && $this->uriVars['id'] != -1) {
-			$team_id = $this->uriVars['id'];
-		} else if (isset($this->uriVars['team_id']) && !empty($this->uriVars['team_id']) && $this->uriVars['team_id'] != -1) {
-			$team_id = $this->uriVars['team_id'];
-		} 
-		$this->dataModel->load($team_id);
-		$this->data['thisItem']['team_id'] = $this->dataModel->id;
-		$this->data['thisItem']['teamname'] = $this->dataModel->teamname;
-		$this->data['thisItem']['teamnick'] = $this->dataModel->teamnick;
-		$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
-		$this->data['team_id'] = $team_id;	
-		$this->data['year'] = date('Y');
-		$this->data['league_id']  = $this->dataModel->league_id;
-		
-		
-		$this->prepForQuery();
-		
-		$this->data['batters'] = $this->dataModel->getBatters(-1, false, -999);
-		$this->data['pitchers'] = $this->dataModel->getPitchers(-1, false, -999);
-		
-		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
-		
-			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules,$this->data['batters']);
-			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules,$this->data['pitchers']);
-			
-			$this->data['title'] = array();
-			$this->data['formatted_stats'] = array();
-			$this->data['limit'] = -1;
-			$this->data['startIndex'] = 0;
-			
-			$this->data['title']['batters'] = "Batting";
-			$this->data['colnames']=player_stat_column_headers(1, QUERY_STANDARD, true);
-			$this->data['fields'] = player_stat_fields_list(1, QUERY_STANDARD, true);
-			$this->data['player_stats'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
-			$this->data['showTeam'] = -1;
-			$this->data['formatted_stats']['batters'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
-	
-			$this->data['title']['pitchers'] = "Pitching";
-			$this->data['colnames']=player_stat_column_headers(2, QUERY_STANDARD, true);
-			$this->data['fields'] = player_stat_fields_list(2, QUERY_STANDARD, true);
-			$this->data['player_stats'] = formatStatsForDisplay($stats['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
-			$this->data['formatted_stats']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
-		} else {
-			$this->data['message']= "The ".$this->dataModel->teamname." roster is incomplete. No stats are available at this time.";
+	public function removeAvatar() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->loadData();
+			if ($this->dataModel->id != -1) {
+				$success = $this->dataModel->deleteFile('avatar',PATH_TEAMS_AVATAR_WRITE,true);
+			}
+			if ($success) {
+				$this->session->set_flashdata('message', '<p class="success">The image has been successfully deleted.</p>');
+				redirect('team/info/'.$this->dataModel->id);
+			} else {
+				$message = '<p class="error">Avatar Delete Failed.';
+				$message .= '<b>'.$this->dataModel->statusMess.'</b>';
+				$message .= '</p >';
+				$this->session->set_flashdata('message', $message);
+				redirect('team/avatar');
+			}
 		}
-		$this->data['league_id'] = $this->dataModel->league_id;
-		if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
-			$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
-		}
-		$this->makeNav();
-		$this->params['pageType'] = PAGE_FORM;
-		$this->params['subTitle'] = $this->data['subTitle'] = $this->dataModel->teamname." ".$this->dataModel->teamnick." Stats";
-		$this->params['content'] = $this->load->view($this->views['STATS'], $this->data, true);
-	    $this->displayView();
 	}
-	/*------------------------------------------
-	/	TRADES FUNCTIONS
-	/-----------------------------------------*/
+	/*-------------------------------------------
+	/
+	/	TRADES
+	/
+	/------------------------------------------*/
 	/**
 	 *	TRADE
 	 *
@@ -259,6 +198,7 @@ class team extends BaseEditor {
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
 			
+			
 			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
 				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
 			} else {
@@ -284,6 +224,8 @@ class team extends BaseEditor {
 					} // END foreach
 				} // END if
 			} // END if
+			$this->data['prev_trade_id'] = isset($this->uriVars['stats_source']) ? isset($this->uriVars['stats_source']) : -1;
+			
 			$this->prepForQuery();
 			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
 				$this->data['stats_range'] = 0;
@@ -293,6 +235,8 @@ class team extends BaseEditor {
 			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
 				$this->data['stats_range'] = 1;	
 			} // END if
+			
+
 			if (!isset($this->uriVars['stats_source']) || !empty($this->uriVars['stats_source'])) {
 				$this->data['stats_source'] = "sp_all";
 			} else {
@@ -366,14 +310,23 @@ class team extends BaseEditor {
 	/**
 	 * TRADE RESPONSE
 	 * CATCH ALL FOR TRADE RESPONSES
+	 * @param	trade_id		The Trade ID value
+	 * @param	type			The trade response type (Accepted, Rejected, etc.)
+	 * @param	team_id			The ID of the team making the response
+	 * @param	display_page	(OPTIONAL) Resulting View page. Passed only from non-AJAX submissions
+	 * @param	comments		(OPTIONAL) Trade comments or reponse
 	 */
 	public function tradeResponse() {
 		
+		// DEFAULT VARS
 		$code = -1;
 		$status = "";
 		$result = "{";
 		$responseType = 1;
+		$error = false;
 		$this->data['comments'] = "";
+		
+		// CONVERT INPUT DATA TO DATA VARS
 		if ($this->input->post('submitted')) {
 			$this->data['trade_id'] = $this->input->post('trade_id') ? $this->input->post('trade_id') : -1;
 			$this->data['type'] = $this->input->post('type') ? $this->input->post('type') : -1;
@@ -388,10 +341,18 @@ class team extends BaseEditor {
 			$this->data['team_id'] = (isset($this->uriVars['id'])) ? $this->uriVars['id'] : -1;
 		} // END if
 		
+		// VERIFY MINIMUM VARS HAVE VALUES
 		if ($this->data['trade_id'] != -1 && $this->data['type'] != -1 && $this->data['team_id'] != -1) {
+			
+			// LOAD MODELS
 			$this->load->model($this->modelName,'dataModel');
-			$this->load->model('league_model');
-
+			$this->dataModel->load($this->data['team_id']);
+			$this->data['league_id'] = $this->dataModel->league_id;
+			if (!isset($this->league_model)) {
+				$this->load->model('league_model');
+			}
+			$this->league_model->load($this->data['league_id']);
+			
 			if (!function_exists('getCurrentScoringPeriod')) {
 				$this->load->helper('admin');
 			} // END if
@@ -400,106 +361,131 @@ class team extends BaseEditor {
 			} else {
 				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
 			} // END if
-			$this->dataModel->load($this->data['team_id']);
-			$this->data['league_id'] = $this->dataModel->league_id;
 			
+			$msg = "";
 			$trade = $this->dataModel->getTrade($this->data['trade_id']);
-			print("current scoring = ".$this->data['scoring_period']['id']."<br />");
-			print("trade['in_period'] = ".$trade['in_period']."<br />");
-			if ($this->data['scoring_period']['id'] == $trade['in_period']) {
-				$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period']);
-				if (empty($rosterMessages)) {
-					$processResponse = $this->dataModel->processTradeResponse($this->data['trade_id'],$this->data['type'],$this->data['comments'],$this->league_model->commissioner_id,
-														$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
-					if (empty($processResponse)) {
-						$code = 200;
-						$status = "OK";
+			if ($this->data['type'] == TRADE_ACCEPTED) {
+				if ($this->data['scoring_period']['id'] == $trade['in_period']) {
+					$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period']);
+					if (empty($rosterMessages)) {
+						$processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments']);
+						if ($processResponse) {
+							$msg = $this->lang->line('team_trade_accepted');
+							$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'], 
+												  $this->league_model->commissioner_id, $this->params['currUser'], 
+												  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'], 
+												  $this->dataModel->league_id, $trade['team_1_id'], $this->dataModel->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
+							$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'], 
+												  $this->league_model->commissioner_id, $this->params['currUser'], 
+												  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'], 
+												  $this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
+							$code = 200;
+							$status = $this->lang->line('team_trade_processed');
+						} else {
+							$code = 301;
+							$status = $processResponse;							
+						} // END if
 					} else {
+						$error = true;
 						$code = 301;
-						$status = "error:".$processResponse;							
+						$status = $rosterMessages;
 					} // END if
 				} else {
 					$error = true;
 					$code = 301;
-					$status = "error:".$rosterMessages;
+					$status = $this->lang->line('team_trade_invalid');
+					$this->dataModel->updateTrade($this->data['trade_id'],TRADE_INVALID,$status);
 				} // END if
 			} else {
-				$error = true;
-				$code = 301;
-				$status = "error:The effective scoring period for this trade is passed the current period id. The trade has expired.";
-				$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_INVALID,$this->data['comments'],$this->league_model->commissioner_id,
-														$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
-			} // END if
+				switch ($this->data['type']) {		
+				// REJECTED BY OWNER
+					case TRADE_REJECTED_OWNER:
+						$msg = $this->lang->line('team_trade_rejected_owner');
+						break;
+					// REJECTED BY LEAGUE
+					case TRADE_REJECTED_LEAGUE:
+						$msg = $this->lang->line('team_trade_rejected_league');
+						break;
+					// REJECTED BY COMMISIONER
+					case TRADE_REJECTED_COMMISH:
+						$msg = $this->lang->line('team_trade_rejected_commish');
+						break;
+					// REJECTED BY SITE ADMIN
+					case TRADE_REJECTED_ADMIN:
+						$msg = $this->lang->line('team_trade_rejected_admin');
+						break;
+					// REJECTED BUT WITH A COUNTER OFFER
+					case TRADE_REJECTED_COUNTER:
+						break;
+					// RETRACTED
+					case TRADE_RETRACTED:
+						$msg = $this->lang->line('team_trade_retracted');
+						break;
+					// REMOVED BY ADMIN
+					case TRADE_REMOVED:
+						break;
+					// TRADE EXPIRED
+					case TRADE_EXPIRED:
+						break;
+					// INVLALID TRADE
+					case TRADE_INVALID:
+						break;
+					default:
+						break;	
+				} // END switch
+				$error = $this->dataModel->updateTrade($this->data['trade_id'], $this->data['type'], $this->data['comments']);
+			} // END if (response type)
+			if ($error === false && !empty($msg)) {
+				$msg .= $this->lang->line('email_footer');
+				$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
+				$msg = str_replace('[OFFERING_TEAM_NAME]', $this->getTeamName($trade['team_1_id']), $msg);
+				$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
+				$msg = str_replace('[COMMENTS]', $comments,$msg);
+				$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$trade['team_1_id'],'adjust your lineup'),$msg);
+				$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+				$data['messageBody']= $msg;
+				//print("email template path = ".$this->config->item('email_templates')."<br />");
+				$message = $this->load->view($this->config->item('email_templates').'trades_template', $data, true);
+
+				// SEND MESSAGES
+				// SEND TO TEAM ONE
+				$tradeTypes = loadSimpleDataList('tradeStatus');
+
+				$emailSend = sendEmail($this->user_auth_model->getEmail($this->getTeamOwnerId($trade['team_1_id'])),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+				$this->params['config']['site_name']." Administrator",$leagueName.' Fantasy League - Trade Update - Offer '.$tradeTypes[$status],
+				$message);
+				if (!empty($emailSend)) {
+					if (!function_exists('write_file')) {
+						$this->load->helper('file');
+					} // END if 
+					write_file(PATH_MEDIA_WRITE.'/email_trd_'.$trade_id."_".substr(md5($trade_id.time()),0,8).".txt",$message);
+				}
+			} // END if (messaging)
 		} else {
 			$error = true;
 			$code = 404;
-			$status = "error:Required parameters were missing.";
+			$status = "Required parameters were missing.";
 		} // END if
 		if ($responseType == 1) {
+			if ($error) { $status = "error:".$status; }
 			$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
 			$this->output->set_header('Content-type: application/json'); 
 			$this->output->set_output($result);
 		} else {
 			$this->data['message'] = $status;
 			$this->params['subTitle'] = "Team Trades";
-			$this->data['subTitle'] = "Trade Response Processed";
+			$this->data['subTitle'] = "Trade Response";
 			$this->params['content'] = $this->load->view($this->data['display_page'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
 			$this->makeNav();
 			$this->displayView();
 		} // END if
 	}
-	public function tradeReject() {
-		$this->getURIData();
-		
-		$this->load->model($this->modelName,'dataModel');
-		$this->dataModel->load($this->uriVars['id']);
-		$this->data['team_id'] = $this->uriVars['id'];
-		$this->data['league_id'] = $this->dataModel->league_id;
-		
-		$this->load->model('league_model');
-		
-		$this->data['trade_id'] = $this->uriVars['trade_id'];
-		
-		$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_REJECTED_OWNER,$this->league_model->commissioner_id,
-												$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
-	}
-	public function tradeRetract() {
-		$this->getURIData();
-		
-		$this->load->model($this->modelName,'dataModel');
-		$this->dataModel->load($this->uriVars['id']);
-		$this->data['team_id'] = $this->uriVars['id'];
-		$this->data['league_id'] = $this->dataModel->league_id;
-		
-		$this->load->model('league_model');
-		
-		$this->data['trade_id'] = $this->uriVars['trade_id'];
-		
-		$this->dataModel->processTradeResponse($this->data['trade_id'],TRADE_RETRACTED,$this->league_model->commissioner_id,
-												$this->params['currUser'],$this->params['accessLevel'],$this->data['league_id']);
-	}
 	public function tradeProtest() {
 		
 	}
 	public function tradeCounterOffer() {
 		
-	}
-	protected function tradeDetails($trade_id = false, $returnArray = false) {
-		$trade_details = array();
-		
-		if ($returnArray === true) {
-			return $trade_details;
-		} else {
-			$status = '';
-			if (isset($trade_details) && sizeof($trade_details) > 0) {
-				$code = 200;
-				$status .= "OK";
-			} // END if
-			$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
-			$this->output->set_header('Content-type: application/json'); 
-			$this->output->set_output($result);
-		}
 	}
 	public function tradeOffer() {
 		$this->getURIData();
@@ -599,33 +585,6 @@ class team extends BaseEditor {
 			$this->makeNav();
 			$this->displayView();
 		}
-	}
-	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period) {
-		
-		$rosterMessages = "";
-		$sendIds = array();
-		foreach($sendList as $data) {
-			$tmpPlayer = explode("_",$data);
-			array_push($sendIds,$tmpPlayer[0]);
-		}
-		$receiveListIds = array();
-		foreach($receiveList as $data) {
-			$tmpPlayer = explode("_",$data);
-			array_push($receiveListIds,$tmpPlayer[0]);
-		}
-		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period, $team_id);
-		foreach($sendRosterStatus as $status) {
-			if($status['code'] == 404) {
-				$rosterMessages .= $this->dataModel->getTeamName($team_id).": ".$status['message']."<br />";
-			}
-		}
-		$recieveRosterStatus = $this->dataModel->getPlayersRosterStatus($receiveListIds,$scoring_period,$team2Id);
-		foreach($recieveRosterStatus as $status) {
-			if($status['code'] == 404) {
-				$rosterMessages .= $this->dataModel->getTeamName($team2Id).": ".$status['message']."<br />";
-			}
-		}
-		return $rosterMessages;
 	}
 	public function tradeReview() {
 		$this->getURIData();
@@ -791,6 +750,15 @@ class team extends BaseEditor {
 	    $this->params['pageType'] = PAGE_FORM;
 		$this->displayView();
 	}
+	/*-------------------------------------------
+	/
+	/	TRANSACTIONS
+	/
+	/------------------------------------------*/
+	/**
+	 * TRANSACTIONS
+	 * Draws the main transaction summary for the current team
+	 */
 	public function transactions() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
@@ -837,6 +805,10 @@ class team extends BaseEditor {
 	    $this->params['pageType'] = PAGE_FORM;
 		$this->displayView();	
 	}
+	/**
+	 * PROCESS TRANSACTION
+	 * Enter description here ...
+	 */
 	public function processTransaction() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
@@ -1023,6 +995,75 @@ class team extends BaseEditor {
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
+	/**
+	 *	Add/DROP Page.
+	 *	Calls the add/drop page interface for teams.
+	 */
+	public function addDrop() {
+		$this->getURIData();
+		
+		$this->enqueStyle('list_picker.css');
+		
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		$this->data['team_id'] = $this->uriVars['id'];
+		$this->data['league_id'] = $this->dataModel->league_id;
+		
+		// GET DRAFT STATUS
+		$this->load->model('draft_model');
+		$this->draft_model->load($this->dataModel->league_id,'league_id');
+		$this->data['subTitle'] = "Add/Drop Players";
+		if ($this->draft_model->completed != 1) {
+			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+			
+		} else {
+
+			if (!function_exists('getCurrentScoringPeriod')) {
+				$this->load->helper('admin');
+			}
+			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
+			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
+			
+			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+			$returnVar= 'playerList';
+			$this->data['list_type'] = (isset($this->uriVars['list_type'])) ? $this->uriVars['list_type'] : 2;
+			if (isset($this->data['list_type']) && $this->data['list_type'] == 2) {
+				$returnVar= 'formatted_stats';
+			}
+			if(isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) {
+				$this->data['waiver_order'] = $this->dataModel->getWaiverOrder();
+				$this->data['waiver_claims'] = $this->dataModel->getWaiverClaims();
+			}
+			
+			$this->data[$returnVar] = $this->pullList(true,$this->dataModel->league_id, $this->data['list_type']);
+			$this->data['league_id'] = $this->dataModel->league_id;
+			$this->params['pageType'] = PAGE_FORM;
+			$this->params['content'] = $this->load->view($this->views['ADD_DROP'], $this->data, true);
+		}
+		$this->makeNav();
+		$this->displayView();
+	}
+	public function removeClaim() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->loadData();
+			if (isset($this->uriVars['id'])) {
+				$this->db->where('id',$this->uriVars['id']);
+				$this->db->delete('fantasy_teams_waiver_claims');
+				$message = '<span class="success">The selected waiver claim has been successfully removed.</span>';
+			} else {
+				$error = true;
+				$message = '<span class="error">A required claim identifier was not found. Please go back and try the operation again or contact the site adminitrator to report the problem.</span>';
+			}
+			$this->session->set_flashdata('message', $message);
+			redirect('team/addDrop/id/'.$this->uriVars['team_id']);
+		} else {
+	        $this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }	
+	}
+	
 	public function administrativeAdd() {
 		$this->getURIData();
 		if (!function_exists('getCurrentScoringPeriod')) {
@@ -1373,72 +1414,67 @@ class team extends BaseEditor {
 			$this->output->set_output($result);
 		}
 	}
-	public function avatar() {
-		if ($this->params['loggedIn']) {
-			$this->getURIData();
-			$this->loadData();
-			$this->data['avatar'] = $this->dataModel->avatar;
-			$this->data['team_id'] = $this->dataModel->id;
-			$this->data['teamname'] = $this->dataModel->teamname;
-			$this->data['subTitle'] = 'Edit Team Avatar';
+	public function stats() {
+		
+		$this->getURIData();
+		$this->data['subTitle'] = "Set lineup";
+		$this->load->model($this->modelName,'dataModel');
+		
+		$team_id = -1;
+		if (isset($this->uriVars['id']) && !empty($this->uriVars['id']) && $this->uriVars['id'] != -1) {
+			$team_id = $this->uriVars['id'];
+		} else if (isset($this->uriVars['team_id']) && !empty($this->uriVars['team_id']) && $this->uriVars['team_id'] != -1) {
+			$team_id = $this->uriVars['team_id'];
+		} 
+		$this->dataModel->load($team_id);
+		$this->data['thisItem']['team_id'] = $this->dataModel->id;
+		$this->data['thisItem']['teamname'] = $this->dataModel->teamname;
+		$this->data['thisItem']['teamnick'] = $this->dataModel->teamnick;
+		$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
+		$this->data['team_id'] = $team_id;	
+		$this->data['year'] = date('Y');
+		$this->data['league_id']  = $this->dataModel->league_id;
+		
+		
+		$this->prepForQuery();
+		
+		$this->data['batters'] = $this->dataModel->getBatters(-1, false, -999);
+		$this->data['pitchers'] = $this->dataModel->getPitchers(-1, false, -999);
+		
+		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
+		
+			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules,$this->data['batters']);
+			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules,$this->data['pitchers']);
 			
-			//echo("Submitted = ".(($this->input->post('submitted')) ? 'true':'false')."<br />");
-			if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name']))) {
-				if ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name'])) {
-					$fv = & _get_validation_object();
-					$fv->setError('avatarFile','The avatar File field is required.');
-				}
-				$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
-				$this->params['pageType'] = PAGE_FORM;
-				$this->displayView();
-			} else {
-				if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || strpos($_FILES['avatarFile']['name'],'.jpeg') || strpos($_FILES['avatarFile']['name'],'.gif') || strpos($_FILES['avatarFile']['name'],'.png'))) {
-					$fv = & _get_validation_object();
-					$fv->setError('avatarFile','The file selected is not a valid image file.');  
-					$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
-					$this->params['pageType'] = PAGE_FORM;
-					$this->displayView();
-				} else {
-					if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
-						$change = $this->dataModel->applyData($this->input, $this->params['currUser']); 
-						if ($change) {
-							$this->dataModel->save();
-							$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');
-							redirect('team/info/'.$this->dataModel->id);
-						} else {
-							$message = '<p class="error">Avatar Change Failed.';
-							$message .= '</p >';
-							$this->session->set_flashdata('message', $message);
-							redirect('team/avatar');
-						}
-					} else {
-						throw new UploadException($_FILES['avatarFiles']['error']);
-					}
-				}
-			}
+			$this->data['title'] = array();
+			$this->data['formatted_stats'] = array();
+			$this->data['limit'] = -1;
+			$this->data['startIndex'] = 0;
+			
+			$this->data['title']['batters'] = "Batting";
+			$this->data['colnames']=player_stat_column_headers(1, QUERY_STANDARD, true);
+			$this->data['fields'] = player_stat_fields_list(1, QUERY_STANDARD, true);
+			$this->data['player_stats'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
+			$this->data['showTeam'] = -1;
+			$this->data['formatted_stats']['batters'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+	
+			$this->data['title']['pitchers'] = "Pitching";
+			$this->data['colnames']=player_stat_column_headers(2, QUERY_STANDARD, true);
+			$this->data['fields'] = player_stat_fields_list(2, QUERY_STANDARD, true);
+			$this->data['player_stats'] = formatStatsForDisplay($stats['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
+			$this->data['formatted_stats']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 		} else {
-	        $this->session->set_flashdata('loginRedirect',current_url());	
-			redirect('user/login');
-	    }
-	}
-	public function removeAvatar() {
-		if ($this->params['loggedIn']) {
-			$this->getURIData();
-			$this->loadData();
-			if ($this->dataModel->id != -1) {
-				$success = $this->dataModel->deleteFile('avatar',PATH_TEAMS_AVATAR_WRITE,true);
-			}
-			if ($success) {
-				$this->session->set_flashdata('message', '<p class="success">The image has been successfully deleted.</p>');
-				redirect('team/info/'.$this->dataModel->id);
-			} else {
-				$message = '<p class="error">Avatar Delete Failed.';
-				$message .= '<b>'.$this->dataModel->statusMess.'</b>';
-				$message .= '</p >';
-				$this->session->set_flashdata('message', $message);
-				redirect('team/avatar');
-			}
+			$this->data['message']= "The ".$this->dataModel->teamname." roster is incomplete. No stats are available at this time.";
 		}
+		$this->data['league_id'] = $this->dataModel->league_id;
+		if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
+			$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
+		}
+		$this->makeNav();
+		$this->params['pageType'] = PAGE_FORM;
+		$this->params['subTitle'] = $this->data['subTitle'] = $this->dataModel->teamname." ".$this->dataModel->teamnick." Stats";
+		$this->params['content'] = $this->load->view($this->views['STATS'], $this->data, true);
+	    $this->displayView();
 	}
 	public function setLineup() {
 		$this->getURIData();
@@ -1476,6 +1512,33 @@ class team extends BaseEditor {
 	/*--------------------------------
 	/	PRIVATE FUNCTIONS
 	/-------------------------------*/
+	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period) {
+		
+		$rosterMessages = "";
+		$sendIds = array();
+		foreach($sendList as $data) {
+			$tmpPlayer = explode("_",$data);
+			array_push($sendIds,$tmpPlayer[0]);
+		}
+		$receiveListIds = array();
+		foreach($receiveList as $data) {
+			$tmpPlayer = explode("_",$data);
+			array_push($receiveListIds,$tmpPlayer[0]);
+		}
+		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period, $team_id);
+		foreach($sendRosterStatus as $status) {
+			if($status['code'] == 404) {
+				$rosterMessages .= $this->dataModel->getTeamName($team_id).": ".$status['message']."<br />";
+			}
+		}
+		$recieveRosterStatus = $this->dataModel->getPlayersRosterStatus($receiveListIds,$scoring_period,$team2Id);
+		foreach($recieveRosterStatus as $status) {
+			if($status['code'] == 404) {
+				$rosterMessages .= $this->dataModel->getTeamName($team2Id).": ".$status['message']."<br />";
+			}
+		}
+		return $rosterMessages;
+	}
 	protected function prepForQuery() {
 		$this->data['scoring_rules'] = $this->league_model->getScoringRules(0);
 		if (!function_exists('getAvailableScoringPeriods')) {
@@ -1607,6 +1670,9 @@ class team extends BaseEditor {
 		} // END if
 		if ($this->input->post('trans_type')) {
 			$this->uriVars['trans_type'] = $this->input->post('trans_type');
+		} // END if
+		if ($this->input->post('prev_trade_id')) {
+			$this->uriVars['prev_trade_id'] = $this->input->post('prev_trade_id');
 		} // END if
 		
 	}

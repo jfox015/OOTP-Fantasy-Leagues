@@ -40,3 +40,5 @@ $lang['team_trade_retracted'] = 'To [USERNAME],
 <p>
 [COMMENTS]</p>
 <p>';
+$lang['team_trade_invalid'] = 'The effective scoring period for this trade is passed the current period id. The trade has expired.';
+$lang['team_trade_processed'] = 'The trade has been successfully completed. All players have been assigned to their new rosters.';
