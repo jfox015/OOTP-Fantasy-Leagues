@@ -363,6 +363,10 @@ class team extends BaseEditor {
 		$this->makeNav();
 		$this->displayView();
 	}
+	/**
+	 * TRADE RESPONSE
+	 * CATCH ALL FOR TRADE RESPONSES
+	 */
 	public function tradeResponse() {
 		
 		$code = -1;
@@ -388,6 +392,9 @@ class team extends BaseEditor {
 			$this->load->model($this->modelName,'dataModel');
 			$this->load->model('league_model');
 
+			if (!function_exists('getCurrentScoringPeriod')) {
+				$this->load->helper('admin');
+			} // END if
 			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
 				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
 			} else {
@@ -397,7 +404,9 @@ class team extends BaseEditor {
 			$this->data['league_id'] = $this->dataModel->league_id;
 			
 			$trade = $this->dataModel->getTrade($this->data['trade_id']);
-			if ($this->data['scoring_period'] == $trade['in_period']) {
+			print("current scoring = ".$this->data['scoring_period']['id']."<br />");
+			print("trade['in_period'] = ".$trade['in_period']."<br />");
+			if ($this->data['scoring_period']['id'] == $trade['in_period']) {
 				$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period']);
 				if (empty($rosterMessages)) {
 					$processResponse = $this->dataModel->processTradeResponse($this->data['trade_id'],$this->data['type'],$this->data['comments'],$this->league_model->commissioner_id,

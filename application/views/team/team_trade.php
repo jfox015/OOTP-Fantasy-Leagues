@@ -73,28 +73,37 @@
 		});
 		$('input[rel=responsebtn]').live('click',function () {
 			var params = this.id.split("|");
-			var url = "<?php echo($config['fantasy_web_root']); ?>team/tradeResponse/id/"+team_id+"/type/"+params[0]+"/trade_id/"+params[1]+cacheBuster();
-			$('div#tradeStatus').removeClass('error');
-			$('div#tradeStatus').removeClass('success');
-			$('div#tradeStatus').html(ajaxWait);
-			$('div#tradeStatusBox').fadeIn("fast");
-			$.getJSON(url, function(data){
-				$('div#tradeStatus').empty();
-				if (data.code.indexOf("200") != -1) {
-					if (data.status.indexOf(":") != -1) {
-						var status = data.status.split(":");
-						$('div#tradeStatus').addClass(status[0].toLowerCase());
-						$('div#tradeStatus').html(status[1]);
-					} else {
-						$('div#tradeStatus').addClass('success');
-						$('div#tradeStatus').html("Your response has been completed.");
-						setTimeout('refreshPage()',3000);
-					}
-				} else {
-					$('div#tradeStatus').addClass('error');
-					$('div#tradeStatus').append('No information was returned for the selected transaction.');
+			var  proceed = true;
+			if (params[0] == <?php print(TRADE_REJECTED_OWNER); ?>) {
+				proceed = confirm("Do you wish to reject this trade WITHOUT adding a response to the proposing team's owner? Click 'OK' to submit the rejection, click 'Cancel' to provide a response,");
+				if (!proceed) {
+					document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeReview/league_id/'+league_id+'/team_id/'+team_id+'/trans_type/2/trade_id/'+params[1];
 				}
-			});
+			}
+			if (proceed) {
+				var url = "<?php echo($config['fantasy_web_root']); ?>team/tradeResponse/id/"+team_id+"/type/"+params[0]+"/trade_id/"+params[1]+cacheBuster();
+				$('div#tradeStatus').removeClass('error');
+				$('div#tradeStatus').removeClass('success');
+				$('div#tradeStatus').html(ajaxWait);
+				$('div#tradeStatusBox').fadeIn("fast");
+				$.getJSON(url, function(data){
+					$('div#tradeStatus').empty();
+					if (data.code.indexOf("200") != -1) {
+						if (data.status.indexOf(":") != -1) {
+							var status = data.status.split(":");
+							$('div#tradeStatus').addClass(status[0].toLowerCase());
+							$('div#tradeStatus').html(status[1]);
+						} else {
+							$('div#tradeStatus').addClass('success');
+							$('div#tradeStatus').html("Your response has been completed.");
+							setTimeout('refreshPage()',3000);
+						}
+					} else {
+						$('div#tradeStatus').addClass('error');
+						$('div#tradeStatus').append('No information was returned for the selected transaction.');
+					}
+				});
+			}
 			return false;
 		});
 		$('input[rel=reviewbtn]').live('click',function () {

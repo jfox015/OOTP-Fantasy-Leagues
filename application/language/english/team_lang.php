@@ -39,4 +39,4 @@ $lang['team_trade_retracted'] = 'To [USERNAME],
 <p>The trade offer from the owner of the [OFFERING_TEAM_NAME] has been retracted. The owner gave the following reason:</p>
 <p>
 [COMMENTS]</p>
-<p>'';
+<p>';

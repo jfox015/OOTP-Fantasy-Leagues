@@ -20,11 +20,12 @@
 			alert("Counter offer");
 		});
 		$('#btnReject').click(function(){
-			alert("Reject offer");
+			$('#type').val(<?php print(TRADE_REJECTED_OWNER); ?>);
+			$('#tradeForm').submit();
 		});
 		$('#btnAccept').click(function(){
 			$('#type').val(<?php print(TRADE_ACCEPTED); ?>);
-			alert($('#type').val());
+			//alert($('#type').val());
 			$('#tradeForm').submit();
 		});
 		$('#btnRetract').click(function(){
@@ -143,7 +144,7 @@
                     if ($trans_type == 1) { ?>
                     <label for="expires">Expires in: </label> 
                     <?php 
-                    $expireList = array(-1=>"Select One",0=>"No Expiration",1=>"1 Days",2=>"2 Days",3=>"3 Days",4=>"4 Days",5=>"5 Days"); 
+                    $expireList = array(-1=>"Select One",100=>"Next Sim",1=>"1 Days",2=>"2 Days",3=>"3 Days",4=>"4 Days",5=>"5 Days"); 
                     ?>
                     <select id="expiresIn" name="expiresIn">
                     <?php 

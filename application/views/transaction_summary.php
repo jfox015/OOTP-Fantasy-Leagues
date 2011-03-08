@@ -35,6 +35,10 @@
                             } else {
                                 echo("Unknown Team");	
                             } // END if
+                            // IF THIS IS A TRADE, DISPLAY THE OTHER TEAMS NAME AND INFO
+                            if(isset($details['trade_team_id']) && $details['trade_team_id'] > 0 && !empty($details['trade_team_name'])) {
+                            	print "<br /><br />".anchor('/team/info/'.$details['trade_team_id'], $details['trade_team_name']); 
+                            }
                             ?></td>
                             <td class='hsc2_l'>
                             <table width="100%" cellpadding="0" cellspacing="2" border="0">

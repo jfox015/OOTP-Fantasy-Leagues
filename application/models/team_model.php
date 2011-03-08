@@ -114,9 +114,26 @@ class team_model extends base_model {
 		//echo("single transaction logged.<br />");
 		return true;
 	}
+	/**
+	 * LOG TRANSACTION
+	 * Enter description here ...
+	 * @param $added
+	 * @param $dropped
+	 * @param $claimed
+	 * @param $tradedTo
+	 * @param $tradedFrom
+	 * @param $commish_id
+	 * @param $currUser
+	 * @param $isAdmin
+	 * @param $effective
+	 * @param $league_id
+	 * @param $team_id
+	 * @param $owner_id
+	 * @param $trade_team_id
+	 */
 	public function logTransaction($added = array(), $dropped = array(), $claimed = array(), $tradedTo = array(), $tradedFrom = array(),
 									$commish_id = false, $currUser = false, $isAdmin = false, $effective = -1, 
-									$league_id = false, $team_id = false, $owner_id = false) {
+									$league_id = false, $team_id = false, $owner_id = false, $trade_team_id = -1) {
 		
 		if (sizeof($added) == 0 && sizeof($dropped) == 0 && sizeof($claimed) == 0 && sizeof($tradedTo) == 0 && sizeof($tradedFrom) == 0) return;
 		
@@ -159,7 +176,7 @@ class team_model extends base_model {
 		
 		$data = array('team_id' =>$team_id, 'owner_id' => $owner_id, 'added' => $addedStr,'dropped' => $droppedStr,
 					  'claimed'=>$claimedStr, 'tradedTo' => $tradedToStr,'tradedFrom' => $tradedFromStr,
-					  'league_id'=> $league_id,'trans_owner'=>$trans_owner, 'effective'=>$effective);
+					  'league_id'=> $league_id,'trans_owner'=>$trans_owner, 'effective'=>$effective,'trade_team_id'=>$trade_team_id);
 		
 		$this->db->insert($this->tables['TRANSACTIONS'],$data);
 		
@@ -285,10 +302,10 @@ class team_model extends base_model {
 					$data['messageBody']= $msg;
 					$this->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'], 
 										  $commish_id, $currUser, $isAdmin, $trade['in_period'], 
-										  $league_id, $trade['team_1_id'], $this->getTeamOwnerId($trade['team_1_id']));
+										  $league_id, $trade['team_1_id'], $this->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
 					$this->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'] ,
 										  $commish_id, $currUser, $isAdmin, $trade['in_period'], 
-										  $league_id, $trade['team_2_id'], $this->getTeamOwnerId($trade['team_2_id']));				
+										  $league_id, $trade['team_2_id'], $this->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);				
 					break;
 				// REJECTED BY OWNER
 				case TRADE_REJECTED_OWNER:

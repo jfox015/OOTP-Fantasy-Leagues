@@ -443,6 +443,20 @@ class league_model extends base_model {
 		} // END for
 		return "OK";
 	} // END function
+	protected function loadLeagueTeams($league_id = false) {
+		if ($league_id === false) { $league_id = $this->id; }
+		$teamNames = array();
+		$this->db->select("id, teamname, teamnick"); 
+		$this->db->where("league_id",$league_id);
+		$query = $this->db->get("fantasy_teams");
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				$teamNames[$row->id] = $row->teamname." ".$row->teamnick;
+			}
+		}
+		$query->free_result();
+		return $teamNames;
+	}
 	/**
 	 *	GET LEAGUE SCHEDULE.
 	 *	Returns either the entire schdule for the specified league OR only games for a 
@@ -456,16 +470,7 @@ class league_model extends base_model {
 		
 		if ($league_id === false) { $league_id = $this->id; }
 		
-		$teamNames = array();
-		$this->db->select("id, teamname, teamnick"); 
-		$this->db->where("league_id",$league_id);
-		$query = $this->db->get("fantasy_teams");
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				$teamNames[$row->id] = $row->teamname." ".$row->teamnick;
-			}
-		}
-		$query->free_result();
+		$teamNames = $this->loadLeagueTeams($league_id);
 		
 		$schedule = array();
 		$score_period_id = 0;
@@ -509,7 +514,9 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 		
 		$transactions = array();
-		$this->db->select("trans_date, team_id, added, dropped, claimed, tradedTo, tradedFrom, trans_owner, effective"); 
+		$teamNames = $this->loadLeagueTeams($league_id);
+		
+		$this->db->select("trans_date, team_id, added, dropped, claimed, tradedTo, tradedFrom, trade_team_id, trans_owner, effective"); 
 		$this->db->where("league_id",$league_id);
 		if ($team_id !== false) {
 			$this->db->where('team_id',$team_id);
@@ -555,10 +562,15 @@ class league_model extends base_model {
 				if (!function_exists('getScoringPeriodByDate')) {
 					$this->load->helper('admin');
 				}
+				$trade_team_name = "";
+				if ($row->trade_team_id > 0) {
+					$trade_team_name = $teamNames[$row->trade_team_id];
+				}
 				array_push($transactions,array('trans_date'=>$row->trans_date, 'team_id'=>$row->team_id, 
 													  'added'=>$transArrays['added'], 'dropped'=>$transArrays['dropped'], 
 													  'claimed'=>$transArrays['claimed'], 'tradedTo'=>$transArrays['tradedTo'], 'tradedFrom'=>$transArrays['tradedFrom'], 
-													  'trans_owner'=>$row->trans_owner, 'effective'=>$row->effective));
+													  'trans_owner'=>$row->trans_owner, 'effective'=>$row->effective,
+													  'trade_team_id'=>$row->trade_team_id,'trade_team_name'=>$trade_team_name));
 			}
 		}
 		$query->free_result();
