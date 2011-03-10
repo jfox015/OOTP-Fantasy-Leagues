@@ -194,6 +194,9 @@ img.league_news_tall {
 	display:block;
 	height: 18px;
 }
+.small, .small a {
+	font-size:9px;
+}
 
 /* hilighting */
 .hilight { background:#FF9; color:#C00; font-weight:bold; }
@@ -213,4 +216,5 @@ img.league_news_tall {
 .success a  { color: #264409; }
 .info a  	{ color: #039; }
 .warn a 	{ color:#8B2C0C; font-weight:bold; }
+.inline { padding: .1em; margin: .1em; }
 

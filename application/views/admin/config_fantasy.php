@@ -1,4 +1,18 @@
-		<!-- BEGIN REGISTRATION FORM -->
+	<script type="text/javascript" charset="UTF-8">
+	$(document).ready(function(){
+    	$('input:radio[name=useTrades]').click(function() {
+			testTradeStatus();
+		});
+		testTradeStatus();
+	});
+	function testTradeStatus() {
+		var val = $('input:radio[name=useTrades]:checked').val();
+		var display = "none";
+		if (val == 1) display = "block";
+		$('#tradeDetails').css('display',display);
+	}
+	</script>						   
+    	<!-- BEGIN REGISTRATION FORM -->
     <div id="center-column">
         <?php include_once('admin_breadcrumb.php'); ?>
         
@@ -28,7 +42,9 @@
 			$form->span("This is the real world calendar date when you will begin running sims for this OOTP season. Be sure to choose a date that is far enough out to allow for leagues to be populated and owners to scout available players for the draft.",array('class'=>'field_caption'));
 			$form->space();
             $form->text('sim_length','Sim length <span class="normal">(In Days)</span>','required|trim|number',($input->post('sim_length') ? $input->post('sim_length') : $config['sim_length']),array('class'=>'shorttext'));
-            $form->space();
+            $form->nobr();
+			$form->span("This is the default sim lanegth for the league the mod uses to build scoring period schedules. You can edit the length of each scoring period from the game dashboard.",array('class'=>'field_caption'));
+			$form->space();
             $form->select('default_scoring_periods|default_scoring_periods',array(27=>27,26=>26,25=>25,24=>24,23=>23,22=>22,21=>21,20=>20,19=>19,18=>18),'Default No. Scoring Periods',($this->input->post('default_scoring_periods')) ? $this->input->post('default_scoring_periods') : $config['default_scoring_periods'],'required');
 			$form->br();
            	$responses[] = array('1','Yes');
@@ -77,27 +93,27 @@
             $form->space();
 			
 			$form->fieldset('Trading');
-			$form->fieldset('',array('class'=>'radioGroup'));
-			$form->radiogroup ('useTrades',$responses,'Trading Enabled?',($this->input->post('useTrades') ? $this->input->post('useTrades') : $config['useTrades']),'required');
-			$form->fieldset('',array('class'=>'radioGroup'));
-			$form->radiogroup ('tradesExpire',$responses,'Trade offers can expire?',($this->input->post('tradesExpire') ? $this->input->post('tradesExpire') : $config['tradesExpire']),'required');
-			$expireList = array(-1=>"Select One",100=>"Following Sim Period"); 
+			$expireList = array(-1=>"Select One",100=>"Until Next Sim"); 
 			for($d = 1; $d < $config['sim_length'] + 1; $d++) { 
 				$expireList = $expireList  + array($d =>$d." Days");
 			}
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('useTrades',$responses,'Trading Enabled?',($this->input->post('useTrades') ? $this->input->post('useTrades') : $config['useTrades']),'required');
+			$form->fieldset('');
+			//$form->html('<div id="tradeDetails">');
+			//$form->fieldset('',array('class'=>'radioGroup'));
+			$form->fieldset('');
+            $form->select('approvalType|approvalType',loadSimpleDataList('tradeApprovalType'),'Trade Approval',($this->input->post('approvalType')) ? $this->input->post('approvalType') : $config['approvalType'],'required');
+			$form->select('minProtests|minProtests',array(1=>1,2=>2,3=>3,4=>4,5=>5,6=>6,7=>7,8=>8),'League Protests to void trade',($this->input->post('minProtests')) ? $this->input->post('minProtests') : $config['minProtests']);
+			$form->select('protestPeriodDays|protestPeriodDays',$expireList,'Trade Review Period',($this->input->post('protestPeriodDays')) ? $this->input->post('protestPeriodDays') : $config['protestPeriodDays']);
+			//$form->radiogroup ('commishApproveTrades',$responses,'Commissioner Approval Required?',($this->input->post('commishApproveTrades') ? $this->input->post('commishApproveTrades') : $config['commishApproveTrades']),'required');
+			$form->space();
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('tradesExpire',$responses,'Trade offers can expire?',($this->input->post('tradesExpire') ? $this->input->post('tradesExpire') : $config['tradesExpire']),'required');
+			$form->space();
 			$form->fieldset('');
             $form->select('defaultExpiration|defaultExpiration',$expireList,'Default Expiration (Days)',($this->input->post('defaultExpiration')) ? $this->input->post('defaultExpiration') : $config['defaultExpiration']);
-			$form->fieldset('',array('class'=>'radioGroup'));
-			$form->radiogroup ('allowTradeProtests',$responses,'Owners can protest trades?',($this->input->post('allowTradeProtests') ? $this->input->post('allowTradeProtests') : $config['allowTradeProtests']),'required');
-			$form->fieldset('');
-            $form->select('minProtests|minProtests',array(1=>1,2=>2,3=>3,4=>4,5=>5,6=>6,7=>7,8=>8),'Protests needed to void trade',($this->input->post('minProtests')) ? $this->input->post('minProtests') : $config['minProtests']);
-			$form->select('protestPeriodDays|protestPeriodDays',$expireList,'Protest Period (Days)',($this->input->post('protestPeriodDays')) ? $this->input->post('protestPeriodDays') : $config['protestPeriodDays']);
-			
-			$form->fieldset('',array('class'=>'radioGroup'));
-			$form->radiogroup ('commishApproveTrades',$responses,'Commissioners must approve trades?',($this->input->post('commishApproveTrades') ? $this->input->post('commishApproveTrades') : $config['commishApproveTrades']),'required');
-			$form->fieldset('',array('class'=>'radioGroup'));
-			$form->radiogroup ('adminApproveTrades',$responses,'Administrators must approve trades?',($this->input->post('adminApproveTrades') ? $this->input->post('adminApproveTrades') : $config['adminApproveTrades']),'required');
-			
+           //$form->html('</div>');
 			$form->fieldset('',array('class'=>'button_bar'));
             $form->submit('Submit');
             echo($form->get());

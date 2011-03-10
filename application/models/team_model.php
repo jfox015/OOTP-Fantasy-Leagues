@@ -216,17 +216,19 @@ class team_model extends base_model {
 	 * @param $leagueId			The league id. Uses $this->$league_id if FALSE
 	 */
 	public function makeTradeOffer($sendPlayers, $team2Id, $recievePlayers, $scoring_period_id, $comments = false, $prevTradeId = false, 
-									$expiresIn = false, $league_id = false, $team_id = false) {
+									$expiresIn = false,$defaultExpiration = 1, $league_id = false, $team_id = false) {
 		
+		//print($defaultExpiration."<br />");
 		if (sizeof($sendPlayers) == 0 && sizeof($recievePlayers) == 0 && !isset($team2Id) &&!isset($scoring_period_id)) return;
 		
 		if ($league_id === false) $league_id = $this->league_id;
 		if ($team_id === false) $team_id = $this->id;
 		$expireDate = EMPTY_DATE_TIME_STR;
-		if ($expiresIn !== false) {
-			$day = 60*60*24;
-			$expireDate = time() + ($day * $expiresIn);
+		$day = 60*60*24;
+		if ($expiresIn === false || $expiresIn == -1) {
+			$expiresIn = $defaultExpiration;
 		}
+		$expireDate = strtotime(date('m/d/Y 00:00:00')) + ($day * $expiresIn);	
 		$data = array('team_1_id' =>$team_id, 'send_players' => serialize($sendPlayers), 'team_2_id' => $team2Id,'receive_players' => serialize($recievePlayers),
 					  'status'=>1, 'league_id'=> $league_id,'comments'=>$comments, 'previous_trade_id'=>$prevTradeId,
 					  'expiration_date'=>date('Y-m-d h:m:s', $expireDate),'in_period'=>intval($scoring_period_id));
@@ -289,7 +291,7 @@ class team_model extends base_model {
 					$outMess .= "No players to be ".$lbl." could be found.";
 				} // END if
 			} // END foreach
-			return $this->updateTrade($trade_id, $status, $comments);
+			return $this->updateTrade($trade_id, TRADE_COMPLETED, $comments);
 		} else {
 			return $outMess;
 		}
@@ -303,7 +305,7 @@ class team_model extends base_model {
 	 * @param $limit			The limit on rows to return. No limit if =1
 	 * @param $startIndex		The first row to return. Stars with first row if 0.
 	 */
-	public function logTradeProtest($trade_id, $team_id = false, $league_id = false){
+	public function logTradeProtest($trade_id, $team_id = false, $comments = "", $league_id = false){
 				
 		if (!isset($trade_id)) return false;
 		
@@ -323,7 +325,7 @@ class team_model extends base_model {
 		}
 		$query->free_result();
 		
-		$data = array('protest_team_id' =>$team_id, 'trade_id' =>  $trade_id, 'league_id' => $league_id);
+		$data = array('protest_team_id' =>$team_id, 'trade_id' =>  $trade_id, 'league_id' => $league_id, 'comments'=>$comments);
 		$this->db->insert($this->tables['TRADE_PROTESTS'],$data);
 		
 		return true;
@@ -341,11 +343,11 @@ class team_model extends base_model {
 		if ($league_id === false) $league_id = $this->league_id;
 		
 		$protests = array();
-		$this->db->select($this->tables['TRADE_PROTESTS'].'.id, protest_team_id, teamname, teamnick, owner_id, protest_date, comments');
+		$this->db->select($this->tables['TRADE_PROTESTS'].'.id, trade_id, protest_team_id, teamname, teamnick, owner_id, protest_date, comments');
 		
 		$this->db->join($this->tblName,$this->tblName.".id = ".$this->tables['TRADE_PROTESTS'].".protest_team_id", "right outer");
 		
-		if ($league_id !== false && $league_id != -1) {
+		if ($trade_id !== false && $trade_id != -1) {
 			$this->db->where('trade_id',$trade_id);
 		}
 		if ($league_id !== false && $league_id != -1) {
@@ -362,11 +364,12 @@ class team_model extends base_model {
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				$ownerStr = getUsername($row->owner_id);
-				array_push($protests,array('id'=>$row->id, 'protest_date'=>$row->protest_date, 'team_id'=>$row->protest_team_id, 
-										   'team'=>$row->teamname." ".$row->teamnick, 'owner'=>$ownerStr, 'comments'=>$row->comments));
+				array_push($protests,array('id'=>$row->id, 'trade_id'=>$row->trade_id, 'protest_date'=>$row->protest_date, 'team_id'=>$row->protest_team_id, 
+										   'team_name'=>$row->teamname." ".$row->teamnick, 'owner'=>$ownerStr, 'comments'=>$row->comments));
 			} // END foreach
 		} // END if
 		$query->free_result();
+		//print($this->db->last_query()."<br />");
 		return $protests;
 	}
 	/**
@@ -377,9 +380,9 @@ class team_model extends base_model {
 	 * @param $limit			The limit on rows to return. No limit if =1
 	 * @param $startIndex		The first row to return. Stars with first row if 0.
 	 */
-	public function getPendingTrades($league_id = false, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $limit = -1, $startIndex = 0) {
+	public function getPendingTrades($league_id = false, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $status = false, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
-		return $this->getTradeData($league_id, $team_id, $team_2_id, false, TRADE_OFFERED, $exclude_team_id, $countProtests, $limit, $startIndex);
+		return $this->getTradeData($league_id, $team_id, $team_2_id, false, $status, $exclude_team_id, $countProtests, $limit, $startIndex);
 	}
 	
 	/**
@@ -395,6 +398,19 @@ class team_model extends base_model {
 		return $this->getTradeData($league_id, $team_id, $team_2_id, false, TRADE_COMPLETED, $exclude_team_id, $countProtests, $limit, $startIndex);
 	}
 	/**
+	 * GET ALL TRADES
+	 * Retrieves trade data from the TRADES table for all COMPLETED trades.
+	 * @param $league_id		The league id. Uses $this->$league_id if FALSE
+	 * @param $team_id			The ID of the team making the offer. Ommited if FALSE
+	 * @param $limit			The limit on rows to return. No limit if =1
+	 * @param $startIndex		The first row to return. Stars with first row if 0.
+	 */
+	public function getAllTrades($league_id = false, $countProtests = false, $limit = -1, $startIndex = 0) {
+		if ($league_id === false) $league_id = $this->league_id;
+		return $this->getTradeData($league_id, false, false, false, 100, false, $countProtests, $limit, $startIndex);
+	}
+	
+	/**
 	 * GET TRADE
 	 * Retrieves trade data from the TRADES table.
 	 * @param 	$trade_id			The trade id.
@@ -405,7 +421,7 @@ class team_model extends base_model {
 		
 		if ($trade_id === false) return false;
 		
-		$this->db->select($this->tables['TRADES'].".id, offer_date, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, comments"); 
+		$this->db->select($this->tables['TRADES'].".id, offer_date, status, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, comments"); 
 		$this->db->join($this->tables['TRADES_STATUS'],$this->tables['TRADES_STATUS'].".id = ".$this->tables['TRADES'].".status", "right outer");
 		$this->db->where($this->tables['TRADES'].".id",$trade_id);
 		$query = $this->db->get($this->tables['TRADES']);
@@ -417,7 +433,7 @@ class team_model extends base_model {
 			$trade = array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
 													  'send_players'=>unserialize($row->send_players), 'receive_players'=>unserialize($row->receive_players), 
 													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
-													  'comments'=>$row->comments,'expiration_date'=>$row->expiration_date);
+													  'status'=>$row->status,'comments'=>$row->comments,'expiration_date'=>$row->expiration_date);
 		}
 		$query->free_result();
 		return $trade;
@@ -438,21 +454,27 @@ class team_model extends base_model {
 		if ($league_id === false) { $league_id = $this->league_id; }
 		
 		$trades = array();
-		$selectStr = $this->tables['TRADES'].".id, offer_date, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, ".$this->tables['TRADES'].".comments"; 
+		$selectStr = $this->tables['TRADES'].".id, offer_date, status, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, ".$this->tables['TRADES'].".comments"; 
 		if ($countProtests === true) {
-			$selectStr .= ",(SELECT COUNT(".$this->tables['TRADE_PROTESTS'].".id) as protestCount FROM ".$this->tables['TRADE_PROTESTS']." WHERE ".$this->tables['TRADE_PROTESTS'].".trade_id = ".$this->tables['TRADES'].".id)";
+			$selectStr .= ",(SELECT COUNT(".$this->tables['TRADE_PROTESTS'].".id) FROM ".$this->tables['TRADE_PROTESTS']." WHERE ".$this->tables['TRADE_PROTESTS'].".trade_id = ".$this->tables['TRADES'].".id) as protest_count";
 		}
 		$this->db->select($selectStr);
 		$this->db->join($this->tables['TRADES_STATUS'],$this->tables['TRADES_STATUS'].".id = ".$this->tables['TRADES'].".status", "right outer");
+		
 		$this->db->where($this->tables['TRADES'].".league_id",$league_id);
+		
 		if ($team_id !== false) {
 			$this->db->where('team_1_id',$team_id);
 		}
 		if ($team_2_id !== false) {
 			$this->db->where('team_2_id',$team_2_id);
 		}
-		if ($status !== false) {
+		if ($status !== false && $status != 100) {
 			$this->db->where('status',$status);
+		} else {
+			if ($status != 100) {
+				$this->db->where('status = '.TRADE_OFFERED.' OR status = '.TRADE_PENDING_LEAGUE_APPROVAL.' OR status = '.TRADE_PENDING_COMMISH_APPROVAL);
+			}
 		}
 		if ($exclude_team_id !== false) {
 			$this->db->where_not_in('team_1_id',$exclude_team_id);
@@ -468,7 +490,7 @@ class team_model extends base_model {
 		}
 		$this->db->order_by('offer_date','desc');
 		$query = $this->db->get($this->tables['TRADES']);
-		
+		//print($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			$playerTypes = array('send_players','receive_players');
 			if (!function_exists('getFantasyPlayersDetails')) {
@@ -502,13 +524,17 @@ class team_model extends base_model {
 				// RESOLVE OTHER TEAM NAME
 				$team_1_name = $this->getTeamName($row->team_1_id);
 				$team_2_name = $this->getTeamName($row->team_2_id);
+				$protestCount = 0;
+				if ($countProtests === true && isset($row->protest_count)) {
+					$protestCount = $row->protest_count;
+				}
 				array_push($trades,array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
 													  'send_players'=>$playerArrays['send_players'], 'receive_players'=>$playerArrays['receive_players'], 
 													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
-													  'comments'=>$row->comments,'expiration_date'=>$row->expiration_date));			}
+													  'status'=>$row->status,'comments'=>$row->comments,'expiration_date'=>$row->expiration_date,'protest_count'=>$protestCount));			}
 		}
 		$query->free_result();
-		//print($this->db->last_query()."<br />");
+		
 		return $trades;
 	}
 	/*-----------------------------------------------

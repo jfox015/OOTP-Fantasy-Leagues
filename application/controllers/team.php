@@ -302,13 +302,16 @@ class team extends BaseEditor {
 			} // END if
 			
 			// GET USER INITATED TRADES AND OFFERED TRADES
-			$allowProtests = ($this->params['config']['allowTradeProtests'] == 1) ? true : false;
-			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id'], false, false,$allowProtests);
-			$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$allowProtests);
+			$this->data['allowProtests'] = ($this->params['config']['approvalType'] == 2) ? true : false;
+			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id'], false, false,$this->data['allowProtests']);
+			$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$this->data['allowProtests']);
 			
-			if ($allowProtests) {
-				$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'], false, false, $this->data['team_id'], true);
-				$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
+			if ($this->data['allowProtests'] === true) {
+				$tradesToApprove = $this->dataModel->getPendingTrades($this->data['league_id'], false, false, $this->data['team_id'], $this->data['allowProtests'], TRADE_PENDING_LEAGUE_APPROVAL);
+				if (sizeof($tradesToApprove) > 0) {
+					$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
+				}
+				$this->data['tradeList'] = $this->data['tradeList'] + $tradesToApprove;
 			}
 			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
@@ -326,8 +329,10 @@ class team extends BaseEditor {
 	 * @param	display_page	(OPTIONAL) Resulting View page. Passed only from non-AJAX submissions
 	 * @param	comments		(OPTIONAL) Trade comments or reponse
 	 */
-	public function tradeResponse($responseType = 1) {
+	public function tradeResponse() {
 		
+		$this->getURIData();
+		$outType = 1;
 		// DEFAULT VARS
 		$code = -1;
 		$status = "";
@@ -343,7 +348,7 @@ class team extends BaseEditor {
 			$this->data['team_id'] = $this->input->post('id') ? $this->input->post('id') : -1;
 			$this->data['display_page'] = $this->input->post('referrer') ? $this->input->post('referrer') : $this->views['SUCCESS'];
 			$this->data['comments'] = $this->input->post('comments') ? $this->input->post('comments') : "";
-			$responseType = 2;
+			$outType = 2;
 		} else {
 			$this->getURIData();
 			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? $this->uriVars['trade_id'] : -1;
@@ -374,27 +379,43 @@ class team extends BaseEditor {
 			
 			$msg = "";
 			$trade = $this->dataModel->getTrade($this->data['trade_id']);
+			$recipient_id = $trade['team_1_id'];
 			if ($this->data['type'] == TRADE_ACCEPTED) {
 				if ($this->data['scoring_period']['id'] == $trade['in_period']) {
 					$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period']);
 					if (empty($rosterMessages)) {
-						$processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments']);
-						if ($processResponse) {
-							$msg = $this->lang->line('team_trade_accepted');
-							$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'], 
-												  $this->league_model->commissioner_id, $this->params['currUser'], 
-												  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'], 
-												  $this->dataModel->league_id, $trade['team_1_id'], $this->dataModel->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
-							$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'], 
-												  $this->league_model->commissioner_id, $this->params['currUser'], 
-												  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'], 
-												  $this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
-							$code = 200;
-							$status = $this->lang->line('team_trade_processed');
+						if ($this->params['config']['approvalType'] == -1) {
+							$processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments']);
+							if ($processResponse) {
+								$msg = $this->lang->line('team_trade_accepted_no_approvals');
+								$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'], 
+													  $this->league_model->commissioner_id, $this->params['currUser'], 
+													  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'], 
+													  $this->dataModel->league_id, $trade['team_1_id'], $this->dataModel->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
+								$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'], 
+													  $this->league_model->commissioner_id, $this->params['currUser'], 
+													  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'], 
+													  $this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
+								$code = 200;
+								$status = $this->lang->line('team_trade_processed');
+							} else {
+								$code = 301;
+								$status = $processResponse;							
+							} // END if
 						} else {
-							$code = 301;
-							$status = $processResponse;							
-						} // END if
+							if ($this->params['config']['approvalType'] == 2) {
+								$this->data['type'] = TRADE_PENDING_LEAGUE_APPROVAL;
+								$msg = $this->lang->line('team_trade_pending_league_approval');
+								$approver = "League";
+							} else if ($this->params['config']['approvalType'] == 1) {
+								$this->data['type'] = TRADE_PENDING_COMMISH_APPROVAL;
+								$msg = $this->lang->line('team_trade_pending_commish_approval');
+								$approver = "commissioner";
+							}
+							$error = $this->dataModel->updateTrade($this->data['trade_id'], $this->data['type'], $this->data['comments']);
+							$code = 200;
+							$status = str_replace('[APPROVER_TYPE]',$approver,$this->lang->line('team_trade_pendsing_approval'));
+						}
 					} else {
 						$error = true;
 						$code = 301;
@@ -407,22 +428,11 @@ class team extends BaseEditor {
 					$this->dataModel->updateTrade($this->data['trade_id'],TRADE_INVALID,$status);
 				} // END if
 			} else {
+				$updateDb = true;
 				switch ($this->data['type']) {		
 				// REJECTED BY OWNER
 					case TRADE_REJECTED_OWNER:
 						$msg = $this->lang->line('team_trade_rejected_owner');
-						break;
-					// REJECTED BY LEAGUE
-					case TRADE_REJECTED_LEAGUE:
-						$msg = $this->lang->line('team_trade_rejected_league');
-						break;
-					// REJECTED BY COMMISIONER
-					case TRADE_REJECTED_COMMISH:
-						$msg = $this->lang->line('team_trade_rejected_commish');
-						break;
-					// REJECTED BY SITE ADMIN
-					case TRADE_REJECTED_ADMIN:
-						$msg = $this->lang->line('team_trade_rejected_admin');
 						break;
 					// REJECTED BUT WITH A COUNTER OFFER
 					case TRADE_REJECTED_COUNTER:
@@ -430,6 +440,7 @@ class team extends BaseEditor {
 					// RETRACTED
 					case TRADE_RETRACTED:
 						$msg = $this->lang->line('team_trade_retracted');
+						$recipient_id = $trade['team_2_id'];
 						break;
 					// REMOVED BY ADMIN
 					case TRADE_REMOVED:
@@ -443,47 +454,76 @@ class team extends BaseEditor {
 					case TRADE_INVALID:
 						$msg = $this->lang->line('team_trade_invalid');
 						break;
-					// REMOVED BY ADMIN
-					case TRADE_PENDING_COMMISH_APPROVAL:
-						$msg = $this->lang->line('team_trade_pending_commish_approval');
+					// TRADE APPROVED
+					case TRADE_APPROVED:
+						$msg = $this->lang->line('team_trade_approved');
+						$processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments']);
+						if ($processResponse) {
+							$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'], 
+												  $this->league_model->commissioner_id, $this->params['currUser'], 
+												  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'], 
+												  $this->dataModel->league_id, $trade['team_1_id'], $this->dataModel->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
+							$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'], 
+												  $this->league_model->commissioner_id, $this->params['currUser'], 
+												  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'], 
+												  $this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
+						}
 						break;
-					// TRADE EXPIRED
-					case TRADE_PENDING_ADMIN_APPROVAL:
-						$msg = $this->lang->line('team_trade_pending_admin_approval');
+					// REJECTED BY COMMISIONER
+					case TRADE_REJECTED_COMMISH:
+						$msg = $this->lang->line('team_trade_rejected_commish');
 						break;
-					// INVLALID TRADE
-					case TRADE_PENDING_LEAGUE_APPROVAL:
-						$msg = $this->lang->line('team_trade_pending_league_approval');
+					// TRADE PROTEST
+					case TRADE_PROTEST:
+						if ($this->dataModel->logTradeProtest($this->data['trade_id'],$this->data['team_id'], $this->data['comments'])) {
+							$protestCount = $this->dataModel->getTradeProtests(false,$this->data['trade_id']);
+							if (sizeof($protestCount) >= $this->params['config']['minProtests']) {
+								$this->data['type'] = TRADE_REJECTED_LEAGUE;
+								$this->data['comments'] = "The trade was rejected by the league.";
+								$msg = $this->lang->line('team_trade_rejected_league');
+							} else {
+								$msg = $this->lang->line('team_trade_protest_logged');
+								$updateDb = false;
+							}
+						}
 						break;
 					default:
 						break;	
 				} // END switch
-				$error = $this->dataModel->updateTrade($this->data['trade_id'], $this->data['type'], $this->data['comments']);
+				if ($updateDb) {
+					$error = !$this->dataModel->updateTrade($this->data['trade_id'], $this->data['type'], $this->data['comments']);
+				}
+				if (!$error) {
+					$code = 200;
+					$status = "Update completed";
+				} else {
+					$code = 301;
+					$status = "An error occured saving the update.";
+				}
 			} // END if (response type)
 			if ($error === false && !empty($msg)) {
 				$msg .= $this->lang->line('email_footer');
-				$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->getTeamName($trade['team_2_id']), $msg);
-				$msg = str_replace('[OFFERING_TEAM_NAME]', $this->getTeamName($trade['team_1_id']), $msg);
-				$msg = str_replace('[USERNAME]', getUsername($this->getTeamOwnerId($trade['team_1_id'])), $msg);
-				$msg = str_replace('[COMMENTS]', $comments,$msg);
+				$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->dataModel->getTeamName($trade['team_2_id']), $msg);
+				$msg = str_replace('[OFFERING_TEAM_NAME]', $this->dataModel->getTeamName($trade['team_1_id']), $msg);
+				$msg = str_replace('[USERNAME]', getUsername($this->dataModel->getTeamOwnerId($trade['team_1_id'])), $msg);
+				$msg = str_replace('[COMMENTS]', $this->data['comments'],$msg);
 				$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$trade['team_1_id'],'adjust your lineup'),$msg);
 				$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
 				$data['messageBody']= $msg;
 				//print("email template path = ".$this->config->item('email_templates')."<br />");
+				$data['leagueName'] = $this->league_model->league_name;
 				$message = $this->load->view($this->config->item('email_templates').'trades_template', $data, true);
-
 				// SEND MESSAGES
 				// SEND TO TEAM ONE
 				$tradeTypes = loadSimpleDataList('tradeStatus');
-
-				$emailSend = sendEmail($this->user_auth_model->getEmail($this->getTeamOwnerId($trade['team_1_id'])),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-				$this->params['config']['site_name']." Administrator",$leagueName.' Fantasy League - Trade Update - Offer '.$tradeTypes[$status],
+				$emailSend = sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId()),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+				$this->params['config']['site_name']." Administrator",$this->league_model->league_name.' Fantasy League - Trade Update - Offer '.$tradeTypes[$this->data['type']],
 				$message);
-				if (!empty($emailSend)) {
+				if (!empty($emailSend) && ($this->debug === TRUE || ENV == 'dev')) {
 					if (!function_exists('write_file')) {
 						$this->load->helper('file');
 					} // END if 
-					write_file(PATH_MEDIA_WRITE.'/email_trd_'.$trade_id."_".substr(md5($trade_id.time()),0,8).".txt",$message);
+					write_file(PATH_MEDIA_WRITE.'/email_trd_'.$trade['trade_id']."_".substr(md5($trade['trade_id'].time()),0,8).".html",$message);
 				}
 			} // END if (messaging)
 		} else {
@@ -491,7 +531,7 @@ class team extends BaseEditor {
 			$code = 404;
 			$status = "Required parameters were missing.";
 		} // END if
-		if ($responseType == 1) {
+		if ($outType == 1) {
 			if ($error) { $status = "error:".$status; }
 			$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
 			$this->output->set_header('Content-type: application/json'); 
@@ -505,72 +545,6 @@ class team extends BaseEditor {
 			$this->makeNav();
 			$this->displayView();
 		} // END if
-	}
-	public function tradeProtest() {
-		// DEFAULT VARS
-		$code = -1;
-		$status = "";
-		$result = "{";
-		$responseType = 1;
-		$error = false;
-		
-		// CONVERT INPUT DATA TO DATA VARS
-		if ($this->input->post('submitted')) {
-			$this->data['trade_id'] = $this->input->post('trade_id') ? $this->input->post('trade_id') : -1;
-			$this->data['team_id'] = $this->input->post('team_id') ? $this->input->post('team_id') : -1;
-			$responseType = 2;
-		} else {
-			$this->getURIData();
-			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? $this->uriVars['trade_id'] : -1;
-			$this->data['team_id'] = (isset($this->uriVars['team_id'])) ? $this->uriVars['team_id'] : -1;
-		} // END if
-		
-		// VERIFY MINIMUM VARS HAVE VALUES
-		if ($this->data['trade_id'] != -1 && $this->data['team_id'] != -1) {
-			
-			// LOAD MODELS
-			$this->load->model($this->modelName,'dataModel');
-			$this->dataModel->load($this->data['team_id']);
-			
-			$this->dataModel->logTradeProtest($this->data['trade_id'],$this->data['team_id']);
-			
-			$protestCount = $this->dataModel->getTradeProtests(false,$this->data['trade_id']);
-			
-			if ($protestCount >= $this->params['config']['minProtests']) {
-				$this->uriVars['trade_id'] = $this->data['trade_id'];
-				$this->uriVars['type'] = TRADE_REJECTED_LEAGUE;
-				if (!isset($this->uriVars['team_id'])) { $this->uriVars['team_id'] = $this->data['team_id']; }
-				$this->uriVars['referrer'] = $_SERVER['HTTP_REFERER'];
-				$this->tradeResponse(2);
-			} else {
-				if ($responseType == 1) {
-					if ($error) { $status = "error:".$status; }
-					$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
-					$this->output->set_header('Content-type: application/json'); 
-					$this->output->set_output($result);
-				} else {
-					$this->data['message'] = $status;
-					$this->params['subTitle'] = "Team Trades";
-					$this->data['subTitle'] = "Trade Protest";
-					$this->params['content'] = $this->load->view($this->views['SUCCESS'], $this->data, true);
-					$this->makeNav();
-					$this->displayView();
-				} // END if
-			}
-		} else {
-			$error = true;
-			$code = 404;
-			$status = "Required parameters were missing.";
-			$this->params['subTitle'] = "Team Trades";
-			$this->data['subTitle'] = "Trade Protest";
-			$this->data['theContent'] = $status;
-			$this->params['content'] = $this->load->view($this->views['SUCCESS'], $this->data, true);
-			$this->makeNav();
-			$this->displayView();
-		} // END if
-	}
-	public function tradeCounterOffer() {
-		
 	}
 	public function tradeOffer() {
 		$this->getURIData();
@@ -645,7 +619,7 @@ class team extends BaseEditor {
 			// TEST ALL PLAYERS ROSTER STATUS
 			$rosterMessages = $this->verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $this->data['scoring_period']['id']);
 			if (empty($rosterMessages)) {
-				$this->dataModel->makeTradeOffer($sendList, $team2Id, $receiveList, $this->data['scoring_period']['id'], $comments, $prevTradeId,$expiresIn);
+				$this->dataModel->makeTradeOffer($sendList, $team2Id, $receiveList, $this->data['scoring_period']['id'], $comments, $prevTradeId,$expiresIn,$this->params['config']['defaultExpiration']);
 			} else {
 				$error = true;
 				$message = "Problems were found with this trade offer:<br />".$rosterMessages;
@@ -816,6 +790,12 @@ class team extends BaseEditor {
 				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id']['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
 				$this->data['formatted_stats']['team_id']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			}
+			
+			if ($this->data['trans_type'] == 4) {
+				$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
+			}
+			$this->data['status']  = (isset($trade['status'])) ? $trade['status'] : -1;
+			
 			$this->data['subTitle'] = "Review Trade";
 			$this->params['content'] = $this->load->view($this->views['TRADE_REVIEW'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
@@ -825,14 +805,6 @@ class team extends BaseEditor {
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		}
 		$this->makeNav();
-		$this->displayView();
-	}
-	public function tradeHistory() {
-		$this->getURIData();
-		$this->makeNav();
-		$this->params['subTitle'] = $this->data['subTitle'] = "Trade History";
-		$this->params['content'] = $this->load->view($this->views['TRADE_HISTORY'], $this->data, true);
-	    $this->params['pageType'] = PAGE_FORM;
 		$this->displayView();
 	}
 	/*-------------------------------------------

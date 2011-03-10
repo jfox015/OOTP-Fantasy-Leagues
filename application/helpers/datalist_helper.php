@@ -88,6 +88,12 @@ if ( ! function_exists('loadSimpleDataList')) {
 				break;
 			case 'newsType':
 				$table = 'fantasy_news_type';
+				break;
+			case 'tradeStatus':
+				$table = 'fantasy_teams_trades_status';
+				break;
+			case 'tradeApprovalType':
+				$table = 'fantasy_teams_trades_approvals';
 				break;	
 			default:
 				break;

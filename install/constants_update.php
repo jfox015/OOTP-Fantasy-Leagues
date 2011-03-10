@@ -94,6 +94,10 @@ define('TRADE_RETRACTED',9);
 define('TRADE_REMOVED',10);
 define('TRADE_EXPIRED',11);
 define('TRADE_INVALID',12);
+define('TRADE_PENDING_LEAGUE_APPROVAL',13);
+define('TRADE_PENDING_COMMISH_APPROVAL',14);
+define('TRADE_PROTEST',15);
+define('TRADE_APPROVED',16);
 
 define('SQL_OPERATOR_NONE',0);
 define('SQL_OPERATOR_SUM',1);
@@ -203,7 +207,7 @@ define("USER_CORE_TABLE","users_core");
 define("FANTASY_CONFIG","fantasy_config");
 define("FANTASY_LEAGUE_CONFIG","fantasy_leagues_config");
 
-define("DEFAULT_RESULTS_COUNT",25);
+define("DEFAULT_RESULTS_COUNT",20);
 
 /* End of file constants.php */
 /* Location: ./system/application/config/constants.php */

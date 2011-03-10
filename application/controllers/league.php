@@ -49,6 +49,7 @@ class league extends BaseEditor {
 		$this->views['INVITE'] = 'league/league_invite_owner';
 		$this->views['INVITES'] = 'league/league_invite_list';
 		$this->views['WAIVER_CLAIMS'] = 'league/league_waiver_claims';
+		$this->views['TRADES'] = 'league/league_trades';
 		$this->debug = true;
 	}
 	/*---------------------------------------
@@ -1068,6 +1069,50 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	public function tradeReview() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			if (isset($this->uriVars['league_id'])) { $this->uriVars['id'] = $this->uriVars['league_id']; }
+			$this->loadData();
+			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
+				$this->data['type'] = $limit = (isset($this->uriVars['type'])) ? $this->uriVars['type'] : 1;
+				$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : DEFAULT_RESULTS_COUNT;
+				$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;
+				$startIndex = 0;
+				if ($limit != -1) {
+					$startIndex = ($limit * ( - 1))-1;
+				}
+				if ($startIndex < 0) { $startIndex = 0; }
+				$this->data['startIndex'] = $startIndex;
+				$this->load->model('team_model');
+				
+				$this->data['league_id'] = $this->dataModel->id;
+				if ($this->data['type'] == 1) {
+					$tradeLabel = "Pending ";
+					$this->data['trades'] = $this->team_model->getPendingTrades($this->dataModel->id, false, false, false, true, false, $this->data['limit'],$this->data['startIndex']);
+				} else {
+					$tradeLabel = "All ";
+					$this->data['trades'] = $this->team_model->getAllTrades($this->dataModel->id, false, false, false, true, false, $this->data['limit'],$this->data['startIndex']);
+				}
+				$this->data['tradeStatus'] = loadSimpleDataList('tradeStatus');
+				//print($this->db->last_query()."<br />");
+				$this->data['subTitle'] = $tradeLabel.' Trades';
+				$this->params['content'] = $this->load->view($this->views['TRADES'], $this->data, true);
+				$this->makeNav();
+				$this->displayView();
+			} else {
+				$error = true;
+				$message = '<span class="error">You do not have sufficient privlidges to access the requested information.</span>';
+				$this->params['theContent'] = $message;
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->makeNav();
+				$this->displayView();
+			}
+		} else {
+	        $this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
+	}
 	/*--------------------------------
 	/	PRIVATE/PROTECTED FUNCTIONS
 	/-------------------------------*/	
@@ -1104,6 +1149,9 @@ class league extends BaseEditor {
 		} // END if
 		if ($this->input->post('pageId')) {
 			$this->uriVars['pageId'] = $this->input->post('pageId');
+		} // END if
+		if ($this->input->post('type')) {
+			$this->uriVars['type'] = $this->input->post('type');
 		} // END if
 		
 	}

@@ -891,16 +891,27 @@
 					$rowNum = 0;
 					//echo("Team_2_id = ".$tradeData['team_2_id']."<br />");
 				?>
+                <?php 
+				$transType = 3;
+				if ($tradeData['team_2_id'] == $team_id) { 
+					$transType = 2;
+				} else {
+					if ($team_id != $tradeData['team_1_id'] && $team_id != $tradeData['team_2_id']) {
+						$transType = 4;
+					}
+				} 
+				?>
                 <form action="" method="post" id="trade_form_<?php print($tradeData['trade_id']); ?>">
                 <tr class='headline'>
-					<td colspan="2">Trade Offered: <?php print(date('m/d/Y h:m A',strtotime($tradeData['offer_date']))); ?></td>
-                </tr>
-                <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
-                	<td width="45%:"><b>Offering Team:</b></td>
+				 	<td width="45%:"><b>From:</b></td>
                 	<td width="55%:"><a target="_blank" href="<?php echo($config['fantasy_web_root']); ?>team/info/<?php print($tradeData['team_1_id']); ?>"><?php print($tradeData['team_1_name']); $rowNum++; ?></a></td>
                 </tr>
+               <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+                	<td><b>Offer Date:</b></td>
+					<td><?php print(date('m/d/Y',strtotime($tradeData['offer_date']))); ?></td>
+                </tr>
                 <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
-                	<td><b>Receiving Team:</b></td>
+                	<td><b>Offered To:</b></td>
                 	<td><a  target="_blank" href="<?php echo($config['fantasy_web_root']); ?>team/info/<?php print($tradeData['team_2_id']); ?>"><?php print($tradeData['team_2_name']); $rowNum++; ?></a></td>
                 </tr>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
@@ -923,7 +934,9 @@
                 	<td><b>Effective:</b></td>
                 	<td>Period <?php print($tradeData['in_period']); $rowNum++; ?></td>
                 </tr>
-                <?php if ($tradeData['expiration_date'] != EMPTY_DATE_TIME_STR) { ?>
+                <?php 
+				// EXPIRATION DATE
+				if ($tradeData['expiration_date'] != EMPTY_DATE_TIME_STR) { ?>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
 					<td><b>Expires:</b></td>
 					<td>
@@ -931,41 +944,71 @@
 				</td>
                 </tr>
                 <?php $rowNum++;
-                }?>
-                <?php if (!empty($tradeData['comments']) && ($team_id == $tradeData['team_2_id'] || $team_id == $tradeData['team_1_id'])) { $rowNum++; ?>
+                }
+				// COMMENTS
+				if (!empty($tradeData['comments']) && ($team_id == $tradeData['team_2_id'] || $team_id == $tradeData['team_1_id'])) { $rowNum++; ?>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
 					<td><b>Comments:</b></td>
 					<td><?php print($tradeData['comments']); ?></td>
                 </tr>
-                <?php } ?>
-                <?php if ($config['allowTradeProtests'] == 1 && isset($tradeData['protestCount'])) { $rowNum++; ?>
+                <?php }
+				// TRADE PROTESTS
+				if ($allowProtests && (isset($tradeData['protest_count']) && $tradeData['protest_count'] > 0)) { $rowNum++; ?>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
 					<td><b>Protests:</b></td>
-					<td><?php print($tradeData['protestCount']); ?></td>
+					<td><?php print($tradeData['protest_count']); ?> <!--span class="small">(<a href="#">Who?</a>)</span--></td>
                 </tr>
-                <?php } ?>
+                <?php } 
+				// COMMISSIOERN APPROVAL
+				if ($transType <= 3) {
+					$rowNum++; 
+					$outMess = "";
+					if ($tradeData['status'] == TRADE_OFFERED) {
+						if ($transType == 2) {
+							$outMess = "This trade requires a response from you.";
+						} else if ($transType == 3) {
+							$outMess = "You are waiting for a response to this offer.";
+						}
+					}
+					if (($tradeData['status'] == TRADE_PENDING_LEAGUE_APPROVAL || $tradeData['status'] == TRADE_PENDING_COMMISH_APPROVAL) && $config['approvalType'] != -1) { 
+						$approvalType = loadSimpleDataList('tradeApprovalType'); 
+						if (!empty($outMess)) { $outMess.="<br />"; }
+						$outMess .= "This trade is pending ".$approvalType[$config['approvalType']]." approval";
+					}
+				?>
+                <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+					<td colspan="2"><span class="notice inline"><?php print($outMess); ?></span></td>
+                </tr>
+                <?php }
+				?>
                 <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
                 	<td colspan="2">
-                	<?php 
-                	$transType = 3;
-                	if ($tradeData['team_2_id'] == $team_id) { 
-                		$transType = 2;
-                	} else {
-						if ($team_id != $tradeData['team_1_id'] && $team_id != $tradeData['team_2_id']) {
-							$transType = 4;
-						}
-					} 
-					?>
                 	<input type='button' rel="reviewbtn" id="<?php print($transType."|".$tradeData['trade_id']); ?>" class="button" value='Review Trade' style="float:left;margin-right:8px;" />
-	                <?php if ($transType == 3) { ?>
+	                <?php if ($transType == 3) { 
+						if ($tradeData['status'] == TRADE_OFFERED) { ?>
                 		<input type='button' rel="responsebtn" id="<?php print(TRADE_RETRACTED."|".$tradeData['trade_id']); ?>" class="button" value='Retract' style="float:left;margin-right:8px;" />
-                	<?php } else if ($transType == 2) { ?>
+                	<?php }
+					} else if ($transType == 2) { 
+                    	if ($tradeData['status'] == TRADE_OFFERED) { ?>
 	                	<input type='button' rel="responsebtn" id="<?php print(TRADE_REJECTED_OWNER."|".$tradeData['trade_id']); ?>" class="button" value='Reject' style="float:left;margin-right:8px;" />
 	                	<input type='button' rel="responsebtn" id="<?php print(TRADE_REJECTED_COUNTER."|".$tradeData['trade_id']); ?>" class="button" value='Counter' style="float:left;margin-right:8px;" />
 	                	<input type='button' rel="responsebtn" id="<?php print(TRADE_ACCEPTED."|".$tradeData['trade_id']); ?>" class="button" value='Accept' style="float:left;margin-right:8px;" />
-                	<?php } else if ($transType == 4) { ?>
+                	<?php }
+					} else if ($transType == 4) { 
+						$showProtestBtn = true;
+						if (isset($protests) && sizeof($protests) > 0) {
+							foreach ($protests as $tmpProtest) {
+								if ($tmpProtest['trade_id'] == $tradeData['trade_id'] && $tmpProtest['team_id'] == $team_id) {
+									$showProtestBtn = false;
+									break;
+								}
+							}
+						}
+						if ($showProtestBtn) {
+					?>
 	                	<input type='button' rel="protestbtn" id="<?php print($tradeData['trade_id']); ?>" class="button" value='Protest Trade' style="float:left;margin-right:8px;" />
-	                <?php } ?>
+	                <?php }
+					} ?>
                 	</td>
                 </tr>
                 <input type="hidden" name="trade_id" value="<?php print($tradeData['trade_id']); ?>" />
@@ -975,50 +1018,6 @@
                 </div>
                <?php 
 				}
-               if (isset($trades_pending) && sizeof($trades_pending) > 0) { ?>
-                <table cellpadding="3" cellspacing="1" border="0" width="265px">
-                <tr class='headline'>
-					<td width="60%">Player</td>
-                    <td width="30%">In Period</td>
-                    <td width="10%">&nbsp;</td>
-                </tr>
-                <?php
-				$rowNum = 0;
-				if (sizeof($trades_pending) > 0) {
-					foreach ($trades_pending as $tradeData) { 
-						$bg = (($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'; ?>
-                <tr bgcolor="<?php echo($bg); ?>">
-					<td align="left"><?php 
-					$pos = -1;
-					if ($tradeData['position'] == 1) {
-						if ($tradeData['role'] == 13) {
-							$pos = 12;
-						} else {
-							$pos = $tradeData['role'];
-						}
-					} else {
-						if ($tradeData['position'] == 7 || $tradeData['position'] == 8 || $tradeData['position'] == 9) {
-							$pos = 20;
-						} else {
-							$pos = $tradeData['position'];
-						}
-					}
-					
-					echo(get_pos($pos)." ".anchor('/players/info/league_id/'.$league_id.'/player_id/'.$tradeData['player_id'],$tradeData['player_name'])); ?></td>
-                	<td align="center"><?php echo($tradeData['waiver_period']); ?></td>
-                    <td align="center">
-					<?php 
-                    echo( anchor('/team/removeClaim/team_id/'.$team_id.'/id/'.$tradeData['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/hr.gif" width="16" height="16" alt="Delete" title="Delete" />')); ?></td>
-                </tr>
-                <?php $rowNum++;
-				} 
-				} else { ?>
-				<tr class="s1_1">
-					<td colspan="2">No claims were found.</td>
-                </tr>
-				<?php } 	?>
-                </table>
-                </div>
-            	<?php } ?>
+				?>
             </div>
     <p /><br />

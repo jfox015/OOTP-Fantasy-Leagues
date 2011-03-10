@@ -20,7 +20,20 @@
 			alert("Counter offer");
 		});
 		$('input[rel=protestBtn]').click(function(){
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeProtest/team_id/'+teamId+'/trade_id/'+this.id;
+			if ($('#comments').val() == "") {
+				showMessage('error',"Comments are required.");
+			} else {
+				$('#type').val(<?php print(TRADE_PROTEST); ?>);
+				$('#tradeForm').submit();
+			}
+		});
+		$('input[rel=commishRejectBtn]').click(function(){
+			$('#type').val(<?php print(TRADE_REJECTED_COMMISH); ?>);
+			$('#tradeForm').submit();
+		});
+		$('input[rel=commishApproveBtn]').click(function(){
+			$('#type').val(<?php print(TRADE_APPROVED); ?>);
+			$('#tradeForm').submit();
 		});
 		$('#btnReject').click(function(){
 			$('#type').val(<?php print(TRADE_REJECTED_OWNER); ?>);
@@ -35,12 +48,9 @@
 			$('#type').val(<?php print(TRADE_RETRACTED); ?>);
 			$('#tradeForm').submit();
 		});
-		$('#btnExpire').click(function(){
-			$('#type').val(<?php print(TRADE_EXPIRED); ?>);
-			$('#tradeForm').submit();
-		});
+		
 		$('#btnCancel').click(function(){
-			document.location.href = history.back(-1);
+			history.back(-1);
 		});
 		$('#btnSubmit').click(function(){
 			if ($('#comments').val() == "") {
@@ -72,8 +82,31 @@
 		}
 		?>
 		<div id="content">
-			
+			<?php
+			if (isset($trans_type) && $trans_type <= 3) {
+				$outMess = "";
+				if ($status == TRADE_OFFERED) {
+					if ($trans_type == 2) {
+						$outMess = "This trade requires a response from you.";
+					} else if ($trans_type == 3) {
+						$outMess = "You are waiting for a response to this offer.";
+					}
+				}
+				if ($config['approvalType'] != -1) {
+					if ($status == TRADE_PENDING_LEAGUE_APPROVAL || $status == TRADE_PENDING_COMMISH_APPROVAL) {
+						$actionType = "is pending";
+					} else {
+						$actionType = "requires";
+					}
+					$approvalType = loadSimpleDataList('tradeApprovalType'); 
+					if (!empty($outMess)) { $outMess.="<br />"; }
+					$outMess.="This trade ".$actionType." ".$approvalType[$config['approvalType']]." approval.";
+				}
+			?>
+                <span class="notice"><?php print($outMess); ?></span>
             <?php
+			}
+
 			if (isset($formatted_stats) && sizeof($formatted_stats) > 0) { ?>
             
             <?php
@@ -141,12 +174,8 @@
                     }
                     ?>
                     <form action="<?php print($config['fantasy_web_root']); ?>team/<?php print($action); ?>/" method="post" id="tradeForm" id="tradeForm">
-                 	<?php if ($trans_type != 3) { ?>
-                    <label for="comments">Comments: </label> <textarea id="comments" name="comments" cols="54" rows="8"><?php if (isset($comments) && !empty($comments) && $comments != "") { print(trim($comments)); } ?></textarea>
-                    <br class="clear" clear="all" />
-                    <?php  
-                 	}
-                    if ($trans_type == 1) { ?>
+                 	<?php 
+					if ($trans_type == 1 && $config['tradesExpire']) { ?>
                     <label for="expires">Expires in: </label> 
                     <?php 
                     $expireList = array(-1=>"Select One",100=>"Next Sim Period"); 
@@ -171,43 +200,83 @@
                     </select><br class="clear" clear="all" />
 					
 					<?php
-                    } ?>
+                    } 
+					$showProtestBtn = true;
+					if ($trans_type == 4) { 
+						$showProtestBtn = true;
+						if (isset($protests) && sizeof($protests) > 0) {
+							foreach ($protests as $tmpProtest) {
+								if ($tmpProtest['trade_id'] == $trade_id && $tmpProtest['team_id'] == $team_id) {
+									$showProtestBtn = false;
+									break;
+								}
+							}
+						}
+					}
+					if  ($trans_type == 1|| ($trans_type == 4 && $showProtestBtn) || ($trans_type == 3 && $status == TRADE_OFFERED) || ($trans_type == 5 && ($status == TRADE_OFFERED || $status == TRADE_PENDING_LEAGUE_APPROVAL || $status == TRADE_PENDING_COMMISH_APPROVAL))) { ?>
+                    <label for="comments">Comments: </label> <textarea id="comments" name="comments" cols="54" rows="8"><?php if (isset($comments) && !empty($comments) && $comments != "") { print(trim($comments)); } ?></textarea>
+                    <br class="clear" clear="all" />
+                    <?php 
+					}
+					?>
                     <br />
                     <input type="hidden" name="id" value="<?php print($team_id); ?>" />
                     <input type="hidden" name="referrer" value="team/team_trade_review" />
-                   <?php
-                   if (isset($trade_id) && !empty($trade_id) && $trade_id != -1) { ?>
-                   <input type="hidden" name="trade_id" id="trade_id"  value="<?php print($trade_id); ?>" />
-                   <?php } else { ?>
-                   <input type="hidden" name="team_id2" value="<?php print($team_id2); ?>" />
-                   <input type="hidden" name="tradeFrom" id="tradeFrom" value="<?php print($tradeFrom); ?>" />
-                   <input type="hidden" name="tradeTo" id="tradeTo" value="<?php print($tradeTo); ?>" />
-                   <?php } ?>
-					<div class="button_bar">
-					<input type="button" class="button" id="btnCancel" name="btnCancel" value="Cancel" />
-                   <?php
-                    // TRADE OWNER
+					<?php
+                    if (isset($trade_id) && !empty($trade_id) && $trade_id != -1) { ?>
+                    <input type="hidden" name="trade_id" id="trade_id"  value="<?php print($trade_id); ?>" />
+                    <?php } else { ?>
+                    <input type="hidden" name="team_id2" value="<?php print($team_id2); ?>" />
+                    <input type="hidden" name="tradeFrom" id="tradeFrom" value="<?php print($tradeFrom); ?>" />
+                    <input type="hidden" name="tradeTo" id="tradeTo" value="<?php print($tradeTo); ?>" />
+                    <?php } ?>
+                    <div class="button_bar">
+                    <input type="button" class="button" id="btnCancel" name="btnCancel" value="Cancel" />
+                    <?php
+                    /* 
+                    / TRANS TYPE DICTIONARY
+                    /	1:	Trade initator submitting offer
+                    /	2:  Trade Recipient Reviewing offer
+                    /	3:	Trade initator Reviewing Trade (read only)
+                    /	4:	Other League Owner Reviewing offer
+                    /	5:
+                    /	6:
+                    */
+					// TRADE OWNER
 					if ($trans_type == 1) { ?>
 						<input type="button" class="button" id="btnEdit" name="btnEdit" value="Edit Trade" />
                         <input type="button" class="button" id="btnSubmit" name="btnSubmit" value="Make Offer" />
 					<?php 
 					}
 					// TRADE RECIPIENT
-					 else if ($trans_type == 2) { ?>
+					 else if ($trans_type == 2) { 
+					 	if ($status == TRADE_OFFERED) { ?>
                         <input type="button" class="button" id="btnReject" name="btnReject" value="Reject Offer" />
                         <input type="button" class="button" id="btnCounter" name="btnCounter" value="Make Counter Offer" />
                         <input type="button" class="button" id="btnAccept" name="btnAccept" value="Accept Offer" />
                         
                    	<?php } 
+					 }
                    	// TRADE OWNER REVIEW (READ ONLY)
-                   	else if ($trans_type == 3) { ?>
+                   	else if ($trans_type == 3) { 
+                    	if ($status == TRADE_OFFERED) { ?>
                         <input type="button" class="button" id="btnRetract" name="btnReject" value="Retract Offer" />
                    	<?php } 
+					}
                    	// LEAGUE OWNER REVIEW (PROTEST ONLY)
-                   	else if ($trans_type == 4) { ?>
+                   	else if ($trans_type == 4) { 
+						if ($showProtestBtn) {?>
                         <input type="button" class="button" rel="protestBtn" id="<?php print($trade_id); ?>" name="btnProtest" value="Protest Trade" />
                    	<?php } 
-                   	if ($trans_type == 2 || $trans_type == 3) { 
+					}
+					// LEAGUE COMMISIONER REVIEW
+                   	else if ($trans_type == 5 && ($status == TRADE_OFFERED || $status == TRADE_PENDING_LEAGUE_APPROVAL || $status == TRADE_PENDING_COMMISH_APPROVAL)) { ?>
+                        <input type="button" class="button" rel="commishRejectBtn" id="<?php print($trade_id); ?>" name="btnReject" value="Reject Trade" />
+                        <?php if ($config['approvalType'] == 1) { ?>
+                        <input type="button" class="button" rel="commishApproveBtn" id="<?php print($trade_id); ?>" name="btnApprove" value="Approve Trade" />
+                   	<?php }
+					}
+                   	if ($trans_type != 1) { 
                    	?>
                    		<input type="hidden" name="type" id="type" value="1" />
                    	<?php } ?>

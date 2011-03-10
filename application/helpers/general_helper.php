@@ -15,16 +15,15 @@ function getUsername($userId, $access = false) {
 	}
 	return $ci->user_auth_model->getUsername($userId, $access);
 }
-function sendEmail($to,$fromEmail, $fromName,$subject,$message,$headers) {
+function sendEmail($to,$fromEmail, $fromName,$subject,$message) {
 	$ci =& get_instance();
-	$this->ci->email->clear();
+	$ci->email->clear();
 	$ci->email->set_newline("\r\n");
 	$ci->email->from($fromEmail,$fromName);
 	$ci->email->to($to);
 	$tradeTypes = loadSimpleDataList('tradeStatus');
 	$ci->email->subject($subject);
 	$ci->email->message($message);
-	$ci->email->headers($headers);
 	if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
 		if ($this->email->send()) {
 			return true;

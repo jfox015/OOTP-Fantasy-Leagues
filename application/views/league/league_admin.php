@@ -30,8 +30,14 @@
             <ul class="iconmenu">  
             	<li><?php echo anchor('/league/leagueInvites/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
             	Pending Owner Invites</li>
+                <?php if ($this->params['config']['useWaivers'] == 1) { ?>
                 <li><?php echo anchor('/league/waiverClaims/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/user_accept.png" width="48" height="48" border="0" />'); ?><br />
             	Pending Waiver Claims</li>
+                <?php } 
+                if ($this->params['config']['useTrades'] == 1) { ?>
+                <li><?php echo anchor('/league/tradeReview/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
+            	Pending Trades</li>
+                <?php }  ?>
              </ul>
              
              <?php if ($draftEnabled && $draftStatus < 5) { ?>

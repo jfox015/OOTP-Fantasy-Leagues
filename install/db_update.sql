@@ -22,9 +22,14 @@ INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('primary_contact', 
 #	Version 1.0.3 to 1.0.4
 #	REMOVE ALL COMMENTS FOR DIST
 DROP TABLE IF EXISTS `fantasy_teams_trades`;
+DROP TABLE IF EXISTS `fantasy_teams_trades_approvals`;
 DROP TABLE IF EXISTS `fantasy_teams_trades_status`;
 DROP TABLE IF EXISTS `fantasy_teams_trade_protests`;
 CREATE TABLE IF NOT EXISTS `fantasy_teams_trades` (  `id` int(11) NOT NULL auto_increment,  `league_id` int(11) NOT NULL,  `team_1_id` int(11) NOT NULL,  `send_players` mediumtext collate utf8_unicode_ci NOT NULL,  `team_2_id` int(11) NOT NULL,  `receive_players` mediumtext collate utf8_unicode_ci NOT NULL,  `offer_date` timestamp NOT NULL default CURRENT_TIMESTAMP,  `expiration_date` datetime NOT NULL,  `comments` mediumtext collate utf8_unicode_ci NOT NULL,  `status` tinyint(4) NOT NULL,  `response` mediumtext collate utf8_unicode_ci NOT NULL,  `response_date` datetime NOT NULL,  `admin_notes` mediumtext collate utf8_unicode_ci NOT NULL,  `in_period` tinyint(4) NOT NULL,  `previous_trade_id` int(11) NOT NULL,  PRIMARY KEY  (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+CREATE TABLE IF NOT EXISTS `fantasy_teams_trades_approvals` (`id` tinyint(4) NOT NULL auto_increment,`tradeApprovalType` tinytext collate utf8_unicode_ci NOT NULL, PRIMARY KEY  (`id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=3 ;
+INSERT INTO `fantasy_teams_trades_approvals` VALUES(-1, 'None');
+INSERT INTO `fantasy_teams_trades_approvals` VALUES(1, 'Commissioner');
+INSERT INTO `fantasy_teams_trades_approvals` VALUES(2, 'League');
 CREATE TABLE IF NOT EXISTS `fantasy_teams_trades_status` (  `id` int(11) NOT NULL auto_increment,  `tradeStatus` tinytext collate utf8_unicode_ci NOT NULL,  PRIMARY KEY  (`id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=13 ;
 INSERT INTO `fantasy_teams_trades_status` VALUES(1, 'Offered');
 INSERT INTO `fantasy_teams_trades_status` VALUES(2, 'Accepted');
@@ -38,12 +43,12 @@ INSERT INTO `fantasy_teams_trades_status` VALUES(9, 'Retracted');
 INSERT INTO `fantasy_teams_trades_status` VALUES(10, 'Removed');
 INSERT INTO `fantasy_teams_trades_status` VALUES(11, 'Expired');
 INSERT INTO `fantasy_teams_trades_status` VALUES(12, 'Invalid Trade');
+INSERT INTO `fantasy_teams_trades_status` VALUES(13, 'Pending League Approval');
+INSERT INTO `fantasy_teams_trades_status` VALUES(14, 'Pending Commissioner Approval');
 CREATE TABLE IF NOT EXISTS `fantasy_teams_trade_protests` (  `id` int(11) NOT NULL auto_increment,  `league_id` int(11) NOT NULL,  `trade_id` int(11) NOT NULL,  `protest_team_id` int(11) NOT NULL,  `protest_date` timestamp NOT NULL default CURRENT_TIMESTAMP,  `comments` longtext collate utf8_unicode_ci NOT NULL,  PRIMARY KEY  (`id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('useTrades', '1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('tradeApproval', '-1');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('tradesExpire', '1');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('defaultExpiration', '100');
-INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('allowTradeProtests', '-1');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('minProtests', '3');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('protestPeriodDays', '3');
-INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('commishApproveTrades', '-1');
-INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('adminApproveTrades', '-1');
