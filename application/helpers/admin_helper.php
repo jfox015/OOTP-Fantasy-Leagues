@@ -377,17 +377,20 @@ if ( ! function_exists('checkModVersion')) {
 		$ci =& get_instance();
 		$result = array();
 		if ($version !== false) {
-			$mod_version = explode(".",SITE_VERSION);
-			$modScore = -1;
-			foreach ($mod_version as $digit) {
-				$modScore += intval($digit);
+			$current = true;
+			$local_version = str_replace(" Beta","",SITE_VERSION);
+			$version = str_replace(" Beta","",$version);
+			
+			$mod_version = explode(".",$local_version);
+			$web_version = explode(".",$version);
+			for ($i = 0; $i < sizeof($mod_version); $i++) {
+				if (isset($mod_version[$i]) && isset($web_version[$i])) {
+					if (intval($mod_version[$i]) < intval($web_version[$i])) {
+						$current = false;
+					}
+				}
 			}
-			$versions = explode(".",$version);
-			$verScore = -1;
-			foreach ($versions as $digit) {
-				$verScore += intval($digit);
-			}
-			if ($modScore < $verScore) {
+			if (!$current) {
 				return array('error',str_replace('[NEW_VERSION]',$version,$ci->lang->line('admin_version_outdated')));
 			} else {
 				return array('success',$ci->lang->line('admin_version_current'));

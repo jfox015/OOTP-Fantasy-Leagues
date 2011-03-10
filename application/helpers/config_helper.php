@@ -1,72 +1,86 @@
 <?php
-/*---------------------------------------------------------
-/	GET AVAILABLE PLAYERS
-/----------------------------------------------------------
-/ Populates the fantasy players table with aavilable players from the main league.
-*/
-function load_config() {
-    
+/**
+ *	CONFIG HELPER
+ *
+ */
+/**
+ *	LOAD CONFIG
+ *	Loads config values from either the default config table or the league config
+ *	@param	$table	The config table name. Default is FANTASY_CONFIG.
+ *	@return				config array of key => value pairs
+ *	@since				1.0
+ *
+ */
+function load_config($table = FANTASY_CONFIG) {
 	$cfg = array();
-	$keys = array('sim_length','ootp_league_id','site_name','ootp_html_report_path','ootp_league_name','otp_league_abbr','fantasy_web_root',
-				  'min_game_current','min_game_last','current_period','draft_rounds_max','active_max','reserve_max','injured_max',
-				  'season_start','draft_period','max_sql_file_size','last_process_time','last_sql_load_time','draft_rounds_min',
-				  'ootp_html_report_path','useWaivers','share_facebook','share_twitter','share_digg','share_stumble','share_addtoany',
-				  'sharing_enabled','google_analytics_enable','google_analytics_tracking_id','stats_lab_compatible','restrict_admin_leagues',
-				  'users_create_leagues','max_user_leagues','primary_contact');
 	$ci =& get_instance();
 	$ci->db->flush_cache();
 	$ci->db->select("cfg_key,cfg_value");
-	$ci->db->from("fantasy_config");
-	$whereClause = "(";
-	foreach ($keys as $key) {
-		if ($whereClause != "(") {
-			$whereClause .= ' OR ';
-		}
-		$whereClause .= 'cfg_key ='.$key;
-	}
-	$whereClause .= ")";
-	$query = $ci->db->get();
+	$query = $ci->db->get($table);
 	if ($query->num_rows() > 0) {
 		foreach($query->result() as $row) {
 			$cfg = $cfg + array($row->cfg_key=>$row->cfg_value);
 		}
 	}
-	if (isset($row->bug_db)) { $cfg = $cfg + array('bug_db'=>$row->bug_db); }
 	$query->free_result();
 	return $cfg;
 }
-
-function update_config($key,$value) {
+/**
+ *	UPDATE CONFIG
+ *	Updates config values from either the default config table or the league config
+ *	@param	$key		The config key
+ *	@param	$value		The config value to be set
+ *	@param	$table		The config table name. Default is FANTASY_CONFIG.
+ *	@param	$addIfNull	Set TRUW to create a new key value if one is not set, FALSE to cancel the update
+ *	@return				TRUE on sucess, FALSE on error
+ *	@since				1.0
+ *
+ */
+function update_config($key,$value,$table = FANTASY_CONFIG,$addIfNull = false) {
 	if (isset($key) && !empty($key)) {
-		 // ASSURE KEY EXUSTS BEFORE UPDATING
 		$ci =& get_instance();
+		
+		// ASSURE KEY EXISTS BEFORE UPDATING
 		$ci->db->flush_cache();
 		$ci->db->select('id');
+		$ci->db->from($table);
 		$ci->db->where('cfg_key',$key);
-		$query = $ci->db->get('fantasy_config');
-		if ($query->num_rows() == 0) {
-			return false;
-		}
-		$query->free_result();
+		$count = $ci->db->count_all_results();
 		unset($query);		
-		$ci =& get_instance();
+		
 		$ci->db->flush_cache();
-		$ci->db->where('cfg_key',$key);
-		$ci->db->update('fantasy_config',array('cfg_value'=>$value));
+		if ($count == 0) {
+			if ($addIfNull) {
+				$ci->db->insert($table,array('cfg_value'=>$value));
+			} else {
+				return false;
+			}
+		} else {
+			$ci->db->where('cfg_key',$key);
+			$ci->db->update($table,array('cfg_value'=>$value));
+		}
 		return true;
 	} else {
 		return false;	
 	}
 }
-function update_config_by_array($configArray = array()) {
+/**
+ *	UPDATE CONFIG BY ARRAY
+ *	Updates config values  using an array of key value pairs
+ *	@param	$configArray	Array of key => value pairs
+ *	@param	$table			The config table name. Default is FANTASY_CONFIG.
+ *	@param	$addIfNull		Set TRUW to create a new key value if one is not set, FALSE to cancel the update
+ *	@return					TRUE on sucess, FALSE on error
+ *	@since					1.0.2
+ *
+ */
+function update_config_by_array($configArray = array(),$table = FANTASY_CONFIG,$addIfNull = false) {
 
 	if (isset($configArray) && sizeof($configArray) > 0) {
 		foreach($configArray as $key => $value) {
-			$update = update_config($key,$value);
-			//if (!$update) { break; }
+			$update = update_config($key,$value,$table,$addIfNull);
 		}
 	}
-	//echo("Update = ".(($update) ? 'true': 'false')."<br />");
 	return true;	
 }
 

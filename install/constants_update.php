@@ -186,7 +186,7 @@ define("ACCESS_ADMINISTRATE",6);
 |--------------------------------------------------------------------------
 */
 define('SITE_NAME','OOTP Fantasy Leagues');
-define('SITE_VERSION','1.0.3 Beta');
+define('SITE_VERSION','1.0.4 Beta');
 define('MOD_SITE_URL','http://www.ootpfantasyleagues.com/');
 define("BUG_URL",'http://nabl.aeoliandigital.com/ootp_fantasy_leagues/about/bug_report');
 define("UPDATE_URL",'http://www.ootpfantasyleagues.com/version/curr_version.txt');
@@ -199,6 +199,9 @@ define("UPDATE_URL",'http://www.ootpfantasyleagues.com/version/curr_version.txt'
 |
 */
 define("USER_CORE_TABLE","users_core");
+
+define("FANTASY_CONFIG","fantasy_config");
+define("FANTASY_LEAGUE_CONFIG","fantasy_leagues_config");
 
 define("DEFAULT_RESULTS_COUNT",25);
 

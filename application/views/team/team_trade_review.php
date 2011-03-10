@@ -19,6 +19,9 @@
 		$('#btnCounter').click(function(){
 			alert("Counter offer");
 		});
+		$('input[rel=protestBtn]').click(function(){
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeProtest/team_id/'+teamId+'/trade_id/'+this.id;
+		});
 		$('#btnReject').click(function(){
 			$('#type').val(<?php print(TRADE_REJECTED_OWNER); ?>);
 			$('#tradeForm').submit();
@@ -29,10 +32,12 @@
 			$('#tradeForm').submit();
 		});
 		$('#btnRetract').click(function(){
-			alert("Retract offer");
+			$('#type').val(<?php print(TRADE_RETRACTED); ?>);
+			$('#tradeForm').submit();
 		});
 		$('#btnExpire').click(function(){
-			alert("Expire offer");
+			$('#type').val(<?php print(TRADE_EXPIRED); ?>);
+			$('#tradeForm').submit();
 		});
 		$('#btnCancel').click(function(){
 			document.location.href = history.back(-1);
@@ -144,7 +149,7 @@
                     if ($trans_type == 1) { ?>
                     <label for="expires">Expires in: </label> 
                     <?php 
-                    $expireList = array(-1=>"Select One",100=>"Next Sim",1=>"1 Days",2=>"2 Days",3=>"3 Days",4=>"4 Days",5=>"5 Days"); 
+                    $expireList = array(-1=>"Select One",100=>"Next Sim Period"); 
                     ?>
                     <select id="expiresIn" name="expiresIn">
                     <?php 
@@ -155,6 +160,13 @@
                     		}
                     		print('>'.$label.'</option>');
                     	}
+						for($d = 1; $d < $config['sim_length'] + 1; $d++) { 
+							print('<option value="'.$d.'"');
+                    		if (isset($expiresIn) && $expiresIn == $d){
+                    			print(' selected="selected"');
+                    		}
+                    		print('>'.$d.' Days</option>');
+						}
                   	?>
                     </select><br class="clear" clear="all" />
 					
@@ -190,7 +202,10 @@
                    	// TRADE OWNER REVIEW (READ ONLY)
                    	else if ($trans_type == 3) { ?>
                         <input type="button" class="button" id="btnRetract" name="btnReject" value="Retract Offer" />
-                        <input type="button" class="button" id="btnExpire" name="btnExpire" value="Expire Now" />
+                   	<?php } 
+                   	// LEAGUE OWNER REVIEW (PROTEST ONLY)
+                   	else if ($trans_type == 4) { ?>
+                        <input type="button" class="button" rel="protestBtn" id="<?php print($trade_id); ?>" name="btnProtest" value="Protest Trade" />
                    	<?php } 
                    	if ($trans_type == 2 || $trans_type == 3) { 
                    	?>

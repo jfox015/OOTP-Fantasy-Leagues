@@ -44,7 +44,6 @@
 			$form->fieldset('');
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('users_create_leagues',$responses,'Users can create leagues?',($this->input->post('users_create_leagues') ? $this->input->post('users_create_leagues') : $config['users_create_leagues']),'required');
-			
 			$form->fieldset();
 			$form->text('max_user_leagues','Max # of leagues per user','required|trim|number',($input->post('max_user_leagues') ? $input->post('max_user_leagues') : $config['max_user_leagues']),array('class'=>'shorttext'));
             $form->space();
@@ -76,7 +75,30 @@
             $form->nobr();
            	$form->text('injured_max','Injured','required|trim|number',($input->post('injured_max') ? $input->post('injured_max') : $config['injured_max']),array('class'=>'shorttext'));
             $form->space();
-           	$form->fieldset('',array('class'=>'button_bar'));
+			
+			$form->fieldset('Trading');
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('useTrades',$responses,'Trading Enabled?',($this->input->post('useTrades') ? $this->input->post('useTrades') : $config['useTrades']),'required');
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('tradesExpire',$responses,'Trade offers can expire?',($this->input->post('tradesExpire') ? $this->input->post('tradesExpire') : $config['tradesExpire']),'required');
+			$expireList = array(-1=>"Select One",100=>"Following Sim Period"); 
+			for($d = 1; $d < $config['sim_length'] + 1; $d++) { 
+				$expireList = $expireList  + array($d =>$d." Days");
+			}
+			$form->fieldset('');
+            $form->select('defaultExpiration|defaultExpiration',$expireList,'Default Expiration (Days)',($this->input->post('defaultExpiration')) ? $this->input->post('defaultExpiration') : $config['defaultExpiration']);
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('allowTradeProtests',$responses,'Owners can protest trades?',($this->input->post('allowTradeProtests') ? $this->input->post('allowTradeProtests') : $config['allowTradeProtests']),'required');
+			$form->fieldset('');
+            $form->select('minProtests|minProtests',array(1=>1,2=>2,3=>3,4=>4,5=>5,6=>6,7=>7,8=>8),'Protests needed to void trade',($this->input->post('minProtests')) ? $this->input->post('minProtests') : $config['minProtests']);
+			$form->select('protestPeriodDays|protestPeriodDays',$expireList,'Protest Period (Days)',($this->input->post('protestPeriodDays')) ? $this->input->post('protestPeriodDays') : $config['protestPeriodDays']);
+			
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('commishApproveTrades',$responses,'Commissioners must approve trades?',($this->input->post('commishApproveTrades') ? $this->input->post('commishApproveTrades') : $config['commishApproveTrades']),'required');
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('adminApproveTrades',$responses,'Administrators must approve trades?',($this->input->post('adminApproveTrades') ? $this->input->post('adminApproveTrades') : $config['adminApproveTrades']),'required');
+			
+			$form->fieldset('',array('class'=>'button_bar'));
             $form->submit('Submit');
             echo($form->get());
             ?>

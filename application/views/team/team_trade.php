@@ -71,6 +71,12 @@
 			}
 			return false;
 		});
+		$('input[rel=protestbtn]').live('click',function () {
+			if (confirm("Are you sure you want to log a protest to this trade? This action cannot be undone.")) {
+				document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeProtest/team_id/'+team_id+'/trade_id/'+this.id+cacheBuster();
+			}
+			return false;	   
+		});
 		$('input[rel=responsebtn]').live('click',function () {
 			var params = this.id.split("|");
 			var  proceed = true;
@@ -926,10 +932,16 @@
                 </tr>
                 <?php $rowNum++;
                 }?>
-                <?php if (!empty($tradeData['comments'])) { $rowNum++; ?>
+                <?php if (!empty($tradeData['comments']) && ($team_id == $tradeData['team_2_id'] || $team_id == $tradeData['team_1_id'])) { $rowNum++; ?>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
 					<td><b>Comments:</b></td>
 					<td><?php print($tradeData['comments']); ?></td>
+                </tr>
+                <?php } ?>
+                <?php if ($config['allowTradeProtests'] == 1 && isset($tradeData['protestCount'])) { $rowNum++; ?>
+                <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+					<td><b>Protests:</b></td>
+					<td><?php print($tradeData['protestCount']); ?></td>
                 </tr>
                 <?php } ?>
                 <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
@@ -938,15 +950,22 @@
                 	$transType = 3;
                 	if ($tradeData['team_2_id'] == $team_id) { 
                 		$transType = 2;
-                	} ?>
+                	} else {
+						if ($team_id != $tradeData['team_1_id'] && $team_id != $tradeData['team_2_id']) {
+							$transType = 4;
+						}
+					} 
+					?>
                 	<input type='button' rel="reviewbtn" id="<?php print($transType."|".$tradeData['trade_id']); ?>" class="button" value='Review Trade' style="float:left;margin-right:8px;" />
 	                <?php if ($transType == 3) { ?>
                 		<input type='button' rel="responsebtn" id="<?php print(TRADE_RETRACTED."|".$tradeData['trade_id']); ?>" class="button" value='Retract' style="float:left;margin-right:8px;" />
-                	<?php } else if ($tradeData['team_2_id'] == $team_id) { ?>
+                	<?php } else if ($transType == 2) { ?>
 	                	<input type='button' rel="responsebtn" id="<?php print(TRADE_REJECTED_OWNER."|".$tradeData['trade_id']); ?>" class="button" value='Reject' style="float:left;margin-right:8px;" />
 	                	<input type='button' rel="responsebtn" id="<?php print(TRADE_REJECTED_COUNTER."|".$tradeData['trade_id']); ?>" class="button" value='Counter' style="float:left;margin-right:8px;" />
 	                	<input type='button' rel="responsebtn" id="<?php print(TRADE_ACCEPTED."|".$tradeData['trade_id']); ?>" class="button" value='Accept' style="float:left;margin-right:8px;" />
-                	<?php } ?>
+                	<?php } else if ($transType == 4) { ?>
+	                	<input type='button' rel="protestbtn" id="<?php print($tradeData['trade_id']); ?>" class="button" value='Protest Trade' style="float:left;margin-right:8px;" />
+	                <?php } ?>
                 	</td>
                 </tr>
                 <input type="hidden" name="trade_id" value="<?php print($tradeData['trade_id']); ?>" />

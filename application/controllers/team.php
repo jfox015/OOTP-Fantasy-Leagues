@@ -95,6 +95,10 @@ class team extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
 	    $this->displayView();	
 	}
+	/**
+	 *	AVATAR
+	 *	Update the team's avatar.
+	 */
 	public function avatar() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
@@ -297,9 +301,15 @@ class team extends BaseEditor {
 				$this->data['receiveList'] = $receiveList['players'];
 			} // END if
 			
-			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id']);
-			$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id']);
+			// GET USER INITATED TRADES AND OFFERED TRADES
+			$allowProtests = ($this->params['config']['allowTradeProtests'] == 1) ? true : false;
+			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id'], false, false,$allowProtests);
+			$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$allowProtests);
 			
+			if ($allowProtests) {
+				$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'], false, false, $this->data['team_id'], true);
+				$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
+			}
 			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
 			
@@ -316,15 +326,15 @@ class team extends BaseEditor {
 	 * @param	display_page	(OPTIONAL) Resulting View page. Passed only from non-AJAX submissions
 	 * @param	comments		(OPTIONAL) Trade comments or reponse
 	 */
-	public function tradeResponse() {
+	public function tradeResponse($responseType = 1) {
 		
 		// DEFAULT VARS
 		$code = -1;
 		$status = "";
 		$result = "{";
-		$responseType = 1;
 		$error = false;
 		$this->data['comments'] = "";
+		$this->data['display_page'] = $this->views['SUCCESS'];
 		
 		// CONVERT INPUT DATA TO DATA VARS
 		if ($this->input->post('submitted')) {
@@ -423,12 +433,27 @@ class team extends BaseEditor {
 						break;
 					// REMOVED BY ADMIN
 					case TRADE_REMOVED:
+						$msg = $this->lang->line('team_trade_removed');
 						break;
 					// TRADE EXPIRED
 					case TRADE_EXPIRED:
+						$msg = $this->lang->line('team_trade_expired');
 						break;
 					// INVLALID TRADE
 					case TRADE_INVALID:
+						$msg = $this->lang->line('team_trade_invalid');
+						break;
+					// REMOVED BY ADMIN
+					case TRADE_PENDING_COMMISH_APPROVAL:
+						$msg = $this->lang->line('team_trade_pending_commish_approval');
+						break;
+					// TRADE EXPIRED
+					case TRADE_PENDING_ADMIN_APPROVAL:
+						$msg = $this->lang->line('team_trade_pending_admin_approval');
+						break;
+					// INVLALID TRADE
+					case TRADE_PENDING_LEAGUE_APPROVAL:
+						$msg = $this->lang->line('team_trade_pending_league_approval');
 						break;
 					default:
 						break;	
@@ -472,7 +497,7 @@ class team extends BaseEditor {
 			$this->output->set_header('Content-type: application/json'); 
 			$this->output->set_output($result);
 		} else {
-			$this->data['message'] = $status;
+			$this->data['message'] = $this->data['theContent'] = $status;
 			$this->params['subTitle'] = "Team Trades";
 			$this->data['subTitle'] = "Trade Response";
 			$this->params['content'] = $this->load->view($this->data['display_page'], $this->data, true);
@@ -482,7 +507,67 @@ class team extends BaseEditor {
 		} // END if
 	}
 	public function tradeProtest() {
+		// DEFAULT VARS
+		$code = -1;
+		$status = "";
+		$result = "{";
+		$responseType = 1;
+		$error = false;
 		
+		// CONVERT INPUT DATA TO DATA VARS
+		if ($this->input->post('submitted')) {
+			$this->data['trade_id'] = $this->input->post('trade_id') ? $this->input->post('trade_id') : -1;
+			$this->data['team_id'] = $this->input->post('team_id') ? $this->input->post('team_id') : -1;
+			$responseType = 2;
+		} else {
+			$this->getURIData();
+			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? $this->uriVars['trade_id'] : -1;
+			$this->data['team_id'] = (isset($this->uriVars['team_id'])) ? $this->uriVars['team_id'] : -1;
+		} // END if
+		
+		// VERIFY MINIMUM VARS HAVE VALUES
+		if ($this->data['trade_id'] != -1 && $this->data['team_id'] != -1) {
+			
+			// LOAD MODELS
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->data['team_id']);
+			
+			$this->dataModel->logTradeProtest($this->data['trade_id'],$this->data['team_id']);
+			
+			$protestCount = $this->dataModel->getTradeProtests(false,$this->data['trade_id']);
+			
+			if ($protestCount >= $this->params['config']['minProtests']) {
+				$this->uriVars['trade_id'] = $this->data['trade_id'];
+				$this->uriVars['type'] = TRADE_REJECTED_LEAGUE;
+				if (!isset($this->uriVars['team_id'])) { $this->uriVars['team_id'] = $this->data['team_id']; }
+				$this->uriVars['referrer'] = $_SERVER['HTTP_REFERER'];
+				$this->tradeResponse(2);
+			} else {
+				if ($responseType == 1) {
+					if ($error) { $status = "error:".$status; }
+					$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
+					$this->output->set_header('Content-type: application/json'); 
+					$this->output->set_output($result);
+				} else {
+					$this->data['message'] = $status;
+					$this->params['subTitle'] = "Team Trades";
+					$this->data['subTitle'] = "Trade Protest";
+					$this->params['content'] = $this->load->view($this->views['SUCCESS'], $this->data, true);
+					$this->makeNav();
+					$this->displayView();
+				} // END if
+			}
+		} else {
+			$error = true;
+			$code = 404;
+			$status = "Required parameters were missing.";
+			$this->params['subTitle'] = "Team Trades";
+			$this->data['subTitle'] = "Trade Protest";
+			$this->data['theContent'] = $status;
+			$this->params['content'] = $this->load->view($this->views['SUCCESS'], $this->data, true);
+			$this->makeNav();
+			$this->displayView();
+		} // END if
 	}
 	public function tradeCounterOffer() {
 		
@@ -1825,7 +1910,7 @@ class team extends BaseEditor {
 		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->dataModel->owner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 			$tm_admin = true;
 		}
-		array_push($this->params['subNavSection'],team_nav($this->dataModel->id,$this->dataModel->teamname." ".$this->dataModel->teamnick, $tm_admin));
+		array_push($this->params['subNavSection'],team_nav($this->dataModel->id,$this->dataModel->teamname." ".$this->dataModel->teamnick, $tm_admin, (($this->params['config']['useTrades'] == 1)?true:false)));
 	}
 }
 /* End of file team.php */
