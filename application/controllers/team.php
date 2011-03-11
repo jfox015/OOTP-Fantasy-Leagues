@@ -283,21 +283,23 @@ class team extends BaseEditor {
 			$sendList['all'] = (isset($this->uriVars['tradeTo'])) ? explode("&",$this->uriVars['tradeTo']) : array();
 			$receiveList['all'] = (isset($this->uriVars['tradeFrom'])) ? explode("&",$this->uriVars['tradeFrom']) : array();
 			
-			if(isset($sendList['all']) && sizeof($sendList['all']) > 0 && isset($receiveList['all']) && sizeof($receiveList['all']) > 0) {
+			$this->load->model('player_model');
+			if(isset($sendList['all']) && sizeof($sendList['all']) > 0) { 
 				$sendList['players'] = array();
-				$receiveList['players'] = array(); 
-				$this->load->model('player_model');
 				foreach($sendList['all'] as $data) {
 					$tmpPlayer = explode("_",$data);
 					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
 					array_push($sendList['players'], $playerData);
 				} // END foreach
+				$this->data['sendList'] = $sendList['players'];
+			}
+			if (isset($receiveList['all']) && sizeof($receiveList['all']) > 0) {
+				$receiveList['players'] = array(); 
 				foreach($receiveList['all'] as $data) {
 					$tmpPlayer = explode("_",$data);
 					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
 					array_push($receiveList['players'], $playerData);
 				} // END foreach
-				$this->data['sendList'] = $sendList['players'];
 				$this->data['receiveList'] = $receiveList['players'];
 			} // END if
 			

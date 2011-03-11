@@ -1,6 +1,6 @@
 <script type="text/javascript" charset="UTF-8">
-	var ajaxWait = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
-	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
+	var ajaxWait = '<img src="<?php echo(PATH_IMAGES); ?>icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
+	var responseError = '<img src="<?php echo(PATH_IMAGES); ?>icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
 	var fader = null;
 	//var team_id = <?php //$team_id ?>;
 	var league_id = <?php echo($league_id); ?>;
@@ -122,6 +122,14 @@
 				});
 			}
 			return false;							
+		});
+		$('input[rel=tradePlayer]').live('click',function () {
+			var params = this.id.split("|");
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/trade/league_id/'+league_id+'/id/'+params[0]+'/tradeTo/'+params[1];									 
+		});
+		$('input[rel=tradeForPlayer]').live('click',function () {
+			var params = this.id.split("|");
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/trade/league_id/'+league_id+'/id/'+params[0]+'/team_id2/'+params[1]+'/tradeFrom/'+params[2];									 
 		});
 	});
 </script>
@@ -329,6 +337,11 @@
 							} // END if
 							if ($current_team['id'] != -1 && $current_team['owner_id'] == $currUser) {
 								echo('<input type="button" class="button" id="'.$league_id.'|'.$current_team['id'].'|'.$thisItem['id'].'" rel="dropPlayer" name="dropPlayer" value="Drop this Player" />');
+								$action = 'drop';
+								echo('<input type="button" class="button" id="'.$current_team['id'].'|'.$thisItem['id'].'_'.$thisItem['position'].'_'.$thisItem['role'].'" rel="tradePlayer" name="tradePlayer" value="Trade Player" />');
+								$action = 'drop';
+							} else if ($current_team['id'] != -1 && $current_team['owner_id'] != $currUser) {
+								echo('<input type="button" class="button" id="'.$user_team_id.'|'.$current_team['id'].'|'.$thisItem['id'].'_'.$thisItem['position'].'_'.$thisItem['role'].'" rel="tradeForPlayer" name="tradeForPlayer" value="Trade for Player" />');
 								$action = 'drop';
 							} // END if
 						}
