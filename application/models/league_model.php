@@ -1070,6 +1070,13 @@ class league_model extends base_model {
 		$pQuery->free_result();
 		return true;
 	}
+	
+	public function updateTeamScoring($scoring_period, $league_id = false, $excludeList = array()) {
+		
+		if ($league_id === false) { $league_id = $this->id; }
+		
+	}
+	
 	public function updateTeamRecords($scoring_period, $league_id = false, $excludeList = array()) {
 		
 		if ($league_id === false) { $league_id = $this->id; }

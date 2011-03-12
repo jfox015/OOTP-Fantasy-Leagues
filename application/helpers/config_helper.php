@@ -11,11 +11,14 @@
  *	@since				1.0
  *
  */
-function load_config($table = FANTASY_CONFIG) {
+function load_config($table = FANTASY_CONFIG, $varType = false, $varId = false) {
 	$cfg = array();
 	$ci =& get_instance();
 	$ci->db->flush_cache();
 	$ci->db->select("cfg_key,cfg_value");
+	if ($varType !== false && $varId !== false) {
+		$ci->db->where($varType,$varId);
+	}
 	$query = $ci->db->get($table);
 	if ($query->num_rows() > 0) {
 		foreach($query->result() as $row) {
@@ -36,7 +39,7 @@ function load_config($table = FANTASY_CONFIG) {
  *	@since				1.0
  *
  */
-function update_config($key,$value,$table = FANTASY_CONFIG,$addIfNull = false) {
+function update_config($key,$value,$table = FANTASY_CONFIG, $varType = false, $varId = false,$addIfNull = false) {
 	if (isset($key) && !empty($key)) {
 		$ci =& get_instance();
 		
@@ -45,6 +48,9 @@ function update_config($key,$value,$table = FANTASY_CONFIG,$addIfNull = false) {
 		$ci->db->select('id');
 		$ci->db->from($table);
 		$ci->db->where('cfg_key',$key);
+		if ($varType !== false && $varId !== false) {
+			$ci->db->where($varType,$varId);
+		}
 		$count = $ci->db->count_all_results();
 		unset($query);		
 		
@@ -74,11 +80,11 @@ function update_config($key,$value,$table = FANTASY_CONFIG,$addIfNull = false) {
  *	@since					1.0.2
  *
  */
-function update_config_by_array($configArray = array(),$table = FANTASY_CONFIG,$addIfNull = false) {
+function update_config_by_array($configArray = array(),$table = FANTASY_CONFIG, $varType = false, $varId = false,$addIfNull = false) {
 
 	if (isset($configArray) && sizeof($configArray) > 0) {
 		foreach($configArray as $key => $value) {
-			$update = update_config($key,$value,$table,$addIfNull);
+			$update = update_config($key,$value,$table,$varType,$varId,$addIfNull);
 		}
 	}
 	return true;	
