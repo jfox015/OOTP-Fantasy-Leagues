@@ -26,8 +26,12 @@ function logTransaction($added = array(), $dropped = array(), $claimed = array()
 	return $ci->team_model->logTransaction($added, $dropped, $claimed, $tradedTo, $tradedFrom,$commish_id, $currUser, 
 										   $isAdmin, $effective, $league_id, $team_id, $owner_id);
 }
-
-
+function getBasicRoster($team_id = false, $score_period = false) {
+	$ci =& get_instance();
+	$ci->load->model('team_model');
+	return $this->team_model->getBasicRoster($score_period['id'],$team_id)
+}
+	
 /*---------------------------------------------------------
 /	GET AVAILABLE PLAYERS
 /----------------------------------------------------------

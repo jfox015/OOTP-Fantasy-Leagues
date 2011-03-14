@@ -1004,41 +1004,24 @@ class admin extends MY_Controller {
 		//echo("Current Scoring Period = ".$score_period['id']."<br />");
 		
 		// UPDATE PLAYER SCORING FOR THIS PERIOD
+		$rules = $this->league_model->getAllScoringRulesforSim();
+		
+		$this->load->model('player_model');
+		$this->player_model->updatePlayerScoring($rules,$score_period);
+		
+		$rules = $this->league_model->
+		
+		
 		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
 		$error = false;
 		$mess = '';
 		$warn = "";
 		foreach($this->data['leagues'] as $id => $details) {
-			if ($this->league_model->hasTeams($id)) {
-				$teams = $this->league_model->getTeamIdList($id);
-				if (!isset($this->team_model)) {
-					$this->load->model('team_model');
-				}
-				$excludeList = array();
-				foreach($teams as $team_id) {
-					if (!$this->league_model->validateRoster($this->team_model->getBasicRoster($score_period['id'],$team_id),$id)) {
-						array_push($excludeList,$team_id);
-						$warn .= "Warning: team ".$team_id." of league '".$this->data['leagues'][$id]['league_name']."' had an invalid roster. No results will be recorded.";
-					}
-				}
-				
-				$error = $this->league_model->updateLeagueScoring($score_period, $excludeList, $id, $this->params['config']['ootp_league_id']);
-				if ($error) {
-					$mess =  $this->league_model->statusMess;
-					break;
-				}
-				
-				//$warn .= "Scoring period id = ".$score_period['id']."<br />";
-				// IF RUNNING ON THE FINAL DAY OF THE SIM 
-				$this->league_model->updateTeamRecords($score_period, $id, $excludeList);
-				
-				// COPY CURRENT ROSTERS TO NEXT SCORING PERIOD
-				$this->league_model->copyRosters($score_period['id'], ($score_period['id'] + 1), $id);
-				
-				// IF ENABLED, PROCESS WAIVERS
-				if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
-					$this->league_model->processWaivers(($score_period['id'] + 1), $id, $this->debug);
-				}
+			
+			$error = $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
+			if ($error) {
+				$mess =  $this->league_model->statusMess;
+				break;
 			}
 		}
 		// UPDATE THE MAIN CONFIG

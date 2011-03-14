@@ -5,7 +5,7 @@ require_once('base_editor.php');
  *	The primary controller for League manipulation and details.
  *	@author			Jeff Fox
  *	@dateCreated	04/04/10
- *	@lastModified	08/08/10
+ *	@lastModified	03/15/11
  *
  */
 class league extends BaseEditor {
@@ -27,6 +27,10 @@ class league extends BaseEditor {
 	public function league() {
 		parent::BaseEditor();
 	}
+	/**
+	 *	INIT.
+	 *	Overrides the default init function. Sets page views and sets default values.
+	 */
 	function init() {
 		parent::init();
 		$this->modelName = 'league_model';
@@ -55,157 +59,6 @@ class league extends BaseEditor {
 	/*---------------------------------------
 	/	CONTROLLER SUBMISSION HANDLERS
 	/--------------------------------------*/
-	public function admin() {
-		if ($this->params['loggedIn']) {
-			$this->getURIData();
-			$this->load->model($this->modelName,'dataModel');
-			$this->load->model('draft_model');
-			$this->dataModel->load($this->uriVars['id']);
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
-				$this->data['subTitle'] = "League Admin";
-				$this->data['league_id'] = $this->uriVars['id'];
-				$this->data['draftStatus'] = $this->draft_model->getDraftStatus($this->dataModel->id);
-				$this->data['draftEnabled'] = $this->draft_model->getDraftEnabled($this->dataModel->id);
-				$this->data['debug'] = $this->debug;
-				$this->makeNav();
-				$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
-			} else {
-				$this->data['subTitle'] = "Unauthorized Access";
-				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
-				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-			}
-			$this->displayView();
-		} else {
-	        $this->session->set_userdata('loginRedirect',current_url());	
-			redirect('user/login');
-	    }
-	}
-	public function select() {
-		if ($this->params['loggedIn']) {
-			$this->getURIData();
-			$this->load->model($this->modelName,'dataModel');
-			$this->dataModel->load($this->uriVars['id']);
-			
-			// SET LEAGUE ID TO SESSION
-			$this->session->set_userdata('league_id',$this->dataModel->id);
-			// GET USERS TEAM FOR THIS LEAGUE
-			$this->session->set_userdata('team_id',$this->uriVars['team_id']);
-			
-			redirect('/league/home/'.$this->uriVars['id']);
-		} else {
-	        $this->session->set_userdata('loginRedirect',current_url());	
-			redirect('user/login');
-	    }
-	}
-	
-	public function initlaizeDraft() {
-		if ($this->params['loggedIn']) {
-			$this->getURIData();
-			
-			$this->load->model($this->modelName,'dataModel');
-			$this->load->model('draft_model');
-			$this->dataModel->load($this->uriVars['id']);
-			
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
-				$this->data['subTitle'] = "Initialize Draft";
-				$this->draft_model->load($this->uriVars['id'], 'league_id');
-				$this->draft_model->sheduleDraft($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug);
-				$this->draft_model->save();
-				$this->admin();
-			} else {
-				$this->data['subTitle'] = "Unauthorized Access";
-				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
-				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-				$this->displayView();
-			}
-		} else {
-	        $this->session->set_userdata('loginRedirect',current_url());	
-			redirect('user/login');
-	    }
-	}
-	public function resetDraft() {
-		if ($this->params['loggedIn']) {
-			$this->getURIData();
-			
-			$this->load->model($this->modelName,'dataModel');
-			$this->load->model('draft_model');
-			$this->dataModel->load($this->uriVars['id']);
-			
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
-				$this->data['subTitle'] = "League Admin";
-				$this->draft_model->deleteCurrentDraft($this->dataModel->id);
-				$this->admin();
-			} else {
-				$this->data['subTitle'] = "Unauthorized Access";
-				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
-				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-				$this->displayView();
-			}
-		} else {
-	        $this->session->set_userdata('loginRedirect',current_url());	
-			redirect('user/login');
-	    }
-	}
-	public function avatar() {
-		if ($this->params['loggedIn']) {
-			$this->getURIData();
-			$this->loadData();
-			
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
-				$this->data['avatar'] = $this->dataModel->avatar;
-				$this->data['league_id'] = $this->dataModel->id;
-				$this->data['leagueName'] = $this->dataModel->league_name;
-				$this->data['subTitle'] = 'Edit League Avatar';
-				
-				//echo("Submitted = ".(($this->input->post('submitted')) ? 'true':'false')."<br />");
-				if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name']))) {
-					if ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name'])) {
-						$fv = & _get_validation_object();
-						$fv->setError('avatarFile','The avatar File field is required.');
-					}
-					$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
-					$this->params['pageType'] = PAGE_FORM;
-					$this->displayView();
-				} else {
-					if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || strpos($_FILES['avatarFile']['name'],'.jpeg') || strpos($_FILES['avatarFile']['name'],'.gif') || strpos($_FILES['avatarFile']['name'],'.png'))) {
-						$fv = & _get_validation_object();
-						$fv->setError('avatarFile','The file selected is not a valid image file.');  
-						$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
-						$this->params['pageType'] = PAGE_FORM;
-						$this->displayView();
-					} else {
-						if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
-							$change = $this->dataModel->applyData($this->input, $this->params['currUser']); 
-							if ($change) {
-								$this->dataModel->save();
-								$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');
-								redirect('league/info/'.$this->dataModel->id);
-							} else {
-								$message = '<p class="error">Avatar Change Failed. '.$this->dataModel->statusMess;
-								$message .= '</p >';
-								$this->data['theContent'] = $message;
-								$this->makeNav();
-								$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-								$this->displayView();
-								//$this->session->set_flashdata('message', $message);
-								//redirect('league/avatar');
-							}
-						} else {
-							throw new UploadException($_FILES['avatarFiles']['error']);
-						}
-					}
-				}
-			} else {
-				$this->data['subTitle'] = "Unauthorized Access";
-				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
-				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-				$this->displayView();
-			}
-		} else {
-	        $this->session->set_userdata('loginRedirect',current_url());	
-			redirect('user/login');
-	    }
-	}
 	/**
 	 *	INDEX.
 	 *	The default handler when the controller is called.
@@ -347,6 +200,182 @@ class league extends BaseEditor {
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;
 		$this->displayView();
+	}
+	/**
+	 *	ADMIN.
+	 *	Draws the LEague Admin Dashboard
+	 *
+	 */
+	public function admin() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->load->model($this->modelName,'dataModel');
+			$this->load->model('draft_model');
+			$this->dataModel->load($this->uriVars['id']);
+			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+				$this->data['subTitle'] = "League Admin";
+				$this->data['league_id'] = $this->uriVars['id'];
+				$this->data['draftStatus'] = $this->draft_model->getDraftStatus($this->dataModel->id);
+				$this->data['draftEnabled'] = $this->draft_model->getDraftEnabled($this->dataModel->id);
+				$this->data['debug'] = $this->debug;
+				$this->makeNav();
+				$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+			}
+			$this->displayView();
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
+	}
+	/**
+	 *	SELECT.
+	 *	A function to select a league and set it to a codeigniter session var
+	 *	allowing for peristant access of the league ID
+	 *
+	 */
+	public function select() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			
+			// SET LEAGUE ID TO SESSION
+			$this->session->set_userdata('league_id',$this->dataModel->id);
+			// GET USERS TEAM FOR THIS LEAGUE
+			$this->session->set_userdata('team_id',$this->uriVars['team_id']);
+			
+			redirect('/league/home/'.$this->uriVars['id']);
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
+	}
+	/**
+	 *	INITALIZE DRAFT.
+	 *	Creates a draft entry and sets intial var values for a league draft
+	 *
+	 */
+	public function initlaizeDraft() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			
+			$this->load->model($this->modelName,'dataModel');
+			$this->load->model('draft_model');
+			$this->dataModel->load($this->uriVars['id']);
+			
+			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+				$this->data['subTitle'] = "Initialize Draft";
+				$this->draft_model->load($this->uriVars['id'], 'league_id');
+				$this->draft_model->sheduleDraft($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug);
+				$this->draft_model->save();
+				$this->admin();
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->displayView();
+			}
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
+	}
+	/**
+	 *	RESET DRAFT.
+	 *	Resets a draft entry to it's intial var values for a league draft
+	 *
+	 */
+	public function resetDraft() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			
+			$this->load->model($this->modelName,'dataModel');
+			$this->load->model('draft_model');
+			$this->dataModel->load($this->uriVars['id']);
+			
+			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+				$this->data['subTitle'] = "League Admin";
+				$this->draft_model->deleteCurrentDraft($this->dataModel->id);
+				$this->admin();
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->displayView();
+			}
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
+	}
+	/**
+	 *	AVATAR.
+	 *	Draws the avatar editor page
+	 *
+	 */
+	public function avatar() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->loadData();
+			
+			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+				$this->data['avatar'] = $this->dataModel->avatar;
+				$this->data['league_id'] = $this->dataModel->id;
+				$this->data['leagueName'] = $this->dataModel->league_name;
+				$this->data['subTitle'] = 'Edit League Avatar';
+				
+				//echo("Submitted = ".(($this->input->post('submitted')) ? 'true':'false')."<br />");
+				if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name']))) {
+					if ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name'])) {
+						$fv = & _get_validation_object();
+						$fv->setError('avatarFile','The avatar File field is required.');
+					}
+					$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				} else {
+					if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || strpos($_FILES['avatarFile']['name'],'.jpeg') || strpos($_FILES['avatarFile']['name'],'.gif') || strpos($_FILES['avatarFile']['name'],'.png'))) {
+						$fv = & _get_validation_object();
+						$fv->setError('avatarFile','The file selected is not a valid image file.');  
+						$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
+						$this->params['pageType'] = PAGE_FORM;
+						$this->displayView();
+					} else {
+						if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
+							$change = $this->dataModel->applyData($this->input, $this->params['currUser']); 
+							if ($change) {
+								$this->dataModel->save();
+								$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');
+								redirect('league/info/'.$this->dataModel->id);
+							} else {
+								$message = '<p class="error">Avatar Change Failed. '.$this->dataModel->statusMess;
+								$message .= '</p >';
+								$this->data['theContent'] = $message;
+								$this->makeNav();
+								$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+								$this->displayView();
+								//$this->session->set_flashdata('message', $message);
+								//redirect('league/avatar');
+							}
+						} else {
+							throw new UploadException($_FILES['avatarFiles']['error']);
+						}
+					}
+				}
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->displayView();
+			}
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
 	}
 	public function teamAdmin() {
 		if ($this->params['loggedIn']) {
