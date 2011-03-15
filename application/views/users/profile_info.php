@@ -110,7 +110,7 @@
 						if ($draftInfo['draftStatus'] > 0 && $draftInfo['draftStatus'] < 5) {
 					?>
                     <tr style="background-color:#FFC">
-						<td class='hsc2_l' colspan="2">
+						<td class='hsc2_l' colspan="3">
                         <span style="color:#c00;font-weight:bold;">
                         <?php 
 							if ($draftInfo['draftStatus'] < 2) {

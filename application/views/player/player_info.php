@@ -294,7 +294,7 @@
 							echo('</select>');
 							echo('<input type="button" class="button" id="'.((isset($current_team['id']))?$current_team['id']:"-1").'|'.$thisItem['id'].'" rel="changeTeam" name="rosterButton" value="Change" />');
 							echo('</form>');
-							echo('<br class="clearfix" /></div>');
+							echo('</div><br />');
 						}
 						if ($draftEnabled != -1 && $draftCompleted == -1 && ($draftStatus >= 1 && $draftStatus < 4)) { ?>
                         <br />

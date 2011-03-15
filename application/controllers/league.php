@@ -114,7 +114,7 @@ class league extends BaseEditor {
 				} // END if
 				$userDrafts[$this->dataModel->id]['draftStatus'] = $this->draft_model->getDraftStatus($this->dataModel->id);
 				$this->data['userDrafts'] = $userDrafts;
-				$this->data['draftDate'] = $this->draft_model->getDraftDate($this->dataModel->id);
+				$this->data['draftDate'] = $this->draft_model->draftDate;
 			} // END if
 			$userTeams = $this->user_meta_model->getUserTeamIds($this->dataModel->id,$this->params['currUser']);
 			if (sizeof($userTeams) > 0) {

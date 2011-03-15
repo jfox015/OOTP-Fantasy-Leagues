@@ -245,7 +245,7 @@ class draft_model extends base_model {
 				//echo("draftStartDate = ".$draftStartDate."<br />");
 				//echo("Server Time = ".date('m/d/y h:m:s A',$today)."<br />");
 				//echo("draft starts Time = ".date('m/d/y h:m:s A',strtotime($draftStartDate." ".$this->dStartTm))."<br />");
-				if ($this->draftDate != EMPTY_DATE_TIME_STR && $today < strtotime($draftStartDate." ".$this->dStartTm)) {
+				if ($this->draftDate != EMPTY_DATE_TIME_STR && $today < strtotime($this->draftDate)) {
 					$status = 1;
 				} else {
 					$hasFirst = false;
@@ -343,7 +343,7 @@ class draft_model extends base_model {
 		if ($query->num_rows() > 0) {
 			$row = $query->row();
 			if (isset($row->draftDate) && $row->draftDate != EMPTY_DATE_TIME_STR) {
-				$draft_date = date('Y-m-d',strtotime($row->draftDate))." ".$row->dStartTm;
+				$draft_date = date('Y-m-d h:i:s A',strtotime($row->draftDate));
 			}
 		}
 		return $draft_date;

@@ -45,7 +45,7 @@
 				$message = "<b>NOTE</b>: Your draft has not started yet. More controls will be available once the draft date and time are reached.";
 			} else if ($thisItem['draftStatus'] == 4) {
 				$message = "Your draft is complete! Return to the ".anchor('/league/admin/'.$thisItem['league_id'],'legaue admin screen')." to finalize your draft and set your league rosters in place!.";
-				$messageType = "warn";
+				$messageType = "notice";
 			}
 		}
 		if (!empty($message)) {
