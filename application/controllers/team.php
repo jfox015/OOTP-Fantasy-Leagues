@@ -170,10 +170,13 @@ class team extends BaseEditor {
 	/
 	/	TRADES
 	/
+	/	Added to version 1.0.4
 	/------------------------------------------*/
 	/**
 	 *	TRADE
 	 *
+	 *	
+	 *	@since	1.0.4
 	 */
 	public function trade() {
 		$this->getURIData();
@@ -323,13 +326,15 @@ class team extends BaseEditor {
 		$this->displayView();
 	}
 	/**
-	 * TRADE RESPONSE
-	 * CATCH ALL FOR TRADE RESPONSES
-	 * @param	trade_id		The Trade ID value
-	 * @param	type			The trade response type (Accepted, Rejected, etc.)
-	 * @param	team_id			The ID of the team making the response
-	 * @param	display_page	(OPTIONAL) Resulting View page. Passed only from non-AJAX submissions
-	 * @param	comments		(OPTIONAL) Trade comments or reponse
+	 * 	TRADE RESPONSE
+	 * 	CATCH ALL FOR TRADE RESPONSES
+	 * 	@param	trade_id		The Trade ID value
+	 * 	@param	type			The trade response type (Accepted, Rejected, etc.)
+	 * 	@param	team_id			The ID of the team making the response
+	 * 	@param	display_page	(OPTIONAL) Resulting View page. Passed only from non-AJAX submissions
+	 * 	@param	comments		(OPTIONAL) Trade comments or reponse
+	 *	
+	 *	@since	1.0.4
 	 */
 	public function tradeResponse() {
 		
@@ -548,6 +553,12 @@ class team extends BaseEditor {
 			$this->displayView();
 		} // END if
 	}
+	/**
+	 * 	TRADE OFFER
+	 * 	Submits a trade offer to the DB
+	 *	
+	 *	@since	1.0.4
+	 */
 	public function tradeOffer() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
@@ -647,6 +658,12 @@ class team extends BaseEditor {
 			$this->displayView();
 		}
 	}
+	/**
+	 * 	TRADE REVIEW
+	 * 	Allows users to review trade details and, if status permits, take actions
+	 *	
+	 *	@since	1.0.4
+	 */
 	public function tradeReview() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
@@ -796,6 +813,8 @@ class team extends BaseEditor {
 			if ($this->data['trans_type'] == 4) {
 				$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
 			}
+			$this->data['comments']  = (isset($trade['comments'])) ? $trade['comments'] : -1;
+			$this->data['response']  = (isset($trade['response'])) ? $trade['response'] : -1;
 			$this->data['status']  = (isset($trade['status'])) ? $trade['status'] : -1;
 			
 			$this->data['subTitle'] = "Review Trade";

@@ -29,7 +29,7 @@ function logTransaction($added = array(), $dropped = array(), $claimed = array()
 function getBasicRoster($team_id = false, $score_period = false) {
 	$ci =& get_instance();
 	$ci->load->model('team_model');
-	return $this->team_model->getBasicRoster($score_period['id'],$team_id)
+	return $this->team_model->getBasicRoster($score_period['id'],$team_id);
 }
 	
 /*---------------------------------------------------------

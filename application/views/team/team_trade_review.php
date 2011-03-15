@@ -201,6 +201,17 @@
 					
 					<?php
                     } 
+					if ($tans_type != 4) {
+						if (isset($comments) && !empty($comments)) { ?>
+						<label for="comments">Comments: </label> 	
+                        <div class="textAreaForDisplay"><?php print($comments); ?></div>
+					<?php }
+						if (isset($response) && !empty($response)) { ?>
+						<label for="comments">Response: </label> 	
+                        <div class="textAreaForDisplay"><?php print($response); ?></div>
+					<?php }
+					}
+					?>
 					$showProtestBtn = true;
 					if ($trans_type == 4) { 
 						$showProtestBtn = true;
@@ -239,7 +250,7 @@
                     /	2:  Trade Recipient Reviewing offer
                     /	3:	Trade initator Reviewing Trade (read only)
                     /	4:	Other League Owner Reviewing offer
-                    /	5:
+                    /	5:	League Commisioner/Admin Review
                     /	6:
                     */
 					// TRADE OWNER

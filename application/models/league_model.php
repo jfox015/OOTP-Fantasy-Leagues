@@ -1296,41 +1296,74 @@ class league_model extends base_model {
 	}
 	public function updateLeagueScoring($scoring_period, $league_id = false, $ootp_league_id = 100) {
 		
+		$error = false;
 		if ($league_id === false) { $id = $this->id; }
+		$league_name = $this->getLeagueName($league_id);
+		
+		$noteam = $this->lang->line('sim_no_teams');
+		if (empty($noteam)) {
+			$this->load->lang('admin_lang');
+		}
+		unset($noteam);
+		
+		$summary = str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_league_processing'));
 		
 		if ($this->hasTeams($league_id)) {
-			$teams = $this->getTeamIdList($league_id);
 			
+			$teams = $this->getTeamDetails($league_id);
+			
+			$summary = str_replace('[TEAM_COUNT]',sizeof($teams),$this->lang->line('sim_team_count'));
+		
 			if (!function_exists('getBasicRoster')) {
 				$this->load->helper('roster');
 			}
 			$excludeList = array();
-			foreach($teams as $team_id) {
+			$valSum = "";
+			foreach($teams as $team_id => $teamData) {
 				if (!$this->validateRoster(getBasicRoster($team_id, $scoring_period), $league_id )) {
 					array_push($excludeList,$team_id);
-					$warn .= "<li>Team ".$team_id." of league '".$this->league_name."' had an invalid roster. No results will be recorded.";
+					$valSum .= str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_roster_validation_error'));
+					$valSum .= str_replace('[TEAM_NAME]',$teamData['teamname']." ".$teamData['teamnick'],$valSum);
 				}
-			}			
-			//$warn .= "Scoring period id = ".$score_period['id']."<br />";
+			}		
+			if (!empty($valSum)) {
+				$summary .= $this->lang->line('sim_roster_validation_title').$valSum.$this->lang->line('sim_roster_validation_postfix');
+			}
+			
 			// IF RUNNING ON THE FINAL DAY OF THE SIM 
 			if ($this->getLeagueScoringType($league_id) == LEAGUE_SCOING_HEADTOHEAD) {
+				$summary .= $this->lang->line('sim_process_h2h');
 				$this->updateTeamRecords($score_period, $league_id, $excludeList);
 			} else {
+				$summary .= $this->lang->line('sim_process_rot');
 				$this->updateTeamScoring($score_period, $league_id, $excludeList);
 			}
 			
 			// COPY CURRENT ROSTERS TO NEXT SCORING PERIOD
+			$summary .= $this->lang->line('sim_process_copy_rosters');
 			$this->league_model->copyRosters($score_period['id'], ($score_period['id'] + 1), $league_id);
 			
 			// IF ENABLED, PROCESS EXPIRING TRADES
 			if ((isset($this->params['config']['useTrades']) && $this->params['config']['useTrades'] == 1)) {
+				$summary .= $this->lang->line('sim_process_trades');
 			
 			}
 			// IF ENABLED, PROCESS WAIVERS
 			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
 				$this->league_model->processWaivers(($score_period['id'] + 1), $league_id, $this->debug);
+				$summary .= $this->lang->line('sim_process_waivers');
 			}
+		} else {
+			$this->errorCode = 1;
+			$summary .= $this->lang->line('sim_no_teams');
 		}
+		if ($this->errorCode == -1) {
+			$summary = $this->lang->line('success').$summary;
+		} else {
+			$summary = $this->lang->line('error').$summary;
+		}
+		
+		return summary;
 	}
 	/**
 	 * 	UPDATE LEAGUE SCORING

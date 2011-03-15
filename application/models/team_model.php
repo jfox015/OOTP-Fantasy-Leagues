@@ -70,7 +70,11 @@ class team_model extends base_model {
 		return $success;
 	}
 	/*-------------------------------------
+	/
+	/
 	/	TRANSACTIONS
+	/
+	/
 	/------------------------------------*/
 	public function logSingleTransaction($player_id = false, $trans_type = false, $commish_id = false, 
 										 $currUser = false, $isAdmin = false, $league_id = false, 
@@ -184,7 +188,13 @@ class team_model extends base_model {
 		return true;
 	}
 	/*----------------------------------------
+	/
+	/
 	/	TRADES
+	/
+	/	Added to 1.0.4
+	?
+	/
 	----------------------------------------*/
 	/**
 	 * UPDATE TRADE
@@ -454,7 +464,7 @@ class team_model extends base_model {
 		if ($league_id === false) { $league_id = $this->league_id; }
 		
 		$trades = array();
-		$selectStr = $this->tables['TRADES'].".id, offer_date, status, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, ".$this->tables['TRADES'].".comments"; 
+		$selectStr = $this->tables['TRADES'].".id, offer_date, status, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, ".$this->tables['TRADES'].".comments, response"; 
 		if ($countProtests === true) {
 			$selectStr .= ",(SELECT COUNT(".$this->tables['TRADE_PROTESTS'].".id) FROM ".$this->tables['TRADE_PROTESTS']." WHERE ".$this->tables['TRADE_PROTESTS'].".trade_id = ".$this->tables['TRADES'].".id) as protest_count";
 		}
@@ -531,7 +541,7 @@ class team_model extends base_model {
 				array_push($trades,array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
 													  'send_players'=>$playerArrays['send_players'], 'receive_players'=>$playerArrays['receive_players'], 
 													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
-													  'status'=>$row->status,'comments'=>$row->comments,'expiration_date'=>$row->expiration_date,'protest_count'=>$protestCount));			}
+													  'status'=>$row->status,'comments'=>$row->comments,'expiration_date'=>$row->expiration_date,'protest_count'=>$protestCount,'response'=>$row->response));			}
 		}
 		$query->free_result();
 		
