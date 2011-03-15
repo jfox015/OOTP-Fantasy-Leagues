@@ -2,7 +2,7 @@
 /* CSS Document */
 /* -----------------  GENERAL FORM STYLES  -------------------------------------------------------*/
 
-form { display:inline;}
+form { display:inline;border: 0px;margin:0px; padding:0px; }
 fieldset { border: 0px; }
 legend {width:98%; padding: 4px; color:#3E5264; font-weight:bold; font-size:13px; }   
 label { font-weight: bold; display: inline; float: left;margin:5px 10px 0px 0px; min-width:205px; text-align:right; }
@@ -17,7 +17,7 @@ input.searchsubmit { margin-top:2px;}
 .button_bar input { display:inline; float:none; }
 textarea, .textAreaForDisplay { font-size:11px; font-family:Verdana, Geneva, sans-serif;display:inline; float:left; }
 
-.textAreaForDisplay { width:250px; }
+.textAreaForDisplay { width:250px; text-align:left; margin:3px 0 6px 0; padding:0px; }
 input.error {
 	padding:2px;margin:0px;
 }

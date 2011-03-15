@@ -83,7 +83,7 @@
 		?>
 		<div id="content">
 			<?php
-			if (isset($trans_type) && $trans_type <= 3) {
+			if (isset($trans_type) && $trans_type > 1 && $trans_type <= 3) {
 				$outMess = "";
 				if ($status == TRADE_OFFERED) {
 					if ($trans_type == 2) {
@@ -175,43 +175,52 @@
                     ?>
                     <form action="<?php print($config['fantasy_web_root']); ?>team/<?php print($action); ?>/" method="post" id="tradeForm" id="tradeForm">
                  	<?php 
-					if ($trans_type == 1 && $config['tradesExpire']) { ?>
-                    <label for="expires">Expires in: </label> 
-                    <?php 
-                    $expireList = array(-1=>"Select One",100=>"Next Sim Period"); 
-                    ?>
-                    <select id="expiresIn" name="expiresIn">
-                    <?php 
-                    	foreach($expireList as $days => $label) { 
-                    		print('<option value="'.$days.'"');
-                    		if (isset($expiresIn) && $expiresIn == $days){
-                    			print(' selected="selected"');
-                    		}
-                    		print('>'.$label.'</option>');
-                    	}
-						for($d = 1; $d < $config['sim_length'] + 1; $d++) { 
-							print('<option value="'.$d.'"');
-                    		if (isset($expiresIn) && $expiresIn == $d){
-                    			print(' selected="selected"');
-                    		}
-                    		print('>'.$d.' Days</option>');
+					if ($config['tradesExpire'] == 1) { ?>
+                        
+                        <?php 
+                        if ($trans_type == 1) {
+                            $expireList = array(-1=>"Select One",100=>"Next Sim Period"); 
+                            ?>
+                            <label for="expires">Expires in: </label>
+                            <select id="expiresIn" name="expiresIn">
+                            <?php 
+							foreach($expireList as $days => $label) { 
+								print('<option value="'.$days.'"');
+								if (isset($expiresIn) && $expiresIn == $days){
+									print(' selected="selected"');
+								}
+								print('>'.$label.'</option>');
+							}
+							for($d = 1; $d < $config['sim_length'] + 1; $d++) { 
+								print('<option value="'.$d.'"');
+								if (isset($expiresIn) && $expiresIn == $d){
+									print(' selected="selected"');
+								}
+								print('>'.$d.' Days</option>');
+							}
+							print('</select>');
+                        } else { 
+                            if (isset($expiration_date)) {
+                            ?>
+                            <label for="expires">Expires:</label>
+                            <div class="textAreaForDisplay"><?php print(date('m/d/Y h:m:s A',strtotime($expiration_date))); ?></div>
+                            <?php
+                            }
 						}
                   	?>
-                    </select><br class="clear" clear="all" />
-					
+                    <br class="clear" clear="all" />
 					<?php
-                    } 
-					if ($tans_type != 4) {
+                    }  // END if
+					if ($trans_type != 1 && $trans_type != 4) {
 						if (isset($comments) && !empty($comments)) { ?>
 						<label for="comments">Comments: </label> 	
-                        <div class="textAreaForDisplay"><?php print($comments); ?></div>
+                        <div class="textAreaForDisplay"><?php print(trim($comments)); ?></div><br />
 					<?php }
 						if (isset($response) && !empty($response)) { ?>
 						<label for="comments">Response: </label> 	
-                        <div class="textAreaForDisplay"><?php print($response); ?></div>
+                        <div class="textAreaForDisplay"><?php print(trim($response)); ?></div><br />
 					<?php }
 					}
-					?>
 					$showProtestBtn = true;
 					if ($trans_type == 4) { 
 						$showProtestBtn = true;
@@ -224,8 +233,8 @@
 							}
 						}
 					}
-					if  ($trans_type == 1|| ($trans_type == 4 && $showProtestBtn) || ($trans_type == 3 && $status == TRADE_OFFERED) || ($trans_type == 5 && ($status == TRADE_OFFERED || $status == TRADE_PENDING_LEAGUE_APPROVAL || $status == TRADE_PENDING_COMMISH_APPROVAL))) { ?>
-                    <label for="comments">Comments: </label> <textarea id="comments" name="comments" cols="54" rows="8"><?php if (isset($comments) && !empty($comments) && $comments != "") { print(trim($comments)); } ?></textarea>
+					if  ($trans_type == 1 || ($trans_type == 4 && $showProtestBtn) || ($trans_type == 2 && $status == TRADE_OFFERED) || ($trans_type == 5 && ($status == TRADE_OFFERED || $status == TRADE_PENDING_LEAGUE_APPROVAL || $status == TRADE_PENDING_COMMISH_APPROVAL))) { ?>
+                    <label for="comments">Add Comments: </label> <textarea id="comments" name="comments" cols="54" rows="8"></textarea>
                     <br class="clear" clear="all" />
                     <?php 
 					}

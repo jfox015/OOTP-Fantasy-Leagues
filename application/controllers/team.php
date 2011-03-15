@@ -199,18 +199,10 @@ class team extends BaseEditor {
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
 			
-			if (!function_exists('getCurrentScoringPeriod')) {
-				$this->load->helper('admin');
-			} // END if
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
 			
-			
-			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
-				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
-			} else {
-				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-			} // END if
+			$this->data['scoring_period'] = $this->getScoringPeriod();
 			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
 			
 			if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
@@ -375,14 +367,7 @@ class team extends BaseEditor {
 			}
 			$this->league_model->load($this->data['league_id']);
 			
-			if (!function_exists('getCurrentScoringPeriod')) {
-				$this->load->helper('admin');
-			} // END if
-			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
-				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
-			} else {
-				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-			} // END if
+			$this->data['scoring_period'] = $this->getScoringPeriod();
 			
 			$msg = "";
 			$trade = $this->dataModel->getTrade($this->data['trade_id']);
@@ -563,9 +548,6 @@ class team extends BaseEditor {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
 		
-		if (!function_exists('getCurrentScoringPeriod')) {
-			$this->load->helper('admin');
-		} // END if
 		$error = false;
 		$result = '{';
 		$code= -1;
@@ -585,12 +567,8 @@ class team extends BaseEditor {
 		
 		$message_list_missing = "The listing of players to be exchanged is missing.";
 		
-		if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
-			$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
-		} else {
-			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-		}
-
+		$this->data['scoring_period'] = $this->getScoringPeriod();
+		
 		if ($this->input->post('submitted')) {
 			$responseType = 2;
 			$displayPage = $this->views['TRADE_REVIEW'];
@@ -697,9 +675,6 @@ class team extends BaseEditor {
 				$receiveList['all'] = explode("&",$this->data['tradeFrom']);
 			}
 			
-			if (!function_exists('getCurrentScoringPeriod')) {
-				$this->load->helper('admin');
-			}
 			$this->dataModel->load($this->uriVars['team_id']);
 			
 			if (!isset($this->params['currUser'])) {
@@ -743,11 +718,7 @@ class team extends BaseEditor {
 					$receiveList['batters'] = $receiveList['batters'] + array($playerData['player_id']=>array());
 				}
 			}
-			if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
-				$this->data['scoring_period'] = getScoringPeriod($this->uriVars['scoring_period_id']);
-			} else {
-				$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-			}
+			$this->data['scoring_period'] = $this->getScoringPeriod();
 			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
 			
 			$this->prepForQuery();
@@ -775,6 +746,10 @@ class team extends BaseEditor {
 				$this->data['team_id2'] = $this->uriVars['team_id2'];
 				$this->data['team_name2'] = $this->dataModel->getTeamName($this->data['team_id2']);
 				$this->data['team_avatar2'] = $this->dataModel->getAvatar($this->data['team_id2']);
+			} else if (isset($trade) && isset($trade['trade_id'])) {
+				$this->data['team_id2'] = $trade['team_2_id'];
+				$this->data['team_name2'] = $this->dataModel->getTeamName($trade['team_2_id']);
+				$this->data['team_avatar2'] = $this->dataModel->getAvatar($trade['team_2_id']);
 			}
 			
 			$this->data['limit'] = -1;
@@ -813,8 +788,8 @@ class team extends BaseEditor {
 			if ($this->data['trans_type'] == 4) {
 				$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
 			}
-			$this->data['comments']  = (isset($trade['comments'])) ? $trade['comments'] : -1;
-			$this->data['response']  = (isset($trade['response'])) ? $trade['response'] : -1;
+			$this->data['comments']  = (isset($trade['comments'])) ? $trade['comments'] : "";
+			$this->data['response']  = (isset($trade['response'])) ? $trade['response'] : "";
 			$this->data['status']  = (isset($trade['status'])) ? $trade['status'] : -1;
 			
 			$this->data['subTitle'] = "Review Trade";
@@ -1590,6 +1565,22 @@ class team extends BaseEditor {
 	/*--------------------------------
 	/	PRIVATE FUNCTIONS
 	/-------------------------------*/
+	protected function getScoringPeriod() {
+		$scoring_period = false;
+		if (!function_exists('getCurrentScoringPeriod')) {
+			$this->load->helper('admin');
+		} // END if
+		if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
+			$scoring_period = getScoringPeriod($this->uriVars['scoring_period_id']);
+		} else {
+			$scoring_period = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+		}
+		if (!isset($scoring_period['id']) || $scoring_period['id'] == -1) {
+			$scoring_period = getScoringPeriod($this->params['config']['current_period']);
+		}	
+		return $scoring_period;
+	}
+	
 	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period) {
 		
 		$rosterMessages = "";
