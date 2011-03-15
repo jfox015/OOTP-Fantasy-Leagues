@@ -234,6 +234,23 @@ if ( ! function_exists('reset_transactions')) {
 }
 // ------------------------------------------------------------------------
 
+if ( ! function_exists('save_sim_summary')) {
+	function save_sim_summary($result,$summary,$comments = "") {
+		$ci =& get_instance(); 
+		$ci->db->flush_cache();
+		$ci->db->set('sim_result',$result);
+		$ci->db->set('sim_summary',$summary);
+		$ci->db->set('comments',$comments);
+		$ci->db->insert('fantasy_sim_summary'); 
+		if ($ci->db->affected_rows() > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+}
+// ------------------------------------------------------------------------
+
 if ( ! function_exists('reset_ootp_league')) {
 	function reset_ootp_league($league_id) {
 		$ci =& get_instance(); 

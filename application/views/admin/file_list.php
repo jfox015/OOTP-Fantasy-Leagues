@@ -2,7 +2,7 @@
     <?php include_once('admin_breadcrumb.php'); ?>
         <h1><?php echo($subTitle); ?></h1>
     <br />
-    <?php if (isset($missingTables) && sizeof($missingTables) > 0) { ?>
+    <?php if (isset($missingFiles) && sizeof($missingFiles) > 0) { ?>
     <span class="error" style="margin:0px; width:98%;"><b>Required data files missing!</b>
         <br /><br />
         The following <b>required</b> OOTP MySQL data SQL files were not found in your 
@@ -10,7 +10,7 @@
         are loaded on the server before proceeding.
         <br /><br />
         <ul>
-       <?php foreach ($missingTables as $tableName) {
+       <?php foreach ($missingFiles as $tableName) {
         	echo("<li><b>".$tableName."</b></li><br />");
 	   } ?>
        </ul>
@@ -101,17 +101,17 @@
       </tr>
       <?php 
       $cnt++;
-    } // END if
+	} // END if
    if ($isSplit==1)
     { ?>
-        <tfoot><tr class='headline'><td class='hsc2' colspan=2>&nbsp;</td>
+      <tfoot><tr class='headline'><td class='hsc2' colspan=2>&nbsp;</td>
       <td class='hsc2' colspan=2><?php echo(anchor('/admin/splitSQLFile/delete/1/filename/DELSPLITS','Delete All Splits'));  ?></td>
       <td>&nbsp;</td>
       </tr></tfoot>
     <?php } ?>
      <tfoot><tr><td colspan="5" align="right">
      <input type="hidden" name="returnPage" value="file_list" />
-     <a href="#" onclick="checkRequired(); uncheckSplitParents(); return false;">Select Only Required</a> | 
+     <a href="#" onclick="checkRequired(); <?php if ($isSplit==1){ ?>uncheckSplitParents();<?php } ?> return false;">Select Only Required</a> | 
      <a href="#" onclick="setCheckBoxState(true); return false;">Select All</a> | <a 
      href="#" oncLick="setCheckBoxState(false); return false;">Select None</a><br />
      <span class="button_bar"><input type='submit' name='Load Checked' value='Load Checked' /></span></td></tr></tfoot>
@@ -139,7 +139,12 @@ $(document).ready(function(){
 		runAjax("<?php echo($config['fantasy_web_root']); ?>admin/splitSQLFile/delete/1/filename/"+this.id); return false;
 	});
 	checkRequired();
+	<?php
+	if (isset($splitParents) && sizeof($splitParents) > 0) { ?>
 	uncheckSplitParents();
+	<?php
+	}
+	?>
 });
 function runAjax (url) {
 		//clearTimeout(fader);
@@ -193,7 +198,6 @@ var parentList = new Array(<?php echo(sizeof($splitParents)); ?>);
 		echo('parentList['.$count.'] = "'.$parent.'";');
 		$count++;
 	}
-}
 ?>
 function uncheckSplitParents() {
 	var form = document.fileList;
@@ -208,6 +212,9 @@ function uncheckSplitParents() {
 		}
 	}	
 }
+<?php
+}
+?>
 function checkRequired() {
 	var form = document.fileList;
 	if (required != null) {

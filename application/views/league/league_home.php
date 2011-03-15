@@ -62,34 +62,6 @@
             </div>
             
         </div>  <!-- end batting stat div -->
-        <?php
-		/*------------------------------------------------
-		/	LEAGUE DETAILS MODULE
-		/-----------------------------------------------*/
-		?>
-        <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" width="625px">
-        <tr class='title'>
-            <td style='padding:3px'>League Details</td>
-        </tr>
-        <tr>
-            <td style='padding:6px'>
-            <div id="row">
-            <b>Status:</b>
-            <span <?php if ($thisItem['statusType'] == 'Active') { echo('style="color:#060"'); } else { echo('style="color:#C00"'); } ?>>
-            <?php echo($thisItem['statusType']); ?></span><br />
-            <b>Commisioner:</b>
-            <span><?php if ($thisItem['commissionerId'] != -1) { echo(anchor('/user/profile/mode/view/id/'.$thisItem['commissionerId'],$thisItem['commissionerName'])); } else { echo("No Commissioner"); } ?></span><br />
-            <b>Members:</b>
-            <span><?php echo($thisItem['memberCount']); ?></span><br />
-            <b>Scoring System:</b>
-            <span><?php echo($thisItem['leagueType']); ?></span><br />
-            <b>Type:</b>
-            <span <?php if ($thisItem['accessType'] == 'Public') { echo('style="color:#060"'); } else { echo('style="color:#C00"'); } ?>>
-            <?php echo($thisItem['accessType']); ?></span></td>
-        </tr>
-        </table>
-        </div>
 	</div>
     <div id="right-column">
     	<?php 
@@ -231,6 +203,34 @@
         </table>
         </div>
 		<?php } ?>
+        <?php
+		/*------------------------------------------------
+		/	LEAGUE DETAILS MODULE
+		/-----------------------------------------------*/
+		?>
+        <div class='textbox'>
+        <table cellpadding="0" cellspacing="0" border="0" width="225px">
+        <tr class='title'>
+            <td style='padding:3px'>League Details</td>
+        </tr>
+        <tr>
+            <td style='padding:6px'>
+            <div id="row">
+            <b>Status:</b>
+            <span <?php if ($thisItem['statusType'] == 'Active') { echo('style="color:#060"'); } else { echo('style="color:#C00"'); } ?>>
+            <?php echo($thisItem['statusType']); ?></span><br />
+            <b>Commisioner:</b>
+            <span><?php if ($thisItem['commissionerId'] != -1) { echo(anchor('/user/profile/mode/view/id/'.$thisItem['commissionerId'],$thisItem['commissionerName'])); } else { echo("No Commissioner"); } ?></span><br />
+            <b>Members:</b>
+            <span><?php echo($thisItem['memberCount']); ?></span><br />
+            <b>Scoring System:</b>
+            <span><?php echo($thisItem['leagueType']); ?></span><br />
+            <b>Type:</b>
+            <span <?php if ($thisItem['accessType'] == 'Public') { echo('style="color:#060"'); } else { echo('style="color:#C00"'); } ?>>
+            <?php echo($thisItem['accessType']); ?></span></td>
+        </tr>
+        </table>
+        </div>
         
     </div>
     <script type="text/javascript">

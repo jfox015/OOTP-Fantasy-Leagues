@@ -66,12 +66,11 @@ class ootp_league_model extends base_model {
 	 */
 	public function getMissingTables() {
 		$missingTables = array();
-		if ($this->league_id != -1) {
-			if (sizeof($this->requiredTables) > 0) {
-				foreach ($this->requiredTables as $tableName) {
-					if (!$this->db->table_exists($tableName)) {
-						array_push($missingTables,$tableName);
-					}
+
+		if (sizeof($this->requiredTables) > 0) {
+			foreach ($this->requiredTables as $tableName) {
+				if (!$this->db->table_exists($tableName)) {
+					array_push($missingTables,$tableName);
 				}
 			}
 		}
@@ -100,7 +99,7 @@ class ootp_league_model extends base_model {
 			array_push($loadedTables,$ex);
 		}
 		
-		if ($this->league_id != -1 && sizeof($this->requiredTables) > 0) {
+		if (sizeof($this->requiredTables) > 0) {
 			foreach ($this->requiredTables as $tableName) {
 				$found = false;
 				if (!in_array($tableName,$loadedTables)) {

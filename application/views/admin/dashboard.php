@@ -3,6 +3,7 @@
 	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
 	var fader = null;
 	var refreshAfterUpdate = false;
+	var fileWarning = <?php print((isset($missingFiles) && sizeof($missingFiles) > 0) ? "true" : "false"); ?>;
 	
 	$(document).ready(function(){
 		$('a[rel=avail]').click(function () {
@@ -22,8 +23,19 @@
 			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/generateSchedules"); return false;
 		});
 		$('a[rel=sql]').click(function () {
-			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/loadSQLFiles"); return false;
+			var proceed = true;
+			if (fileWarning) {
+				proceed = confirm("There are MySQL data files missing. Are you sure you want to continue with loading the OOTP game data? This will result in an incomplete load and potenitlaly cause error on the web site.");
+			}	
+			if (proceed) {
+				refreshAfterUpdate = true;
+				runAjax("<?php echo($config['fantasy_web_root']); ?>admin/loadSQLFiles");
+			} else {
+				$('div#activeStatus').addClass('notice');
+				$('div#activeStatus').html('Operation Cancelled.');
+				setTimeout('fadeStatus("active")',5000);
+			}
+			return false;
 		});
 		$('a[rel=dataUpdate]').click(function () {
 			refreshAfterUpdate = true;
@@ -280,6 +292,27 @@
         	echo("<li><b>".$tableName."</b></li><br />");
 	   } ?>
        </ul>
+       </span>
+        </td>
+    </tr>
+    </table>
+    </div>
+    <?php 
+	} 
+	if (isset($missingFiles) && sizeof($missingFiles) > 0) { ?>
+    <div class='textbox'>
+    <table cellpadding="0" cellspacing="0" border="0" style="width:235px;">
+    <tr class='title'>
+    	<td style='padding:3px; color:#FF0'>MySQL DATA FILE WARNING</td>
+    </tr>
+    <tr>
+    	<td class="hsc2_l" style='padding:6px'>
+        <span class="error" style="margin:0px; width:90%;"><b>Required files are missing!</b>
+        <br /><br />
+        There are <b><?php print(sizeof($missingFiles)); ?> required</b> OOTP MySQL data files missing from the default database upload directory. 
+        <br /><br />
+        Please assure all required files have been uploaded to <?php print($config['sql_file_path']); ?>, then proceed to the  
+        <?php echo anchor('admin/listSQLFiles','SQL file list'); ?> page to upload your OOTP game data.
        </span>
         </td>
     </tr>

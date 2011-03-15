@@ -206,15 +206,15 @@ img.league_news_tall {
 .error,
 .notice, 
 .success    { display:block; padding: .8em; margin: 1em; border: 2px solid #ddd; }
-.error      { background: #FBE3E4; color: #8a1f11; border-color: #FBC2C4; }
-.notice     { background: #FFF6BF; color: #514721; border-color: #FFD324; }
-.success    { background: #E6EFC2; color: #264409; border-color: #C6D880; }
-.info 		{ color:#006; background:#C8CFE1; border-color:#006; }
-.warn  		{ color: #461102; background:#FCB97C; border-color:#73612B;}
-.error a    { color: #8a1f11; }
-.notice a   { color: #514721; }
-.success a  { color: #264409; }
-.info a  	{ color: #039; }
-.warn a 	{ color:#8B2C0C; font-weight:bold; }
+.error      { background: #FBE3E4; border-color: #FBC2C4; }
+.notice     { background: #FFF6BF; border-color: #FFD324; }
+.success    { background: #E6EFC2; border-color: #C6D880; }
+.info 		{ background:#C8CFE1; border-color:#006; }
+.warn  		{ background:#FCB97C; border-color:#73612B;}
 .inline { padding: .1em; margin: .1em; }
 
+.success, .success_txt, .success a { color: #264409; }
+.error, .error_txt, .error a  { color: #8a1f11;  }
+.success, .success_txt, .notice a { color: #514721; }
+.info, .info_txt, .info a { color:#006; }
+.warn, .warn_txt, .warn a { color: #461102; font-weight:bold;  }

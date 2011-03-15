@@ -91,7 +91,11 @@ class admin extends MY_Controller {
 			$this->data['currPeriod'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
 			
 			$this->data['periodCount'] = getScoringPeriodCount();
-			
+			if (!function_exists('getSQLFileList')) {
+				$this->load->helper('config');
+			}
+			$fileList = getSQLFileList($this->params['config']['sql_file_path']);
+			$this->data['missingFiles'] = $this->ootp_league_model->validateLoadedSQLFiles($fileList);
 			
 			//-------------------------------------------------------------
 			// UPDATE VERSION 1.0.2
@@ -682,9 +686,9 @@ class admin extends MY_Controller {
 			// END 1.0.3 MODS
 			
 			$this->data['fileList'] = $fileList;
-			$this->data['subTitle'] = "Load Individual SQL Table";
+			$this->data['missingFiles'] = $this->ootp_league_model->validateLoadedSQLFiles($fileList);
 			$this->data['requiredTables'] = $this->ootp_league_model->requiredTables;
-			$this->data['missingTables'] = $this->ootp_league_model->validateLoadedSQLFiles($fileList);
+			$this->data['subTitle'] = "Load Individual SQL Tables";
 			$this->params['content'] = $this->load->view($this->views['LIST_FILES'], $this->data, true);
 			$this->params['subTitle'] = "Database Tools";
 			
@@ -994,6 +998,7 @@ class admin extends MY_Controller {
 	 */
 	function processSim() {
 		
+		$comments = "";
 		// ADVANCE SCORING PERIOD
 		// CHECK FOR DUPLICATE
 		$score_period = getCurrentScoringPeriod($this->ootp_league_model->current_date);
@@ -1006,24 +1011,26 @@ class admin extends MY_Controller {
 		// UPDATE PLAYER SCORING FOR THIS PERIOD
 		$rules = $this->league_model->getAllScoringRulesforSim();
 		
-		$this->load->model('player_model');
-		$this->player_model->updatePlayerScoring($rules,$score_period);
-		
-		$rules = $this->league_model->
-		
-		
-		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
-		$error = false;
-		$mess = '';
-		$warn = "";
-		foreach($this->data['leagues'] as $id => $details) {
+		if (isset($rules) && sizeof($rules) > 0) {
+			$this->load->model('player_model');
+			$this->player_model->updatePlayerScoring($rules,$score_period);
 			
-			$error = $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
-			if ($error) {
-				$mess =  $this->league_model->statusMess;
-				break;
+			$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
+			$error = false;
+			$mess = '';
+			$warn = "";	
+			foreach($this->data['leagues'] as $id => $details) {
+				
+				$summary = $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
+				if ($this->league_model->errorCode != -1) {
+					$mess =  $this->league_model->statusMess;
+					break;
+				}
 			}
-		}
+		} else {
+			$error = true;
+			$mess = $this->league_model->statusMess;
+		} // END if
 		// UPDATE THE MAIN CONFIG
 		if ($error) {
 			$status = "error:".$mess;
@@ -1035,6 +1042,7 @@ class admin extends MY_Controller {
 			}
 			update_config('last_process_time',date('Y-m-d h:m:s'));
 			update_config('current_period',($score_period['id']+1));
+			save_sim_summary('success',$summary,$comments);
 		}
 		$code = 200;
 		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';

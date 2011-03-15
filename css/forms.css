@@ -15,7 +15,9 @@ input.searchsubmit { margin-top:2px;}
 .field_caption { display:inline; float:left; margin-left:205px; }
 .button_bar { width:100%;text-align:center; }
 .button_bar input { display:inline; float:none; }
-textarea { font-size:11px; font-family:Verdana, Geneva, sans-serif;display:inline; float:left; }
+textarea, .textAreaForDisplay { font-size:11px; font-family:Verdana, Geneva, sans-serif;display:inline; float:left; }
+
+.textAreaForDisplay { width:250px; }
 input.error {
 	padding:2px;margin:0px;
 }
