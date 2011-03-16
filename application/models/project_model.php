@@ -3,11 +3,20 @@
  * PROJECT MODEL.
  * A model for manipulating project data
  * 
- * 
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@version		1.0
  */
 
 class project_model extends base_model {
 
+	/*--------------------------------
+	/	VARIABLES
+	/-------------------------------*/
+	/**
+	 *	SLUG.
+	 *	@var $_NAME:Text
+	 */
 	var $_NAME = 'project_model';
 	
 	var $name = '';

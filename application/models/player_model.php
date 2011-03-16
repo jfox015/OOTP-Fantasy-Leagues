@@ -2,12 +2,20 @@
 /**
  *	PLAYER MODEL CLASS.
  *	
- *	@author		Jeff Fox
- *	@version	1.0
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@version		1.0
  *
 */
 class player_model extends base_model {
 
+	/*--------------------------------
+	/	VARIABLES
+	/-------------------------------*/
+	/**
+	 *	SLUG.
+	 *	@var $_NAME:Text
+	 */
 	var $_NAME = 'player_model';
 	
 	var $player_id = -1;

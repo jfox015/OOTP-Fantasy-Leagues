@@ -5,12 +5,20 @@
  *	It provides functions to register, login, logout, activate and reset 
  *	passwords.
  *
- *	@author		Jeff Fox
- *	@version	1.0
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@version		1.0
  *
 */
 class user_auth_model extends base_model {
 
+	/*--------------------------------
+	/	VARIABLES
+	/-------------------------------*/
+	/**
+	 *	SLUG.
+	 *	@var $_NAME:Text
+	 */
 	var $_NAME = 'user_auth_model';
 	
 	var $username = '';
@@ -40,8 +48,17 @@ class user_auth_model extends base_model {
 	 * @var string
 	 **/
 	public $passConfirmKey;
+	/**
+	 * Table access setting
+	 *
+	 * @var tblAccess
+	 **/
 	var $tblAccess = '';
 	
+	/*--------------------------------------
+	/	C'TOR
+	/	Creates a new instance of user_meta_model
+	/-------------------------------------*/
 	function user_auth_model() {
 		parent::__construct();
 		

@@ -1,13 +1,21 @@
 <?php
 /**
- * BUG MODEL.
- * A model for tracking bugs within a site
- * 
+ * 	BUG MODEL.
+ * 	A model for tracking bugs within a site
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
  * 
  */
 
 class bug_model extends base_model {
 
+	/*--------------------------------
+	/	VARIABLES
+	/-------------------------------*/
+	/**
+	 *	SLUG.
+	 *	@var $_NAME:Text
+	 */
 	var $_NAME = 'bug_model';
 	var $projectId =  -1;
 	var $selectedProjectId =  -1;

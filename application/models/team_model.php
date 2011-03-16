@@ -2,23 +2,77 @@
 /**
  *	TEAM MODEL CLASS.
  *	
- *	@author		Jeff Fox
- *	@version	1.0
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@version		1.0
+ *	@since			1.0
  *
 */
 class team_model extends base_model {
 
+	/*--------------------------------
+	/	VARIABLES
+	/-------------------------------*/
+	/**
+	 *	SLUG.
+	 *	@var $_NAME:Text
+	 */
 	var $_NAME = 'team_model';
-	
+	/**
+	 *	LEAGUE ID
+	 *	@var	$league_id	Int
+	 */
 	var $league_id = -1;
+	/**
+	 *	DIVISION ID
+	 *	@var	$division_id	Int
+	 */
 	var $division_id = -1;
+	/**
+	 *	TEAM NAME
+	 *	@var	$teamname	String
+	 */
 	var $teamname = '';
+	/**
+	 *	TEAM NICK NAME
+	 *	@var	$teamnick	String
+	 */
 	var $teamnick = '';
+	/**
+	 *	TEAM OWNER ID
+	 *	References from users_core
+	 *	@var	$owner_id	Int
+	 */
 	var $owner_id = -1;
+	/**
+	 *	TEAM AVATAR PATH
+	 *	Path to the avatar graphic
+	 *	@var	$avatar	String
+	 */
 	var $avatar = '';
+	/**
+	 *	AUTO DRAFT
+	 *	Auto draft setting
+	 *	@var	$auto_draft	Int
+	 */
 	var $auto_draft = -1;
+	/**
+	 *	AUTO LIST
+	 *	Auto list setting for draft
+	 *	@var	$auto_list	Int
+	 */
 	var $auto_list = -1;
+	/**
+	 *	DRAFT AUTOMATICVALLY AFTER ROUND
+	 *	Auto draft enabling setting for draft
+	 *	@var	$auto_round_x	Int
+	 */
 	var $auto_round_x = -1;
+	
+	/*--------------------------------------
+	/	C'TOR
+	/	Creates a new instance of team_model
+	/-------------------------------------*/
 	function team_model() {
 		parent::__construct();
 		
@@ -76,6 +130,20 @@ class team_model extends base_model {
 	/
 	/
 	/------------------------------------*/
+	/**
+	 *	LOG SINGLE TRANSACTION
+	 *	@param	$player_id	The player involved int he transaction
+	 *	@param	$trans_type	Transaction type
+	 *	@param	$commish_id	League commisioner ID
+	 *	@param	$currUser	Current User ID
+	 *	@param	$isAdmin	Is user an admin?
+	 *	@param	$league_id	League Id
+	 *	@param	$team_id	Team involved in transaction
+	 *	@param	$owner_id	Team owner ID
+	 *	@param	$team_id_2	Second team ID (for Trades)
+	 *	@return			`	TRUE ON SUCCESS, FALSE on Error
+	 *	@since				1.0
+	 */
 	public function logSingleTransaction($player_id = false, $trans_type = false, $commish_id = false, 
 										 $currUser = false, $isAdmin = false, $league_id = false, 
 										 $team_id = false, $owner_id = false, $team_id_2 = false) {

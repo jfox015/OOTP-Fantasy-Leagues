@@ -1,10 +1,23 @@
 <?php
-/*
-	User Class.
-	
+/**
+ *	USER META MODEL CLASS.
+ *	This class is a companion model to the USer Auth model. it provides extended meta infomration
+ *	in the form of name, address, and other personal, no authoritative information.
+ *
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@version		1.0
+ *
 */
 class user_meta_model extends base_model {
 
+	/*--------------------------------
+	/	VARIABLES
+	/-------------------------------*/
+	/**
+	 *	SLUG.
+	 *	@var $_NAME:Text
+	 */
 	var $_NAME = 'user_meta_model';
 	
 	var $userId = -1;
@@ -22,6 +35,10 @@ class user_meta_model extends base_model {
 	var $avatar = '';
 	var $custom = '';
 	
+	/*--------------------------------------
+	/	C'TOR
+	/	Creates a new instance of user_meta_model
+	/-------------------------------------*/
 	function user_meta_model() {
 		parent::__construct();
 
@@ -41,7 +58,19 @@ class user_meta_model extends base_model {
 		
 		parent::_init();
 	}
-	
+	/*--------------------------------------------------
+	/
+	/	PUBLIC FUNCTIONS
+	/
+	/-------------------------------------------------*/
+	/**
+	 * APPLY DATA.
+	 * Overrides the default applyData function. Saves specific team data
+	 * @param	$input		CodeIgniter input object
+	 * @param 	$userId 	The current user ID (OPTIONAL)
+	 * @return	TRUE on success, FALSE on error
+	 * 
+	 */
 	public function applyData($input,$userId = -1) {
 		$success = parent::applyData($input,$userId);
 		if ($success) {

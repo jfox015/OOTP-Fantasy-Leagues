@@ -6,8 +6,8 @@
  *	data models like loading, saving and applying form data, search, file 
  *	handling and serilazation.
  * 
- *	@author			Jeff Fox <jfox015@gmail.com>
- *  @copyright   	(c)2009-10 Jeff Fox/Aeolian Digital Studios
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
  *	@version		1.5
  *	@created		08/01/2009
  *	@lastModified	07/20/2010

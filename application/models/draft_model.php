@@ -4,14 +4,19 @@
  *	This class interfaces with the draft config table specifically, but also 
  *	interacts with and manipulates the fantasy draft and draft list tables.
  *
- *	@author		Jeff Fox
- *	@version	1.0
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@version		1.0
  *
 */
 class draft_model extends base_model {
-	/*--------------------------------------
+	/*--------------------------------
 	/	VARIABLES
-	/-------------------------------------*/
+	/-------------------------------*/
+	/**
+	 *	SLUG.
+	 *	@var $_NAME:Text
+	 */
 	var $_NAME = 'draft_model';
 	
 	var $league_id = -1;
