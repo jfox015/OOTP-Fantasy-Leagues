@@ -198,6 +198,34 @@ class MY_Controller extends Controller {
 		} // END if
 	}
 	/**
+	 *	GET SCORING PERIOD.
+	 *	Returns the current scoring period.
+	 *
+	 *	@since					1.0.4
+	 *	@see					trade
+	 *	@see					tradeResponse
+	 *	@see					tradeOffer
+	 *	@see					tradeReview
+	 */
+	protected function getScoringPeriod() {
+		$scoring_period = false;
+		if (!function_exists('getCurrentScoringPeriod')) {
+			$this->load->helper('admin');
+		} // END if
+		if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
+			$scoring_period = getScoringPeriod($this->uriVars['scoring_period_id']);
+		} else {
+			$scoring_period = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+		}
+		// SINCE getCurrentScoringPeriod return -1 when it can't reconcile the league date (usually becausee
+		// usually because the league date is before opening day), pull the scoring period ID from the config
+		// table to assure a positive integer
+		if (!isset($scoring_period['id']) || $scoring_period['id'] == -1) {
+			$scoring_period = getScoringPeriod($this->params['config']['current_period']);
+		}	
+		return $scoring_period;
+	}
+	/**
 	 *	DISPLAY VIEW.
 	 *	Sets the most common view data values and then calls the 
 	 *	view template specified by $this->_MAIN_TEMPLATE.

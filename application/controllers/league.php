@@ -82,7 +82,7 @@ class league extends BaseEditor {
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
 		}
-		$curr_period = getScoringPeriod($this->params['config']['current_period']);
+		$curr_period = $this->getScoringPeriod();
 		if (!empty($curr_period)) {
 			$curr_period_id = $curr_period['id'];
 			$this->data['curr_period'] = $curr_period;

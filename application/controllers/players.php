@@ -219,7 +219,7 @@ class players extends MY_Controller {
 				$this->load->helper('admin');
 			}
 			$this->data['scoringPeriods'] = getScoringPeriodCount();
-			$this->data['currentScoringPeriod'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+			$this->data['currentScoringPeriod'] = $this->getScoringPeriod();
 			$this->data['playerPoints'] = $this->dataModel->getPlayerScoring(0,$pid);
 			$this->data['pointsMax'] = $this->dataModel->getHighestScoring(0,$pid);
 			
@@ -247,6 +247,7 @@ class players extends MY_Controller {
 					$league_id = -1;
 				}
 			}
+			print($this->data['currentScoringPeriod']['id']."<br />");
 			$this->data['league_id'] = $league_id;
 			$this->data['current_team'] = array('id'=>-1);
 			if (isset($league_id) && !empty($league_id) && $league_id != -1) {

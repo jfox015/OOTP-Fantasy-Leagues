@@ -3,9 +3,10 @@ require_once('base_editor.php');
 /**
  *	Team.
  *	The primary controller for Team manipulation and details.
- *	@author			Jeff Fox
+ *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
  *	@dateCreated	04/04/10
- *	@lastModified	08/08/10
+ *	@lastModified	03/16/11
  *
  */
 class team extends BaseEditor {
@@ -147,6 +148,10 @@ class team extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/**
+	 *	REMOVE AVATAR
+	 *	Remove the team's avatar.
+	 */
 	public function removeAvatar() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
@@ -174,7 +179,9 @@ class team extends BaseEditor {
 	/------------------------------------------*/
 	/**
 	 *	TRADE
-	 *
+	 *	Main function to draw the trade page. This not only draws the normal trade
+	 *	editor screen, buit also access trade ID and URI Data vars to prepopulate 
+	 *	the trade fields with players
 	 *	
 	 *	@since	1.0.4
 	 */
@@ -302,7 +309,7 @@ class team extends BaseEditor {
 			$this->data['allowProtests'] = ($this->params['config']['approvalType'] == 2) ? true : false;
 			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id'], false, false,$this->data['allowProtests']);
 			$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$this->data['allowProtests']);
-			
+			// GET PROTEST COUNT
 			if ($this->data['allowProtests'] === true) {
 				$tradesToApprove = $this->dataModel->getPendingTrades($this->data['league_id'], false, false, $this->data['team_id'], $this->data['allowProtests'], TRADE_PENDING_LEAGUE_APPROVAL);
 				if (sizeof($tradesToApprove) > 0) {
@@ -950,12 +957,12 @@ class team extends BaseEditor {
 				if ($props[0] != -1) {
 					array_push($dropSQL, array('player_id'=>$props[0],'team_id'=>$this->dataModel->id,
 											   'scoring_period_id'=>$this->params['config']['current_period']));
-				}
-			}
+				} // END if
+			} // END foreach
 			
 			if (!function_exists('updateOwnership')) {
 				$this->load->helper('roster');
-			}
+			} // END if
 			//echo("Size of dropSQL = ".sizeof($dropSQL)."<br />");
 			if (empty($addStatusStr)) {
 				$playersAdded = array();
@@ -1048,6 +1055,36 @@ class team extends BaseEditor {
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
+	public function setLineup() {
+		$this->getURIData();
+		$this->data['subTitle'] = "Set lineup";
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		$this->data['league_id'] = $this->uriVars['id'];
+		
+		$error = false;
+		$rosterError = false;
+		$roster = $this->dataModel->applyRosterChanges($this->input,$this->getScoringPeriod(),$this->dataModel->id);
+		if (!isset($roster)) {
+			$error = true;
+		} else {
+			if (!$this->league_model->validateRoster($roster,$this->dataModel->league_id)) {
+				$rosterError = $this->league_model->statusMess;
+			} // END if
+			$error = !$this->dataModel->saveRosterChanges($roster,$this->params['config']['current_period']);
+			
+		} // END if
+		if ($error || $rosterError) {
+			if ($rosterError) { $error = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b>".$rosterError; } 
+			$this->data['message'] = $error;
+			$this->data['messageType'] = 'error';
+		} else {
+			$this->data['message'] = "Your lineups have been successfully updated.";
+			$this->data['messageType'] = 'success';
+		} // END if
+		$this->showInfo();
+	}
+	
 	/**
 	 *	Add/DROP Page.
 	 *	Calls the add/drop page interface for teams.
@@ -1074,26 +1111,26 @@ class team extends BaseEditor {
 
 			if (!function_exists('getCurrentScoringPeriod')) {
 				$this->load->helper('admin');
-			}
+			} // END if
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
 			
-			$this->data['scoring_period'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+			$this->data['scoring_period'] = $this->getScoringPeriod();
 			$returnVar= 'playerList';
 			$this->data['list_type'] = (isset($this->uriVars['list_type'])) ? $this->uriVars['list_type'] : 2;
 			if (isset($this->data['list_type']) && $this->data['list_type'] == 2) {
 				$returnVar= 'formatted_stats';
-			}
+			} // END if
 			if(isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) {
 				$this->data['waiver_order'] = $this->dataModel->getWaiverOrder();
 				$this->data['waiver_claims'] = $this->dataModel->getWaiverClaims();
-			}
+			} // END if
 			
 			$this->data[$returnVar] = $this->pullList(true,$this->dataModel->league_id, $this->data['list_type']);
 			$this->data['league_id'] = $this->dataModel->league_id;
 			$this->params['pageType'] = PAGE_FORM;
 			$this->params['content'] = $this->load->view($this->views['ADD_DROP'], $this->data, true);
-		}
+		} // END if
 		$this->makeNav();
 		$this->displayView();
 	}
@@ -1108,20 +1145,20 @@ class team extends BaseEditor {
 			} else {
 				$error = true;
 				$message = '<span class="error">A required claim identifier was not found. Please go back and try the operation again or contact the site adminitrator to report the problem.</span>';
-			}
+			} // END if
 			$this->session->set_flashdata('message', $message);
 			redirect('team/addDrop/id/'.$this->uriVars['team_id']);
 		} else {
 	        $this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
-	    }	
+	    }	 // END if
 	}
 	
 	public function administrativeAdd() {
 		$this->getURIData();
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
-		}
+		} // END if
 		$result = '';
 		$code= -1;
 		$status = '';
@@ -1135,7 +1172,7 @@ class team extends BaseEditor {
 				$this->dataModel->logSingleTransaction($this->uriVars['player_id'], TRANS_TYPE_DROP, $this->league_model->commissioner_id, 
 											 $this->params['currUser'], $this->params['accessLevel'] == ACCESS_ADMINISTRATE,
 											 $this->uriVars['league_id'],$this->uriVars['curr_team']);
-			}
+			} // END if
 			$update = false;
 			$this->db->flush_cache();
 			$this->db->select('id');
@@ -1143,7 +1180,7 @@ class team extends BaseEditor {
 			$this->db->where('player_id',$this->uriVars['player_id']);
 			$query = $this->db->get('fantasy_rosters');
 			if ($query->num_rows() > 0) {
-				$update = true;
+				 // END if$update = true;
 			}
 			$query->free_result();
 			
@@ -1154,7 +1191,7 @@ class team extends BaseEditor {
 				$this->db->where('player_id',$this->uriVars['player_id']);
 				if ($this->uriVars['curr_team'] != -1) {
 					$this->db->where('team_id',$this->uriVars['curr_team']);
-				}
+				} // END if
 				$this->db->where('scoring_period_id',$this->params['config']['current_period']);
 				$this->db->update('fantasy_rosters');
 			} else {
@@ -1162,14 +1199,14 @@ class team extends BaseEditor {
 				$this->db->set('player_id',$this->uriVars['player_id']);
 				$this->db->set('scoring_period_id',$this->params['config']['current_period']);
 				$this->db->insert('fantasy_rosters');
-			}
+			} // END if
 			if ($this->db->affected_rows() > 0) {
 				if ($this->uriVars['curr_team'] != -1) {
 					$this->dataModel->logSingleTransaction($this->uriVars['player_id'], TRANS_TYPE_ADD, $this->league_model->commissioner_id, 
 												 $this->params['currUser'], $this->params['accessLevel'] == ACCESS_ADMINISTRATE,
 												 $this->uriVars['league_id'],$this->uriVars['team_id']);
-				}
-			}
+				} // END if
+			} // END if
 			$status = "OK";
 			$code = 200;
 			$result = '{result:"OK",code:"'.$code.'",status:"'.$status.'"}';
@@ -1529,58 +1566,25 @@ class team extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['STATS'], $this->data, true);
 	    $this->displayView();
 	}
-	public function setLineup() {
-		$this->getURIData();
-		$this->data['subTitle'] = "Set lineup";
-		$this->load->model($this->modelName,'dataModel');
-		$this->dataModel->load($this->uriVars['id']);
-		$this->data['league_id'] = $this->uriVars['id'];
-		if (!function_exists('getCurrentScoringPeriod')) {
-			$this->load->helper('admin');
-		}
-		
-		$error = false;
-		$rosterError = false;
-		$roster = $this->dataModel->applyRosterChanges($this->input,$this->params['config']['current_period'],$this->dataModel->id);
-		if (!isset($roster)) {
-			$error = true;
-		} else {
-			if (!$this->league_model->validateRoster($roster,$this->dataModel->league_id)) {
-				$rosterError = $this->league_model->statusMess;
-			}
-			$error = !$this->dataModel->saveRosterChanges($roster,$this->params['config']['current_period']);
-			
-		}
-		if ($error || $rosterError) {
-			if ($rosterError) { $error = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b>".$rosterError; } 
-			$this->data['message'] = $error;
-			$this->data['messageType'] = 'error';
-		} else {
-			$this->data['message'] = "Your lineups have been successfully updated.";
-			$this->data['messageType'] = 'success';
-		}
-		$this->showInfo();
-	}
 	
-	/*--------------------------------
-	/	PRIVATE FUNCTIONS
-	/-------------------------------*/
-	protected function getScoringPeriod() {
-		$scoring_period = false;
-		if (!function_exists('getCurrentScoringPeriod')) {
-			$this->load->helper('admin');
-		} // END if
-		if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
-			$scoring_period = getScoringPeriod($this->uriVars['scoring_period_id']);
-		} else {
-			$scoring_period = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-		}
-		if (!isset($scoring_period['id']) || $scoring_period['id'] == -1) {
-			$scoring_period = getScoringPeriod($this->params['config']['current_period']);
-		}	
-		return $scoring_period;
-	}
-	
+	/*--------------------------------------------
+	/
+	/	PROTECTED/PRIVATE FUNCTIONS
+	/
+	/-------------------------------------------*/
+	/**
+	 *	VERIFY ROSTERS FOR TRADE.
+	 *	Checks that players involved in a trade are actually still on the applicable teams active rosters
+	 *
+	 *	@param	$team_id		The primary trade team ID
+	 *	@param	$sendList		Array of players to be sent
+	 *	@param	$team2Id		The second team in the trade ID
+	 *	@param	$receiveList	Array of players to be received
+	 *	@param	$scoring_period	Scoring period Array object
+	 *	@return	$return			Emptry String on success, Message string on error	
+	 *	@since					1.0.4
+	 *	@see					tradeResponse
+	 */
 	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period) {
 		
 		$rosterMessages = "";
@@ -1608,6 +1612,12 @@ class team extends BaseEditor {
 		}
 		return $rosterMessages;
 	}
+	/**
+	 *	PREP FOR QUERY.
+	 *	Used during stat generation operations to gather required resource before submitting the 
+	 *	query to the DB.
+	 *
+	 */
 	protected function prepForQuery() {
 		$this->data['scoring_rules'] = $this->league_model->getScoringRules(0);
 		if (!function_exists('getAvailableScoringPeriods')) {
@@ -1640,7 +1650,11 @@ class team extends BaseEditor {
 			$this->load->model('player_model');
 		}
 	}
-	
+	/**
+	 *	REFRESH PLAYER LIST.
+	 *	Loads an updated roster list for the current team
+	 *
+	 */
 	protected function refreshPlayerList() {
 		$result = '';
 		if (!function_exists('getCurrentScoringPeriod')) {
@@ -1745,6 +1759,7 @@ class team extends BaseEditor {
 		} // END if
 		
 	}
+	
 	protected function makeForm() {
 		$form = new Form();
 		
@@ -1791,7 +1806,6 @@ class team extends BaseEditor {
 		$this->makeNav();
 		
 	}
-	
 	
 	protected function showInfo() {
 
