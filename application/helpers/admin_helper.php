@@ -112,6 +112,51 @@ if ( ! function_exists('getAvailableScoringPeriods')) {
 		return $periods;
 	}
 }
+
+// ------------------------------------------------------------------------
+
+if ( ! function_exists('getSimSummaries')) {
+	function getSimSummaries($countOnly = false) { 
+		
+		$summaries = array();
+		$ci =& get_instance(); 
+		$ci->db->select("id,scoring_period_id,sim_date,process_time,sim_result,sim_summary,comments");
+		$ci->db->from("fantasy_sim_summary");
+		if ($countOnly === false) {
+			$ci->db->order_by("scoring_period_id","desc");
+			$query = $ci->db->get();
+			if ($query->num_rows() > 0) {
+				foreach($query->result() as $row) {
+					array_push($summaries,array('id'=>$row->id, 'sim_date'=>$row->sim_date, 'scoring_period_id'=>$row->scoring_period_id,
+												'sim_result'=>$row->sim_result,'process_time'=>$row->process_time,'sim_summary'=>$row->sim_summary,'comments'=>$row->comments));
+				}
+			}
+			$query->free_result();
+		} else {
+			 $summaries = $ci->db->count_all_results();
+		}
+		return $summaries;
+	}
+}
+// ------------------------------------------------------------------------
+
+if ( ! function_exists('loadSimSummary')) {
+	function loadSimSummary($sumId = false) { 
+		
+		if ($sumId === false) { return false; }
+		
+		$summary = array();
+		$ci =& get_instance(); 
+		$ci->db->select("id,scoring_period_id,sim_date,process_time,sim_result,sim_summary,comments");
+		$ci->db->where("id",$sumId);
+		$query = $ci->db->get("fantasy_sim_summary");
+		if ($query->num_rows() > 0) {
+			$summary = $query->row();
+		}
+		$query->free_result();
+		return $summary;
+	}
+}
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('getScoringPeriodCount')) {

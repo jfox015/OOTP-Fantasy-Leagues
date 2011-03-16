@@ -35,6 +35,7 @@ class admin extends MY_Controller {
 		$this->views['CONFIG_SCORING_PERIODS'] = 'admin/config_scoring_periods';
 		$this->views['CONFIG_SCORING_PERIODS_EDIT'] = 'admin/config_scoring_periods_edit';
 		$this->views['CONFIG_OOTP'] = 'admin/config_ootp';
+		$this->views['SIM_SUMMARY'] = 'admin/sim_summary';
 		
 		$this->load->helper('admin');
 		$this->enqueStyle('jquery.ui.css');
@@ -123,6 +124,7 @@ class admin extends MY_Controller {
 					$this->data['configUpdate'] = true;
 				}
 			}
+			//  END 1.0.2 MODS
 			//-------------------------------------------------------------
 			// UPDATE VERSION 1.0.3
 			//-------------------------------------------------------------
@@ -134,8 +136,14 @@ class admin extends MY_Controller {
 			if ((empty($this->params['config']['season_start']) || $this->params['config']['season_start'] == EMPTY_DATE_STR) || (empty($this->params['config']['draft_period']) || $this->params['config']['draft_period'] == EMPTY_DATE_STR.":".EMPTY_DATE_STR)) {
 				$this->data['settingsError'] = str_replace('[FANTASY_SETTINGS_URL]',$this->params['config']['fantasy_web_root'].'admin/configFantasy',$this->lang->line('admin_error_fantasy_settings'));
 			}
-			
 			//  END 1.0.3 MODS
+			//-------------------------------------------------------------
+			// UPDATE VERSION 1.0.4
+			//-------------------------------------------------------------
+			// VERSION CHECK AND VERIFICATION		
+			$this->data['summary_size'] = getSimSummaries(true);
+			//  END 1.0.4 MODS
+
 			
 			$this->params['content'] = $this->load->view($this->views['DASHBOARD'], $this->data, true);
 			$this->params['subTitle'] = "Welcome to OOTP Fantasy Leagues";
@@ -581,27 +589,9 @@ class admin extends MY_Controller {
 			}
 		}
 	}
-	/**
-	 *	SCORING PERIODS CONFIG.
-	 *	List the games scoring periods.
-	 */
-	function configScoringPeriods() {
-		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
-			redirect('user/login');
-		} else {
-			$this->data['scoring_edit'] = $this->ootp_league_model->current_date <= $this->ootp_league_model->start_date;
-			$this->data['periods'] = getScoringPeriods();
-			$this->data['outMess'] = '';
-			$this->data['input'] = $this->input;
-			$this->data['subTitle'] = "Scoring Periods";
-			$this->params['content'] = $this->load->view($this->views['CONFIG_SCORING_PERIODS'], $this->data, true);
-			$this->params['subTitle'] =  "Review Settings";
-			$this->params['pageType'] = PAGE_FORM;
-			$this->displayView();
-		}
-		
-	}
+	
+	
+	
 	/**
 	 *	EDIT SCORING PERIODS CONFIG.
 	 *	Edits the games scoring periods.
@@ -663,6 +653,55 @@ class admin extends MY_Controller {
 				}
 			}
 		}
+	}
+	/**
+	 *	SIM SUMMARIES.
+	 *	List the games scoring periods.
+	 *
+	 *	@since 	1.0.4
+	 */
+	function simSummaries() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			$this->data['summaries'] = getSimSummaries();;
+			$this->data['outMess'] = '';
+			$this->data['input'] = $this->input;
+			$this->data['subTitle'] = "Sim Summaries";
+			$this->enqueStyle('list_picker.css');
+			$this->params['content'] = $this->load->view($this->views['SIM_SUMMARY'], $this->data, true);
+			$this->params['subTitle'] =  "Admin Logs";
+			$this->params['pageType'] = PAGE_FORM;
+			$this->displayView();
+		}
+	}
+	public function loadSummary() {
+		
+		$this->getURIData();
+		
+		$status = '';
+		$result = '';
+		$code = -1;
+
+		if (isset($this->uriVars['summary_id']) || $this->uriVars['summary_id'] != -1) {
+			$summary = loadSimSummary($this->uriVars['summary_id']);
+			
+			if (sizeof($summary) > 0) {
+				$result .= '{"id":"'.$summary->id.'","sim_date":"'.date('Y-m-d h-i-s-A',strtotime($summary->sim_date)).'","scoring_period_id":"'.$summary->scoring_period_id.'","sim_result":"'.$summary->sim_result;
+				$result .= '","process_time":"'.$summary->process_time.'","sim_summary":"'.urlencode($summary->sim_summary).'","comments":"'.urlencode($summary->comments).'"}';
+				$status .= "OK";
+				$code = 200;
+			}
+		}
+		if (strlen($result) == 0) {
+			$status .= "notice:No summary data was found";
+			$code = 201;
+		}
+		$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
+		
+		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_output($result);
 	}
 	function listSQLFiles() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -998,6 +1037,7 @@ class admin extends MY_Controller {
 	 */
 	function processSim() {
 		
+		$this->benchmark->mark('sim_start');
 		$comments = "";
 		// ADVANCE SCORING PERIOD
 		// CHECK FOR DUPLICATE
@@ -1031,9 +1071,14 @@ class admin extends MY_Controller {
 			$error = true;
 			$mess = $this->league_model->statusMess;
 		} // END if
+		// Some code happens here
+
+		
+		$simResult = 1;
 		// UPDATE THE MAIN CONFIG
 		if ($error) {
 			$status = "error:".$mess;
+			$simResult = 2;
 		} else {
 			if (!empty($warn)) {
 				$status = $warn;
@@ -1042,8 +1087,9 @@ class admin extends MY_Controller {
 			}
 			update_config('last_process_time',date('Y-m-d h:m:s'));
 			update_config('current_period',($score_period['id']+1));
-			save_sim_summary('success',$summary,$comments);
 		}
+		$this->benchmark->mark('sim_end');
+		save_sim_summary($simResult,$this->benchmark->elapsed_time('sim_start', 'sim_end'),$summary,$comments);
 		$code = 200;
 		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
@@ -1071,6 +1117,9 @@ class admin extends MY_Controller {
 		} // END if
 		if ($this->input->post('period_id')) {
 			$this->uriVars['period_id'] = $this->input->post('period_id');
+		} // END if
+		if ($this->input->post('summary_id')) {
+			$this->uriVars['summary_id'] = $this->input->post('summary_id');
 		} // END if
 	}
 }

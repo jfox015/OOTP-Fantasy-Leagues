@@ -347,6 +347,14 @@
 		} else { 
         echo('<br /><span class="error" style="margin:0px; width:90%;"><strong>Warning:</strong> No scoring periods were found.</span>'); } ?>
          
+		<?php 
+		// 	EDIT 1.0.4
+		//	SIM SUMMARIES
+		if ($summary_size) { ?>
+        <br /><b>Sim Summaries:</b> <?php print($summary_size); ?> available.<br />
+        <?php echo anchor('admin/simSummaries','View Sim Summaries')."<br />"; 
+		} ?>
+        
         <br /><b>Last SQL Data Upload:</b><br /> <?php echo(date('m/d/Y h:m:s A',strtotime($config['last_sql_load_time']))); ?> <br />
         <br /><b>Last Sim Processed:</b><br /> <?php if ($config['last_process_time'] != EMPTY_DATE_TIME_STR) { echo(date('m/d/Y h:m:s A',strtotime($config['last_process_time']))); }
 		else { echo("No scoring periods processed yet."); } ?>
