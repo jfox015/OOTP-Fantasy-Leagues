@@ -209,6 +209,18 @@ class news extends BaseEditor {
 			$form->hidden('storyDateY',$datesArr[0]);
 			$form->span($datesArr[1]."/".$datesArr[2]."/".$datesArr[0],array('class'=>'form_span'));
 		}
+		if ($typeId == NEWS_PLAYER) {
+			// GET LIST OF PLAYERS
+			$this->load->model('player_model');
+			$players = $this->player_model->getOOTPPayers(false,false,false,false,false,false,true);
+			$form->br();
+			$form->select('varId|varId',$players,'Select Player:',($this->input->post('varId') ? $this->input->post('varId') : $varId),'required');
+			$form->nobr();
+			$form->html('<div style="margin-top:5px;">'.anchor('/players/stats/','See all Players').'</div>');
+		} else {
+			$form->hidden('var_id',$varId);
+		}
+		$this->data['var_id'] = $varId;
 		$form->br();
 		$form->text('news_subject','Title','required|trim',($this->input->post('news_subject')) ? $this->input->post('news_subject') : $this->dataModel->news_subject,array("class"=>"longtext"));
 		$form->br();
@@ -259,8 +271,8 @@ class news extends BaseEditor {
 		$form->span(' ','style="margin-right:8px;display:inline;"');
 		$form->submit('Submit');
 		$form->hidden('submitted',1);
+		$this->data['type_id'] = $typeId;
 		$form->hidden('type_id',$typeId);
-		$form->hidden('var_id',$varId);
 		$form->hidden('author_id',$authorId);
 		$form->hidden('preview','0');
 		if ($this->recordId != -1) {

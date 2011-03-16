@@ -976,7 +976,7 @@ class team extends BaseEditor {
 					$this->db->flush_cache();
 					$this->db->where('id',$data['player_id']);
 					$this->db->update('fantasy_players',$pData); 
-				}
+				} // END foreach
 				$waiverClaims = array();
 				foreach($waiverSQL as $data) {
 					$this->db->insert('fantasy_teams_waiver_claims',$data);

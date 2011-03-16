@@ -299,8 +299,11 @@ class player_model extends base_model {
 		$query->free_result();
 		return $team;
 	}
-	
 	public function getActiveOOTPPayers($league_id = false,$searchType = 'all', $searchParam = false,$current_scoring_period = 1, $nonFreeAgents = array()) {
+		return getOOTPPayers($league_id,$searchType, $searchParam,$current_scoring_period, $nonFreeAgents,1);
+	}
+	public function getOOTPPayers($league_id = false,$searchType = 'all', $searchParam = false,$current_scoring_period = 1, $nonFreeAgents = array(), 
+								  $playerStatus = false, $selectBox = false) {
 		$players = array();
 			
 		$this->db->select('fantasy_players.id, first_name, last_name, fantasy_players.positions, players.position, players.role, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, ');
@@ -327,7 +330,9 @@ class player_model extends base_model {
 			default:
 				break;
 		} // END switch
-		$this->db->where('fantasy_players.player_status',1);
+		if ($playerStatus  !== false) {
+			$this->db->where('fantasy_players.player_status',$playerStatus);
+		}
 		$this->db->where('players.retired',0);
 		if (isset($nonFreeAgents) && sizeof($nonFreeAgents) > 0) {
 			$this->db->where_not_in('fantasy_players.id',$nonFreeAgents);
@@ -337,18 +342,27 @@ class player_model extends base_model {
 		
 		if ($query->num_rows() > 0) {
 			$fields = $query->list_fields();
+			if ($selectBox === true) {
+				$players = array(-1=>"Select Player");
+			}
 			foreach ($query->result() as $row) {
-				$player = array();
-				foreach($fields as $field) {
-					$player[$field] = $row->$field;
-				}
-				$player['player_name'] = $row->first_name." ".$row->last_name;
+				$tmpPos = "";
 				if ($row->position == 1) {
-					$player['pos'] = $row->role;
+					$tmpPos = $row->role;
 				} else {
-					$player['pos'] = $row->position;
+					$tmpPos = $row->position;
 				}
-				array_push($players,$player);
+				if ($selectBox === false) {
+					$player = array();
+					foreach($fields as $field) {
+						$player[$field] = $row->$field;
+					}
+					$player['player_name'] = $row->first_name." ".$row->last_name;
+					$player['pos'] = $tmpPos;
+					array_push($players,$player);
+				} else {
+					$players = $players + array($row->id=>$row->last_name.", ".$row->first_name." - ".get_pos($tmpPos));
+				}
 			}
 		}
 		return $players;

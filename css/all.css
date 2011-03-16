@@ -215,6 +215,6 @@ img.league_news_tall {
 
 .success, .success_txt, .success a { color: #264409; }
 .error, .error_txt, .error a  { color: #8a1f11;  }
-.success, .success_txt, .notice a { color: #514721; }
+.notice, .notice_txt, .notice a { color: #514721; }
 .info, .info_txt, .info a { color:#006; }
 .warn, .warn_txt, .warn a { color: #461102; font-weight:bold;  }
