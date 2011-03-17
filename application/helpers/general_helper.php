@@ -790,7 +790,7 @@ function get_stats_for_scoring($type=1,$scoring_type = 1) {
 			7=>"3B",
 			8=>"HR",
 			4=>"K",
-			5=>"TB",
+			//5=>"TB",
 			9=>"SB",
 			10=>"RBI",
 			11=>"R",
@@ -799,9 +799,9 @@ function get_stats_for_scoring($type=1,$scoring_type = 1) {
 			14=>"HBP",
 			15=>"SH",
 			16=>"SF",
-			17=>"EBH",
-			21=>"RC",
-			22=>"RC/27",
+			//17=>"EBH",
+			//21=>"RC",
+			//22=>"RC/27",
 			58=>"CS"
 			//,0=>"GS",
 			//18=>"AVG",
@@ -967,7 +967,7 @@ function get_ll_cat($catID,$forSQL = false)
       case 30: $txt="L"; break;
       case 31: $txt="Win%"; break;
       case 32: if($forSQL) $txt="s"; else $txt="SV"; break;
-      case 33: if($forSQL) $txt="h"; else $txt="HLD"; break;
+      case 33: $txt="HLD"; break;
       case 34: $txt="IP"; break;
       case 35: $txt="BF"; break;
       case 36: $txt="HRA"; break;

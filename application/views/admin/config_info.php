@@ -24,9 +24,16 @@
 								echo('<span class="formData">'.$draft_start." - ".$draft_end."</span>");
 								break;
 							case 'useWaivers':
+							case 'use 	Trades':
+							case 'tradesExpire':
+							case 'google_analytics_enable':
+							case 'restrict_admin_leagues':
+							case 'users_create_leagues':
 								echo('<span class="formData">'.(($config[$field] == 1) ? 'Yes':'No')."</span>");
 								break;
-							default:
+							case 'stats_lab_compatible':
+								echo('<span class="formData">'.(($config[$field] == 1) ? 'On':'Off')."</span>");
+							break;default:
 								echo('<span class="formData">'.$config[$field]."</span>");
 								break;
 						}

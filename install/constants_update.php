@@ -60,6 +60,8 @@ define('PAGE_NORMAL','normal');
 define('PAGE_SEARCH','search');
 define('PAGE_FORM','form');
 
+define('LEAGUE_SCORING_HEADTOHEAD',4);
+
 define('NEWS_FANTASY_GAME',1);
 define('NEWS_LEAGUE',2);
 define('NEWS_PLAYER',3);

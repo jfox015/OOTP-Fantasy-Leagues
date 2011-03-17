@@ -210,6 +210,7 @@ class league_model extends base_model {
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		if ($type != -1) $this->db->where('access_type',1);
 		$query = $this->db->get($this->tblName);
+		echo("query->num_rows = ".$query->num_rows()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				$commish = resolveUsername($row->commissioner_id);
@@ -220,12 +221,13 @@ class league_model extends base_model {
 			}
 		}
 		$query->free_result();
+		//echo($this->db->last_query()."<br />");
 		return $leagues;
 	}
 	public function getLeagueScoringType($league_id = false) {
 		$type = false;
 		$this->db->select('league_type');
-		$this->db->where('league_id',$league_id);
+		$this->db->where('id',$league_id);
 		$query = $this->db->get($this->tblName);
 		if ($query->num_rows() > 0) {
 			$row = $query->row();
@@ -768,7 +770,7 @@ class league_model extends base_model {
 	 *  @param	$league_id - If not specified, no league filter is applied.
 	 *	@return	Rules array on success, false on failure
 	 */
-	public function getScoringRules($league_id = false) {
+	public function getScoringRules($league_id = false, $returnDefault = true) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
 		
@@ -780,7 +782,7 @@ class league_model extends base_model {
 			$this->db->where('league_id',$league_id);
 			$this->db->from('fantasy_leagues_scoring_'.$key);
 			$count = $this->db->count_all_results();
-			if ($count == 0) {
+			if ($count == 0 && $returnDefault === true) {
 				$league_id = 0;
 			}
 			$this->db->select('*');
@@ -838,15 +840,27 @@ class league_model extends base_model {
 	}
 	
 	public function getAllScoringRulesforSim($league_id = false) {
+		
+		$scoring_rules = array();
+		
 		// ASSEMBLE UNIQUE SCORING RULES FOR LEAGUES
 		if ($league_id !== false) { 
 			$scoring_rules[$league_id] = $this->getScoringRules($league_id);
 		} else {
 			$leagues = $this->getLeagues();
+			//echo($this->_NAME." = ".$this->db->last_query()."<br />");
+			$returnDefault = true;
 			foreach ($leagues as $id => $data) {
-				$scoring_rules[$id] = $this->getScoringRules($id);
+				if (isset($scoring_rules[0]) && sizeof($scoring_rules[0]) > 0) {
+					$returnDefault = false;
+				}
+				$tmpRules = $this->getScoringRules($id, $returnDefault);
+				if ($tmpRules !== false) {
+					$scoring_rules = $scoring_rules + array($tmpRules['league_id']=>$tmpRules);
+				}
 			}
 		}
+		return $scoring_rules;
 	}
 	/**
 	 *	GET SCORING RULES.
@@ -868,7 +882,7 @@ class league_model extends base_model {
 		$this->db->select();
 		$this->db->order_by('position', 'asc');
 		$query = $this->db->get('fantasy_roster_rules');
-		//echo($this->db->last_query()."<br />");
+		echo($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				//echo($row->position."<br />");
@@ -1166,16 +1180,19 @@ class league_model extends base_model {
 				$this->db->select('id');
 				$this->db->where('team_id',$row->id);
 				$this->db->where("league_id",$league_id);
+				$this->db->where("scoring_period_id",$scoring_period['id']);
 				$tQuery = $this->db->get('fantasy_teams_record');
 				if ($tQuery->num_rows() == 0) {
 					$this->db->flush_cache();
 					$data['team_id'] = $row->id;
 					$data['league_id'] = $league_id;
+					$data['scoring_period_id'] = $scoring_period['id'];
 					$this->db->insert('fantasy_teams_record',$data);
 				} else {
 					$this->db->flush_cache();
 					$this->db->where('team_id',$row->id);
 					$this->db->where("league_id",$league_id);
+					$this->db->where("scoring_period_id",$scoring_period['id']);
 					$this->db->update('fantasy_teams_record',$data);
 				}
 			}
@@ -1332,7 +1349,7 @@ class league_model extends base_model {
 				if (!$this->validateRoster(getBasicRoster($team_id, $scoring_period), $league_id )) {
 					array_push($excludeList,$team_id);
 					$valSum .= str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_roster_validation_error'));
-					$valSum .= str_replace('[TEAM_NAME]',$teamData['teamname']." ".$teamData['teamnick'],$valSum);
+					$valSum = str_replace('[TEAM_NAME]',$teamData['teamname']." ".$teamData['teamnick'],$valSum);
 				}
 			}		
 			if (!empty($valSum)) {
@@ -1340,17 +1357,17 @@ class league_model extends base_model {
 			}
 			
 			// IF RUNNING ON THE FINAL DAY OF THE SIM 
-			if ($this->getLeagueScoringType($league_id) == LEAGUE_SCOING_HEADTOHEAD) {
+			if ($this->getLeagueScoringType($league_id) == LEAGUE_SCORING_HEADTOHEAD) {
 				$summary .= $this->lang->line('sim_process_h2h');
-				$this->updateTeamRecords($score_period, $league_id, $excludeList);
+				$this->updateTeamRecords($scoring_period, $league_id, $excludeList);
 			} else {
 				$summary .= $this->lang->line('sim_process_rot');
-				$this->updateTeamScoring($score_period, $league_id, $excludeList);
+				$this->updateTeamScoring($scoring_period, $league_id, $excludeList);
 			}
 			
 			// COPY CURRENT ROSTERS TO NEXT SCORING PERIOD
 			$summary .= $this->lang->line('sim_process_copy_rosters');
-			$this->league_model->copyRosters($score_period['id'], ($score_period['id'] + 1), $league_id);
+			$this->league_model->copyRosters($scoring_period['id'], ($scoring_period['id'] + 1), $league_id);
 			
 			// IF ENABLED, PROCESS EXPIRING TRADES
 			if ((isset($this->params['config']['useTrades']) && $this->params['config']['useTrades'] == 1)) {
@@ -1359,7 +1376,7 @@ class league_model extends base_model {
 			}
 			// IF ENABLED, PROCESS WAIVERS
 			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
-				$this->league_model->processWaivers(($score_period['id'] + 1), $league_id, $this->debug);
+				$this->league_model->processWaivers(($scoring_period['id'] + 1), $league_id, $this->debug);
 				$summary .= $this->lang->line('sim_process_waivers');
 			}
 		} else {
@@ -1367,12 +1384,12 @@ class league_model extends base_model {
 			$summary .= $this->lang->line('sim_no_teams');
 		}
 		if ($this->errorCode == -1) {
-			$summary = $this->lang->line('success').$summary;
+			$summary .= $this->lang->line('success').$summary;
 		} else {
-			$summary = $this->lang->line('error').$summary;
+			$summary .= $this->lang->line('error').$summary;
 		}
 		
-		return summary;
+		return $summary;
 	}
 	
 	public function loadGameData($game_id = false, $team_model, $excludeList = array()) {

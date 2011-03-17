@@ -22,6 +22,7 @@ INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('primary_contact', 
 #	Version 1.0.3 to 1.0.4
 #	REMOVE ALL COMMENTS FOR DIST
 ALTER TABLE `fantasy_transactions` ADD `trade_team_id` INT NOT NULL;
+ALTER TABLE `fantasy_teams_record` ADD `scoring_period_id` TINYINT NOT NULL AFTER `year` 
 DROP TABLE IF EXISTS `fantasy_sim_summary`;
 DROP TABLE IF EXISTS `fantasy_teams_trades`;
 DROP TABLE IF EXISTS `fantasy_teams_trades_approvals`;

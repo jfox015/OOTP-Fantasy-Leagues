@@ -38,6 +38,7 @@ class admin extends MY_Controller {
 		$this->views['SIM_SUMMARY'] = 'admin/sim_summary';
 		
 		$this->load->helper('admin');
+		$this->lang->load('admin');
 		$this->enqueStyle('jquery.ui.css');
 		
 		$this->debug = false;
@@ -177,13 +178,13 @@ class admin extends MY_Controller {
 			'Fantasy Settings'=>array('seasonStart'=>'Season Start',
 			'sim_length' => 'Sim length',
 			'default_scoring_periods' => 'Default Scoring Periods',
-			'useWaivers' => 'Waivers Enabled?'),
+			'useWaivers' => 'Waivers Enabled?',
 			'useTrades' => 'Trading Enabled?',
 			'tradesExpire' => 'Trade offers Can Expire',
 			'defaultExpiration' => 'Default Expiration (in Days)?',
 			'approvalType' => 'Trade Approval Type',
 			'minProtests' => 'Min Protest to void trade?',
-			'protestPeriodDays' => 'Protest Period (in Days) ',
+			'protestPeriodDays' => 'Protest Period (in Days) '),
 			'Draft Settings'=>array('draftPeriod'=>'Draft Period',
 			'draft_rounds_min' => 'Minimum Draft Rounds',
 			'draft_rounds_max' => 'Maximum Draft Rounds'),
@@ -589,7 +590,28 @@ class admin extends MY_Controller {
 			}
 		}
 	}
-	
+	/**	
+	 *	SCORING PERIODS CONFIG.
+	 *	List the games scoring periods.
+	 */
+	function configScoringPeriods() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			$this->data['scoring_edit'] = $this->ootp_league_model->current_date <= $this->ootp_league_model->start_date;
+			$this->data['periods'] = getScoringPeriods();
+			$this->data['outMess'] = '';
+			$this->data['input'] = $this->input;
+			$this->data['subTitle'] = "Scoring Periods";
+			$this->params['content'] = $this->load->view($this->views['CONFIG_SCORING_PERIODS'], $this->data, true);
+			$this->params['subTitle'] =  "Review Settings";
+			$this->params['pageType'] = PAGE_FORM;
+			$this->displayView();
+		}
+		
+	}
+	/**
 	
 	
 	/**
@@ -927,6 +949,7 @@ class admin extends MY_Controller {
 		$result = '';
 		$status = '';
 		$mess = reset_transactions();
+		$mess = reset_sim_summary();
 		$mess = reset_player_data();
 		$mess = reset_team_data();
 		$mess = reset_league_data();
@@ -1039,6 +1062,11 @@ class admin extends MY_Controller {
 		
 		$this->benchmark->mark('sim_start');
 		$comments = "";
+		$error = false;
+		$mess = '';
+		$warn = "";	
+		$summary = str_replace('[TIME_START]',date('m/d/Y h:i:s A'),$this->lang->line('sim_process_start'));
+		
 		// ADVANCE SCORING PERIOD
 		// CHECK FOR DUPLICATE
 		$score_period = getCurrentScoringPeriod($this->ootp_league_model->current_date);
@@ -1047,21 +1075,22 @@ class admin extends MY_Controller {
 			$score_period = getCurrentScoringPeriod(date('Y-m-d',strtotime($this->ootp_league_model->current_date) - (60*60*24)));
 		}
 		//echo("Current Scoring Period = ".$score_period['id']."<br />");
+		$summary .= str_replace('[PERIOD_ID]',$score_period['id'],$this->lang->line('sim_period_id'));
 		
 		// UPDATE PLAYER SCORING FOR THIS PERIOD
 		$rules = $this->league_model->getAllScoringRulesforSim();
 		
+		
 		if (isset($rules) && sizeof($rules) > 0) {
+			$summary .= str_replace('[RULES_COUNT]',sizeof($rules),$this->lang->line('sim_rule_count'));
 			$this->load->model('player_model');
 			$this->player_model->updatePlayerScoring($rules,$score_period);
 			
 			$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
-			$error = false;
-			$mess = '';
-			$warn = "";	
+			
 			foreach($this->data['leagues'] as $id => $details) {
 				
-				$summary = $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
+				$summary .= $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
 				if ($this->league_model->errorCode != -1) {
 					$mess =  $this->league_model->statusMess;
 					break;
@@ -1069,28 +1098,37 @@ class admin extends MY_Controller {
 			}
 		} else {
 			$error = true;
-			$mess = $this->league_model->statusMess;
+			$mess = $this->lang->line('sim_no_scoring_rules');
 		} // END if
 		// Some code happens here
-
-		
+		if (!empty($mess)) {
+			$summary .= $this->lang->line('sim_include_errors');
+			$summary .= "<ul>".$mess."</ul>";
+		} // END if
 		$simResult = 1;
 		// UPDATE THE MAIN CONFIG
 		if ($error) {
 			$status = "error:".$mess;
 			$simResult = 2;
+			$code = 301;
+			$mess = $this->lang->line('sim_ajax_error');
 		} else {
+			$code = 200;
 			if (!empty($warn)) {
 				$status = $warn;
 			} else {
 				$status = "OK";
 			}
+			$mess = $this->lang->line('sim_ajax_success');
 			update_config('last_process_time',date('Y-m-d h:m:s'));
 			update_config('current_period',($score_period['id']+1));
 		}
 		$this->benchmark->mark('sim_end');
-		save_sim_summary($simResult,$this->benchmark->elapsed_time('sim_start', 'sim_end'),$summary,$comments);
-		$code = 200;
+		$sim_time = $this->benchmark->elapsed_time('sim_start', 'sim_end');
+		$summary .= str_replace('[SIM_TIME]',$sim_time,$this->lang->line('sim_process_finished'));
+		$summary = str_replace('[TIME_END]',date('m/d/Y h:i:s A'),$summary);
+		
+		save_sim_summary($simResult,$sim_time,$summary,$comments);
 		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);

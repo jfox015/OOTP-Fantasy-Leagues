@@ -279,12 +279,23 @@ if ( ! function_exists('reset_transactions')) {
 }
 // ------------------------------------------------------------------------
 
+if ( ! function_exists('reset_sim_summary')) {
+	function reset_sim_summary() {
+		$ci =& get_instance(); 
+		$ci->db->flush_cache();
+		$ci->db->query('TRUNCATE TABLE fantasy_sim_summary');
+		return true;
+	}
+}
+// ------------------------------------------------------------------------
+
 if ( ! function_exists('save_sim_summary')) {
-	function save_sim_summary($result,$summary,$comments = "") {
+	function save_sim_summary($result,$process_time,$summary,$comments = "") {
 		$ci =& get_instance(); 
 		$ci->db->flush_cache();
 		$ci->db->set('sim_result',$result);
 		$ci->db->set('sim_summary',$summary);
+		$ci->db->set('process_time',$process_time);
 		$ci->db->set('comments',$comments);
 		$ci->db->insert('fantasy_sim_summary'); 
 		if ($ci->db->affected_rows() > 0) {

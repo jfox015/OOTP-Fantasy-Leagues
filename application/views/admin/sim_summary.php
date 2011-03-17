@@ -90,7 +90,7 @@
                 <div id="listColumn<?php echo($columnsDrawn); ?>" class="listcolumn">
                     <ul>
                 <?php } ?>
-                        <li><a href="#" rel="itemPick" id="<?php echo($summary['id']); ?>">Period <?php echo($summary['scoring_period_id']." - ".date('m/y/d h:i A',strtotime($summary['sim_date']))); ?></a></li>
+                        <li><a href="#" rel="itemPick" id="<?php echo($summary['id']); ?>">Per. <?php echo($summary['scoring_period_id']." - ".date('m/d/Y h:i A',strtotime($summary['sim_date']))); ?></a></li>
                 <?php 	$countDrawn++;
                     $countPerColumn++;
                     if ($countPerColumn == $colLimit || $countDrawn == $itemCount) { ?>
