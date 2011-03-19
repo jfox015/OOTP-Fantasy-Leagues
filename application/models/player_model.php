@@ -634,105 +634,138 @@ class player_model extends base_model {
 		$query->free_result();
 		return $fantasy_stats;
 	}
-	public function updatePlayerScoring($scoring_rules, $scoring_period, $ootp_league_id = 100) {
+	/**
+	 *	UPDATE PLAYER SCORING
+	 *	Accepts a set of scoring rules (stat categories and pfantasy pont values for h2h leagues) and 
+	 *	processes them for insertion into the players_scoring table. This function used to live in the 
+	 *	league_model but was moved to the more logical location for 1.0.4.
+	 *
+	 *	@param	$scoring_rules		Array of scoring rules to process against
+	 *	@param	$scoring_period		Scoring Period object
+	 *	@param	$ootp_league_id		OOTP League ID value, defaults to 100 if no value passed
+	 *	@return						Summary String
+	 *	@since						1.0.4
+	 *	@version					1.1 (Revised OOTPFL 1.0.4)
+	 *	@see						Controller->Admin->processSim()
+	 *	@see						Models->League_Model->updateLeagueScoring()
+	 *
+	 */
+	public function updatePlayerScoring($scoring_rules = false, $scoring_period = false, $ootp_league_id = 100) {
 		
-		if (!isset($scoring_rules) || sizeof($scoring_rules) < 1) { return false; }
+		if (($scoring_rules === false|| sizeof($scoring_rules) < 1) || 
+			($scoring_period === false|| sizeof($scoring_period) < 1)) { return false; }
+		
+		$this->lang->load('admin');
 		
 		$player_list = $this->getOOTPPlayers();
-		$game_list = array();
-		$type = "";
+		$summary = $this->lang->line('sim_player_scoring');
+		
+		// CREATE AND STORE SELECT ARRAY
+		$selectArr = array();
+		$statsTypes = array(1=>'batting',2=>'pitching');
+		foreach ($statsTypes as $typeId => $type) {
+			$stats = get_stats_for_scoring($typeId);
+			$select = "player_id";
+			foreach($stats as $id => $val) {
+				if ($select != '') { $select.=","; } // END if
+				$select .= strtolower(get_ll_cat($id, true));
+			} // END foreach
+			$selectArr = $selectArr + array($typeId=>$select);
+		} // END foreach
 		
 		if (sizeof($player_list) > 0) {
+			$ruleType = "batting";
+			$summary .= str_replace('[PLAYER_COUNT]',sizeof($player_list),$this->lang->line('sim_player_count'));										
+			$processCount = 0;
 			foreach($player_list as $row) {
 				// BUILD QUERY TO PULL CURRENT GAME DATA FOR THIS PLAYER
-				$stats = "";
+				$game_list = array();
+				
 				if ($row['position'] != 1) {
-					$type = "batting";
+					$type = 1;
+					$ruleType = "batting";
 					$table = "players_game_batting";
-					$stats = get_stats_for_scoring(1);
 				} else {
-					$type = "pitching";
+					$type = 2;
+					$ruleType = "pitching";
 					$table = "players_game_pitching_stats";
-					$stats = get_stats_for_scoring(2);
-				}
-				$select = "";
-				foreach($stats as $id => $val) {
-					if ($select != '') { $select.=","; }
-					$select .= strtolower(get_ll_cat($id, true));
-				}
+				} // END if
 				$this->db->flush_cache();
-				$this->db->select($select);
+				$this->db->select($selectArr[$type]);
 				$this->db->join($table,'games.game_id = '.$table.'.game_id','left');
 				$this->db->where($table.'.player_id',$row['player_id']);
 				$this->db->where("DATEDIFF('".$scoring_period['date_start']."',games.date)<=",0);
 				$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
 				$query = $this->db->get('games');
-				//echo("Num of games found for player ".$row->player_id." = ".$query->num_rows() .", status = ".$row['player_status']."	<br/>");
+				echo("Num of games found for player ".$row->player_id." = ".$query->num_rows() .", status = ".$row['player_status']."	<br/>");
 				//echo($this->db->last_query()."<br />");
 				if ($query->num_rows() > 0) {
 					$game_list = $query->result();
-				}
-			}
-			return true;
-			if (sizeof($scoring_rules) > 0) {
-				foreach ($scoring_rules as $id => $rules) {
-					$score_vals = array();
-					$totalVal = 0;
-					foreach ($game_list as $sRow) {
-						$colCount = 0;
-						// APPLY VALUES TO THE STATS AND SAVE THEM TO THE SCORING TABLE
-						foreach($rules[$type] as $cat => $val) {
-							$fVal = 0;
-							$colName = strtolower(get_ll_cat($cat, true));
-							if (isset($score_vals['value_'.$colCount])) {
-								$score_vals['value_'.$colCount] += $sRow->$colName;
-							} else {
-								$score_vals['value_'.$colCount] = $sRow->$colName;
-							}
-							if ($sRow->$colName != 0) {
-								$totalVal += $sRow->$colName * $val;
-							}
-							$colCount++;
-						}
-					}
-					$score_vals['total'] = $totalVal;
-					//echo("Player ".$row->player_id." total = ".$totalVal.", status = ".$row->player_status."	<br/>");
-					//if ($row->player_status == 1) { $team_score += $totalVal; }
-					//echo("Team ".$team_id." total = ".$team_score."<br/>");
-					if (sizeof($score_vals) > 0) {
-						$this->db->flush_cache();
-						$this->db->select('id');
-						$this->db->where('player_id',$row->id);
-						$this->db->where('scoring_period_id',$scoring_period['id']);
-						$this->db->where('league_id',$rules['league_id']);
-						$tQuery = $this->db->get('fantasy_players_scoring');
-						if ($tQuery->num_rows() == 0) {
+				} // END if
+				$query->free_result(); 
+				if (sizeof($game_list) > 0 && sizeof($scoring_rules) > 0) {
+					foreach ($scoring_rules as $id => $rules) {
+						$score_vals = array();
+						$totalVal = 0;
+						foreach ($game_list as $sRow) {
+							$colCount = 0;
+							// APPLY VALUES TO THE STATS AND SAVE THEM TO THE SCORING TABLE
+							foreach($rules[$ruleType] as $cat => $val) {
+								$fVal = 0;
+								$colName = strtolower(get_ll_cat($cat, true));
+								if (isset($score_vals['value_'.$colCount])) {
+									$score_vals['value_'.$colCount] += $sRow->$colName;
+								} else {
+									$score_vals['value_'.$colCount] = $sRow->$colName;
+								} // END if
+								if ($sRow->$colName != 0) {
+									$totalVal += $sRow->$colName * $val;
+								} // END if
+								$colCount++;
+							} // END foreach
+						} // END foreach
+						$score_vals['total'] = $totalVal;
+						echo("Player ".$row->player_id." total = ".$totalVal.", status = ".$row->player_status."	<br/>");
+						//if ($row->player_status == 1) { $team_score += $totalVal; }
+						//echo("Team ".$team_id." total = ".$team_score."<br/>");
+						if (sizeof($score_vals) > 0) {
 							$this->db->flush_cache();
-							$score_vals['player_id'] = $row->id;
-							$score_vals['scoring_period_id'] = $scoring_period['id'];
-							$score_vals['league_id'] = $rules['league_id'];
-							$this->db->insert('fantasy_players_scoring',$score_vals);
-						} else {
-							$this->db->flush_cache();
+							$this->db->select('id');
 							$this->db->where('player_id',$row->id);
 							$this->db->where('scoring_period_id',$scoring_period['id']);
 							$this->db->where('league_id',$rules['league_id']);
-							$this->db->update('fantasy_players_scoring',$score_vals);
-						}
-						$tQuery->free_result();
-					}
-				}
-			} else {
-				$this->errorCode = 1;
-				$this->statusMess = "Mo scoring rules were found";
-				return false;
-			}
+							$tQuery = $this->db->get('fantasy_players_scoring');
+							if ($tQuery->num_rows() == 0) {
+								$this->db->flush_cache();
+								$score_vals['player_id'] = $row->id;
+								$score_vals['scoring_period_id'] = $scoring_period['id'];
+								$score_vals['league_id'] = $rules['league_id'];
+								$this->db->insert('fantasy_players_scoring',$score_vals);
+							} else {
+								$this->db->flush_cache();
+								$this->db->where('player_id',$row->id);
+								$this->db->where('scoring_period_id',$scoring_period['id']);
+								$this->db->where('league_id',$rules['league_id']);
+								$this->db->update('fantasy_players_scoring',$score_vals);
+							} // END if
+							$tQuery->free_result();
+						} // END if
+					} // END foreach
+					$processCount++;
+				} else {
+					$this->errorCode = 1;
+					$this->statusMess = "Mo scoring rules were found";
+					return false;
+				} // END if
+			} // END foreach
+			$summary .= str_replace('[PLAYER_COUNT]',$processCount,$this->lang->line('sim_players_processed_result'));										
 		} else {
 			$this->errorCode = 2;
 			$this->statusMess = "Mo players were found.";
 			return false;
-		}
-		return true;
+		} // END if
+		
+		return $summary;
 	}
 	
 	

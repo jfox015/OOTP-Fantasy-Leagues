@@ -210,7 +210,7 @@ class league_model extends base_model {
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		if ($type != -1) $this->db->where('access_type',1);
 		$query = $this->db->get($this->tblName);
-		echo("query->num_rows = ".$query->num_rows()."<br />");
+		//echo("query->num_rows = ".$query->num_rows()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				$commish = resolveUsername($row->commissioner_id);
@@ -882,7 +882,7 @@ class league_model extends base_model {
 		$this->db->select();
 		$this->db->order_by('position', 'asc');
 		$query = $this->db->get('fantasy_roster_rules');
-		echo($this->db->last_query()."<br />");
+		//echo($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				//echo($row->position."<br />");
@@ -1257,7 +1257,7 @@ class league_model extends base_model {
 			$this->db->order_by("players_career_batting_stats.vorp",'desc');
 			$query = $this->db->get("fantasy_players");
 			
-			echo("sql = ".$this->db->last_query()."<br />");
+			//echo("sql = ".$this->db->last_query()."<br />");
 			if ($query->num_rows() > 0) {
 				$count = 0;
 				foreach($query->result() as $row) {
@@ -1319,9 +1319,20 @@ class league_model extends base_model {
 		if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 		return $errors;
 	}
-	
+	/**
+	 *	UPDATE LEAGUE SCORING
+	 *
+	 *	@param	$scoring_period	The scoring period to update against
+	 *	@param	$league_id		The league to process, defaults to $this->id if no value passed
+	 *	@param	$ootp_league_id	OOTP League ID value, defaults to 100 if no value passed
+	 *	@return					Summary String
+	 *	@since					1.0
+	 *	@version				1.1 (Revised OOTPFL 1.0.4)
+	 *
+	 */
 	public function updateLeagueScoring($scoring_period, $league_id = false, $ootp_league_id = 100) {
 		
+		$summary = "";
 		$error = false;
 		if ($league_id === false) { $id = $this->id; }
 		$league_name = $this->getLeagueName($league_id);
@@ -1338,7 +1349,7 @@ class league_model extends base_model {
 			
 			$teams = $this->getTeamDetails($league_id);
 			
-			$summary = str_replace('[TEAM_COUNT]',sizeof($teams),$this->lang->line('sim_team_count'));
+			$summary .= str_replace('[TEAM_COUNT]',sizeof($teams),$this->lang->line('sim_team_count'));
 		
 			if (!function_exists('getBasicRoster')) {
 				$this->load->helper('roster');

@@ -7,13 +7,17 @@ $lang['sim_process_start'] = 'Beginning Sim processing. Started at [TIME_START]<
 $lang['sim_period_id'] = 'Sim Period Id = [PERIOD_ID]<br /><br />';
 $lang['sim_league_processing'] = 'Processing sim scoring results for [LEAGUE_NAME].<br /><br />';
 
+$lang['sim_player_scoring'] = '<b>Processing Player Scoring Results.</b><br /><br />';
+$lang['sim_player_count'] = '[PLAYER_COUNT] players loaded for stat proicessing.<br />';
+$lang['sim_players_processed_result'] = '[PLAYER_COUNT] players scoring stats processed.<br />';
+
 $lang['sim_rule_count'] = '[RULES_COUNT] scoring rules loaded for sim.<br /><br />';
 
 $lang['sim_no_teams'] = '<b>Error:</b> No teams were found.<br /><br />';
 $lang['sim_team_count'] = '[TEAM_COUNT] teams were found';
 
 $lang['sim_roster_validation_title'] = 'Roster Validation Errors:<ul>';
-$lang['sim_roster_validation_error'] = "<li>Team [TEAM_NAME] of the [LEAGUE_NAME] league had an invalid roster. No results will be recorded for tjhis team.</li>";
+$lang['sim_roster_validation_error'] = "<li><b>[TEAM_NAME]</b> of the <i>[LEAGUE_NAME]</i> had an invalid roster. No results will be recorded for tjhis team.</li>";
 $lang['sim_roster_validation_postfix'] = '</ul>';
 
 $lang['sim_process_h2h'] = 'Processing head to head scoring results<br />';
