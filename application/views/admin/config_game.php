@@ -62,7 +62,11 @@
             $form->nobr();
 			$form->span("Server path to MySQL Data Upload Dir. NO TRAILING SLASH.",array('class'=>'field_caption'));
 			$form->space();
-           	 $form->fieldset('File Settings');
+           	$form->fieldset('File Settings');
+			$form->space();
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('limit_load_all_sql',$responses,'Limit <b>Load All Files</b> to only required?',($this->input->post('limit_load_all_sql') ? $this->input->post('limit_load_all_sql') : $config['limit_load_all_sql']),'required');
+			$form->fieldset();
 			$form->text('max_sql_file_size','Max SQL File Size','required|trim|number',($input->post('max_sql_file_size') ? $input->post('max_sql_file_size') : $config['max_sql_file_size']));
             $form->space();
            	$form->span('Specify Max File Size in Megabytes',array('class'=>'field_caption'));

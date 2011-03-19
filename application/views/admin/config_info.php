@@ -18,23 +18,33 @@
 						echo('<label>'.$label.":</label>");
 						switch ($field) {
 							case 'seasonStart':
-								echo('<span class="formData">'.$season_start."</span>");
+								print('<span class="formData">'.$season_start."</span>");
 								break;
 							case 'draftPeriod':
-								echo('<span class="formData">'.$draft_start." - ".$draft_end."</span>");
+								print('<span class="formData">'.$draft_start." - ".$draft_end."</span>");
 								break;
 							case 'useWaivers':
-							case 'use 	Trades':
+							case 'useTrades':
 							case 'tradesExpire':
 							case 'google_analytics_enable':
 							case 'restrict_admin_leagues':
 							case 'users_create_leagues':
-								echo('<span class="formData">'.(($config[$field] == 1) ? 'Yes':'No')."</span>");
+							case 'limit_load_all_sql':
+								print('<span class="formData">'.(($config[$field] == 1) ? 'Yes':'No')."</span>");
 								break;
 							case 'stats_lab_compatible':
-								echo('<span class="formData">'.(($config[$field] == 1) ? 'On':'Off')."</span>");
-							break;default:
-								echo('<span class="formData">'.$config[$field]."</span>");
+								print('<span class="formData">'.(($config[$field] == 1) ? 'On':'Off')."</span>");
+								break;
+							case 'primary_contact':
+								print(anchor('/user/profile/'.$config[$field],$this->user_auth_model->getusername($config[$field])));
+								break;
+							case 'approvalType':
+								$types = loadSimpleDataList('tradeApprovalType');
+								print($types[$config[$field]]);
+								break;
+							
+							default:
+								print('<span class="formData">'.$config[$field]."</span>");
 								break;
 						}
 						echo('<br /><br />');

@@ -206,8 +206,8 @@
         <?php } ?>
         <?php if ($in_season && isset($league_info)) { ?>
         <h3>Regular Season Functions</h3>
-		Some of the folowing functions will likely take some time as all players in the league will be processed. Please be 
-		patient when running these opertions.
+		<b class="error_txt"><i>NOTE:</i></b> Depending on the size of your league, some of the following functions may consume a good deal of time and server resources as all players in the OOTP game will be processed. Please be 
+		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.
         <br clear="all" /><br />
         <ul class="iconmenu">
             <?php if ($config['last_process_time'] < $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date) { ?>

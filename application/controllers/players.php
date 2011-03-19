@@ -83,7 +83,7 @@ class players extends MY_Controller {
 			
 			$this->data['role_type'] = $role_type = (isset($this->uriVars['role_type'])) ? $this->uriVars['role_type'] : -1;	
 			
-			$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : -1;
+			$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : DEFAULT_RESULTS_COUNT;
 			
 			$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;	
 			

@@ -162,12 +162,7 @@ class admin extends MY_Controller {
 			$fields = array('General Settings'=>array('site_name' =>'Site Name',
 			'ootp_league_name' => 'OOTP League Name',
 			'ootp_league_abbr' => 'OOTP League Abbreviation',
-			'ootp_league_id' => 'OOTP League ID'),
-			'File Settings'=>array('fantasy_web_root' => 'Fantasy League Root URL',
-			'ootp_html_report_path' => 'HTML Reports URL',
-			'sql_file_path' => 'MySQL File Load Path',
-			'ootp_html_report_root' => 'HTML Report File Path',
-			'max_sql_file_size' => 'Max SQL File Size',
+			'ootp_league_id' => 'OOTP League ID',
 			'google_analytics_enable' => 'Google Analytics Tracking',
 			'google_analytics_tracking_id' => 'Google Analytics Tracking Code',
 			'stats_lab_compatible' => 'Stats Lab Compatibility Mode',
@@ -175,6 +170,12 @@ class admin extends MY_Controller {
 			'users_create_leagues' => 'Users can create leagues',
 			'max_user_leagues' => 'Max # of user leagues',
 			'primary_contact' => 'Primary Contact'),
+			'File Settings'=>array('fantasy_web_root' => 'Fantasy League Root URL',
+			'ootp_html_report_path' => 'HTML Reports URL',
+			'sql_file_path' => 'MySQL File Load Path',
+			'ootp_html_report_root' => 'HTML Report File Path',
+			'max_sql_file_size' => 'Max SQL File Size',
+			'limit_load_all_sql' => 'Limit &quot;Load All Files&quot; to only required?'),
 			'Fantasy Settings'=>array('seasonStart'=>'Season Start',
 			'sim_length' => 'Sim length',
 			'default_scoring_periods' => 'Default Scoring Periods',
@@ -183,7 +184,7 @@ class admin extends MY_Controller {
 			'tradesExpire' => 'Trade offers Can Expire',
 			'defaultExpiration' => 'Default Expiration (in Days)?',
 			'approvalType' => 'Trade Approval Type',
-			'minProtests' => 'Min Protest to void trade?',
+			'minProtests' => 'Min # Protest to void trade?',
 			'protestPeriodDays' => 'Protest Period (in Days) '),
 			'Draft Settings'=>array('draftPeriod'=>'Draft Period',
 			'draft_rounds_min' => 'Minimum Draft Rounds',
@@ -238,6 +239,7 @@ class admin extends MY_Controller {
 			'sql_file_path' => 'MySQL File Load Path',
 			'ootp_html_report_root' => 'HTML Report File Path',
 			'max_sql_file_size' => 'Max SQL File Size',
+			'limit_load_all_sql' => 'Limit &quot;Load All Files&quot;?',
 			'google_analytics_enable' => 'Google Analytics Tracking',
 			'google_analytics_tracking_id' => 'Google Analytics Tracking Code',
 			'stats_lab_compatible' => 'Stats Lab Compatibility Mode',
@@ -994,7 +996,7 @@ class admin extends MY_Controller {
 		$this->output->set_output($result);
 	}
 	/**
-	 *	LOAD SQL DATA TABLE.
+	 *	LOAD SQL DATA TABLE(S)
 	 */
 	function loadSQLFiles() {
 		$this->getURIData();
@@ -1006,6 +1008,8 @@ class admin extends MY_Controller {
 			$fileList = $this->uriVars['loadList'];
 		} else if (isset($this->uriVars['filename']) && !empty($this->uriVars['filename'])) {
 			$fileList = array($this->uriVars['filename']);
+		} else if (isset($this->params['config']['limit_load_all_sql']) && $this->params['config']['limit_load_all_sql'] == 1) {
+			$fileList = $this->ootp_league_model->getRequiredSQLFiles();
 		} else {
 			$fileList = getSQLFileList($this->params['config']['sql_file_path'],strtotime($this->params['config']['last_sql_load_time']));
 		}
@@ -1084,7 +1088,7 @@ class admin extends MY_Controller {
 		if (isset($rules) && sizeof($rules) > 0) {
 			$summary .= str_replace('[RULES_COUNT]',sizeof($rules),$this->lang->line('sim_rule_count'));
 			$this->load->model('player_model');
-			$this->player_model->updatePlayerScoring($rules,$score_period);
+			$summary .= $this->player_model->updatePlayerScoring($rules,$score_period);
 			
 			$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
 			
@@ -1120,8 +1124,8 @@ class admin extends MY_Controller {
 				$status = "OK";
 			}
 			$mess = $this->lang->line('sim_ajax_success');
-			update_config('last_process_time',date('Y-m-d h:m:s'));
-			update_config('current_period',($score_period['id']+1));
+			//update_config('last_process_time',date('Y-m-d h:m:s'));
+			//update_config('current_period',($score_period['id']+1));
 		}
 		$this->benchmark->mark('sim_end');
 		$sim_time = $this->benchmark->elapsed_time('sim_start', 'sim_end');

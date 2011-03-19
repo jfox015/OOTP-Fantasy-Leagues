@@ -122,7 +122,7 @@
             echo "     <td>";
             echo "      <select name='limit' id='limit'>";
             echo '      <option value="-1">All</option>';
-            for ($i = 25; $i < 201; $i += 25) {
+            for ($i = 20; $i < 201; $i += 20) {
                 echo("<option value='$i'");
                 if ($i == $limit) {echo " selected";}
                 echo ">$i</option>";

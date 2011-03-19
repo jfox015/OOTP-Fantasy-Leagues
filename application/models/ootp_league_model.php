@@ -84,6 +84,16 @@ class ootp_league_model extends base_model {
 		}
 		return $missingTables;
 	}
+	public function getRequiredSQLFiles() {
+		$fileList = array();
+
+		if (sizeof($this->requiredTables) > 0) {
+			foreach ($this->requiredTables as $tableName) {
+				array_push($fileList,$tableName.'.mysql.sql');
+			}
+		}
+		return $fileList;
+	}
 	/**
 	 *	VALIDATE LOADED SQL FILES
 	 *	This function accepts an array of MySQL export files names and determines which if any of the 
