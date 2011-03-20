@@ -306,7 +306,7 @@ class player_model extends base_model {
 								  $playerStatus = false, $selectBox = false) {
 		$players = array();
 			
-		$this->db->select('fantasy_players.id,fantasy_players.player_id, first_name, last_name, fantasy_players.positions, players.position, players.role, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, ');
+		$this->db->select('fantasy_players.id,fantasy_players.player_id, fantasy_players.player_status, first_name, last_name, fantasy_players.positions, players.position, players.role, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, ');
 		$this->db->from('fantasy_players');
 		$this->db->join('players','players.player_id = fantasy_players.player_id','left');
 		switch ($searchType) {
@@ -657,7 +657,7 @@ class player_model extends base_model {
 		
 		$this->lang->load('admin');
 		
-		$player_list = $this->getOOTPPlayers();
+		$player_list = $this->getActiveOOTPPlayers();
 		$summary = $this->lang->line('sim_player_scoring');
 		
 		// CREATE AND STORE SELECT ARRAY
@@ -697,7 +697,7 @@ class player_model extends base_model {
 				$this->db->where("DATEDIFF('".$scoring_period['date_start']."',games.date)<=",0);
 				$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
 				$query = $this->db->get('games');
-				echo("Num of games found for player ".$row->player_id." = ".$query->num_rows() .", status = ".$row['player_status']."	<br/>");
+				$summary .= "Num of games found for player ".$row['first_name']." ".$row['last_name']." = ".$query->num_rows() .", status = ".$row['player_status']."<br/>";
 				//echo($this->db->last_query()."<br />");
 				if ($query->num_rows() > 0) {
 					$game_list = $query->result();
@@ -709,6 +709,7 @@ class player_model extends base_model {
 						$totalVal = 0;
 						foreach ($game_list as $sRow) {
 							$colCount = 0;
+							$summary .= "ruleType = ".$ruleType." , rules[".$ruleType."] is set? ".(isset($rules[$ruleType]) ? "true" : "false")."<br />";
 							// APPLY VALUES TO THE STATS AND SAVE THEM TO THE SCORING TABLE
 							foreach($rules[$ruleType] as $cat => $val) {
 								$fVal = 0;
@@ -725,25 +726,25 @@ class player_model extends base_model {
 							} // END foreach
 						} // END foreach
 						$score_vals['total'] = $totalVal;
-						echo("Player ".$row->player_id." total = ".$totalVal.", status = ".$row->player_status."	<br/>");
+						$summary .= "Player ".$row['player_id']." total = ".$totalVal.", status = ".$row['player_status']."	<br/>";
 						//if ($row->player_status == 1) { $team_score += $totalVal; }
 						//echo("Team ".$team_id." total = ".$team_score."<br/>");
 						if (sizeof($score_vals) > 0) {
 							$this->db->flush_cache();
 							$this->db->select('id');
-							$this->db->where('player_id',$row->id);
+							$this->db->where('player_id',$row['id']);
 							$this->db->where('scoring_period_id',$scoring_period['id']);
 							$this->db->where('league_id',$rules['league_id']);
 							$tQuery = $this->db->get('fantasy_players_scoring');
 							if ($tQuery->num_rows() == 0) {
 								$this->db->flush_cache();
-								$score_vals['player_id'] = $row->id;
+								$score_vals['player_id'] = $row['id'];
 								$score_vals['scoring_period_id'] = $scoring_period['id'];
 								$score_vals['league_id'] = $rules['league_id'];
 								$this->db->insert('fantasy_players_scoring',$score_vals);
 							} else {
 								$this->db->flush_cache();
-								$this->db->where('player_id',$row->id);
+								$this->db->where('player_id',$row['id']);
 								$this->db->where('scoring_period_id',$scoring_period['id']);
 								$this->db->where('league_id',$rules['league_id']);
 								$this->db->update('fantasy_players_scoring',$score_vals);
@@ -754,7 +755,11 @@ class player_model extends base_model {
 					$processCount++;
 				} else {
 					$this->errorCode = 1;
-					$this->statusMess = "Mo scoring rules were found";
+					if (sizeof($game_list) < 1) {
+						$this->statusMess = "No scoring rules were found";
+					} else {
+						$this->statusMess = "No games were found";
+					}
 					return false;
 				} // END if
 			} // END foreach
@@ -764,7 +769,7 @@ class player_model extends base_model {
 			$this->statusMess = "Mo players were found.";
 			return false;
 		} // END if
-		
+		print ($this->_NAME.", summary= '".$summary."'<br />");
 		return $summary;
 	}
 	

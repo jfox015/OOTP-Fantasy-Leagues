@@ -792,7 +792,7 @@ class team_model extends base_model {
 		$this->db->flush_cache();
 		$this->db->where('player_id',$player_id);
 		$this->db->where('team_id',$team_id);
-		$this->db->where('scoring_period_id',$score_period);
+		$this->db->where('scoring_period_id',$score_period['id']);
 		$count = $this->db->count_all_results($this->tables['ROSTERS']);
 		if ($count > 0) {
 			$code = 200;
@@ -831,7 +831,7 @@ class team_model extends base_model {
 			array_shift($player_info);
 			$this->db->where('player_id',$id);
 			$this->db->where('team_id',$team_id);
-			$this->db->where('scoring_period_id',$score_period);
+			$this->db->where('scoring_period_id',$score_period['id']);
 			$this->db->update('fantasy_rosters',$player_info);
 			if (!function_exists('updateOwnership')) {
 				$this->load->helper('roster');
@@ -850,7 +850,7 @@ class team_model extends base_model {
 		
 		if ($team_id === false) { $team_id = $this->id; }
 		
-		$roster = $this->dataModel->getBasicRoster($score_period);
+		$roster = $this->dataModel->getBasicRoster($score_period['id']);
 		$new_roster = array();
 		
 		foreach($roster as $player_info) {

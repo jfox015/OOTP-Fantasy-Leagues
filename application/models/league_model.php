@@ -1332,14 +1332,13 @@ class league_model extends base_model {
 	 */
 	public function updateLeagueScoring($scoring_period, $league_id = false, $ootp_league_id = 100) {
 		
-		$summary = "";
 		$error = false;
 		if ($league_id === false) { $id = $this->id; }
 		$league_name = $this->getLeagueName($league_id);
 		
 		$noteam = $this->lang->line('sim_no_teams');
 		if (empty($noteam)) {
-			$this->load->lang('admin_lang');
+			$this->lang->load('admin');
 		}
 		unset($noteam);
 		
@@ -1395,9 +1394,9 @@ class league_model extends base_model {
 			$summary .= $this->lang->line('sim_no_teams');
 		}
 		if ($this->errorCode == -1) {
-			$summary .= $this->lang->line('success').$summary;
+			$summary = $this->lang->line('success').$summary;
 		} else {
-			$summary .= $this->lang->line('error').$summary;
+			$summary = $this->lang->line('error').$summary;
 		}
 		
 		return $summary;

@@ -1071,7 +1071,7 @@ class team extends BaseEditor {
 			if (!$this->league_model->validateRoster($roster,$this->dataModel->league_id)) {
 				$rosterError = $this->league_model->statusMess;
 			} // END if
-			$error = !$this->dataModel->saveRosterChanges($roster,$this->params['config']['current_period']);
+			$error = !$this->dataModel->saveRosterChanges($roster,$this->getScoringPeriod());
 			
 		} // END if
 		if ($error || $rosterError) {
