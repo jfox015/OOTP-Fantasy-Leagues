@@ -54,7 +54,7 @@ class league extends BaseEditor {
 		$this->views['INVITES'] = 'league/league_invite_list';
 		$this->views['WAIVER_CLAIMS'] = 'league/league_waiver_claims';
 		$this->views['TRADES'] = 'league/league_trades';
-		$this->debug = true;
+		$this->debug = false;
 	}
 	/*---------------------------------------
 	/	CONTROLLER SUBMISSION HANDLERS
@@ -499,20 +499,38 @@ class league extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['RULES'], $this->data, true);
 	    $this->displayView();	
 	}
-	
+	/**
+	 *	LEAGUE STANDINGS
+	 *	Draws the current standings for the league
+	 */
 	public function standings() {
 		$this->getURIData();
 		$this->data['subTitle'] = "League Standings";
 		$this->load->model($this->modelName,'dataModel');
 		$this->dataModel->load($this->uriVars['id']);
 		$this->data['league_id'] = $this->uriVars['id'];
+		
+		if (!function_exists('getScoringPeriod')) {
+			$this->load->helper('admin');
+		}
+		if (isset($this->uriVars['period_id'])) {
+			$curr_period_id = $this->uriVars['period_id'];
+		} else {
+			$curr_period_id = $this->params['config']['current_period'] - 1;
+		}
+		$curr_period = getScoringPeriod($curr_period_id);
+		$this->data['curr_period'] = $curr_period_id;
+		$this->data['avail_periods'] = $this->dataModel->getAvailableStandingsPeriods();
 		$this->data['thisItem']['divisions'] = $this->dataModel->getLeagueStandings();
 		$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
 		$this->makeNav();
 		$this->params['content'] = $this->load->view($this->views['STANDINGS'], $this->data, true);
 	    $this->displayView();	
 	}
-	
+	/**
+	 *	LEAGUE STANDINGS
+	 *	Draws head to head games results for the league
+	 */
 	public function results() {
 		$this->getURIData();
 		$this->data['subTitle'] = "Game Results";

@@ -1124,8 +1124,8 @@ class admin extends MY_Controller {
 				$status = "OK";
 			}
 			$mess = $this->lang->line('sim_ajax_success');
-			//update_config('last_process_time',date('Y-m-d h:m:s'));
-			//update_config('current_period',($score_period['id']+1));
+			update_config('last_process_time',date('Y-m-d h:m:s'));
+			update_config('current_period',($score_period['id']+1));
 		}
 		$this->benchmark->mark('sim_end');
 		$sim_time = $this->benchmark->elapsed_time('sim_start', 'sim_end');

@@ -2,6 +2,20 @@
    		<div id="subPage">
             <div class="top-bar"><h1><?php echo($thisItem['league_name']); ?> Standings</h1></div>
            
+           	<?php if (isset($avail_periods) && sizeof($avail_periods) > 0) {  ?>
+            <div style="width:48%;text-align:left;float:left;">
+                <?php echo("<b>Period: </b>");
+                foreach($avail_periods as $period) { 
+                    if ($period != $curr_period) {
+                        echo(anchor('/league/standings/id/'.$league_id."/period_id/".$period,$period));
+                    } else {
+                        echo($period);
+                    }
+                    echo("&nbsp;");
+                } 
+                ?>
+            </div>
+            <?php } ?>
             <div class='textbox'>
                 <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
                 <?php 

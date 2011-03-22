@@ -697,19 +697,19 @@ class player_model extends base_model {
 				$this->db->where("DATEDIFF('".$scoring_period['date_start']."',games.date)<=",0);
 				$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
 				$query = $this->db->get('games');
-				$summary .= "Num of games found for player ".$row['first_name']." ".$row['last_name']." = ".$query->num_rows() .", status = ".$row['player_status']."<br/>";
+				//$summary .= "Num of games found for player ".$row['first_name']." ".$row['last_name']." = ".$query->num_rows() .", status = ".$row['player_status']."<br/>";
 				//echo($this->db->last_query()."<br />");
 				if ($query->num_rows() > 0) {
 					$game_list = $query->result();
 				} // END if
 				$query->free_result(); 
-				if (sizeof($game_list) > 0 && sizeof($scoring_rules) > 0) {
+				if (sizeof($game_list) > 0) {
 					foreach ($scoring_rules as $id => $rules) {
 						$score_vals = array();
 						$totalVal = 0;
 						foreach ($game_list as $sRow) {
 							$colCount = 0;
-							$summary .= "ruleType = ".$ruleType." , rules[".$ruleType."] is set? ".(isset($rules[$ruleType]) ? "true" : "false")."<br />";
+							//$summary .= "ruleType = ".$ruleType." , rules[".$ruleType."] is set? ".(isset($rules[$ruleType]) ? "true" : "false")."<br />";
 							// APPLY VALUES TO THE STATS AND SAVE THEM TO THE SCORING TABLE
 							foreach($rules[$ruleType] as $cat => $val) {
 								$fVal = 0;
@@ -726,7 +726,7 @@ class player_model extends base_model {
 							} // END foreach
 						} // END foreach
 						$score_vals['total'] = $totalVal;
-						$summary .= "Player ".$row['player_id']." total = ".$totalVal.", status = ".$row['player_status']."	<br/>";
+						//$summary .= "Player ".$row['player_id']." total = ".$totalVal.", status = ".$row['player_status']."	<br/>";
 						//if ($row->player_status == 1) { $team_score += $totalVal; }
 						//echo("Team ".$team_id." total = ".$team_score."<br/>");
 						if (sizeof($score_vals) > 0) {
@@ -753,15 +753,7 @@ class player_model extends base_model {
 						} // END if
 					} // END foreach
 					$processCount++;
-				} else {
-					$this->errorCode = 1;
-					if (sizeof($game_list) < 1) {
-						$this->statusMess = "No scoring rules were found";
-					} else {
-						$this->statusMess = "No games were found";
-					}
-					return false;
-				} // END if
+				}
 			} // END foreach
 			$summary .= str_replace('[PLAYER_COUNT]',$processCount,$this->lang->line('sim_players_processed_result'));										
 		} else {
@@ -769,7 +761,8 @@ class player_model extends base_model {
 			$this->statusMess = "Mo players were found.";
 			return false;
 		} // END if
-		print ($this->_NAME.", summary= '".$summary."'<br />");
+		
+		//print ($this->_NAME.", summary= '".$summary."'<br />");
 		return $summary;
 	}
 	

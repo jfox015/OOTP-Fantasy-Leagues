@@ -226,17 +226,17 @@
                                 
                                     <option value="1">Active</option>
                                     <option value="-1">Reserve</option>
-                                    <?php if ($playerData['is_injured'] == 1 && $playerData['dl_left'] > 0) { ?>
+                                    <?php if ($playerData['injury_is_injured'] == 1 && $playerData['injury_dl_left'] > 0) { ?>
                                     <option value="2">Injured</option>
                                     <?php } ?>
                                 <?php } else if ($type == "reserve") { ?>
                                 	<option value="-1">Reserve</option>
                                     <option value="1">Active</option>
-                                    <?php if ($playerData['is_injured'] == 1 && $playerData['dl_left'] > 0) { ?>
+                                    <?php if ($playerData['injury_is_injured'] == 1 && $playerData['injury_dl_left'] > 0) { ?>
                                     <option value="2">Injured</option>
                                     <?php } ?>
                                 <?php } else if ($type == "injured") { ?>
-                                	<?php if ($playerData['is_injured'] == 1 && $playerData['dl_left'] > 0) { ?>
+                                	<?php if ($playerData['injury_is_injured'] == 1 && $playerData['injury_dl_left'] > 0) { ?>
                                     <option value="2">Injured</option>
                                     <?php } ?>
                                     <option value="1">Active</option>
