@@ -57,7 +57,7 @@ class news_model extends base_model {
 			if ($input->post('storyDateM') && $input->post('storyDateD') && $input->post('storyDateY')) {
 				$this->news_date = $input->post('storyDateY').'-'.$input->post('storyDateM').'-'.$input->post('storyDateD');
 			}
-			echo("uploadedImage = '".$this->uploadedImage.'"<br />');
+			//echo("uploadedImage = '".$this->uploadedImage.'"<br />');
 			if (!empty($this->uploadedImage))
 				$success = $this->useUploadedImage($this->uploadedImage);
 			else if (empty($this->uploadedImage) && isset($_FILES['imageFile']['name']) && !empty($_FILES['imageFile']['name']))

@@ -212,9 +212,9 @@ class news extends BaseEditor {
 		if ($typeId == NEWS_PLAYER) {
 			// GET LIST OF PLAYERS
 			$this->load->model('player_model');
-			$players = $this->player_model->getOOTPPayers(false,false,false,false,false,false,true);
+			$players = $this->player_model->getOOTPPlayers(false,false,false,false,false,false,true);
 			$form->br();
-			$form->select('varId|varId',$players,'Select Player:',($this->input->post('varId') ? $this->input->post('varId') : $varId),'required');
+			$form->select('var_id|var_id',$players,'Select Player:',($this->input->post('var_id') ? $this->input->post('var_id') : $varId),'required');
 			$form->nobr();
 			$form->html('<div style="margin-top:5px;">'.anchor('/players/stats/','See all Players').'</div>');
 		} else {

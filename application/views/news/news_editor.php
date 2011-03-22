@@ -134,7 +134,7 @@
     <div id="right-column">
         <div class="textbox" style="width:261px;">
         <table cellspacing=0 cellpadding=3 width="250px">
-        <tr class='title'><td colspan=3>Selected Player</td></tr>
+        <tr class='title'><td colspan=3>Player Details</td></tr>
         <tr class='s1'>
         <td>
         <div id="playerDetails">
