@@ -68,11 +68,12 @@ class team_model extends base_model {
 	 *	@var	$auto_round_x	Int
 	 */
 	var $auto_round_x = -1;
-	
-	/*--------------------------------------
+	/*---------------------------------------------
+	/
 	/	C'TOR
 	/	Creates a new instance of team_model
-	/-------------------------------------*/
+	/
+	/---------------------------------------------*/
 	function team_model() {
 		parent::__construct();
 		

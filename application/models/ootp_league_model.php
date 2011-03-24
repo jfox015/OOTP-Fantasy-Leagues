@@ -29,7 +29,12 @@ class ootp_league_model extends base_model {
 	var $background_color_id = '#1E1E9E';
 	var $text_color_id = '#DD0101';
 	var $requiredTables = array();
-	
+	/*---------------------------------------------
+	/
+	/	C'TOR
+	/	Creates a new instance of ootp_league_model
+	/
+	/---------------------------------------------*/
 	function ootp_league_model() {
 		parent::__construct();
 		

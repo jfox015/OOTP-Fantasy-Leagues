@@ -292,14 +292,28 @@ if ( ! function_exists('reset_sim_summary')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('save_sim_summary')) {
-	function save_sim_summary($result,$process_time,$summary,$comments = "") {
+	function save_sim_summary($scoring_period_id,$result,$process_time,$summary,$comments = "") {
+		
 		$ci =& get_instance(); 
+		
+		$ci->db->flush_cache();
+		$ci->db->select('id');
+		$ci->db->from('fantasy_sim_summary'); 
+		$ci->db->where('scoring_period_id',$scoring_period_id);
+		$count = $ci->db->count_all_results(); 
+		
 		$ci->db->flush_cache();
 		$ci->db->set('sim_result',$result);
 		$ci->db->set('sim_summary',$summary);
 		$ci->db->set('process_time',$process_time);
 		$ci->db->set('comments',$comments);
-		$ci->db->insert('fantasy_sim_summary'); 
+		if ($count > 0) {
+			$ci->db->where('scoring_period_id',$scoring_period_id);
+			$ci->db->update('fantasy_sim_summary'); 
+		} else {
+			$ci->db->set('scoring_period_id',$scoring_period_id);
+			$ci->db->insert('fantasy_sim_summary'); 
+		}
 		if ($ci->db->affected_rows() > 0) {
 			return true;
 		} else {

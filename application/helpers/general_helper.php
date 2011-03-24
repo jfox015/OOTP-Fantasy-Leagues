@@ -261,7 +261,11 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 								$injStatus = makeInjuryStatusString($row);
 							}
 							if (!empty($injStatus)){ 
-								$val .= '&nbsp;<img src="'.$config['fantasy_web_root'].'images/icons/red_cross.gif" width="7" height="7" align="absmiddle" alt="'.$injStatus.'" title="'.$injStatus.'" />&nbsp; ';
+								if (isset($row['injury_dl_left']) && $row['injury_dl_left'] > 0) {
+									$val .= '&nbsp;<img src="'.$config['fantasy_web_root'].'images/icons/red_cross.gif" width="7" height="7" align="absmiddle" alt="'.$injStatus.'" title="'.$injStatus.'" />&nbsp; ';
+								} else if (isset($row['injury_dtd_injury']) && $row['injury_dtd_injury'] != 0) {
+									$val .= '&nbsp;<acronym style="font-size:smaller;text-decoration:none, outline:none;font-weight:bold; color:#C00;" title="'.$injStatus.'">DTD</acronym>'; 
+								}
 							}
 							if (isset($row['on_waivers']) && $row['on_waivers'] == 1) {
 								$val .= '&nbsp;<b style="color:#ff6600;">W</b>&nbsp; ';
@@ -802,14 +806,14 @@ function get_stats_for_scoring($type=1,$scoring_type = 1) {
 			//17=>"EBH",
 			//21=>"RC",
 			//22=>"RC/27",
-			58=>"CS"
+			58=>"CS",
 			//,0=>"GS",
-			//18=>"AVG",
-			//19=>"OBP",
-			//20=>"SLG",
+			18=>"AVG",
+			19=>"OBP",
+			20=>"SLG",
 			//23=>"ISO",
 			//24=>"TAVG",
-			//25=>"OPS",
+			25=>"OPS"
 			//26=>"VORP"
 			);
 			break;
@@ -834,12 +838,12 @@ function get_stats_for_scoring($type=1,$scoring_type = 1) {
 			56=>"SHO",
 			59=>"HA",
 			60=>"ER",
-			61=>"BS"
+			61=>"BS",
 			//,31=>"Win%",
 			//28=>"GS",
-			//40=>"ERA",
+			40=>"ERA",
 			//41=>"BABIP",
-			//42=>"WHIP",
+			42=>"WHIP"
 			//43=>"K/BB",
 			//44=>"RA/9IP",
 			//45=>"HR/9IP",

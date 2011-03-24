@@ -178,6 +178,23 @@ class league_model extends base_model {
 			return false;
 		}	
 	}
+	protected function getScoringType($league_id = false) {
+		if ($league_id !== false) { 
+			return $this->league_type; 
+		} else {
+			$type = -1;
+			$this->db->select('league_type');
+			$this->db->from($this->tblName);
+			$this->db->where("league_id",$league_id);
+			$query = $this->db->get();
+			if ($query->num_rows() > 0) {
+				$row = $query->row();
+				$type = $row->league_type;
+			}
+			$query->free_result();
+			return $type;
+		}
+	}
 	protected function ownerCanBeCommish($userId) {
 		if ($userId != $this->commissioner_id && !$this->userIsCommish($userId)) {
 			return true;
@@ -279,21 +296,6 @@ class league_model extends base_model {
 		$query->free_result();
 		//echo($this->db->last_query()."<br />");
 		return $leagues;
-	}
-	public function getLeagueScoringType($league_id = false) {
-		$type = false;
-		$this->db->select('league_type');
-		$this->db->where('id',$league_id);
-		$query = $this->db->get($this->tblName);
-		if ($query->num_rows() > 0) {
-			$row = $query->row();
-			$type = $row->league_type;
-		} else {
-			$this->errorCode = 1;
-			$this->statusMess = " League ".$league_id." no found.";
-		}
-		$query->free_result();
-		return $type;
 	}
 	
 	/**
@@ -826,9 +828,10 @@ class league_model extends base_model {
 	 *  @param	$league_id - If not specified, no league filter is applied.
 	 *	@return	Rules array on success, false on failure
 	 */
-	public function getScoringRules($league_id = false, $scoring_type = LEAGUE_SCORING_ROTO, $returnDefault = true) {
+	public function getScoringRules($league_id = false, $scoring_type = false, $returnDefault = true) {
 		
 		if ($league_id === false) { $league_id = $this->id; } // END if
+		if ($scoring_type === false) { $scoring_type = $this->league_type; } // END if
 		
 		$rules = array('batting'=>array(),'pitching'=>array());
 		$default = false;
@@ -925,8 +928,8 @@ class league_model extends base_model {
 					}
 					$scoring_list[$typeId] = $this->getScoringRules($id,$typeId,$returnDefault);
 				}
-				if ($tmpRules !== false) {
-					$scoring_rules = $scoring_rules + array($tmpRules['league_id']=>$scoring_list);
+				if ($scoring_list !== false) {
+					$scoring_rules = $scoring_rules + array($id=>$scoring_list);
 				}
 			}
 		}
@@ -1208,8 +1211,93 @@ class league_model extends base_model {
 		$pQuery->free_result();
 		return true;
 	}
+	/**
+	 *	UPDATE LEAGUE SCORING
+	 *
+	 *	@param	$scoring_period	The scoring period to update against
+	 *	@param	$league_id		The league to process, defaults to $this->id if no value passed
+	 *	@param	$ootp_league_id	OOTP League ID value, defaults to 100 if no value passed
+	 *	@return					Summary String
+	 *	@since					1.0
+	 *	@version				1.1 (Revised OOTPFL 1.0.4)
+	 *
+	 */
+	public function updateLeagueScoring($scoring_period, $league_id = false, $ootp_league_id = 100) {
+		
+		$error = false;
+		if ($league_id === false) { $id = $this->id; }
+		$league_name = $this->getLeagueName($league_id);
+		
+		$scoring_type = $this->getScoringType($league_id);
+		$scoring_rules = $this->getScoringRules($league_id,$scoring_type);
+
+		$noteam = $this->lang->line('sim_no_teams');
+		if (empty($noteam)) {
+			$this->lang->load('admin');
+		}
+		unset($noteam);
+		
+		$summary = str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_league_processing'));
+		
+		if ($this->hasTeams($league_id)) {
+			
+			$teams = $this->getTeamDetails($league_id);
+			
+			$summary .= str_replace('[TEAM_COUNT]',sizeof($teams),$this->lang->line('sim_team_count'));
+		
+			if (!function_exists('getBasicRoster')) {
+				$this->load->helper('roster');
+			}
+			$excludeList = array();
+			$valSum = "";
+			foreach($teams as $team_id => $teamData) {
+				if (!$this->validateRoster(getBasicRoster($team_id, $scoring_period), $league_id )) {
+					array_push($excludeList,$team_id);
+					$valSum .= str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_roster_validation_error'));
+					$valSum = str_replace('[TEAM_NAME]',$teamData['teamname']." ".$teamData['teamnick'],$valSum);
+				}
+			}		
+			if (!empty($valSum)) {
+				$summary .= $this->lang->line('sim_roster_validation_title').$valSum.$this->lang->line('sim_roster_validation_postfix');
+			}
+			
+			$score_type = $this->getLeagueScoringType($league_id);
+			$summary .= $this->lang->line('sim_process_h2h');
+			// IF RUNNING ON THE FINAL DAY OF THE SIM 
+			$summary .= $this->updateTeamScoring($scoring_rules, $scoring_period, $league_id, $excludeList);
+			if ($score_type == LEAGUE_SCORING_HEADTOHEAD) {
+				$summary .= $this->updateTeamRecords($scoring_period, $league_id, $excludeList);
+			} else {
+				$summary .= $this->updateTeamStandings($scoring_period, $league_id, $excludeList);
+			}
+			// COPY CURRENT ROSTERS TO NEXT SCORING PERIOD
+			$summary .= $this->lang->line('sim_process_copy_rosters');
+			$this->league_model->copyRosters($scoring_period['id'], ($scoring_period['id'] + 1), $league_id);
+			
+			// IF ENABLED, PROCESS EXPIRING TRADES
+			if ((isset($this->params['config']['useTrades']) && $this->params['config']['useTrades'] == 1)) {
+				$summary .= $this->lang->line('sim_process_trades');
+			
+			}
+			// IF ENABLED, PROCESS WAIVERS
+			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
+				$this->league_model->processWaivers(($scoring_period['id'] + 1), $league_id, $this->debug);
+				$summary .= $this->lang->line('sim_process_waivers');
+			}
+		} else {
+			$this->errorCode = 1;
+			$summary .= $this->lang->line('sim_no_teams');
+		}
+		if ($this->errorCode == -1) {
+			$summary = $this->lang->line('success').$summary;
+		} else {
+			$summary = $this->lang->line('error').$summary;
+		}
+		
+		return $summary;
+	}
 	
-	public function updateTeamScoring($scoring_type = LEAGUE_SCORING_HEADTOHEAD, $scoring_period, $league_id = false, $excludeList = array()) {
+	public function updateTeamScoring($scoring_rules, $scoring_period, $league_id = false, $excludeList = array()) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
 		
@@ -1221,26 +1309,124 @@ class league_model extends base_model {
 			foreach($teams as $team_id) {
 				//echo("Team Id = ".$team_id."<br />");
 				// GET PLAYERS FOR TEAM
-				$teamRoster = array();
+				$teamRoster = array(1=>array(),2=>array());
 				$team_score = 0;
 				// ONLE GET ROSTERS AND CORES IF THJIS TEAM IF IT HAS VALID ROSTERS
 				if (sizeof($excludeList) == 0 || (sizeof($excludeList) > 0  && !in_array($team_id, $excludeList))) {
-					$this->db->select("player_id");
+					$this->db->select("player_id,player_position");
 					$this->db->where("team_id",intval($team_id));
 					$this->db->where("player_status",1);
 					$this->db->where("scoring_period_id",intval($scoring_period['id']));
 					$query = $this->db->get("fantasy_rosters");
 					if ($query->num_rows() > 0) {
 						foreach($query->result() as $row) {
-							array_push($teamRoster,$row->player_id);
+							$listId = -1;
+							if ($row->player_position != 1) {
+								$listId = 1;
+							} else {
+								$listId = 2;
+							}
+							array_push($teamRoster[$listId],$row->player_id);
 						} // END foreach
 					} // END if
 					$query->free_result();
 					
 					//$summary .= "teamRoster size = ".sizeof($teamRoster)."<br />";
 					//$summary .= "Scoring Type = ".$scoring_type."<br />";
+					
+					// LOAD COMPILED SCORING STATS BASED ON LEAGUE SCORING RULES
+					$player_stats = array();
+					$teamTotal = 0;
+					foreach($teamRoster as $playerType => $roster) {	
+						
+						$select = "";
+						foreach($scoring_rules[$playerType] as $cat => $val) {	
+							if ($select != '') { $select.=","; } // END if
+							$select .= strtolower(get_ll_cat($cat, true));
+						}
+						// GET ALL PLAYERS FOR TEAM
+						$player_stats = array();
+						$this->db->flush_cache();
+						$this->db->distinct($select);
+						$this->db->where_in("player_id",$roster);
+						$this->db->where("scoring_period_id",intval($scoring_period['id']));
+						$playerTypeStr = ($playerType == 1) ? "batting" : "pitching";
+						$query = $this->db->get("fantasy_players_compiled_".$playerTypeStr);
+						echo($this->db->last_query()."<br />");
+						if ($query->num_rows() > 0) {
+							$player_stats = $query->result();
+						} // END if
+						$query->free_result();
+						$score_vals = array();
+						$totalVal = 0;
+						
+						foreach($player_stats as $row) {
+							foreach($scoring_rules[$playerType] as $cat => $val) {	
+								$colCount = 0;
+								$colName = strtolower(get_ll_cat($cat, true));
+								switch ($scoring_type) {
+									case LEAGUE_SCORING_ROTO:
+									case LEAGUE_SCORING_ROTO_5X5:
+									case LEAGUE_SCORING_ROTO_PLUS:
+									
+								
+								
+										break;
+									case LEAGUE_SCORING_HEADTOHEAD:
+									default:
+										if ($row->$colName != 0) {
+											$totalVal += $row->$colName * $val;
+										} // END if
+										break;
+								}
+								//$summary .= "ruleType = ".$ruleType." , rules[".$ruleType."] is set? ".(isset($rules[$ruleType]) ? "true" : "false")."<br />";
+								// APPLY VALUES TO THE STATS AND SAVE THEM TO THE SCORING TABLEf
+								// UPDATE THE PLAYERS SCORING TOTAL
+							} // END foreach
+							switch ($scoring_type) {
+								case LEAGUE_SCORING_ROTO:
+								case LEAGUE_SCORING_ROTO_5X5:
+								case LEAGUE_SCORING_ROTO_PLUS:
+								
+							
+							
+									break;
+								case LEAGUE_SCORING_HEADTOHEAD:
+								default:
+									$this->db->flush_cache();
+									$this->db->select('id');
+									$this->db->where('player_id',$row->id);
+									$this->db->where('scoring_period_id',$scoring_period['id']);
+									$this->db->where('league_id',$league_id);
+									$this->db->where('scoring_type',$scoring_type);
+									$tQuery = $this->db->get('fantasy_players_scoring');
+									if ($tQuery->num_rows() == 0) {
+										$this->db->flush_cache();
+										$data = array();
+										$data['total'] = $totalVal;
+										$data['player_id'] = $row->id;
+										$data['scoring_period_id'] = $scoring_period['id'];
+										$data['scoring_type'] = $scoring_type;
+										$data['league_id'] = $league_id;
+										$this->db->insert('fantasy_players_scoring',$data);
+										unset($data);
+									} else {
+										$this->db->flush_cache();
+										$this->db->set('total',$totalVal);
+										$this->db->where('player_id',$row->id);
+										$this->db->where('scoring_period_id',$scoring_period['id']);
+										$this->db->where('league_id',$league_id);
+										$this->db->where('scoring_type',$scoring_type);
+										$this->db->update('fantasy_players_scoring');
+									} // END if
+									$tQuery->free_result();
+									$teamTotal += $totalVal;
+									BREAK;
+							}
+						}
+					}
 					// GET ALL PLAYERS FOR TEAM
-					$player_scoring = array();
+					/*$player_scoring = array();
 					$this->db->flush_cache();
 					$this->db->distinct();
 					$this->db->where("league_id",$league_id);
@@ -1252,7 +1438,7 @@ class league_model extends base_model {
 					if ($query->num_rows() > 0) {
 						$player_scoring = $query->result();
 					} // END if
-					$query->free_result();
+					$query->free_result();*/
 					
 					switch ($scoring_type) {
 						case LEAGUE_SCORING_ROTO:
@@ -1265,9 +1451,9 @@ class league_model extends base_model {
 						case LEAGUE_SCORING_HEADTOHEAD:
 						default:
 							// GET ALL PLAYERS FOR TEAM
-							foreach($player_scoring as $row) {
-								$team_score += $row->total;
-							} // END foreach
+							//foreach($player_scoring as $row) {
+							//	$team_score += $row->total;
+							//} // END foreach
 							// LOOK UP AND UPDATE THE SCORES OF ANY GAMES THIS TEAM IS PLAYING IN
 							$this->db->flush_cache();
 							$this->db->select('id, away_team_id, home_team_id');
@@ -1303,6 +1489,9 @@ class league_model extends base_model {
 		return $summary;
 	}
 	
+	public function updateTeamStandings($scoring_period, $league_id = false, $excludeList = array()) {
+		return true;
+	}
 	public function updateTeamRecords($scoring_period, $league_id = false, $excludeList = array()) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
@@ -1495,88 +1684,6 @@ class league_model extends base_model {
 		}
 		if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 		return $errors;
-	}
-	/**
-	 *	UPDATE LEAGUE SCORING
-	 *
-	 *	@param	$scoring_period	The scoring period to update against
-	 *	@param	$league_id		The league to process, defaults to $this->id if no value passed
-	 *	@param	$ootp_league_id	OOTP League ID value, defaults to 100 if no value passed
-	 *	@return					Summary String
-	 *	@since					1.0
-	 *	@version				1.1 (Revised OOTPFL 1.0.4)
-	 *
-	 */
-	public function updateLeagueScoring($scoring_period, $league_id = false, $ootp_league_id = 100) {
-		
-		$error = false;
-		if ($league_id === false) { $id = $this->id; }
-		$league_name = $this->getLeagueName($league_id);
-		
-		$noteam = $this->lang->line('sim_no_teams');
-		if (empty($noteam)) {
-			$this->lang->load('admin');
-		}
-		unset($noteam);
-		
-		$summary = str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_league_processing'));
-		
-		if ($this->hasTeams($league_id)) {
-			
-			$teams = $this->getTeamDetails($league_id);
-			
-			$summary .= str_replace('[TEAM_COUNT]',sizeof($teams),$this->lang->line('sim_team_count'));
-		
-			if (!function_exists('getBasicRoster')) {
-				$this->load->helper('roster');
-			}
-			$excludeList = array();
-			$valSum = "";
-			foreach($teams as $team_id => $teamData) {
-				if (!$this->validateRoster(getBasicRoster($team_id, $scoring_period), $league_id )) {
-					array_push($excludeList,$team_id);
-					$valSum .= str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_roster_validation_error'));
-					$valSum = str_replace('[TEAM_NAME]',$teamData['teamname']." ".$teamData['teamnick'],$valSum);
-				}
-			}		
-			if (!empty($valSum)) {
-				$summary .= $this->lang->line('sim_roster_validation_title').$valSum.$this->lang->line('sim_roster_validation_postfix');
-			}
-			
-			$score_type = $this->getLeagueScoringType($league_id);
-			$summary .= $this->lang->line('sim_process_h2h');
-			// IF RUNNING ON THE FINAL DAY OF THE SIM 
-			$summary .= $this->updateTeamScoring($this->getLeagueScoringType($league_id),$scoring_period, $league_id, $excludeList);
-			if ($score_type == LEAGUE_SCORING_HEADTOHEAD) {
-				$summary .= $this->updateTeamRecords($scoring_period, $league_id, $excludeList);
-			} else {
-				$summary .= $this->updateTeamStanding($scoring_period, $league_id, $excludeList);
-			}
-			// COPY CURRENT ROSTERS TO NEXT SCORING PERIOD
-			$summary .= $this->lang->line('sim_process_copy_rosters');
-			$this->league_model->copyRosters($scoring_period['id'], ($scoring_period['id'] + 1), $league_id);
-			
-			// IF ENABLED, PROCESS EXPIRING TRADES
-			if ((isset($this->params['config']['useTrades']) && $this->params['config']['useTrades'] == 1)) {
-				$summary .= $this->lang->line('sim_process_trades');
-			
-			}
-			// IF ENABLED, PROCESS WAIVERS
-			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
-				$this->league_model->processWaivers(($scoring_period['id'] + 1), $league_id, $this->debug);
-				$summary .= $this->lang->line('sim_process_waivers');
-			}
-		} else {
-			$this->errorCode = 1;
-			$summary .= $this->lang->line('sim_no_teams');
-		}
-		if ($this->errorCode == -1) {
-			$summary = $this->lang->line('success').$summary;
-		} else {
-			$summary = $this->lang->line('error').$summary;
-		}
-		
-		return $summary;
 	}
 	
 	public function loadGameData($game_id = false, $team_model, $excludeList = array()) {

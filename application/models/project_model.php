@@ -31,7 +31,12 @@ class project_model extends base_model {
 	var $dateCreated =  EMPTY_DATE_TIME_STR;
 	var $lastModified =  EMPTY_DATE_TIME_STR;
 	var $lastModifiedBy =  -1;
-	
+	/*---------------------------------------------
+	/
+	/	C'TOR
+	/	Creates a new instance of project_model
+	/
+	/---------------------------------------------*/
 	function project_model() {
 		parent::__construct();
 		

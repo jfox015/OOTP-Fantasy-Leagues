@@ -18,9 +18,22 @@ class player_model extends base_model {
 	 */
 	var $_NAME = 'player_model';
 	
+	/**
+	 *	PLAYER ID.
+	 *	@var $player_id:Int
+	 */
 	var $player_id = -1;
+	/**
+	 *	PLAYER ROSTER STATUS.
+	 *	@var $player_status:Int
+	 */
 	var $player_status = -1;
-	
+	/*---------------------------------------------
+	/
+	/	C'TOR
+	/	Creates a new instance of player_model
+	/
+	/---------------------------------------------*/
 	function player_model() {
 		parent::__construct();
 		
@@ -29,6 +42,7 @@ class player_model extends base_model {
 		$this->tables['WAIVERS'] = 'fantasy_players_waivers';
 		$this->tables['WAIVER_CLAIMS'] = 'fantasy_teams_waiver_claims';
 		$this->tables['FANTASY_TEAMS'] = 'fantasy_teams';
+		$this->tables['OOTP_GAMES'] = 'games';
 		
 		$this->fieldList = array('player_id','player_status');
 		$this->conditionList = array();
@@ -640,11 +654,11 @@ class player_model extends base_model {
 	}
 	/**
 	 *	UPDATE PLAYER SCORING
-	 *	Accepts a set of scoring rules (stat categories and pfantasy pont values for h2h leagues) and 
-	 *	processes them for insertion into the players_scoring table. This function used to live in the 
-	 *	league_model but was moved to the more logical location for 1.0.4.
+	 *	Loads all players for the games and processes their game stats for insertion 
+	 * 	into the players_compiled stats tables. This function used to live in the 
+	 *	league_model but was moved to the more logical location for 1.0.4 with all 
+	 *	scoring rules specific functionality removed.
 	 *
-	 *	@param	$scoring_rules		Array of scoring rules to process against
 	 *	@param	$scoring_period		Scoring Period object
 	 *	@param	$ootp_league_id		OOTP League ID value, defaults to 100 if no value passed
 	 *	@return						Summary String
@@ -654,37 +668,77 @@ class player_model extends base_model {
 	 *	@see						Models->League_Model->updateLeagueScoring()
 	 *
 	 */
-	public function updatePlayerScoring($scoring_rules = false, $scoring_period = false, $ootp_league_id = 100) {
+	public function updatePlayerScoring($scoring_period = false, $ootp_league_id = 100) {
 		
-		if (($scoring_rules === false|| sizeof($scoring_rules) < 1) || 
-			($scoring_period === false|| sizeof($scoring_period) < 1)) { return false; }
+		if (($scoring_period === false|| sizeof($scoring_period) < 1)) { return false; } // END if
 		
 		$this->lang->load('admin');
 		
+		/*--------------------------------------
+		/
+		/	1.0 ARRAY PREP
+		/
+		/-------------------------------------*/
+		
+		/*--------------------------------------
+		/	1.1 GET PLAYERS
+		/-------------------------------------*/
 		$player_list = $this->getActiveOOTPPlayers();
 		$summary = $this->lang->line('sim_player_scoring');
 		
-		// CREATE AND STORE SELECT ARRAY
+		/*--------------------------------------
+		/	1.2 CREATE AND STORE SQL SELECT VALUES
+		/-------------------------------------*/
 		$selectArr = array();
 		$statsTypes = array(1=>'batting',2=>'pitching');
+		$statCats = array();
+		$statsToQuery = array(1=>array(),2=>array());
 		foreach ($statsTypes as $typeId => $type) {
-			$stats = get_stats_for_scoring($typeId);
+			$statCats = $statCats + array($typeId => get_stats_for_scoring($typeId));
 			$select = "player_id";
-			foreach($stats as $id => $val) {
-				if ($select != '') { $select.=","; } // END if
-				$select .= strtolower(get_ll_cat($id, true));
+			foreach($statCats[$typeId] as $id => $val) {
+				$stat = "";
+				$id = intval($id);
+				switch($typeId) {
+					case 1:
+						if ($id <= 17 || $id >= 26) {
+							$stat = strtolower(get_ll_cat($id, true));
+							$statsToQuery[$typeId] = $statsToQuery[$typeId] + array($id=>$val);
+						} // END if
+						break;
+					case 2:
+						if ($id <= 39 || $id >= 43) {
+							$stat = strtolower(get_ll_cat($id, true));
+							$statsToQuery[$typeId] = $statsToQuery[$typeId] + array($id=>$val);
+						} // END if
+						break;
+					default:
+						break;
+				} // END switch
+				if (!empty($stat)) {
+					if ($select != '') { $select.=","; } // END if
+					$select .= $stat;
+				} // END if
 			} // END foreach
 			$selectArr = $selectArr + array($typeId=>$select);
 		} // END foreach
 		
+		/*--------------------------------------
+		/
+		/	2.0 PLAYER LOOP
+		/
+		/-------------------------------------*/
 		if (sizeof($player_list) > 0) {
 			$ruleType = "batting";
 			$summary .= str_replace('[PLAYER_COUNT]',sizeof($player_list),$this->lang->line('sim_player_count'));										
 			$processCount = 0;
 			foreach($player_list as $row) {
+				
+				/*-------------------------------
+				/	2.1 GET GAME DATA
+				/------------------------------*/
 				// BUILD QUERY TO PULL CURRENT GAME DATA FOR THIS PLAYER
 				$game_list = array();
-				
 				if ($row['position'] != 1) {
 					$type = 1;
 					$ruleType = "batting";
@@ -700,80 +754,81 @@ class player_model extends base_model {
 				$this->db->where($table.'.player_id',$row['player_id']);
 				$this->db->where("DATEDIFF('".$scoring_period['date_start']."',games.date)<=",0);
 				$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
-				$query = $this->db->get('games');
+				$query = $this->db->get($this->tables['OOTP_GAMES']);
 				//$summary .= "Num of games found for player ".$row['first_name']." ".$row['last_name']." = ".$query->num_rows() .", status = ".$row['player_status']."<br/>";
 				//echo($this->db->last_query()."<br />");
 				if ($query->num_rows() > 0) {
 					$game_list = $query->result();
 				} // END if
 				$query->free_result(); 
+				
+				$score_vals = array();
 				if (sizeof($game_list) > 0) {
-					foreach ($scoring_rules as $id => $rules) {
-						$score_vals = array();
-						$totalVal = 0;
-						foreach ($game_list as $sRow) {
-							$colCount = 0;
-							//$summary .= "ruleType = ".$ruleType." , rules[".$ruleType."] is set? ".(isset($rules[$ruleType]) ? "true" : "false")."<br />";
-							// APPLY VALUES TO THE STATS AND SAVE THEM TO THE SCORING TABLE
-							foreach($rules[$ruleType] as $cat => $val) {
-								$fVal = 0;
-								$colName = strtolower(get_ll_cat($cat, true));
-								if (isset($score_vals['value_'.$colCount])) {
-									$score_vals['value_'.$colCount] += $sRow->$colName;
-								} else {
-									$score_vals['value_'.$colCount] = $sRow->$colName;
-								} // END if
-								if ($sRow->$colName != 0) {
-									$totalVal += $sRow->$colName * $val;
-								} // END if
-								$colCount++;
-							} // END foreach
+					/*-------------------------------
+					/	2.1.1 COMPILE THE STATS
+					/------------------------------*/
+					foreach ($game_list as $sRow) {
+					// EDIT - 1.0.4 - ROTISSERIE SCORING UPDATES
+					// REVAMPING THE WAY WE THINK ABOUT PLAYER SCORING
+					// INSTEAD OF APPLYING LEAGUE SCORING AT THIS LEVEL, WE'LL SIMPLY PULL AND 
+					// COMPILE PLAYER STATS FOR THIS SCORING PERIOD
+						foreach ($statsToQuery[$type] as $id => $stat) {
+							$colName = strtolower(get_ll_cat($id, true));
+							if (isset($score_vals[$colName])) {
+								$score_vals[$colName] += $sRow->$colName;
+							} else {
+								$score_vals[$colName] = $sRow->$colName;
+							} // END if
 						} // END foreach
-						$score_vals['total'] = $totalVal;
-						//$summary .= "Player ".$row['player_id']." total = ".$totalVal.", status = ".$row['player_status']."	<br/>";
-						//if ($row->player_status == 1) { $team_score += $totalVal; }
-						//echo("Team ".$team_id." total = ".$team_score."<br/>");
-						if (sizeof($score_vals) > 0) {
+					} // END foreach
+					/*-------------------------------
+					/	2.1.2 SAVE COMPILED STATS
+					/------------------------------*/
+					if (sizeof($score_vals) > 0) {
+						$this->db->flush_cache();
+						$this->db->select('id');
+						$this->db->where('player_id',$row['id']);
+						$this->db->where('scoring_period_id',$scoring_period['id']);
+						$tQuery = $this->db->get('fantasy_players_compiled_'.$ruleType);
+						if ($tQuery->num_rows() == 0) {
 							$this->db->flush_cache();
-							$this->db->select('id');
+							$score_vals['player_id'] = $row['id'];
+							$score_vals['scoring_period_id'] = $scoring_period['id'];
+							$this->db->insert('fantasy_players_compiled_'.$ruleType,$score_vals);
+						} else {
+							$this->db->flush_cache();
 							$this->db->where('player_id',$row['id']);
 							$this->db->where('scoring_period_id',$scoring_period['id']);
-							$this->db->where('league_id',$rules['league_id']);
-							$this->db->where('scoring_type',$rules['scoring_type']);
-							$tQuery = $this->db->get('fantasy_players_scoring');
-							if ($tQuery->num_rows() == 0) {
-								$this->db->flush_cache();
-								$score_vals['player_id'] = $row['id'];
-								$score_vals['scoring_period_id'] = $scoring_period['id'];
-								$score_vals['scoring_type'] = $rules['scoring_type'];
-								$score_vals['league_id'] = $rules['league_id'];
-								$this->db->insert('fantasy_players_scoring',$score_vals);
-							} else {
-								$this->db->flush_cache();
-								$this->db->where('player_id',$row['id']);
-								$this->db->where('scoring_period_id',$scoring_period['id']);
-								$this->db->where('league_id',$rules['league_id']);
-								$this->db->where('scoring_type',$rules['scoring_type']);
-								$this->db->update('fantasy_players_scoring',$score_vals);
-							} // END if
-							$tQuery->free_result();
+							$this->db->update('fantasy_players_compiled_'.$ruleType,$score_vals);
 						} // END if
-					} // END foreach
+						$tQuery->free_result();
+					} // END if
 					$processCount++;
-				}
-			} // END foreach
+				} // END if sizeof($game_list) > 0
+			} // END foreach ($player_list as $row)
 			$summary .= str_replace('[PLAYER_COUNT]',$processCount,$this->lang->line('sim_players_processed_result'));										
 		} else {
+			/*-------------------------------
+			/	2.2 HANDLE NO PLAYERS ERROR
+			/------------------------------*/
 			$this->errorCode = 2;
 			$this->statusMess = "Mo players were found.";
 			return false;
-		} // END if
-		
-		//print ($this->_NAME.", summary= '".$summary."'<br />");
+		} // END if sizeof($player_list) > 0
 		return $summary;
 	}
 	
-	
+	/**
+	 *	GET CAREER STATS.
+	 *	Returns players career statistics.
+	 *
+	 *	@param	$ootp_league_id		OOTP League ID value
+	 *	@param	$player_id			Player Id, defaults to current player id if empty
+	 *	@return						Stat Array
+	 *	@since						1.0
+	 *	@version					1.0.2
+	 *
+	 */
 	public function getCareerStats($ootp_league_id, $player_id = false) {
 		if ($player_id === false) { $player_id = $this->player_id; }
 		
@@ -794,7 +849,7 @@ class player_model extends base_model {
 			$sql.=" FROM players_career_batting_stats as pcb WHERE player_id=$player_id";
 			$sql.=" AND league_id=$ootp_league_id AND split_id=1";
 			$sql.=" ORDER BY pcb.year;";
-		}
+		} // END if
 		$query = $this->db->query($sql);
 		if ($query->num_rows > 0) {
 			$fields = $query->list_fields();
@@ -802,14 +857,24 @@ class player_model extends base_model {
 				$year = array();
 				foreach($fields as $field) {
 					$year[$field] = $row->$field;
-				}
+				} // END foreach
 				array_push($career_stats,$year);
-			}
-		}
+			} // END foreach
+		} // END if
 		$query->free_result();
 		return $career_stats;
 	}
-	
+	/**
+	 *	GET PLAYER AWARDS.
+	 *	Returns all awards won by the players broken out by award type.
+	 *
+	 *	@param	$ootp_league_id		OOTP League ID value
+	 *	@param	$player_id			Player Id, defaults to current player id if empty
+	 *	@return						Award Array
+	 *	@since						1.0
+	 *	@version					1.0.1
+	 *
+	 */
 	public function getPlayerAwards($ootp_league_id, $player_id = false) {
 		
 		if ($player_id === false) { $player_id = $this->player_id; }
@@ -839,7 +904,7 @@ class player_model extends base_model {
 					$awardsByYear[$awid]=$yr;
 				} else {
 					$awardsByYear[$awid]=$awardsByYear[$awid].", ".$yr;
-				}
+				} // END if
 				
 				switch ($awid) {
 					case 4: $poy[$yr]=1; break;
@@ -847,19 +912,19 @@ class player_model extends base_model {
 					case 6: $roy[$yr]=1; break;
 					case 7: $gg[$yr][$pos]=1; break;
 					case 9: $as[$yr]=1; break;
-				}
+				} // END switch
 				$cnt++;
 				$prevAW=$awid;
 				
 				
-			}
+			} // END foreach
 			$awards['byYear'] = $awardsByYear;
 			$awards['poy'] = $poy;
 			$awards['boy'] = $boy;
 			$awards['roy'] = $roy;
 			$awards['gg'] = $gg;
 			$awards['as'] = $as;
-		}
+		} // END if
 		return $awards;
 	}
 	public function getRecentGameStats($ootp_league_id, $last_date, $lgyear, $days = 7, $player_id = false) {
@@ -894,7 +959,7 @@ class player_model extends base_model {
 			$table = 'players_game_batting';
 		}
 		$this->db->from($table);
-		$this->db->join('games',$table.".game_id = games.game_id",'left');
+		$this->db->join($this->tables['OOTP_GAMES'],$table.".game_id = games.game_id",'left');
 		$this->db->where($table.'.player_id',$player_id);
 		$this->db->where($table.'.year',$lgyear);
 		$this->db->where($table.'.level_id',1);
@@ -967,8 +1032,4 @@ class player_model extends base_model {
 		}
 		return $stats;
 	}
-	
-	/*---------------------------------------
-	/	PRIVATE/PROTECTED FUNCTIONS
-	/--------------------------------------*/
 }  
