@@ -158,7 +158,6 @@ class base_model extends Model implements Serializable {
 	 *	@var $sortOrder:String
 	 */
 	var $sortOrder = 'asc';
-	
 	/**
 	 *	SEARCH TERM.
 	 *	Text string to be used in FULLTEXT where matches

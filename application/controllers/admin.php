@@ -36,6 +36,8 @@ class admin extends MY_Controller {
 		$this->views['CONFIG_SCORING_PERIODS_EDIT'] = 'admin/config_scoring_periods_edit';
 		$this->views['CONFIG_OOTP'] = 'admin/config_ootp';
 		$this->views['SIM_SUMMARY'] = 'admin/sim_summary';
+		$this->views['FILE_UPLOADS'] = 'admin/config_uploads';
+		$this->views['MESSAGE'] = 'admin/admin_message';
 		
 		$this->load->helper('admin');
 		$this->lang->load('admin');
@@ -458,7 +460,7 @@ class admin extends MY_Controller {
 				$this->data['input'] = $this->input;
 				$this->data['subTitle'] = "Fantasy Details";
 				$this->params['content'] = $this->load->view($this->views['CONFIG_FANTASY'], $this->data, true);
-				$this->params['subTitle'] = "Start Season";
+				$this->params['subTitle'] = "Fantasy Settings";
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
 			} else {
@@ -482,7 +484,7 @@ class admin extends MY_Controller {
 					$this->data['input'] = $this->input;
 					$this->data['subTitle'] = "Fantasy Details";
 					$this->params['content'] = $this->load->view($this->views['CONFIG_FANTASY'], $this->data, true);
-					$this->params['subTitle'] = "Start Season";
+					$this->params['subTitle'] = "Fantasy Settings";
 					$this->params['pageType'] = PAGE_FORM;
 					$this->displayView();
 				}
@@ -512,7 +514,7 @@ class admin extends MY_Controller {
 				$this->data['input'] = $this->input;
 				$this->data['subTitle'] = "Configure Roster Rules";
 				$this->params['content'] = $this->load->view($this->views['CONFIG_ROSTERS'], $this->data, true);
-				$this->params['subTitle'] = "Start Season";
+				$this->params['subTitle'] = "Fantasy Settings";
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
 			} else {
@@ -530,7 +532,7 @@ class admin extends MY_Controller {
 					$this->data['input'] = $this->input;
 					$this->data['subTitle'] = "Configure Roster Rules";
 					$this->params['content'] = $this->load->view($this->views['CONFIG_ROSTERS'], $this->data, true);
-					$this->params['subTitle'] = "Start Season";
+					$this->params['subTitle'] = "Fantasy Settings";
 					$this->params['pageType'] = PAGE_FORM;
 					$this->displayView();
 				} // END if
@@ -547,28 +549,41 @@ class admin extends MY_Controller {
 			$this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
 		} else {
+			$this->getURIData();
+			
 			$this->form_validation->set_rules('batting_type_0', 'First Batting Category', 'required');
-			$this->form_validation->set_rules('batting_value_0', 'First Batting Value', 'required');
 			$this->form_validation->set_rules('pitching_type_0', 'First Pitching Category', 'required');
-			$this->form_validation->set_rules('pitching_value_0', 'First Pitching Value', 'required');
+			$this->form_validation->set_rules('scoring_type', 'Scoring Type', 'required');
 			
 			if (!isset($this->league_model)) {
 				$this->load->model('league_model');
 			}
-			$scoringRules = $this->league_model->getScoringRules();
+			if (isset($this->uriVars['scoring_type']) && !empty($this->uriVars['scoring_type']) && $this->uriVars['scoring_type'] != -1) {
+				$scoring_type = $this->uriVars['scoring_type'];
+			} else {
+				$scoring_type = LEAGUE_SCORING_ROTO;
+			}
+			if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+				$this->form_validation->set_rules('batting_value_0', 'First Batting Value', 'required');
+				$this->form_validation->set_rules('pitching_value_0', 'First Pitching Value', 'required');
+			}
+			$scoringRules = $this->league_model->getScoringRules(0,$scoring_type);
 			if (isset($scoringRules['batting'])) {
 				$this->data['scoring_batting']=	$scoringRules['batting'];
 			} 
 			if (isset($scoringRules['pitching'])) {
 				$this->data['scoring_pitching'] = $scoringRules['pitching'];
 			} 
+			$scoring_types = loadSimpleDataList('leagueType','','ASC','Scoring Type');
 			
 			if ($this->form_validation->run() == false) {
 				$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
+				$this->data['scoring_types'] = $scoring_types;
+				$this->data['scoring_type'] = $scoring_type;
 				$this->data['subTitle'] = "Configure Scoring Rules";
 				$this->params['content'] = $this->load->view($this->views['CONFIG_SCORING_RULES'], $this->data, true);
-				$this->params['subTitle'] = "Start Season";
+				$this->params['subTitle'] = "Fantasy Settings";
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
 			} else {
@@ -582,10 +597,12 @@ class admin extends MY_Controller {
 				} else {
 					$message = '<span class="error">Settings update failed.</span>';
 					$this->data['outMess'] = $message;
+					$this->data['scoring_types'] = $scoring_types;
 					$this->data['input'] = $this->input;
+					$this->data['scoring_type'] = $scoring_type;
 					$this->data['subTitle'] = "Configure Scoring Rules";
 					$this->params['content'] = $this->load->view($this->views['CONFIG_SCORING_RULES'], $this->data, true);
-					$this->params['subTitle'] = "Start Season";
+					$this->params['subTitle'] = "Fantasy Settings";
 					$this->params['pageType'] = PAGE_FORM;
 					$this->displayView();
 				}
@@ -612,10 +629,7 @@ class admin extends MY_Controller {
 			$this->displayView();
 		}
 		
-	}
-	/**
-	
-	
+	}	
 	/**
 	 *	EDIT SCORING PERIODS CONFIG.
 	 *	Edits the games scoring periods.
@@ -679,12 +693,184 @@ class admin extends MY_Controller {
 		}
 	}
 	/**
+	 * UPLOAD FILE CONFIG
+	 *
+	 */
+	public function uploadFiles() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			$this->data['outMess'] = '';
+			$this->data['input'] = $this->input;
+			$this->data['subTitle'] = "Upload SQL Data Files";
+			$this->params['content'] = $this->load->view($this->views['FILE_UPLOADS'], $this->data, true);
+			$this->params['subTitle'] =  "Admin Tools";
+			$this->params['pageType'] = PAGE_FORM;
+			$this->displayView();
+		}
+	}
+	/**
+	 *	AVATAR
+	 *	Update the team's avatar.
+	 */
+	public function uploadFile() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['dataFile']['name']))) {
+				if ($this->input->post('submitted') && !isset($_FILES['dataFile']['name'])) {
+					$fv = & _get_validation_object();
+					$fv->setError('dataFile','The date file field is required.');
+				}
+				$this->data['outMess']= "Errors were found.";
+				$this->data['subTitle'] = "Upload Files";
+				$this->params['subTitle'] =  "Admin Tools";
+				$this->params['pageType'] = PAGE_FORM;
+				$this->params['content'] = $this->load->view($this->views['FILE_UPLOADS'], $this->data, true);
+				$this->displayView();
+			} else {
+				if (!(strpos($_FILES['dataFile']['name'],'.zip'))) {
+					$fv = & _get_validation_object();
+					$fv->setError('dataFile','The file selected is not a valid zip file.');  
+					$this->data['subTitle'] = "Upload Files";
+					$this->params['subTitle'] =  "Admin Tools";
+					$this->params['content'] = $this->load->view($this->views['FILE_UPLOADS'], $this->data, true);
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				} else {
+					if ($_FILES['dataFile']['error'] === UPLOAD_ERR_OK) {
+						$this->load->helper(array('form', 'url'));
+						$config = array();
+						$config['upload_path'] = PATH_ATTACHMENTS_WRITE;
+						$config['allowed_types'] = 'zip';
+						$config['overwrite']	= true;
+						$this->load->library('upload',$config);
+						$change = $this->upload->do_upload('dataFile');
+						if ($change) {
+							
+							
+							
+							$this->session->set_flashdata('message', '<p class="success">The data file has been successfully uploaded.</p>');
+							redirect('team/info/'.$this->dataModel->id);
+						} else {
+							$message = '<p class="error">Data File Upload Failed.';
+							$message .= '</p >';
+							$this->session->set_flashdata('message', $message);
+							redirect('team/avatar');
+						}
+					} else {
+						throw new UploadException($_FILES['dataFile']['error']);
+					}
+				}
+			}
+		}
+	}
+	
+	
+	public function configUploadFile() {
+		
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			
+			$this->form_validation->set_rules('deflate', 'Deflate After Upload', 'required');
+		
+			if ($this->form_validation->run() == false) {
+				$this->data['outMess'] = "Required fields were missing.";
+				$this->data['subTitle'] = "Upload Files";
+				$this->params['content'] = $this->load->view($this->views['FILE_UPLOADS'], $this->data, true);
+				$this->params['subTitle'] =  "Admin Tools";
+				$this->params['pageType'] = PAGE_FORM;
+				$this->displayView();
+			} else {
+				$error = false;
+				$errorStr = "";
+				$hasFile = false;
+				$uploadSuccess = false;
+				if (isset($_FILES['dataFiles']['name']) && !empty($_FILES['dataFiles']['name'])) {
+					
+					$this->load->helper(array('form', 'url'));
+					$config = array();
+					$config['upload_path'] = PATH_ATTACHMENTS_WRITE;
+					$config['allowed_types'] = 'zip';
+					$config['overwrite']	= true;
+					$this->load->library('upload');
+					$this->upload->initialize($config);
+					$uploadSuccess = $this->upload->do_upload('dataFiles');
+					
+					if (!$uploadSuccess) {
+						$error = true;
+						$this->data['outMess']= '<span class="error">'.$this->upload->display_errors().'</span>';
+					} else {
+						if ($this->input->post('deflate')) {
+							$def = $this->input->post('deflate');
+							if ($def == 1) {
+								$this->load->library('unzip');
+								$type = $this->input->post('fileType');
+								$path = $this->params['config']['sql_file_path'];
+								/*switch($type) {
+									case 1:
+										$path = $this->params['config']['sql_file_path'];
+										break;
+									case 2:
+										$path = $this->params['config']['ootp_html_report_root'];
+										break;	
+								}*/
+								$this->unzip->extract(PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name'],$path);
+							} // END if
+						} // END if
+					} // END if
+				} else {
+					$error = true;
+					$this->data['outMess'] = "No files were selected for uploading.";
+				}
+				if ($error) {
+					$this->data['subTitle'] = "Upload Files";
+					$this->params['content'] = $this->load->view($this->views['FILE_UPLOADS'], $this->data, true);
+					$this->params['subTitle'] =  "Admin Tools";
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				} else {
+					$data = array('upload_data' => $this->upload->data());
+					$this->session->set_flashdata('message', '<span class="success">All uploads completed successfully.</span>');
+					redirect('admin/dashboard');
+				} // END if
+			} // END if
+		} // END if
+	}
+	public function getInfo() {
+			$this->data['subTitle'] =  "PHP Info";
+			$this->data['theContent'] =  phpinfo();
+			$this->params['content'] = $this->load->view($this->views['MESSAGE'], $this->data, true);
+			$this->params['subTitle'] =  "Admin Info";
+			$this->displayView();
+	}
+	public function uploadProgress() {
+		$this->getURIData();
+		if (isset($this->uriVars['key_id']) && !empty($this->uriVars['key_id']) && $this->uriVars['key_id'] != -1) {
+			$status = apc_fetch('upload_'.$_GET['progress_key']);
+			if ($status['total'] ==0 ) {
+				$total = "1";
+			} else {
+				$total = $status['current']/$status['total']*100;
+			}
+		} else {
+			$total = -1;
+		}
+		$this->output->set_header('Content-type: text/plain'); 
+		$this->output->set_output($total);
+	}
+
+	/**
 	 *	SIM SUMMARIES.
 	 *	List the games scoring periods.
 	 *
 	 *	@since 	1.0.4
 	 */
-	function simSummaries() {
+	public function simSummaries() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
 			$this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
@@ -1162,6 +1348,12 @@ class admin extends MY_Controller {
 		} // END if
 		if ($this->input->post('summary_id')) {
 			$this->uriVars['summary_id'] = $this->input->post('summary_id');
+		} // END if
+		if ($this->input->post('key_id')) {
+			$this->uriVars['key_id'] = $this->input->post('key_id');
+		} // END if
+		if ($this->input->post('scoring_type')) {
+			$this->uriVars['scoring_type'] = $this->input->post('scoring_type');
 		} // END if
 	}
 }

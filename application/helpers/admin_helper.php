@@ -274,6 +274,8 @@ if ( ! function_exists('reset_transactions')) {
 		$ci =& get_instance(); 
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_transactions');
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_trades'); 
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_trade_protests');
 		return true;
 	}
 }

@@ -66,36 +66,40 @@ class player_model extends base_model {
 						  injury_is_injured, injury_dtd_injury, injury_career_ending, injury_dl_left, injury_left, injury_id, logo_file, players.city_of_birth_id, age, own, own_last, start, start_last');
 		$this->db->join('players','players.player_id = fantasy_players.player_id','left');
 		$this->db->join('teams','teams.team_id = players.team_id','right outer');
-		//$this->db->join('cities','cities.city_id = players.city_of_birth_id','right outer');
-		//$this->db->join('nations','nations.nation_id = cities.nation_id','right outer');
 		$this->db->where('fantasy_players.id',$player_id);
 		$query = $this->db->get('fantasy_players');
 		
 		if ($query->num_rows() > 0) {
 			$details = $query->row_array();
 		}
-		$birthCity = '';
-		$birthRegion = '';
-		$birthNation = '';
-		
-		if ($details['city_of_birth_id'] != 0) {
-			$this->db->select('cities.name as birthCity, cities.region as birthRegion, nations.short_name as birthNation');
-			$this->db->join('nations','nations.nation_id = cities.nation_id','right outer');
-			$this->db->where('cities.city_id',$details['city_of_birth_id']);
-			$cQuery = $this->db->get('cities');
-			if ($cQuery->num_rows() > 0) {
-				$cRow = $cQuery->row();
-				$birthCity = $cRow->birthCity;
-				$birthRegion = $cRow->birthRegion;
-				$birthNation = $cRow->birthNation;
+		if (sizeof($details) > 0) {
+			$birthCity = '';
+			$birthRegion = '';
+			$birthNation = '';
+			
+			if (isset($details['city_of_birth_id']) && $details['city_of_birth_id'] != 0) {
+				$this->db->select('cities.name as birthCity, cities.region as birthRegion, nations.short_name as birthNation');
+				$this->db->join('nations','nations.nation_id = cities.nation_id','right outer');
+				$this->db->where('cities.city_id',$details['city_of_birth_id']);
+				$cQuery = $this->db->get('cities');
+				if ($cQuery->num_rows() > 0) {
+					$cRow = $cQuery->row();
+					$birthCity = $cRow->birthCity;
+					$birthRegion = $cRow->birthRegion;
+					$birthNation = $cRow->birthNation;
+				}
+				$cQuery->free_result();
+			} else {
+				$birthCity = 'Unknown';
+				$birthNation = 'N/A';
 			}
-			$cQuery->free_result();
+			$details = $details + array('birthCity'=>$birthCity,'birthRegion'=>$birthRegion,'birthNation'=>$birthNation);
+			$query->free_result();
 		} else {
-			$birthCity = 'Unknown';
-			$birthNation = 'N/A';
+			$details['id'] = $details['player_id'] = -1;
+			$details['first_name'] = "Not";
+			$details['last_name'] = "Found";
 		}
-		$details = $details + array('birthCity'=>$birthCity,'birthRegion'=>$birthRegion,'birthNation'=>$birthNation);
-		$query->free_result();
 		return $details;
     }
 	public function getPlayersDetails($players = array()) {
@@ -735,11 +739,13 @@ class player_model extends base_model {
 							$this->db->where('player_id',$row['id']);
 							$this->db->where('scoring_period_id',$scoring_period['id']);
 							$this->db->where('league_id',$rules['league_id']);
+							$this->db->where('scoring_type',$rules['scoring_type']);
 							$tQuery = $this->db->get('fantasy_players_scoring');
 							if ($tQuery->num_rows() == 0) {
 								$this->db->flush_cache();
 								$score_vals['player_id'] = $row['id'];
 								$score_vals['scoring_period_id'] = $scoring_period['id'];
+								$score_vals['scoring_type'] = $rules['scoring_type'];
 								$score_vals['league_id'] = $rules['league_id'];
 								$this->db->insert('fantasy_players_scoring',$score_vals);
 							} else {
@@ -747,6 +753,7 @@ class player_model extends base_model {
 								$this->db->where('player_id',$row['id']);
 								$this->db->where('scoring_period_id',$scoring_period['id']);
 								$this->db->where('league_id',$rules['league_id']);
+								$this->db->where('scoring_type',$rules['scoring_type']);
 								$this->db->update('fantasy_players_scoring',$score_vals);
 							} // END if
 							$tQuery->free_result();

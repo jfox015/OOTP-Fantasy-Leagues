@@ -45,7 +45,12 @@ class bug_model extends base_model {
 	var $dateCreated =  EMPTY_DATE_TIME_STR;
 	var $dateModified =  EMPTY_DATE_TIME_STR;
 	var $lastModifiedBy =  -1;
-	
+	/*---------------------------------------------
+	/
+	/	C'TOR
+	/	Creates a new instance of bug_model
+	/
+	/---------------------------------------------*/
 	function bug_model() {
 		parent::__construct();
 		
@@ -75,7 +80,14 @@ class bug_model extends base_model {
 		
 		parent::_init();
 	}
-	
+	/**
+	 * 	APPLY DATA.
+	 *
+	 *	Applies custom data values to the object. 
+	 *
+	 * 	@return 	TRUE on success, FALSE on failure
+	 *
+	 */
 	public function applyData($input,$userId = false) {
 		$success = parent::applyData($input,$userId);
 		if ($success) {

@@ -1,30 +1,29 @@
-	<script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.md5.js"></script>
-	<script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/nicEdit.js"></script>
+	<script type="text/javascript" src="<?php print($config['fantasy_web_root']); ?>js/jquery.md5.js"></script>
+	<script type="text/javascript" src="<?php print($config['fantasy_web_root']); ?>js/nicEdit.js"></script>
 	<script type="text/javascript">
-    var ajaxWait = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
-	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
-	var league_id = <?php echo($league_id); ?>;
+    var ajaxWait = '<img src="<?php print($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
+	var responseError = '<img src="<?php print($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
+	var league_id = <?php print($league_id); ?>;
 	$(document).ready(function(){		   
 		$('#delete').click(function() {
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>news/delete/<?php echo($thisItem['id']); ?>';
+			document.location.href = '<?php print($config['fantasy_web_root']); ?>news/delete/<?php print($thisItem['id']); ?>';
 		});	
 		$('#cancel').click(function() {
 			<?php if (isset($thisItem['id']) && ($thisItem['id'] != "add" && $thisItem['id'] != -1)) { ?>
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>news/info/<?php echo($thisItem['id']); ?>';
+			document.location.href = '<?php print($config['fantasy_web_root']); ?>news/info/<?php print($thisItem['id']); ?>';
 			<?php } else { ?>
 			history.back(-1);
 			<?php } ?>
 		});
 		
-		$('#varId').change(function () {
+		$('#var_id').change(function () {
 			var obj = new Object();
-			obj.id = $('#varId').val();
-			selectPlayer(obj);	
-			return false;
+			obj.id = $('#var_id').val();
+			selectPlayer(obj);
 		});
 		<?php if ((isset($type_id) && $type_id == NEWS_PLAYER) && (isset($var_id) && !empty($var_id) && $var_id != -1)) { ?>
 		var obj = new Object();
-		obj.id = $('#varId').val();
+		obj.id = <?php print($var_id); ?>;
 		selectPlayer(obj);	
         <?php } ?>
 	});
@@ -40,7 +39,7 @@
 	}
 	function selectPlayer(obj) {
 		//alert (obj.id);
-		var url = "<?php echo($config['fantasy_web_root']); ?>players/getInfo/player_id/"+obj.id+cacheBuster();
+		var url = "<?php print($config['fantasy_web_root']); ?>players/getInfo/player_id/"+obj.id+cacheBuster();
 		$('div#playerDetails').html(ajaxWait);
 		$.getJSON(url, function(data){
 			$('div#playerDetails').empty();
@@ -69,29 +68,18 @@
 		outHTML += '<td width="35%">';
 		var count = 0;
 		var item = data.result.items[0];
-		//alert(item);
-		//$.each(data.result.items, function(i,item){	
-			if (item.id != '' && item.player_name != '') {
-				outHTML += '<img src="<?php echo($config['ootp_html_report_path']); ?>images/player_'+item.player_id+'.png" border="0" align="left" /></td>';
-				outHTML += '<td width="65%"><b><a target="_blank" href="<?php echo($config['fantasy_web_root']); ?>players/info/player_id/'+item.id+'" style="font-weight:bold;font-size:larger;">'+item.player_name+'</a></b><br />';
-				outHTML += item.team_name+'<br />';
-				if (item.pos == 1) {
-					outHTML += item.role+'<br />';
-				} else {
-					outHTML += item.position+'<br />';
-				}
-				outHTML += '</td>';
-                outHTML += '</tr>';
-				count++;
+		if (item.id != '' && item.player_name != '') {
+			outHTML += '<img src="<?php print($config['ootp_html_report_path']); ?>images/player_'+item.player_id+'.png" border="0" align="left" /></td>';
+			outHTML += '<td width="65%"><b><a target="_blank" href="<?php print($config['fantasy_web_root']); ?>players/info/player_id/'+item.id+'" style="font-weight:bold;font-size:larger;">'+item.player_name+'</a></b><br />';
+			outHTML += item.team_name+'<br />';
+			if (item.pos == 1) {
+				outHTML += item.role+'<br />';
+			} else {
+				outHTML += item.position+'<br />';
 			}
-		//});
-		if (count == 0) {
-			outHTML += '<tr align="left" valign="top">';
-            outHTML += '<td colspan="3">No players have been picked yet</td>';
-            outHTML += '</tr>';
-		} else {
-			$('input#pick').val(item.id);
-			$('input#btnSubmit').css('display','block');
+			outHTML += '</td>';
+			outHTML += '</tr>';
+			count++;
 		}
 		outHTML += '</tr>';
 		outHTML += '</table>';
@@ -99,16 +87,16 @@
 	}
     </script>
     <div id="single-column">
-    	<div class="top-bar"> <h1><?php echo $subTitle; ?></h1></div>
+    	<div class="top-bar"> <h1><?php print $subTitle; ?></h1></div>
         <br class="clear" />
         
     </div>
     <div id="center-column">
         <?php if (isset($dump) && !empty($dump)) {
-			echo("<h3>DEBUG: Object Data Dump:</h3><br />".$dump."<br />");
+			print("<h3>DEBUG: Object Data Dump:</h3><br />".$dump."<br />");
 		} ?>
         <?php if (isset($preview) && !empty($preview)) { ?>
-        	<?php echo($preview); ?>
+        	<?php print($preview); ?>
 		<?php } ?>
         <div class="textbox">
         <table cellpadding="0" cellspacing="0" style="width:625px;">
@@ -120,9 +108,9 @@
             <?php 
 				$errors = validation_errors();
 				if ($errors) {
-					echo '<div class="error">The following errors were found with your submission:<br /><ul>'.$errors.'</ul></div>';
+					print '<div class="error">The following errors were found with your submission:<br /><ul>'.$errors.'</ul></div>';
 				}
-				echo($form);
+				print($form);
                 ?>
             
             </td>
@@ -141,7 +129,7 @@
         <table cellspacing=0 cellpadding=3 width="250px">
         <tr align="left" valign="top">
         	<td width="35%">
-            <img src='<?php echo($config['ootp_html_report_path']); ?>images/default_player_photo.jpg' border="0" align="left" />
+            <img src='<?php print($config['ootp_html_report_path']); ?>images/default_player_photo.jpg' border="0" align="left" />
             </td>
             <td width="65%">
             <b>No Player Selected.</b><br /><br />Select a player from the "Select Player" drop down to preview their information.

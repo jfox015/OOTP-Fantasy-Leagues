@@ -40,10 +40,12 @@ class draft_model extends base_model {
 	var $emailList = '';
 	var $replyList = '';
 	var $completed = -1;
-	/*--------------------------------------
+	/*---------------------------------------------
+	/
 	/	C'TOR
 	/	Creates a new instance of draft_model
-	/-------------------------------------*/
+	/
+	/---------------------------------------------*/
 	function draft_model() {
 		parent::__construct();
 		

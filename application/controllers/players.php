@@ -190,7 +190,7 @@ class players extends MY_Controller {
 		}
 		$data = $this->player_model->getPlayerDetails($player_id);
 		$result = "";
-		if (sizeof($data) > 0) {
+		if (sizeof($data) > 0 && $data['id'] != -1) {
 			$result .= '{"id":"'.$data['id'].'","player_id":"'.$data['player_id'].'","player_name":"'.$data['first_name'].' '.$data['last_name'].'","team_id":"'.$data['team_id'].'","team_name":"'.$data['team_name'].' '.$data['teamNickname'].'","pos":"'.makeElidgibilityString($data['positions']).'","position":"'.get_pos($data['position']).'","role":"'.get_pos($data['role']).'"}';
 		}
 		return $result;

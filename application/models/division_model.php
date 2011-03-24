@@ -21,7 +21,12 @@ class division_model extends base_model {
 	
 	var $division_name = '';
 	var $league_id = -1;
-	
+	/*---------------------------------------------
+	/
+	/	C'TOR
+	/	Creates a new instance of division_model
+	/
+	/---------------------------------------------*/
 	function division_model() {
 		parent::__construct();
 		

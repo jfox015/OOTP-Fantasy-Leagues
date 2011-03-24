@@ -6,23 +6,28 @@
 	var fileWarning = <?php print((isset($missingFiles) && sizeof($missingFiles) > 0) ? "true" : "false"); ?>;
 	
 	$(document).ready(function(){
-		$('a[rel=avail]').click(function () {
+		$('a[rel=avail]').click(function (event) {
 			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/availablePlayers/"); return false;
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/availablePlayers/"); 
+			event.preventDefault();
 		});
-		$('a[rel=upavail]').click(function () {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/updatePlayers/"); return false;
+		$('a[rel=upavail]').click(function (event) {
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/updatePlayers/"); 
+			event.preventDefault();
 		});
-		$('a[rel=elidg]').click(function () {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/elidgibility"); return false;
+		$('a[rel=elidg]').click(function (event) {
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/elidgibility"); 
+			event.preventDefault();
 		});
-		$('a[rel=sched]').click(function () {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/scoringSchedule"); return false;
+		$('a[rel=sched]').click(function (event) {
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/scoringSchedule"); 
+			event.preventDefault();
 		});
-		$('a[rel=games]').click(function () {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/generateSchedules"); return false;
+		$('a[rel=games]').click(function (event) {
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/generateSchedules"); 
+			event.preventDefault();
 		});
-		$('a[rel=sql]').click(function () {
+		$('a[rel=sql]').click(function (event) {
 			var proceed = true;
 			if (fileWarning) {
 				proceed = confirm("There are MySQL data files missing. Are you sure you want to continue with loading the OOTP game data? This will result in an incomplete load and potenitlaly cause error on the web site.");
@@ -35,27 +40,30 @@
 				$('div#activeStatus').html('Operation Cancelled.');
 				setTimeout('fadeStatus("active")',5000);
 			}
-			return false;
+			event.preventDefault();
 		});
-		$('a[rel=dataUpdate]').click(function () {
+		$('a[rel=dataUpdate]').click(function (event) {
 			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/dataUpdate"); return false;
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/dataUpdate"); 
+			event.preventDefault();
 		});
-		$('a[rel=configUpdate]').click(function () {
+		$('a[rel=configUpdate]').click(function (event) {
 			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/configUpdate"); return false;
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/configUpdate"); 
+			event.preventDefault();
 		});
-		$('a[rel=reset]').click(function () {
+		$('a[rel=reset]').click(function (event) {
 			refreshAfterUpdate = true;
-			if (confirm("Are you sure you want to perform this operation? This will reset the entire season to it's starting point and wipe out ALL season stats and data.")) {
-				if (confirm("Are you sure you want to do this? This operation CANNOT be undone."))
+			if (confirm("Are you sure you want to perform this operation? This will reset the entire season to it's starting point and wipe out ALL season stats, transactions and fantasy data.")) {
+				if (confirm("Are you sure you want to do this? This operation will wipe out your season and CANNOT be undone."))
 					runAjax("<?php echo($config['fantasy_web_root']); ?>admin/resetSeason"); 
 			}
-			return false;
+			event.preventDefault();
 		});
-		$('a[rel=sim]').click(function () {
+		$('a[rel=sim]').click(function (event) {
 			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/processSim"); return false;
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/processSim"); 
+			event.preventDefault();
 		});
 	});
 	function runAjax (url) {
@@ -105,8 +113,6 @@
     <?php } ?>
 </div>
 
-
-
 <div id="center-column" class="dashboard">
 <?php if (isset($installWarning)) { ?>
 <span class="error"><?php echo($install_message); ?></span>
@@ -121,14 +127,16 @@
     <tr>
     	<td class="hsc2_l" style='padding:3px'>
 		<div id="activeStatusBox"><div id="activeStatus"></div></div>	
-        <h3>Database Functions</h3>
+        <h3>File/Database Functions</h3>
         <?php
 		if (!file_exists($this->params['config']['sql_file_path']) || !is_readable($this->params['config']['sql_file_path'])) {
 			echo('<span class="error"><strong>Warning:</strong> The SQL file path on record either does not exist or cannot be read. The SQL file folder must be setup correctly before you can proceed with uploading OOTP data to the site.</span>');
 		} else { ?>
         Using <strong>Load All SQL Data Files</strong> below may take serveral minutes to load all your OOTP data files. Please be patient when running this function. For more precise control over what files are loaded, use the <strong>Load Individual SQL Files</strong> option instead.
         <ul class="iconmenu">
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_up.png" width="48" height="48" border="0" />',array('rel'=>'sql')); ?><br />
+            <li><?php echo anchor('admin/uploadFiles','<img src="'.$config['fantasy_web_root'].'images/icons/database_up.png" width="48" height="48" border="0" />'); ?><br />
+            Upload SQL Files</li>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_up.png" width="48" height="48" border="0" />',array('rel'=>'sql')); ?><br />
             Load All SQL Data Files</li>
 			<li><?php echo anchor('admin/listSQLFiles','<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" border="0" />'); ?><br />
             Load Individual SQL Files</li>

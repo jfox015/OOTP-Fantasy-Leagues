@@ -29,7 +29,12 @@ class news_model extends base_model {
 	var $imageFile = '';
 	var $imageField = '';
 	var $fantasy_analysis = '';
-	
+	/*---------------------------------------------
+	/
+	/	C'TOR
+	/	Creates a new instance of news_model
+	/
+	/---------------------------------------------*/
 	function news_model() {
 		parent::__construct();
 		
@@ -46,10 +51,12 @@ class news_model extends base_model {
 		$this->addSearchFilter('type_id','News Type','newsType','newsType');
 		parent::_init();
 	}
-		/**
-	 * 	applyData
+	/**
+	 * 	APPLY DATA.
 	 *
-	 * @return void
+	 *	Applies custom data values to the object. 
+	 *
+	 * 	@return 	TRUE on success, FALSE on failure
 	 *
 	 */
 	public function applyData($input,$userId = -1) {
