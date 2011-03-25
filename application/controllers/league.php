@@ -572,10 +572,11 @@ class league extends BaseEditor {
 				$game_id = $this->uriVars['game_id'];
 			} else {
 				 foreach($games as $id => $data) {
-					$game_id =  $id;
+					$game_id = $id;
 					break;
 				 }
 			}
+			print("Game id = ".$game_id."<br />");
 			$game_display_data = $this->dataModel->loadGameData($game_id, $this->team_model,$excludeList);
 		}
 		
