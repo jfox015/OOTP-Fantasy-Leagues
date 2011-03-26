@@ -60,6 +60,13 @@
 			}
 			event.preventDefault();
 		});
+		$('a[rel=resetSim]').click(function (event) {
+			refreshAfterUpdate = true;
+			if (confirm("Are you sure you want to perform this operation? This will reset the entire season to it's starting point and wipe out ALL season stats, transactions and fantasy data.")) {
+				runAjax("<?php echo($config['fantasy_web_root']); ?>admin/resetSim"); 
+			}
+			event.preventDefault();
+		});
 		$('a[rel=sim]').click(function (event) {
 			refreshAfterUpdate = true;
 			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/processSim"); 
@@ -225,6 +232,13 @@
             Update Players</li>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
            Update Player Elidgibility</li>
+           <?php 
+			if (defined('ENV') && ENV != "live") { ?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'resetSim')); ?><br />
+            Undo last Sim</li>
+			<?php 
+			}
+			?>
         </ul>
         <?php } ?>
         <?php if (isset($config['bug_db'])) { ?>

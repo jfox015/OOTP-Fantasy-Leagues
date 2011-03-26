@@ -1347,7 +1347,7 @@ class league_model extends base_model {
 					//	BASED ON LEAGUE SCORING RULES
 					//-----------------------------------
 					$player_stats = array();
-					
+					$score_vals = array();
 					foreach($teamRoster as $playerType => $roster) {	
 						$select = "player_id";
 						foreach($scoring_rules[$playerType] as $cat => $val) {	
@@ -1369,26 +1369,38 @@ class league_model extends base_model {
 						//------------------------------------
 						// 	2.3 PROCESS STATS VS SCORING RULES
 						//-----------------------------------
-						$score_vals = array();
 						foreach($player_stats as $row) {
+							$totalVal = 0;
+							foreach($scoring_rules[$playerType] as $cat => $val) {	
+								$colName = strtolower(get_ll_cat($cat, true));	
+								if (isset($row->$colName)) {
+									switch ($scoring_type) {
+										case LEAGUE_SCORING_ROTO:
+										case LEAGUE_SCORING_ROTO_5X5:
+										case LEAGUE_SCORING_ROTO_PLUS:
+											if (isset($score_vals[$cat])) {
+												$score_vals[$cat] += $row->$colName;
+											} else {
+												$score_vals[$cat] = $row->$colName;
+											}
+											break;
+										case LEAGUE_SCORING_HEADTOHEAD:
+										default:
+											// UPDATE THE PLAYERS SCORING TOTAL
+											$totalVal += $row->$colName * $val;
+											break;
+									}// END SWITCH
+								} // END if
+							}
 							switch ($scoring_type) {
 								case LEAGUE_SCORING_ROTO:
 								case LEAGUE_SCORING_ROTO_5X5:
 								case LEAGUE_SCORING_ROTO_PLUS:
 									
-									
 									break;
 								case LEAGUE_SCORING_HEADTOHEAD:
-								default:
-									$totalVal = 0;
-									foreach($scoring_rules[$playerType] as $cat => $val) {	
-										$colName = strtolower(get_ll_cat($cat, true));		
-										if ($row->$colName != 0) {
-											// UPDATE THE PLAYERS SCORING TOTAL
-											$totalVal += $row->$colName * $val;
-										} // END if
-									}
-									// APPLY VALUES TO THE STATS AND SAVE THEM TO THE SCORING TABLEf
+									default:
+									// APPLY VALUES TO THE STATS AND SAVE THEM TO THE PLAYERS SCORING TABLEf
 									$this->db->flush_cache();
 									$this->db->select('id');
 									$this->db->where('player_id',$row->player_id);
@@ -1424,14 +1436,45 @@ class league_model extends base_model {
 					//------------------------------------
 					// 	2.4 UPDATE TEAM SCORING RESULTS
 					//-----------------------------------
-					
 					switch ($scoring_type) {
 						case LEAGUE_SCORING_ROTO:
 						case LEAGUE_SCORING_ROTO_5X5:
 						case LEAGUE_SCORING_ROTO_PLUS:
-							
-						
-						
+							// APPLY VALUES TO THE STATS AND SAVE THEM TO THE TEAM SCORING TABLE
+							$colCount = 0;
+							$team_vals = array();
+							$player_types = array('batting','pitching');
+							foreach ($player_types as $type) {
+								foreach($scoring_rules[$type] as $cat => $val) {
+									if (isset($score_vals[$cat])) {
+										$team_vals['value_'.$colCount] = $score_vals[$cat];
+									} // END if
+									$colCount++;	
+								} // END foreach
+								if ($colCount > 0 && $colCount < 6) { $colCount = 6; }
+							} // END foreach
+							if (sizeof($team_vals) > 0) {
+								$this->db->flush_cache();
+								$this->db->select('id');
+								$this->db->where('team_id',$team_id);
+								$this->db->where('scoring_period_id',$scoring_period['id']);
+								$this->db->where('league_id',$league_id);
+								$tQuery = $this->db->get('fantasy_teams_scoring');
+								if ($tQuery->num_rows() == 0) {
+									$this->db->flush_cache();
+									$team_vals['team_id'] = $team_id;
+									$team_vals['scoring_period_id'] = $scoring_period['id'];
+									$team_vals['league_id'] = $league_id;
+									$this->db->insert('fantasy_teams_scoring',$team_vals);
+								} else {
+									$this->db->flush_cache();
+									$this->db->where('team_id',$team_id);
+									$this->db->where('scoring_period_id',$scoring_period['id']);
+									$this->db->where('league_id',$league_id);
+									$this->db->update('fantasy_teams_scoring',$team_vals);
+								} // END if
+								$tQuery->free_result();
+							} // END if
 							break;
 						case LEAGUE_SCORING_HEADTOHEAD:
 						default:

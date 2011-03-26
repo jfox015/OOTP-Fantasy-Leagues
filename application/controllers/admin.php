@@ -1157,6 +1157,28 @@ class admin extends MY_Controller {
 		$this->output->set_output($result);
 	}
 	/**
+	 *	RESET RECENT SIM DATA.
+	 *  CAUTION: THIS WILL WIPE OUT ALL SEASON WIDE DATA AND REST THE MOD BACK TO 
+	 *	PRE_SEASON STATUS.
+	 */
+	function resetSim() {
+		$result = '';
+		$status = '';
+		$mess = reset_sim($this->params['config']['current_period']);
+		update_config('current_period',$this->params['config']['current_period'] - 1);
+		update_config('last_process_time','1970-1-1 00:00:00');
+		if (!$mess) {
+			$status = "error:".$mess;
+		} else {
+			$status = "OK";
+		}
+		$code = 200;
+		$result = '{result:"Complete",code:"'.$code.'",status:"'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_output($result);
+	}
+	
+	/**
 	 *	GENERATE LEAGUE SCHEDULES.
 	 */
 	function generateSchedules() {
@@ -1306,8 +1328,8 @@ class admin extends MY_Controller {
 				$status = "OK";
 			}
 			$mess = $this->lang->line('sim_ajax_success');
-			//update_config('last_process_time',date('Y-m-d h:m:s'));
-			//update_config('current_period',($score_period['id']+1));
+			update_config('last_process_time',date('Y-m-d h:m:s'));
+			update_config('current_period',($score_period['id']+1));
 		}
 		/*------------------------------
 		/	CLOSE THE BENCHMARK

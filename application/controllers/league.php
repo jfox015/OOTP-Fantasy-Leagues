@@ -576,7 +576,6 @@ class league extends BaseEditor {
 					break;
 				 }
 			}
-			print("Game id = ".$game_id."<br />");
 			$game_display_data = $this->dataModel->loadGameData($game_id, $this->team_model,$excludeList);
 		}
 		
