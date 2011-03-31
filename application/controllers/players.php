@@ -110,10 +110,11 @@ class players extends MY_Controller {
 				if ($this->params['loggedIn']) {
 					$this->data['userTeamId'] = $this->user_meta_model->getUserTeamIds($league_id,$this->params['currUser']);
 				}
-				$rules = $this->league_model->getScoringRules($league_id);
-				if (sizeof($rules) == 0) {
-					$rules = $this->league_model->getScoringRules(0);
-				}
+				$scoring_type = $this->league_model->getScoringType($league_id);
+				$rules = $this->league_model->getScoringRules($league_id, $scoring_type, true);
+				//if (sizeof($rules) == 0) {
+				//	$rules = $this->league_model->getScoringRules(0);
+				//}
 			}
 			$this->data['league_id'] = $league_id;
 			
@@ -131,8 +132,9 @@ class players extends MY_Controller {
 			} else {
 				$this->data['title'] = $this->data['lgyear']." "."Pitching";
 			}
-			$this->data['colnames']=player_stat_column_headers($player_type, QUERY_STANDARD, true);
-			$this->data['fields']=player_stat_fields_list($player_type, QUERY_STANDARD, true);
+			$showPts = (isset($scoring_type) && $scoring_type == LEAGUE_SCORING_HEADTOHEAD) ? true: false;
+			$this->data['colnames']=player_stat_column_headers($player_type, QUERY_STANDARD, $showPts);
+			$this->data['fields']=player_stat_fields_list($player_type, QUERY_STANDARD, $showPts);
 			
 			if (!function_exists('getSignedPlayerTeamIdsByLeague')) {
 				$this->load->helper('roster');

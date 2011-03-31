@@ -1641,7 +1641,7 @@ class team extends BaseEditor {
 		if ($scoring_period_id != -1) {
 			$this->scoring_period = $this->data['scoring_periods'][$scoring_period_id-1];
 		}
-		$this->rules = $this->league_model->getScoringRules($this->dataModel->league_id);
+		$this->rules = $this->league_model->getScoringRules($this->dataModel->league_id,$this->league_model->getScoringType($this->dataModel->league_id));
 		if (sizeof($this->rules) == 0) {
 			$this->rules = $this->league_model->getScoringRules(0);
 		}

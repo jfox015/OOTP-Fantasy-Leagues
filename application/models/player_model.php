@@ -425,7 +425,6 @@ class player_model extends base_model {
 		}
 		$excludeLostStr .= ")";		
 				
-		$order = 'fpts';
 		// BUILD QUERY TO PULL CURRENT GAME DATA FOR THIS PLAYER
 		$sql = 'SELECT fantasy_players.id, fantasy_players.positions, players.position, players.role, players.player_id ,first_name, last_name,players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';
 		$sql .= player_stat_query_builder($playerType, $query_type, $rules);
@@ -434,16 +433,21 @@ class player_model extends base_model {
 			$tblName = 'players_game_batting';
 			$posType = 'players.position';
 			if ($batting_sort !== false) $order = $batting_sort;
+			$order = 'ab';
 		} else {
 			$sql .= ",players.role as pos ";
 			$tblName = 'players_game_pitching_stats';
 			$posType = 'players.role';
 			if ($pitching_sort !== false) $order = $pitching_sort;
+			$order = 'ip';
 		}
 		$sql .= "FROM games ";
 		$sql .= 'LEFT JOIN '.$tblName.' ON games.game_id = '.$tblName.'.game_id ';
 		$sql .= 'RIGHT OUTER JOIN players ON players.player_id = '.$tblName.'.player_id ';
 		$sql .= 'RIGHT OUTER JOIN fantasy_players ON players.player_id = fantasy_players.player_id ';
+		if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+			$order = 'fpts';
+		}
 		if (sizeof($scoring_period) > 0 && $stats_range == -1) {
 			$sql .= "WHERE DATEDIFF('".$scoring_period['date_start']."',games.date)<= 0 ";
 			$sql .= "AND DATEDIFF('".$scoring_period['date_end']."',games.date)>= 0 ";
@@ -616,7 +620,7 @@ class player_model extends base_model {
 			$sql .= ' AND fantasy_players.id IN '.$waiverWireStr." ";
 		}
 		$sql.="GROUP BY players.player_id ";
-		if (sizeof($rules) > 0) {
+		if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
 			$order = 'fpts';	
 		}
 		$sql.="ORDER BY ".$order." DESC ";

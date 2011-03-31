@@ -44,7 +44,8 @@ class league extends BaseEditor {
 		$this->views['ADMIN'] = 'league/league_admin';
 		$this->views['RULES'] = 'league/league_rules';
 		$this->views['RESULTS'] = 'league/league_results';
-		$this->views['STANDINGS'] = 'league/league_standings';
+		$this->views['STANDINGS_HEADTOHEAD'] = 'league/league_standings_h2h';
+		$this->views['STANDINGS_ROTISSERIE'] = 'league/league_standings_rot';
 		$this->views['SCHEDULE'] = 'league/league_schedule';
 		$this->views['SCHEDULE_EDIT'] = 'league/league_schedule_edit';
 		$this->views['TRANSACTIONS'] = 'league/league_transactions';
@@ -82,8 +83,10 @@ class league extends BaseEditor {
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
 		}
+		$scoring_type = $this->dataModel->getScoringType();
 		$curr_period = $this->getScoringPeriod();
-		if (!empty($curr_period)) {
+		
+		if (!empty($curr_period) && $scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
 			$curr_period_id = $curr_period['id'];
 			$this->data['curr_period'] = $curr_period;
 			// GET GAMES
@@ -102,7 +105,15 @@ class league extends BaseEditor {
 		$this->params['subTitle'] = $this->dataModel->league_name;
 		
 		
-		$this->data['thisItem']['divisions'] = $this->dataModel->getLeagueStandings();
+		$leagueStandings = $this->dataModel->getLeagueStandings();
+		
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			$this->data['thisItem']['divisions'] = $leagueStandings;
+			$view = $this->views['STANDINGS_HEADTOHEAD'];
+		} else {
+			$this->data['thisItem']['teams'] = $leagueStandings ;
+			$view = $this->views['STANDINGS_ROTISSERIE'];
+		}
 		
 		// DRAFT DASHBOARD 
 		$session_auth = $this->session->userdata($this->config->item('session_auth'));
@@ -475,6 +486,10 @@ class league extends BaseEditor {
 		} 
 		$this->data['rosters'] = $this->dataModel->getRosterRules();
 		
+		$leagueType = loadSimpleDataList('leagueType');
+		$this->data['scoring_type_str'] = $leagueType[$this->dataModel->league_type];
+		
+		
 		// DRAFT DETAILS
 		if (!isset($this->draft_model)) {
 			$this->load->model('draft_model');
@@ -493,6 +508,7 @@ class league extends BaseEditor {
 		$this->data['draftTimer'] = $this->draft_model->timerEnable;
 		$this->data['playoffRounds'] = $this->dataModel->playoff_rounds;
 		$this->data['scorePeriods'] = $this->dataModel->regular_scoring_periods;
+		$this->data['scoring_type'] = $this->dataModel->getScoringType();
 		
 		
 		$this->makeNav();
@@ -510,6 +526,8 @@ class league extends BaseEditor {
 		$this->dataModel->load($this->uriVars['id']);
 		$this->data['league_id'] = $this->uriVars['id'];
 		
+		$scoring_type = $this->dataModel->getScoringType();
+		
 		if (!function_exists('getScoringPeriod')) {
 			$this->load->helper('admin');
 		}
@@ -521,10 +539,21 @@ class league extends BaseEditor {
 		$curr_period = getScoringPeriod($curr_period_id);
 		$this->data['curr_period'] = $curr_period_id;
 		$this->data['avail_periods'] = $this->dataModel->getAvailableStandingsPeriods();
-		$this->data['thisItem']['divisions'] = $this->dataModel->getLeagueStandings();
+		
+		$leagueStandings = $this->dataModel->getLeagueStandings();
+		$view = "";
+		
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			$this->data['thisItem']['divisions'] = $leagueStandings;
+			$view = $this->views['STANDINGS_HEADTOHEAD'];
+		} else {
+			$this->data['thisItem']['teams'] = $leagueStandings;
+			$this->data['thisItem']['rules'] = $this->dataModel->getScoringRules();
+			$view = $this->views['STANDINGS_ROTISSERIE'];
+		}
 		$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
 		$this->makeNav();
-		$this->params['content'] = $this->load->view($this->views['STANDINGS'], $this->data, true);
+		$this->params['content'] = $this->load->view($view, $this->data, true);
 	    $this->displayView();	
 	}
 	/**
@@ -549,6 +578,7 @@ class league extends BaseEditor {
 			$curr_period_id = $this->params['config']['current_period'];
 		}
 		$curr_period = getScoringPeriod($curr_period_id);
+		
 		$this->data['curr_period'] = $curr_period_id;
 		
 		$teams = $this->dataModel->getTeamIdList();
@@ -1266,10 +1296,11 @@ class league extends BaseEditor {
 	}
 	protected function makeNav() {
 		$admin = false;
+		$scoring_type = $this->dataModel->getScoringType();
 		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->dataModel->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)){
 			$admin = true;
 		}
-		array_push($this->params['subNavSection'],league_nav($this->dataModel->id, $this->dataModel->league_name,$admin));
+		array_push($this->params['subNavSection'],league_nav($this->dataModel->id, $this->dataModel->league_name,$admin,false,$this->dataModel->getScoringType()));
 	}
 }
 /* End of file league.php */

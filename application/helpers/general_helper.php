@@ -77,7 +77,7 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 		} // END switch
 		$rulesType = 'pitching';
 	}
-	if (sizeof($rules) > 0) {
+	if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
 		$ptsSQL = ',';
 		foreach($rules[$rulesType] as $cat => $val) {
 			if ($ptsSQL != ',') { $ptsSQL .= '+'; }
@@ -85,6 +85,8 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 		}
 		$ptsSQL .= ' as fpts ';
 		$sql .= $ptsSQL;
+	} else {
+		// TODO - GET PLAYER RATING (AS SUBQUERY?)	
 	}
 	return $sql;
 }
@@ -97,7 +99,8 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
  *	@since	1.0
  */ 
 function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDARD, $showFpts = true, 
-									$statsOnly = false, $showTrans = false, $showDraft = false, $showGenInfo = false) {
+									$statsOnly = false, $showTrans = false, $showDraft = false, $showGenInfo = false, 
+									$showRating = false) {
 	$colnames = "";
 	if (!$statsOnly) {
 		if ($showTrans === true) {
@@ -142,6 +145,9 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
 	if ($showFpts) {
 		$colnames .= "|FPTS";
 	}
+	if ($showRating) {
+		$colnames .= "|RATING";
+	}
 	return $colnames;
 }
 /**
@@ -153,7 +159,8 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
  *	@since	1.0
  */ 
 function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD, $showFpts = true, $statsOnly = false, 
-								 $showTrans = false, $showDraft = false, $showGenInfo = false) {
+								 $showTrans = false, $showDraft = false, $showGenInfo = false, 
+								 $showRating = false) {
 	
 	$defaultFields = array('player_name','teamname','pos','positions');
 	$genInfoFields = array('age','throws','bats');
@@ -208,6 +215,9 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
 	}
 	if ($showFpts) {
 		array_push($fields, 'fpts');
+	}
+	if ($showRating) {
+		array_push($fields, 'rating');
 	}
 	return $fields;
 }

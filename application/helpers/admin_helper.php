@@ -231,17 +231,16 @@ if ( ! function_exists('reset_sim')) {
 	function reset_sim($scoring_period_id = 1) {
 		$ci =& get_instance(); 
 		$ci->db->flush_cache();
-		$ci->db->query('TRUNCATE TABLE fantasy_players_compiled_batting'); 
-		$ci->db->query('TRUNCATE TABLE fantasy_players_compiled_pitching'); 
-		$ci->db->query('TRUNCATE TABLE fantasy_sim_summary'); 
-		$ci->db->query('TRUNCATE TABLE fantasy_teams_record');
-		$ci->db->query('TRUNCATE TABLE fantasy_teams_scoring');
+		$ci->db->query('DELETE FROM `fantasy_players_compiled_batting` WHERE scoring_period_id = '.$scoring_period_id);
+		$ci->db->query('DELETE FROM `fantasy_players_compiled_pitching` WHERE scoring_period_id = '.$scoring_period_id);
+		$ci->db->query('DELETE FROM `fantasy_players_scoring` WHERE scoring_period_id = '.$scoring_period_id);
+		$ci->db->query('DELETE FROM `fantasy_sim_summary` WHERE scoring_period_id = '.$scoring_period_id);
+		$ci->db->query('DELETE FROM `fantasy_teams_record` WHERE scoring_period_id = '.$scoring_period_id);
+		$ci->db->query('DELETE FROM `fantasy_teams_scoring` WHERE scoring_period_id = '.$scoring_period_id);
 		$ci->db->query('DELETE FROM `fantasy_rosters` WHERE scoring_period_id = '.$scoring_period_id);
-		if ($ci->db->affected_rows() > 0) {
-			return true;
-		} else {
-			return false;
-		}
+		$ci->db->query('UPDATE `fantasy_leagues_games` SET `home_team_score` = 0, `away_team_score` = 0 WHERE scoring_period_id = '.$scoring_period_id);
+		
+		return true;
 	}
 }
 // ------------------------------------------------------------------------

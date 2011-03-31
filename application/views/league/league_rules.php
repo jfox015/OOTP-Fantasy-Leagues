@@ -71,7 +71,6 @@
 						} 
 					} 
 					?>
-					
 					</table>
 					</td>
 				</tr>
@@ -90,7 +89,9 @@
 					<table cellpadding="2" cellspacing="0" border="0" style="width:100%;">
 				    <tr class='headline'>
 				    	<td width="70%">Batting Category</td>
+                        <?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
 						<td width="35%">Points</td>
+                        <?php }?>
 					</tr>
 					<?php if (isset($scoring_batting) && sizeof($scoring_batting) > 0) {
 						$rowCount = 0;
@@ -98,7 +99,9 @@
 					<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
                     
 				    	<td class="hsc2_l"><?php echo(get_ll_cat($cat)); ?></td>
+						<?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
 						<td class="hsc2_r" align="center"><?php echo($val); ?></td>
+                        <?php }?>
 					</tr>
 						<?php 
 						$rowCount++;
@@ -107,7 +110,9 @@
 					?>
 					<tr class='headline'>	
 						<td>Pitching Category</td>
+						<?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
 						<td>Points</td>
+                        <?php }?>
 				    </tr>
 					<?php if (isset($scoring_pitching) && sizeof($scoring_pitching) > 0) {
 							$rowCount = 0;
@@ -115,7 +120,9 @@
 					<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
 						
 				    	<td class="hsc2_l"><?php echo(get_ll_cat($cat)); ?></td>
+						<?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
 						<td class="hsc2_r" align="center"><?php echo($val); ?></td>
+                        <?php }?>
 					</tr>
 						<?php 
 						$rowCount++;
@@ -134,7 +141,18 @@
 			
 		        <br class="clear" />
 				<p>
-				<table cellpadding=5 cellspacing=0 border=0 width=100%><tr valign=top><td><b>Draft</b>:</td>
+                
+                
+                
+				<table cellpadding=5 cellspacing=0 border=0 width=100%>
+                
+                <tr valign=top>
+                <td><b>Scoring</b>:</td>
+                <td>&nbsp;</td>
+                <td><?php print($scoring_type_str); ?></td>
+                </tr>
+                
+                <tr valign=top><td><b>Draft</b>:</td>
                 <td>&nbsp;</td>
                 <td><table border=0 cellpadding=1 cellspacing=0><tr valign=top><td>&#149;</td>
                 <td> Draft, <?php if (isset($draftDate) && $draftDate != -1 && $draftDate != EMPTY_DATE_TIME_STR) { echo(date('m/d/Y', strtotime($draftDate))." at ".date('h:i A T',strtotime($draftDate))); } else { echo("A draft date has not been set"); } ?></td>
@@ -154,7 +172,8 @@
 						}
 					}
 					?>
-                </tr><tr valign=top><td><b>Positions</b>:</td>
+                </tr>
+                <tr valign=top><td><b>Positions</b>:</td>
                 <td>&nbsp;</td>
                 <td><?php echo($posStr); ?></td>
                 </tr>

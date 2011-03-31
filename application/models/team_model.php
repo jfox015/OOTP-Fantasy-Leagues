@@ -706,7 +706,7 @@ class team_model extends base_model {
 			$sql .= " ".$where;
 		}
 		$sql.=' GROUP BY '.$tblName.'.player_id';
-		if (sizeof($rules) > 0) {
+		if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
 			$order = 'fpts';	
 		}
 		$sql.=" ORDER BY ".$order." DESC ";
