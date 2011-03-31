@@ -10,7 +10,18 @@
 			history.back(-1);
 			<?php } ?>
 		});
+		$('#league_type').change(function(){
+			showH2HOp($('#league_type').val());
+		});
+		showH2HOp(<?php print($league_type); ?>);
 	});
+	function showH2HOp(val) {
+		var type = "none";
+		if (val == <?php print(LEAGUE_SCORING_HEADTOHEAD); ?>) {
+			type = "block";
+		}
+		$('#optHeadToHead').css('display',type);
+	}
     </script>
     <div id="single-column">
    	 	

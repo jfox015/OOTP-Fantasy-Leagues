@@ -1,14 +1,15 @@
    
    		<div id="single-column">
-            <div class="top-bar"><h1><?php
-            if (isset($thisItem['avatar']) && !empty($thisItem['avatar'])) { 
-				$avatar = PATH_LEAGUES_AVATARS.$thisItem['avatar'];
-			} else {
-				$avatar = PATH_LEAGUES_AVATARS.DEFAULT_AVATAR;
-			}
-			?>
-			<img src="<?php echo($avatar); ?>" width="48" height="48" border="0" align="absmiddle" />
-			&nbsp;&nbsp;<?php echo($thisItem['league_name']); ?></h1></div>
+            <div class="top-bar"><h1><?php 
+		if (isset($thisItem['avatar']) && !empty($thisItem['avatar'])) { 
+			$avatar = PATH_LEAGUES_AVATARS.$row['avatar']; 
+		} else {
+			$avatar = PATH_LEAGUES_AVATARS.DEFAULT_AVATAR;
+		} ?>
+		<img src="<?php echo($avatar); ?>" 
+        border="0" width="24" height="24" alt="<?php echo($thisItem['league_name']); ?>" 
+        title="<?php echo($thisItem['league_name']); ?>" /> 
+		<?php echo($thisItem['league_name']); ?></h1></div>
             <div id="content">
                 	<?php 
 					if (isset($thisItem['description']) && !empty($thisItem['description'])) { 

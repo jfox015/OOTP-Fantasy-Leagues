@@ -55,6 +55,7 @@ class league extends BaseEditor {
 		$this->views['INVITES'] = 'league/league_invite_list';
 		$this->views['WAIVER_CLAIMS'] = 'league/league_waiver_claims';
 		$this->views['TRADES'] = 'league/league_trades';
+		$this->views['REVIEW_SETTINGS'] = 'league/league_config_review';
 		$this->debug = false;
 	}
 	/*---------------------------------------
@@ -229,6 +230,7 @@ class league extends BaseEditor {
 				$this->data['draftStatus'] = $this->draft_model->getDraftStatus($this->dataModel->id);
 				$this->data['draftEnabled'] = $this->draft_model->getDraftEnabled($this->dataModel->id);
 				$this->data['debug'] = $this->debug;
+				$this->data['scoring_type'] = $this->dataModel->getScoringType();
 				$this->makeNav();
 				$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
 			} else {
@@ -395,6 +397,10 @@ class league extends BaseEditor {
 			$this->loadData();
 			
 			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+				
+				$this->data['scoring_type'] = $this->dataModel->getScoringType();
+				
+				
 				if (!isset($this->team_model)) {
 					$this->load->model('team_model');
 				} // END if
@@ -540,6 +546,9 @@ class league extends BaseEditor {
 		$this->data['curr_period'] = $curr_period_id;
 		$this->data['avail_periods'] = $this->dataModel->getAvailableStandingsPeriods();
 		
+		$this->data['league_start'] = $this->params['config']['season_start'];
+		$league_start_str = str_replace('[START_DATE]', date('m/d/Y',strtotime($this->params['config']['season_start'])), $this->lang->line('league_start_standings'));
+		$this->data['start_str'] = str_replace('[GAME_YEAR]', date('Y',strtotime($this->ootp_league_model->start_date)), $league_start_str);
 		$leagueStandings = $this->dataModel->getLeagueStandings();
 		$view = "";
 		
@@ -1245,7 +1254,9 @@ class league extends BaseEditor {
 		$form->br();
 		$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
 		$form->br();
-		$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type,'required');
+		$league_type = ($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type;
+		$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',$league_type,'required');
+		$this->data['league_type'] = $league_type;
 		$form->br();
 		$form->select('max_teams|max_teams',array(8=>8,10=>10,12=>12),'No. of Teams',($this->input->post('max_teams')) ? $this->input->post('max_teams') : $this->dataModel->max_teams,'required');
 		$form->br();
@@ -1254,13 +1265,13 @@ class league extends BaseEditor {
 			$form->br();
 		}
 		$form->space();
-		$form->fieldset('Head To Head Options');
+		$form->fieldset('Head To Head Options',array('id'=>'optHeadToHead'));
 		$form->select('games_per_team|games_per_team',array(1=>1,2=>2,3=>3),'Games per team',($this->input->post('games_per_team')) ? $this->input->post('games_per_team') : $this->dataModel->games_per_team);
 		$form->br();
 		$form->select('regular_scoring_periods|regular_scoring_periods',array(24=>25,23=>24,22=>23,21=>22,20=>21),'Playoffs begin in week',($this->input->post('regular_scoring_periods')) ? $this->input->post('regular_scoring_periods') : $this->dataModel->regular_scoring_periods);
 		$form->br();
 		$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
-		
+
 		$form->fieldset('',array('class'=>'button_bar'));
 		$form->button('Delete','delete','button',array('class'=>'button'));	
 		$form->nobr();
@@ -1281,6 +1292,58 @@ class league extends BaseEditor {
 		$this->data['form'] = $form->get();
 		
 		$this->makeNav();
+	}
+	function configInfo() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->data['subTitle'] = "League Settings";
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			
+			$this->data['isCommish'] = $this->dataModel->userIsCommish($this->params['currUser']); 
+
+			if ($this->data['isCommish']) {
+				
+				$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
+				$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
+				$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
+				$this->data['thisItem']['description'] = $this->dataModel->description;
+				$this->data['thisItem']['max_teams'] = $this->dataModel->max_teams;
+				$accessType = loadSimpleDataList('accessType');
+				$this->data['thisItem']['access_type'] = $accessType[$this->dataModel->access_type];
+				$leagueType = loadSimpleDataList('leagueType');
+				$this->data['thisItem']['league_type'] = $leagueType[$this->dataModel->league_type];
+				$commishName = '';
+				$this->db->select('firstName, lastName');
+				$this->db->where('userId',$this->dataModel->commissioner_id);
+				$query = $this->db->get('users_meta');
+				if ($query->num_rows() > 0) {
+					$row = $query->row();
+					$commishName = (!empty($row->firstName) && $row->lastName != -1)  ? $row->firstName." ".$row->lastName : '';
+				} // END if
+				$query->free_result();
+				$this->data['thisItem']['commissioner'] = $commishName;
+				$this->data['thisItem']['commissioner_id'] = $this->dataModel->commissioner_id;
+				
+				// HEAD TO HEAD ONLY
+				$this->data['thisItem']['games_per_team'] = $this->dataModel->games_per_team;
+				$this->data['thisItem']['playoff_rounds'] = $this->dataModel->playoff_rounds;
+				
+				
+				$this->data['scoring_type'] = $this->dataModel->getScoringType();
+				$this->params['pageType'] = PAGE_FORM;
+				$this->params['content'] = $this->load->view($this->views['REVIEW_SETTINGS'], $this->data, true);
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+			}
+			$this->makeNav();
+			$this->displayView();
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
 	}
 	protected function showInfo() {
 		$this->data['thisItem']['league_name'] = $this->dataModel->league_name;

@@ -1,7 +1,13 @@
    
    		<div id="subPage">
             <div class="top-bar"><h1><?php echo($thisItem['league_name']); ?> Standings</h1></div>
-           
+            
+            <?php
+			if (isset($league_start) && strtotime($league_start) > strtotime(date('Y-m-d',time()))) { ?>
+            <span class="notice"><?php print($start_str); ?></span>
+			<?php
+			}
+           	?>
            	<?php if (isset($avail_periods) && sizeof($avail_periods) > 0) {  ?>
             <div style="width:48%;text-align:left;float:left;">
                 <?php echo("<b>Period: </b>");
@@ -31,27 +37,28 @@
                 
                 <tr class='headline'>
                     <td class='hsc2_c'>Team</td>
-                    <td width="2">&nbsp;</td>
+                    <td width="1">&nbsp;</td>
                     <td class='hsc2_c' colspan="<?php print($catCount); ?>" align="center">Batting</td>
-                    <td width="2">&nbsp;</td>
+                    <td width="1">&nbsp;</td>
                     <td class='hsc2_c' colspan="<?php print($catCount); ?>" align="center">Pitching</td>
-                    <td width="2">&nbsp;</td>
+                    <td width="1">&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
                 <tr class='headline'>
                 	<td>&nbsp;</td>
-					<td width="2">&nbsp;</td>
+					<td>&nbsp;</td>
 					<?php
 					$types = array('batting','pitching');
 					foreach($types as $type) {
 						foreach ($thisItem['rules'][$type] as $cat => $val) {
 							print('<td class="hsc2_r" align="right">'.get_ll_cat($cat).'</td>');
 						} // END foreach
-						print('<td width="5">&nbsp;</td>');
+						print('<td>&nbsp;</td>');
 					} // END foreach
 					?>
                     <td class="hsc2_r" align="right">Total</td>
                 </tr>
+                
                 <?php 
                 $rowcount = 0;
                 foreach($thisItem['teams'] as $id=>$teamData) { 
@@ -61,17 +68,31 @@
                     <td class='hsc2_l'><?php echo(anchor('/team/info/'.$id,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
                     <td>&nbsp;</td>
                     <?php 
-						for ($i = 0; $i < 12; $i++) {
-							if ($teamData['value_'.$i] != -1) {
-								print('<td class="hsc2_r" align="right">'.$teamData['value_'.$i].'</td>');
+						$i = 0;
+						foreach($types as $type) {
+							foreach ($thisItem['rules'][$type] as $cat => $val) {
+								print('<td class="hsc2_r" align="right">');
+								if (isset($teamData['value_'.$i]) && $teamData['value_'.$i] != -1) {
+									print($teamData['value_'.$i]);
+								} else {
+									print(' - - ');
+								} // END if
+								print ('</td>');
+								$i++;
+							} // END foreach
+							if ($i < 6) {
+								$I = 6;
 							} // END if
-							if ($i == 5) {
-								print('<td>&nbsp;</td>'); 
-							} // END if
-						} // END for
+							print('<td>&nbsp;</td>'); 
+						} // END foreach
 					?>
-                    <td>&nbsp;</td>
-                    <td class="hsc2_r" align="right"><?php echo($teamData['total']); ?></td>
+                    <td class="hsc2_r" align="right"><?php 
+					if (isset($teamData['total'])) {
+						print($teamData['total']); 
+					} else {
+						print("0");
+					} 
+					?></td>
                 </tr>
                     <?php
                     $rowcount++;

@@ -16,12 +16,21 @@
 	    	<td class="hsc2_l" style='padding:6px'>
 			<h3>Pre-Season Functions</h3>
             <ul class="iconmenu">
+            	<?php
+                if ((isset($league_info) && $league_info->current_date <= $league_info->start_date) || !isset($league_info)) { ?>
 				<li><?php echo anchor('/league/submit/mode/edit/id/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/notes_edit.png" width="48" height="48" border="0" />'); ?><br />
             	Edit League Details</li>
+                <?php } else { ?>
+				<li><?php echo anchor('/league/configInfo/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
+				Review League Settings</li><?php } ?>
+					
                 <li><?php echo anchor('/league/avatar/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/image_edit.png" width="48" height="48" border="0" />'); ?><br />
             	League Team Avatar</li>
+                <?php 
+				if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
                 <li><?php echo anchor('/divisions/showList/league_id/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/folder_edit.png" width="48" height="48" border="0" />'); ?><br />
             	Edit Divisions</li>
+                <?php } ?>
                 <li><?php echo anchor('/league/teamAdmin/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/folder_edit.png" width="48" height="48" border="0" />'); ?><br />
             	Edit Teams</li>
             </ul> 

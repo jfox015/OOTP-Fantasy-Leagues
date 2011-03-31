@@ -28,6 +28,7 @@
 						$division_options = $division_options + array($id=>$divisionData['division_name']);
 					}
 				foreach($thisItem['divisions'] as $id=>$divisionData) { 
+				
 				?>
                 <tr class='title'>
                     <td colspan='6' class='lhl'><?php echo($divisionData['division_name']); ?></td></tr>

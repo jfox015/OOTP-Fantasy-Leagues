@@ -141,75 +141,97 @@
 			
 		        <br class="clear" />
 				<p>
-                
-                
-                
-				<table cellpadding=5 cellspacing=0 border=0 width=100%>
-                
-                <tr valign=top>
-                <td><b>Scoring</b>:</td>
-                <td>&nbsp;</td>
-                <td><?php print($scoring_type_str); ?></td>
+				<table cellpadding="5" cellspacing="0" border="0" width="100%">
+                <tr valign="top">
+                    <td><b>Scoring</b>:</td>
+                    <td>&nbsp;</td>
+                    <td><?php print($scoring_type_str); ?></td>
                 </tr>
                 
-                <tr valign=top><td><b>Draft</b>:</td>
-                <td>&nbsp;</td>
-                <td><table border=0 cellpadding=1 cellspacing=0><tr valign=top><td>&#149;</td>
-                <td> Draft, <?php if (isset($draftDate) && $draftDate != -1 && $draftDate != EMPTY_DATE_TIME_STR) { echo(date('m/d/Y', strtotime($draftDate))." at ".date('h:i A T',strtotime($draftDate))); } else { echo("A draft date has not been set"); } ?></td>
-                </tr><tr valign=top><td>&#149;</td>
-                <td><?php echo($draftRounds); ?> Rounds, <?php echo(($draftTimer != -1) ? 'Timed picks' :'no time limit'); ?></td>
-                </tr></table></td>
-                </tr><tr valign=top><td><b>Player Pool</b>:</td>
-                <td>&nbsp;</td>
-                <td>All Players</td>
+                <tr valign="top"><td><b>Draft</b>:</td>
+                    <td>&nbsp;</td>
+                    <td>
+                    <table border="0" cellpadding="1" cellspacing="0">
+                    <tr valign="top">
+                    <td>&#149;</td>
+                    <td> Draft, <?php if (isset($draftDate) && $draftDate != -1 && $draftDate != EMPTY_DATE_TIME_STR) { echo(date('m/d/Y', strtotime($draftDate))." at ".date('h:i A T',strtotime($draftDate))); } else { echo("A draft date has not been set"); } ?></td>
+                    </tr>
+                    <tr valign="top">
+                    <td>&#149;</td>
+                    <td><?php echo($draftRounds); ?> Rounds, <?php echo(($draftTimer != -1) ? 'Timed picks' :'no time limit'); ?></td>
+                    </tr></table>
+                    
+                    </td>
+                </tr>
+                
+                <tr valign="top">
+                	<td><b>Player Pool</b>:</td>
+                	<td>&nbsp;</td>
+                	<td>All Players</td>
+					
+				</tr>
                 <?php 
 				if (isset($rosters) && sizeof($rosters) > 0) { 
 					$posStr = "";
-                	foreach($rosters as $pos => $data) {
+					foreach($rosters as $pos => $data) {
 						if ($pos < 100) { 
-							if (!empty($posStr)) { $posStr .= ", "; }
+							if (!empty($posStr)) { $posStr .= ", "; } // end IF 
 							$posStr .= get_pos($pos);
-						}
-					}
+						} // end IF 
+					} // end FOREACH
 					?>
+                <tr valign="top">
+                    <td><b>Positions</b>:</td>
+                    <td>&nbsp;</td>
+                    <td><?php echo($posStr); ?></td>
                 </tr>
-                <tr valign=top><td><b>Positions</b>:</td>
-                <td>&nbsp;</td>
-                <td><?php echo($posStr); ?></td>
+				<?php 
+				} // end IF isset($rosters)
+				?>
+				<tr valign="top">
+                    <td><b>Eligibility</b>:</td>
+                    <td>&nbsp;</td>
+                    <td>Players are eligible at their primary position, plus positions they've 
+                    played <?php echo($config['min_game_last']); ?> games last year or <?php echo($config['min_game_current']); ?> games this year.</td>
                 </tr>
-				<?php } ?>
-				<tr valign=top><td><b>Eligibility</b>:</td>
-                <td>&nbsp;</td>
-                <td>Players are eligible at their primary position, plus positions they've 
-                played <?php echo($config['min_game_last']); ?> games last year or <?php echo($config['min_game_current']); ?> games this year.</td>
-                </tr><tr valign=top><td><b>Transactions</b>:</td>
-                <td>&nbsp;</td>
-                <td><table border=0 cellpadding=1 cellspacing=0><tr valign=top><td>&#149;</td>
-                <td>Lineups are set once for the start of each period.<br>Deadline is anytime before the game admin uploads and processes the current sim.</td>
-                </tr><tr valign=top><td>&#149;</td>
-                <td>Owners may set lineups and change players' positions from a list of their eligible positions.</td>
+                
+                <tr valign="top">
+                    <td><b>Transactions</b>:</td>
+                    <td>&nbsp;</td>
+                    <td>
+                    <table border="0" cellpadding="1" cellspacing="0">
+                    <tr valign="top">
+                        <td>&#149;</td>
+                        <td>Lineups are set once for the start of each period.<br>Deadline is anytime before the game admin uploads and processes the current sim.</td>
+                    </tr>
+                    <tr valign="top">
+                        <td>&#149;</td>
+                        <td>Owners may set lineups and change players' positions from a list of their eligible positions.</td>
+                    </tr>
+                    <?php if ($config['useWaivers'] != -1) { ?>
+                    <tr valign="top">
+                    	<td>&#149;</td>
+                    	<td>Add/drops are handled by a waivers process.</td>
+                    </tr>
+                    <?php } ?>
+                    </table>
+                    </td>
                 </tr>
                 <?php if ($config['useWaivers'] != -1) { ?>
-                <tr valign=top><td>&#149;</td>
-                <td>Add/drops are handled by a waivers process.</td>
-                </tr>
-                <?php } ?>
-                </table></td>
-                </tr>
-                <?php if ($config['useWaivers'] != -1) { ?>
-                <tr valign=top>
+                <tr valign="top">
                 	<td><b>Waivers</b>:</td>
                     <td>&nbsp;</td>
-                    <td><table border=0 cellpadding=1 cellspacing=0>
-                    <tr valign=top>
+                    <td>
+                    <table border="0" cellpadding="1" cellspacing="0">
+                    <tr valign="top">
                         <td>&#149;</td>
                         <td>Inital waivers order is the reversed order of the draft.</td>
                     </tr>
-                    <tr valign=top>
+                    <tr valign="top">
                         <td>&#149;</td>
                         <td>Each time a team makes a waivers pick, it is moved to the bottom of the waivers list.</td>
                     </tr>
-                    <tr valign=top>
+                    <tr valign="top">
                         <td>&#149;</td>
                         <td>The order of execution of waiver picks is random generated for each period.</td>
                     </tr>
@@ -220,7 +242,8 @@
                 <tr valign="top">
                 	<td><b>Trading</b>:</td>
                     <td>&nbsp;</td>
-                    <td><table border=0 cellpadding=1 cellspacing=0>
+                    <td>
+                    <table border="0" cellpadding="1" cellspacing="0">
                     <tr valign="top">
                         <td>&#149;</td>
                         <td>Teams are allowed to initatate and react to trades.</td>
@@ -243,11 +266,11 @@
                    	<tr valign="top">
                         <td>&nbsp</td>
                         <td>
-                        <table border=0 cellpadding=1 cellspacing=0>
+                        <table border="0" cellpadding="1" cellspacing="0">
                         <tr valign="top">
-                        <td width"=25">&nbsp;</td>
-                        <td> &#149;</td>
-                        <td>A trade is voided if it recieves <?php print($config['minProtests']); ?> protests from the league.</td>
+                            <td width"=25">&nbsp;</td>
+                            <td> &#149;</td>
+                            <td>A trade is voided if it recieves <?php print($config['minProtests']); ?> protests from the league.</td>
                         </tr>
                         </table>
                         </td>
@@ -257,11 +280,11 @@
                     <tr valign="top">
                         <td>&nbsp</td>
                         <td>
-                        <table border=0 cellpadding=1 cellspacing=0>
+                        <table border="0" cellpadding="1" cellspacing="0">
                         <tr valign="top">
-                        <td width"=25">&nbsp;</td>
-                        <td> &#149;</td>
-                        <td>Owners have <?php print($config['protestPeriodDays']); ?> days after a trade is accepted to log a protest.</td>
+                            <td width"=25">&nbsp;</td>
+                            <td> &#149;</td>
+                            <td>Owners have <?php print($config['protestPeriodDays']); ?> days after a trade is accepted to log a protest.</td>
                         </tr>
                         </table>
                         </td>
@@ -286,11 +309,11 @@
                    	<tr valign="top">
                         <td>&nbsp</td>
                         <td>
-                        <table border=0 cellpadding=1 cellspacing=0>
+                        <table border="0" cellpadding="1" cellspacing="0">
                         <tr valign="top">
-                        <td width"=25">&nbsp;</td>
-                        <td> &#149;</td>
-                        <td>The default expiration time for trades is <?php print((($config['defaultExpiration']==100)?" the following sim period":$config['defaultExpiration']." Days")); ?>.</td>
+                            <td width"=25">&nbsp;</td>
+                            <td> &#149;</td>
+                            <td>The default expiration time for trades is <?php print((($config['defaultExpiration']==100)?" the following sim period":$config['defaultExpiration']." Days")); ?>.</td>
                        	</tr>
                         </table>
                         </td>
@@ -300,13 +323,20 @@
                     </table>
                 </tr>
                 <?php } ?>
-                </table></td>
+                <tr valign="top"><td><b>Schedule</b>:</td>
+                	<td>&nbsp;</td>
+                	<td>Weekly scoring periods, starting on Sundays.</td>
+                </tr>
+                <?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
+                <tr valign="top"><td><b>Playoffs</b>:</td>
+                	<td>&nbsp;</td>
+                	<td>Playoffs start in Period <?php echo(($scorePeriods + 1)); ?> and last for <?php echo($playoffRounds); ?> Periods.</td>
+                </tr>
+				<?php } ?>
+                </table>
+                </td>
                 </tr> 
-                <tr valign=top><td><b>Schedule</b>:</td>
-                <td>&nbsp;</td>
-                <td>Weekly scoring periods, starting on Sundays.<br><br>
-                Playoffs start in Period <?php echo(($scorePeriods + 1)); ?> and last for <?php echo($playoffRounds); ?> Periods.</td>
-                </tr></table>
+                </table>
 		        <p>&nbsp;</p>
 			</div>
 		</div>

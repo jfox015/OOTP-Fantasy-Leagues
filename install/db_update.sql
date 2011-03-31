@@ -35,6 +35,7 @@ INSERT INTO `fantasy_leagues_scoring_pitching` (`league_id`, `scoring_type`, `ty
 INSERT INTO `fantasy_leagues_scoring_pitching` (`league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(0, 2, 29, 0, 32, 0, 34, 0, 38, 0, 52, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 INSERT INTO `fantasy_leagues_scoring_pitching` (`league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(0, 3, 29, 0, 34, 0, 38, 0, 52, 0, 54, 0, 32, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 INSERT INTO `fantasy_leagues_scoring_pitching` (`league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(0, 4, 29, 7, 30, -5, 38, 1, 34, 1, 37, -1, 60, -1, 54, 10, 56, 10, 32, 5, 61, -3, -1, -1, -1, -1);
+ALTER TABLE `fantasy_players` ADD `rating` FLOAT NOT NULL DEFAULT '0', ADD `rank` SMALLINT NOT NULL DEFAULT '0', ADD `last_rank` SMALLINT NOT NULL DEFAULT '0', ADD `2nd_last_rank` SMALLINT NOT NULL DEFAULT '0';
 DROP TABLE IF EXISTS `fantasy_players_scoring`;
 DROP TABLE IF EXISTS `fantasy_sim_summary`;
 DROP TABLE IF EXISTS `fantasy_teams_scoring`;
@@ -77,3 +78,4 @@ INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('defaultExpiration
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('minProtests', '3');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('protestPeriodDays', '3');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('limit_load_all_sql', '1');
+UPDATE `fantasy_leagues_types` SET `active` = 1 WHERE id = 1 OR id = 2 OR id = 3;

@@ -2012,23 +2012,34 @@ class league_model extends base_model {
 			case LEAGUE_SCORING_ROTO:
 			case LEAGUE_SCORING_ROTO_5X5:
 			case LEAGUE_SCORING_ROTO_PLUS:
+				$rules = $this->getScoringRules();
 				$teams = array();
 				$this->db->flush_cache();
-				$this->db->select('fantasy_teams.id, teamname, teamnick, SUM(value_0) as val_0, SUM(value_1) as val_1, SUM(value_2) as val_2, SUM(value_3) as val_3, SUM(value_4) as val_4, 
+				$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, SUM(value_0) as val_0, SUM(value_1) as val_1, SUM(value_2) as val_2, SUM(value_3) as val_3, SUM(value_4) as val_4, 
 				SUM(value_5) as val_5, SUM(value_6) as val_6, SUM(value_7) as val_7, SUM(value_8) as val_8, SUM(value_9) as val_9, 
 				SUM(value_10) as val_10, SUM(value_11) as val_11, SUM(total) as total');
-				$this->db->join('fantasy_teams_scoring','fantasy_teams_scoring.team_id = fantasy_teams.id','left');
+				$this->db->join($this->tables['TEAMS'],'fantasy_teams_scoring.team_id = '.$this->tables['TEAMS'].'.id','right outer');
 				$this->db->where('fantasy_teams.league_id',$league_id);
 				if ($curr_period_id !== false) {
 					$this->db->where('scoring_period_id < '.$curr_period_id);
 				} // END if
-				$this->db->group_by('fantasy_teams_scoring.team_id');
+				$this->db->group_by('fantasy_teams.id');
 				$this->db->order_by('total','desc');
-				$query = $this->db->get($this->tables['TEAMS']);
-				
+				$query = $this->db->get('fantasy_teams_scoring');
+				//print($this->db->last_query()."<br />");
 				$teams = array();
 				if ($query->num_rows() > 0) {
 					foreach ($query->result() as $row) {
+						$catCount = 0;
+						$types = array('batting','pitching');
+						foreach($types as $type) {
+							foreach($rules[$type] as $cat => $val) {
+								$colName = 'val_'.$catCount;
+								if (!isset($row->$colName)) {
+										   
+								}
+							}
+						}
 						$teams = $teams + array($row->id=>array('teamname'=>$row->teamname,'teamnick'=>$row->teamnick,
 																'value_0' => $row->val_0, 'value_1' => $row->val_1, 'value_2' => $row->val_2, 'value_3' => $row->val_3, 'value_4' => $row->val_4,
 																'value_5' => $row->val_5, 'value_6' => $row->val_6, 'value_7' => $row->val_7, 'value_8' => $row->val_8, 'value_9' => $row->val_9,

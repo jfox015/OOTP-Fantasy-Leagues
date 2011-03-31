@@ -79,6 +79,8 @@ before comepleting your password reset request.
 <br /><br />
 If you have already received a reset code, <a href="[SITE_URL]user/forgotten_password_verify">enter it now</a>.
 ';
+$lang['league_start_standings'] = "The [GAME_YEAR] season begins on <b>[START_DATE]</b>. Check back after the season begins for up to date league standings.";
+
 
 //DEPRECATED
 //$lang['site_name'] = "OOTP Fantasy Leagues";

@@ -871,11 +871,11 @@ class draft_model extends base_model {
 		if ($userId === false) return;
 		$picks = array();
 		
-		$this->db->select('rank,'.$this->tables['DRAFT_LIST'].'.player_id, first_name, last_name, position, role');
+		$this->db->select($this->tables['DRAFT_LIST'].'.rank,'.$this->tables['DRAFT_LIST'].'.player_id, first_name, last_name, position, role');
 		$this->db->where('owner_id',$userId);
 		$this->db->join('fantasy_players','fantasy_players.id = '.$this->tables['DRAFT_LIST'].'.player_id','left');
 		$this->db->join('players','fantasy_players.player_id = players.player_id','right outer');
-		$this->db->order_by('rank','asc');
+		$this->db->order_by($this->tables['DRAFT_LIST'].'.rank','asc');
 		$query = $this->db->get($this->tables['DRAFT_LIST']);
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
