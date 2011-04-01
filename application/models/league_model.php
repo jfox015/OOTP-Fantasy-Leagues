@@ -1928,7 +1928,9 @@ class league_model extends base_model {
 		
 		if ($league_id === false) { $league_id = $this->id; }
 		
-		$this->db->select('id, teamname, teamnick, owner_id');
+		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, owner_id, firstName, lastName, email');
+		$this->db->join('users_core','users_core.id = '.$this->tables['TEAMS'].'.owner_id','left');
+		$this->db->join('users_meta','users_meta.userId = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->where('league_id',$league_id);
 		$this->db->order_by('id','asc');
 		$query2 = $this->db->get($this->tables['TEAMS']);
@@ -1940,8 +1942,12 @@ class league_model extends base_model {
 				if ($selectBox != false) { 
 					$teams = $teams + array($trow->id=>$trow->teamname." ".$trow->teamnick);
 				} else {
+					$ownerName = $trow->firstName." ".$trow->lastName;
+					if ($trow->owner_id == $this->commissioner_id) {
+						$ownerName .= " (Commisioner)";
+					}
 					$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,
-													     'owner_id'=>$trow->owner_id));
+													     'owner_id'=>$trow->owner_id,'owner_name'=>$ownerName,'owner_email'=>$trow->email));
 				}
 			}
 		}

@@ -64,7 +64,9 @@ function league_nav($league_id = false, $league_name = false, $show_admin = fals
 	array_push($nav,array('url'=>'/draft/load/league_id/'.$league_id,'label'=>'Draft'));
 	//}
 	//array_push($nav,array('url'=>'/league/messages/id/'.$league_id,'label'=>'League Message Board'));
-	array_push($nav,array('url'=>'/league/schedule/id/'.$league_id,'label'=>'Schedule'));
+	if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+		array_push($nav,array('url'=>'/league/schedule/id/'.$league_id,'label'=>'Schedule'));
+	}
 	array_push($nav,array('url'=>'/league/transactions/id/'.$league_id,'label'=>'Transactions'));
 	return $nav;
 }

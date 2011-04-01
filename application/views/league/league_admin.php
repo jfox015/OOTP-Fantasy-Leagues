@@ -3,7 +3,8 @@
 		
 	});
     </script>
-    <div id="center-column" class="dashboard">
+       
+    <div id="column-center" class="dashboard">
         <div class="top-bar"> <h1><?php echo $subTitle; ?></h1></div>
         <br class="clear" />
 		
@@ -14,18 +15,14 @@
 	    </tr>
 	    <tr>
 	    	<td class="hsc2_l" style='padding:6px'>
-			<h3>Pre-Season Functions</h3>
+			<h3>League Settings</h3>
             <ul class="iconmenu">
-            	<?php
-                if ((isset($league_info) && $league_info->current_date <= $league_info->start_date) || !isset($league_info)) { ?>
-				<li><?php echo anchor('/league/submit/mode/edit/id/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/notes_edit.png" width="48" height="48" border="0" />'); ?><br />
+            	<li><?php echo anchor('/league/submit/mode/edit/id/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/notes_edit.png" width="48" height="48" border="0" />'); ?><br />
             	Edit League Details</li>
-                <?php } else { ?>
-				<li><?php echo anchor('/league/configInfo/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
-				Review League Settings</li><?php } ?>
-					
+                <li><?php echo anchor('/league/configInfo/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
+				Review League Settings</li>
                 <li><?php echo anchor('/league/avatar/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/image_edit.png" width="48" height="48" border="0" />'); ?><br />
-            	League Team Avatar</li>
+            	League Avatar</li>
                 <?php 
 				if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
                 <li><?php echo anchor('/divisions/showList/league_id/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/folder_edit.png" width="48" height="48" border="0" />'); ?><br />
@@ -38,7 +35,7 @@
             <h3>General Functions</h3> 
             <ul class="iconmenu">  
             	<li><?php echo anchor('/league/leagueInvites/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
-            	Pending Owner Invites</li>
+            	View Pending Owner Invites</li>
                 <?php if ($this->params['config']['useWaivers'] == 1) { ?>
                 <li><?php echo anchor('/league/waiverClaims/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/user_accept.png" width="48" height="48" border="0" />'); ?><br />
             	Pending Waiver Claims</li>
@@ -94,6 +91,12 @@
 		</tr>
 		</table>
 		</div>
+        
+        <div id="right-column">
+        <span class="notice">
+        <?php print($leeague_admin_intro_str); ?>
+        </span>
+        </div>
         
         <p>&nbsp;</p>
     </div>

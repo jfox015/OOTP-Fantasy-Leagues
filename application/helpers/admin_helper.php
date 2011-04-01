@@ -388,6 +388,7 @@ if ( ! function_exists('createLeagueSchedules')) {
 		// LOAD all Fantasy leagues
 		$ci->db->flush_cache();
 		$ci->db->select("id,league_name");
+		$ci->db->where("league_type",LEAGUE_SCORING_HEADTOHEAD);
 		$query = $ci->db->get("fantasy_leagues");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {

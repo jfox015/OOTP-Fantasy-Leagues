@@ -215,7 +215,7 @@ class league extends BaseEditor {
 	}
 	/**
 	 *	ADMIN.
-	 *	Draws the LEague Admin Dashboard
+	 *	Draws the League Admin Dashboard
 	 *
 	 */
 	public function admin() {
@@ -225,6 +225,7 @@ class league extends BaseEditor {
 			$this->load->model('draft_model');
 			$this->dataModel->load($this->uriVars['id']);
 			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+				$this->data['leeague_admin_intro_str'] = $this->lang->line('leeague_admin_intro_str');
 				$this->data['subTitle'] = "League Admin";
 				$this->data['league_id'] = $this->uriVars['id'];
 				$this->data['draftStatus'] = $this->draft_model->getDraftStatus($this->dataModel->id);
@@ -390,6 +391,13 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/**
+	 *	TEAM ADMIN.
+	 *	Draws and accepts changes to the team structure from the team admin screen.
+	 *	
+	 *	@version 1.1 - Edit 1.0.4, changed array feeding the list based on scoring type
+	 *
+	 */
 	public function teamAdmin() {
 		if ($this->params['loggedIn']) {
 			$this->init();
@@ -408,12 +416,19 @@ class league extends BaseEditor {
 				foreach($teamList as $team_id) {
 					$this->form_validation->set_rules($team_id.'_teamname', 'Team '.$team_id.' team name', 'required|trim');
 					$this->form_validation->set_rules($team_id.'_teamnick', 'Team '.$team_id.' nick name', 'required|trim');
-					$this->form_validation->set_rules($team_id.'_division_id', 'Team '.$team_id.' nick name', 'required');
+					if ($this->data['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+						$this->form_validation->set_rules($team_id.'_division_id', 'Team '.$team_id.' nick name', 'required');
+					}
 				} // END foreach
 				$this->form_validation->set_error_delimiters('<p class="error">', '</p>');
 				
 				if ($this->form_validation->run() == false) {
-					$this->data['thisItem']['divisions'] = $this->dataModel->getFullLeageDetails();
+					
+					if ($this->data['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+						$this->data['thisItem']['divisions'] = $this->dataModel->getFullLeageDetails();
+					} else {
+						$this->data['thisItem']['teams'] = $this->dataModel->getTeamDetails();
+					}
 					$this->params['subTitle'] = "League Admin";
 					$this->data['subTitle'] = "Edit Teams for ".$this->dataModel->league_name;
 					$this->data['league_id'] = $this->dataModel->id;
@@ -1252,26 +1267,27 @@ class league extends BaseEditor {
 		$form->br();
 		$form->textarea('description','Description:','',($this->input->post('description')) ? $this->input->post('description') : $this->dataModel->description,array('rows'=>5,'cols'=>65));
 		$form->br();
-		$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
-		$form->br();
-		$league_type = ($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type;
-		$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',$league_type,'required');
-		$this->data['league_type'] = $league_type;
-		$form->br();
-		$form->select('max_teams|max_teams',array(8=>8,10=>10,12=>12),'No. of Teams',($this->input->post('max_teams')) ? $this->input->post('max_teams') : $this->dataModel->max_teams,'required');
-		$form->br();
-		if ($this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
-			$form->select('league_status|league_status',loadSimpleDataList('leagueStatus'),'Status',($this->input->post('league_status')) ? $this->input->post('league_status') : $this->dataModel->league_status,'required');
+		if ($this->mode != 'edit') {
+			$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
 			$form->br();
+			$league_type = ($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type;
+			$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',$league_type,'required');
+			$this->data['league_type'] = $league_type;
+			$form->br();
+			$form->select('max_teams|max_teams',array(8=>8,10=>10,12=>12),'No. of Teams',($this->input->post('max_teams')) ? $this->input->post('max_teams') : $this->dataModel->max_teams,'required');
+			$form->br();
+			if ($this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
+				$form->select('league_status|league_status',loadSimpleDataList('leagueStatus'),'Status',($this->input->post('league_status')) ? $this->input->post('league_status') : $this->dataModel->league_status,'required');
+				$form->br();
+			}
+			$form->space();
+			$form->fieldset('Head To Head Options',array('id'=>'optHeadToHead'));
+			$form->select('games_per_team|games_per_team',array(1=>1,2=>2,3=>3),'Games per team',($this->input->post('games_per_team')) ? $this->input->post('games_per_team') : $this->dataModel->games_per_team);
+			$form->br();
+			$form->select('regular_scoring_periods|regular_scoring_periods',array(24=>25,23=>24,22=>23,21=>22,20=>21),'Playoffs begin in week',($this->input->post('regular_scoring_periods')) ? $this->input->post('regular_scoring_periods') : $this->dataModel->regular_scoring_periods);
+			$form->br();
+			$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
 		}
-		$form->space();
-		$form->fieldset('Head To Head Options',array('id'=>'optHeadToHead'));
-		$form->select('games_per_team|games_per_team',array(1=>1,2=>2,3=>3),'Games per team',($this->input->post('games_per_team')) ? $this->input->post('games_per_team') : $this->dataModel->games_per_team);
-		$form->br();
-		$form->select('regular_scoring_periods|regular_scoring_periods',array(24=>25,23=>24,22=>23,21=>22,20=>21),'Playoffs begin in week',($this->input->post('regular_scoring_periods')) ? $this->input->post('regular_scoring_periods') : $this->dataModel->regular_scoring_periods);
-		$form->br();
-		$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
-
 		$form->fieldset('',array('class'=>'button_bar'));
 		$form->button('Delete','delete','button',array('class'=>'button'));	
 		$form->nobr();
@@ -1306,7 +1322,7 @@ class league extends BaseEditor {
 				
 				$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
 				$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
-				$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
+				$this->data['thisItem']['league_id'] = $this->dataModel->id;
 				$this->data['thisItem']['description'] = $this->dataModel->description;
 				$this->data['thisItem']['max_teams'] = $this->dataModel->max_teams;
 				$accessType = loadSimpleDataList('accessType');
@@ -1348,8 +1364,12 @@ class league extends BaseEditor {
 	protected function showInfo() {
 		$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
 		$this->data['thisItem']['description'] = $this->dataModel->description; 
-		
-		$this->data['thisItem']['divisions'] = $this->dataModel->getFullLeageDetails();
+		$this->data['scoring_type'] = $this->dataModel->getScoringType();
+		if ($this->data['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+			$this->data['thisItem']['divisions'] = $this->dataModel->getFullLeageDetails();
+		} else {
+			$this->data['thisItem']['teams'] = $this->dataModel->getTeamDetails();
+		}
 		
 		$this->params['subTitle'] = "Fantasy League Overview";
 		
