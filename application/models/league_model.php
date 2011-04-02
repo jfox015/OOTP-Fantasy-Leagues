@@ -1576,8 +1576,8 @@ class league_model extends base_model {
 						$this->db->where($field." <> -1");
 						$this->db->order_by($field, 'desc');
 						$query = $this->db->get($this->tables['TEAMS_SCORING']);
-						print($this->db->last_query()."<br />");
-						print("num results = ".$query->num_rows()."<br />");
+						//print($this->db->last_query()."<br />");
+						//print("num results = ".$query->num_rows()."<br />");
 						if ($query->num_rows() > 0) {
 							foreach ($query->result() as $row) {
 								if (isset($teams[$row->team_id])) {

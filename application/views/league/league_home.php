@@ -107,9 +107,11 @@
         </table>
         </div>
 		<?php } // END if ($draftInfo['draftStatus'] > 0 
-		} // if (isset($userDrafts) ?>
-        <?php 
-        if (isset($thisItem['divisions'])) {  ?>
+		} // if (isset($userDrafts) 
+					   
+		// STANDINGS MODULE
+        if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			if (isset($thisItem['divisions'])) {  ?>
         <div class='textbox'>
             <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="213px">
             <?php 
@@ -129,7 +131,7 @@
             $leadG = 0;
             if (isset($divisionData['teams']) && sizeof($divisionData['teams']) > 0) { 
                 foreach($divisionData['teams'] as $teamId => $teamData) { 
-                if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
+                if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }  // END if
                 ?>
             <tr style="background-color:<?php echo($color); ?>">
                 <td class='hsc2_l'><?php echo(anchor('/team/info/'.$teamId,$teamData['teamnick'])); ?></td>
@@ -140,30 +142,64 @@
                     $leadG = $teamData['g']; $leadW = $teamData['w']; $gb = "--"; 
                 } else {
                     $gb = $leadW - $teamData['w'];
-                    if ((($leadG-$teamData['g'])%2) != 0) { $gb .= "<sup>1/2</sup>"; }
-                }
+                    if ((($leadG-$teamData['g'])%2) != 0) { $gb .= "<sup>1/2</sup>"; } // END if
+                } // END if ($rowcount == 0) {)
                 ?>
                 <td class='hsc2_l'><?php echo($gb); ?></td>
+            </tr>
+                <?php
+                $rowcount++;
+                } // END foreach($divisionData['teams'] 
+            } else { ?>
+            <tr>
+                <td class="hsc2_l" colspan="4">No teams were found</td>
+            </tr>
+            <?php } // END if (isset($divisionData['teams']
+				} // END foreach($thisItem['divisions']
+            } else { ?>
+            <tr class='title'>
+                <td class="lhl">No divisions were found for this league.</td>
+            </tr>
+            <?php } // END if (isset($divisionData['teams']
+				}  // END if (isset($thisItem['divisions'])
+			} // END if ($scoring_type ==LEAGUE_SCORING_HEADTOHEAD
+
+			if ($scoring_type != LEAGUE_SCORING_HEADTOHEAD) {
+				if (isset($thisItem['teams']) && sizeof($thisItem['teams']) > 0) { 
+			?>
+            <div class='textbox'>
+            <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="213px">
+            <tr class='title'>
+                <td colspan='5' class='lhl'>Current Standings</td>
+            </tr>
+            <tr class='headline'>
+                <td class='hsc2_c'>Team</td>
+                <td class='hsc2_c'>Total</td>
+            </tr>
+            <?php 
+            $rowcount = 0;            
+                foreach($thisItem['teams'] as $teamId => $teamData) { 
+                if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
+                ?>
+            <tr style="background-color:<?php echo($color); ?>">
+                <td class='hsc2_l'><?php echo(anchor('/team/info/'.$teamId,$teamData['teamnick'])); ?></td>
+                <td class='hsc2_l'><?php echo($teamData['total']); ?></td>
             </tr>
                 <?php
                 $rowcount++;
                 }
             } else { ?>
             <tr>
-                <td class="hsc2_l" colspan="4">No Teams were Found</td>
-            </tr>
-            <?php } ?>
-
+                <td class="hsc2_l" colspan="4">No teams were found</td>
+            </tr> 
+            <?php } 
+			} ?>
             
-            <?php } // END foreach($divisions)
-            } else { ?>
-            <tr class='title'>
-                <td class="lhl">No divisions were found for this league.</td>
-            </tr>
-            <?php } ?>
+            
             </table>
         </div>  <!-- end batting stat div -->
-        <?php } // END if isset($divisions) 
+        
+        <?php
 
 		/*------------------------------------------------
 		/	LEAGUE GAME RESULTS MODULE

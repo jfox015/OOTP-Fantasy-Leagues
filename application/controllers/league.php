@@ -110,11 +110,10 @@ class league extends BaseEditor {
 		
 		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
 			$this->data['thisItem']['divisions'] = $leagueStandings;
-			$view = $this->views['STANDINGS_HEADTOHEAD'];
 		} else {
 			$this->data['thisItem']['teams'] = $leagueStandings ;
-			$view = $this->views['STANDINGS_ROTISSERIE'];
 		}
+		$this->data['scoring_type']=$scoring_type;
 		
 		// DRAFT DASHBOARD 
 		$session_auth = $this->session->userdata($this->config->item('session_auth'));
