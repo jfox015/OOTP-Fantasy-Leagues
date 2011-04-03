@@ -11,6 +11,11 @@ $lang['sim_player_scoring'] = '<b>Processing Player Scoring Results.</b><br />';
 $lang['sim_player_count'] = '[PLAYER_COUNT] players loaded for stat proicessing.<br />';
 $lang['sim_players_processed_result'] = '[PLAYER_COUNT] players scoring stats processed.<br /><br />';
 
+$lang['sim_player_ratings'] = '<b>Processing Player Rating Update.</b><br />';
+$lang['sim_player_rating_count'] = '[PLAYER_COUNT] players loaded for ratings update.<br />';
+$lang['sim_player_rating_period'] = 'Ratings start on [START_DATE] and end on [END_DATE] and enocmass [DAYS] days.<br />';
+$lang['sim_players_rating_result'] = '[PLAYER_COUNT] players ratings processed.<br /><br />';
+
 $lang['sim_rule_count'] = '[RULES_COUNT] scoring rules loaded for sim.<br /><br />';
 
 $lang['sim_no_teams'] = '<b>Error:</b> No teams were found.<br /><br />';

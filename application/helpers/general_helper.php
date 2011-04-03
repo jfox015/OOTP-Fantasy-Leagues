@@ -797,8 +797,8 @@ function get_stats_for_scoring($type=1,$scoring_type = 1) {
 	switch ($type) {
 		case 1:
 			$stats = array(
-			2=>"AB",
-			1=>"PA",
+			//2=>"AB",
+			//1=>"PA",
 			3=>"1B",
 			6=>"2B",
 			7=>"3B",

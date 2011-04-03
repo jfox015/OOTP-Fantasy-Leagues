@@ -1109,6 +1109,30 @@ class admin extends MY_Controller {
 		$this->output->set_output($result);
 	}
 	/**
+	 *	PLAYER RATINGS.
+	 */
+	function playerRatings() {
+		$result = '';
+		$status = '';
+		// CHECK FOR DUPLICATE
+		$this->load->model('player_model');
+		$mess = $this->player_model->updatePlayerRatings(15,getCurrentScoringPeriod($this->ootp_league_model->current_date),$this->params['config']['ootp_league_id']);
+		
+		
+		if (empty($mess)) {
+			$status = "error:An error occured during processing.";
+		} else {
+			print($mess);
+			$status = "OK";
+		}
+		$code = 200;
+
+		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_output($result);
+	}
+	
+	/**
 	 *	CREATE SCORING SCHEDULE.
 	 */
 	function scoringSchedule() {

@@ -208,7 +208,7 @@
 			} ?>
             <?php if (isset($leagues) && sizeof($leagues) > 0) { ?>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar.png" width="48" height="48" border="0" />',array('rel'=>'games')); ?><br />
-            Generate Schedules for Leagues</li>
+            Generate Head-to-Head  Schedules</li>
             <?php } else { 
 				$hidden_funcs = true;
 			} 
@@ -231,8 +231,10 @@
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" border="0" />',array('rel'=>'upavail')); ?><br />
             Update Players</li>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
-           Update Player Elidgibility</li>
-           <?php 
+           	Update Player Elidgibility</li>
+			<li><?php echo anchor('/admin/playerRatings','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />'); ?><br />
+           	Update Player Ratings</li>
+           	<?php 
 			if (defined('ENV') && ENV != "live") { ?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'resetSim')); ?><br />
             Undo last Sim</li>
