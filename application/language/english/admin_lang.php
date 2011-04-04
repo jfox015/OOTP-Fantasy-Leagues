@@ -14,6 +14,12 @@ $lang['sim_players_processed_result'] = '[PLAYER_COUNT] players scoring stats pr
 $lang['sim_player_ratings'] = '<b>Processing Player Rating Update.</b><br />';
 $lang['sim_player_rating_count'] = '[PLAYER_COUNT] players loaded for ratings update.<br />';
 $lang['sim_player_rating_period'] = 'Ratings start on [START_DATE] and end on [END_DATE] and enocmass [DAYS] days.<br />';
+
+$lang['sim_player_rating_statload'] = 'Loading Stats for compiling AVG and STDDEV values.<br />';
+$lang['sim_player_rating_statcount'] = 'Loaded [BATTING_STAT_COUNT] Stats for batters and [PITCHING_STAT_COUNT] Stats for pitchers.<br />';
+
+$lang['sim_players_rating_processing'] = 'Processing Individual player ratings.<br /><br />';
+
 $lang['sim_players_rating_result'] = '[PLAYER_COUNT] players ratings processed.<br /><br />';
 
 $lang['sim_rule_count'] = '[RULES_COUNT] scoring rules loaded for sim.<br /><br />';
