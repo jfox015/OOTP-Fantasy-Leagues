@@ -660,9 +660,22 @@ class player_model extends base_model {
 		$query->free_result();
 		return $fantasy_stats;
 	}
-	
-	
-	
+	/**
+	 *	UPDATE PLAYER RATINGS.
+	 *	Loads players tstistical performance for the period in days specififed to compute the average 
+	 *	and standard population deviation values. Then, all players compiled stats for the given 
+	 *	period are loaded and rated based on coparison to these averages and stored in the 
+	 *	fantasy_players table.
+	 *
+	 *	@param	$ratingsPeriod		Number of days back to rate stats
+	 *	@param	$scoring_period		Scoring Period object
+	 *	@param	$ootp_league_id		OOTP League ID value, defaults to 100 if no value passed
+	 *	@return						Summary String
+	 *	@since						1.0.4
+	 *	@version					1.0
+	 *	@see						Controller->Admin->playerRatings()
+	 *
+	 */
 	public function updatePlayerRatings($ratingsPeriod = 15, $scoring_period = false, $ootp_league_id = 100) {
 		if (($scoring_period === false|| sizeof($scoring_period) < 1)) { return false; } // END if
 		
@@ -858,17 +871,18 @@ class player_model extends base_model {
 				$this->db->order_by($table.'.'.$qualifier,'desc');
 				$query = $this->db->get($this->tables['OOTP_GAMES']);
 				//$playerSum .= "Num of games found for player ".$row['first_name']." ".$row['last_name']." = ".$query->num_rows() .", status = ".$row['player_status']."<br/>";
-				print("-----------------------------------------<br />");
-				echo($this->db->last_query()."<br />");
+				//print("-----------------------------------------<br />");
+				//echo($this->db->last_query()."<br />");
 				$statCount = 0;
 				
-				print("playerId = ".$row['player_id']."<br />");
+				//print("playerId = ".$row['player_id']."<br />");
 				$rating = 0;
 				if ($query->num_rows() > 0) {
 					$pRow = $query->row();
 					$tmpQulaify = "sum_".$qualifier;
+					// ONLY PROCESS THIS PLAYER IS THERE ARE GOING TO BE STATS TO PROCESS
 					if ($pRow->$tmpQulaify > 0) {
-						print($qualifier." = ".$pRow->$tmpQulaify ."<br />");
+						//print($qualifier." = ".$pRow->$tmpQulaify ."<br />");
 						foreach($ratingsCats[$type] as $id => $val) {
 							$stat = strtolower(get_ll_cat($id, true));
 							$tmpStat = "sum_".$stat;
@@ -877,16 +891,16 @@ class player_model extends base_model {
 							if (($type == 1 && $id == 4) || ($type == 2 && $id == 36) || ($type == 2 && $id == 37)) {
 								$negative = true;
 							}
-							print($stat." = ".$pRow->$tmpStat."<br />");
+							//print($stat." = ".$pRow->$tmpStat."<br />");
 							$rawRating = $pRow->$tmpStat - $statTotals[$type][$stat]['avg'];
-							print("rawRating = ".$rawRating." (".$pRow->$tmpStat." / ".$statTotals[$type][$stat]['avg'].")<br />");
+							//print("rawRating = ".$rawRating." (".$pRow->$tmpStat." / ".$statTotals[$type][$stat]['avg'].")<br />");
 							if ($statTotals[$type][$stat]['stddev'] != 0) {
 								$upRating = $rawRating / $statTotals[$type][$stat]['stddev'];
 								print("rawRating /stdev = ".$upRating." (".$rawRating." / ".$statTotals[$type][$stat]['stddev'].")<br />");
 							} else {
 								$upRating = $rawRating;
 							}
-							print("negative stat = ".(($negative) ? 'true':'false')."<br />");
+							//print("negative stat = ".(($negative) ? 'true':'false')."<br />");
 							if ($negative) {
 								$rating -= $upRating;
 							} else {
@@ -894,23 +908,25 @@ class player_model extends base_model {
 							}
 							$statCount++;
 						}
-						print("final rating = ".$rating."<br />");
+						//print("final rating = ".$rating."<br />");
 					}
 				}
+				$query->free_result();
+				// GET THE AVERAGE OVERALL RATING
 				if ($rating != 0 && $statCount != 0) {
 					$rating = $rating / $statCount;
 				}
-				$query->free_result();
+				// SAVE THE UPDATED RATING
 				$this->db->flush_cache();
 				$data = array('rating'=>$rating);
 				$this->db->where('player_id',$row['player_id']);
 				$this->db->update($this->tblName,$data);
 				$processCount++;
 			}
-			print("Players processed = ".$processCount."<br />");
+			$summary .= str_replace('[PLAYER_COUNT]',$processCount,$this->lang->line('sim_players_rating_result'));
 			
 		} else {
-			print("No Players processed<br />");
+			$summary .= $this->lang->line('sim_players_rating_no_players');
 		}
 		print("<br />".$summary."<br />");
 	}

@@ -21,6 +21,7 @@ $lang['sim_player_rating_statcount'] = 'Loaded [BATTING_STAT_COUNT] Stats for ba
 $lang['sim_players_rating_processing'] = 'Processing Individual player ratings.<br /><br />';
 
 $lang['sim_players_rating_result'] = '[PLAYER_COUNT] players ratings processed.<br /><br />';
+$lang['sim_players_rating_no_players'] = 'No players ratings were processed.<br /><br />';
 
 $lang['sim_rule_count'] = '[RULES_COUNT] scoring rules loaded for sim.<br /><br />';
 
