@@ -133,8 +133,9 @@ class players extends MY_Controller {
 				$this->data['title'] = $this->data['lgyear']." "."Pitching";
 			}
 			$showPts = (isset($scoring_type) && $scoring_type == LEAGUE_SCORING_HEADTOHEAD) ? true: false;
-			$this->data['colnames']=player_stat_column_headers($player_type, QUERY_STANDARD, $showPts);
-			$this->data['fields']=player_stat_fields_list($player_type, QUERY_STANDARD, $showPts);
+			$showRatings = (isset($scoring_type) && $scoring_type != LEAGUE_SCORING_HEADTOHEAD) ? true: false;
+			$this->data['colnames']=player_stat_column_headers($player_type, QUERY_STANDARD, $showPts, false, false, false, false,$showRatings);
+			$this->data['fields']=player_stat_fields_list($player_type, QUERY_STANDARD, $showPts, false, false, false, false,$showRatings);
 			
 			if (!function_exists('getSignedPlayerTeamIdsByLeague')) {
 				$this->load->helper('roster');

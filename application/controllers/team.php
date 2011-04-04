@@ -1399,16 +1399,11 @@ class team extends BaseEditor {
 			$this->data['limit']=$this->uriVars['limit'];
 			$this->data['startIndex']=$this->uriVars['startIndex'];
 			
-			$this->data['colnames']=player_stat_column_headers($player_type, QUERY_BASIC, true, false, true);
-			$this->data['fields'] = player_stat_fields_list($player_type, QUERY_BASIC, true, false, true);
+			$this->data['colnames']=player_stat_column_headers($player_type, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
+			$this->data['fields'] = player_stat_fields_list($player_type, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 		} else {
 			$this->data['fields'] = array('id','player_name','pos','position','role','injury_is_injured','injury_dl_left');
-		}
-		//echo("List type= = ".$this->uriVars['list_type']."<br />");
-		//echo("Search parsm = ".$this->uriVars['param']."<br />");
-		//echo("Search type = ".$this->uriVars['type']."<br />");
-		//echo("Return = ".(($returnArray === true) ? "true" : "false")."<br />");
-		
+		}		
 		$this->data['years'] = $this->ootp_league_model->getAllSeasons();
 		if (isset($this->uriVars['year'])) {
 			$this->data['lgyear'] = $this->uriVars['year'];
