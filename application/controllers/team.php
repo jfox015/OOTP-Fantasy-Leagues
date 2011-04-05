@@ -267,15 +267,15 @@ class team extends BaseEditor {
 			
 			$stats['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id2'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules);
 			$this->data['list_title'] = "Pitching";
-			$this->data['colnames']=player_stat_column_headers(2, QUERY_BASIC, true,false, true);
-			$this->data['fields'] = player_stat_fields_list(2, QUERY_BASIC, true,false, true);
+			$this->data['colnames']=player_stat_column_headers(2, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
+			$this->data['fields'] = player_stat_fields_list(2, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['player_stats'] = formatStatsForDisplay($stats['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
 			$this->data['formatted_stats']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			// BATTERS
 			$stats['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id2'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules);
 			$this->data['list_title'] = "Batting";
-			$this->data['colnames']=player_stat_column_headers(1, QUERY_BASIC, true,false, true);
-			$this->data['fields'] = player_stat_fields_list(1, QUERY_BASIC, true,false, true);
+			$this->data['colnames']=player_stat_column_headers(1, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
+			$this->data['fields'] = player_stat_fields_list(1, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['player_stats'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
 			$this->data['formatted_stats']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			
@@ -1398,7 +1398,7 @@ class team extends BaseEditor {
 			$this->data['title']=$title;
 			$this->data['limit']=$this->uriVars['limit'];
 			$this->data['startIndex']=$this->uriVars['startIndex'];
-			
+			$this->rules = $this->league_model->getScoringRules($this->uriVars['league_id'],$this->league_model->getScoringType($this->uriVars['league_id']),true);
 			$this->data['colnames']=player_stat_column_headers($player_type, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['fields'] = player_stat_fields_list($player_type, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 		} else {
@@ -1887,9 +1887,11 @@ class team extends BaseEditor {
 		if (!isset($this->league_model)) {
 			$this->load->model('league_model');
 		}
+		$scoring_type = 1;
 		$this->league_model->load($this->dataModel->league_id);
 		if ($this->league_model->id != -1) {
 			$league_name = $this->league_model->league_name;
+			$scoring_type = $this->league_model->getScoringType();
 		} else {
 			$league_name = "Unknown League";
 		}
@@ -1897,7 +1899,7 @@ class team extends BaseEditor {
 		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->league_model->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 			$lg_admin = true;
 		}
-		array_push($this->params['subNavSection'], league_nav($this->dataModel->league_id, $league_name,$lg_admin));
+		array_push($this->params['subNavSection'], league_nav($this->dataModel->league_id, $league_name,$lg_admin,true,$scoring_type));
 		
 		$tm_admin = false;
 		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->dataModel->owner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {

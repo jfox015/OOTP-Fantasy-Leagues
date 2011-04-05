@@ -693,6 +693,9 @@ class player_model extends base_model {
 		$summary = $this->lang->line('sim_player_ratings');
 		$day = 60*60*24;
 		$period_start = date('Y-m-d',((strtotime($scoring_period['date_end']))-($day*$ratingsPeriod)));
+		//print ("Period start = ".$period_start."<br />");
+		//print ("Period End = ".$scoring_period['date_end']."<br />");
+		//return true;
 		$statsTypes = array(1=>'batting',2=>'pitching');
 		$statCats = array();
 		$ratingsCats = array();

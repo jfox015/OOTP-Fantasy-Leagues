@@ -674,7 +674,11 @@
 				outHTML += '<td>'+item.s+'</td>';
 				outHTML += '<td>'+item.whip+'</td>';
 			}
-			outHTML += '<td>'+item.fpts+'</td>';
+			if (item.fpts != null) {
+				outHTML += '<td>'+item.fpts+'</td>';
+			} else if (item.rating != null) {
+				outHTML += '<td>'+item.rating+'</td>';
+			}
 			outHTML += '</tr>';
 			rownum++;
 		});

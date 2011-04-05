@@ -804,7 +804,7 @@ function get_pos_num($pos)
  *	@todo	Specify what stats fall under the associated Roto categories
  * 	@author	Jeff Fox
  */
-function get_stats_for_scoring($type=1,$scoring_type = 1) {
+function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 	$stats = array();
 	switch ($type) {
 		case 1:
@@ -828,16 +828,19 @@ function get_stats_for_scoring($type=1,$scoring_type = 1) {
 			//17=>"EBH",
 			//21=>"RC",
 			//22=>"RC/27",
-			58=>"CS",
-			//,0=>"GS",
-			//18=>"AVG",
-			//19=>"OBP",
-			//20=>"SLG",
-			//23=>"ISO",
-			//24=>"TAVG",
-			//25=>"OPS"
-			//26=>"VORP"
-			);
+			58=>"CS");
+			if ($scoring_type != LEAGUE_SCORING_HEADTOHEAD) {
+				$stats = $stats + array(
+				//,0=>"GS",
+				18=>"AVG",
+				19=>"OBP",
+				20=>"SLG",
+				//23=>"ISO",
+				//24=>"TAVG",
+				25=>"OPS"
+				//26=>"VORP"
+				);
+			}
 			break;
 		case 2:
 			// PITCHING STATS
@@ -860,23 +863,27 @@ function get_stats_for_scoring($type=1,$scoring_type = 1) {
 			56=>"SHO",
 			59=>"HA",
 			60=>"ER",
-			61=>"BS",
-			//,31=>"Win%",
+			61=>"BS"
 			//28=>"GS",
-			//40=>"ERA",
-			//41=>"BABIP",
-			//42=>"WHIP"
-			//43=>"K/BB",
-			//44=>"RA/9IP",
-			//45=>"HR/9IP",
-			//46=>"H/9IP",
-			//47=>"BB/9IP",
-			//48=>"K/9IP",
-			//49=>"VORP",
-			//53=>"QS%",
-			//55=>"CG%",
-			//57=>"GB%"
 			);
+			if ($scoring_type != LEAGUE_SCORING_HEADTOHEAD) {
+				$stats = $stats + array(
+				//,31=>"Win%",
+				40=>"ERA",
+				41=>"BABIP",
+				42=>"WHIP"
+				//43=>"K/BB",
+				//44=>"RA/9IP",
+				//45=>"HR/9IP",
+				//46=>"H/9IP",
+				//47=>"BB/9IP",
+				//48=>"K/9IP",
+				//49=>"VORP",
+				//53=>"QS%",
+				//55=>"CG%",
+				//57=>"GB%"
+				);
+			}
 			break;
 	}
 	return $stats;

@@ -1386,40 +1386,39 @@ class league_model extends base_model {
 							$fieldList = $query->list_fields();
 							$player_stats = $query->result();
 						} // END if
+						$fieldList = $query->list_fields();
 						$query->free_result();
 						//------------------------------------
 						// 	2.3 PROCESS STATS VS SCORING RULES
 						//-----------------------------------
 						foreach($player_stats as $row) {
 							$totalVal = 0;
-							foreach($scoring_rules[$playerType] as $cat => $val) {	
-								$colName = strtolower(get_ll_cat($cat, true));	
-								if (isset($row->$colName)) {
-									switch ($scoring_type) {
-										case LEAGUE_SCORING_ROTO:
-										case LEAGUE_SCORING_ROTO_5X5:
-											if (isset($score_vals[$cat])) {
-												$score_vals[$cat] += $row->$colName;
-											} else {
-												$score_vals[$cat] = $row->$colName;
-											}
-											break;
-										case LEAGUE_SCORING_HEADTOHEAD:
-										default:
-											// UPDATE THE PLAYERS SCORING TOTAL
-											$totalVal += $row->$colName * $val;
-											break;
-									}// END SWITCH
-								} // END if
-							}
 							switch ($scoring_type) {
 								case LEAGUE_SCORING_ROTO:
 								case LEAGUE_SCORING_ROTO_5X5:
 								case LEAGUE_SCORING_ROTO_PLUS:
-									
+									foreach($fieldList as $field) {
+										if (isset($score_vals[$field])) {
+											$score_vals[$field] += $row->$field;
+										} else {
+											$score_vals[$field] = $row->$field;
+										} // END if
+									} // END foreach
 									break;
 								case LEAGUE_SCORING_HEADTOHEAD:
 									default:
+									foreach($scoring_rules[$playerType] as $cat => $val) {	
+										$colName = strtolower(get_ll_cat($cat, true));	
+										if (isset($row->$colName)) {
+											if (isset($score_vals[$cat])) {
+												$score_vals[$cat] += $row->$colName;
+											} else {
+												$score_vals[$cat] = $row->$colName;
+											} // END if
+											// UPDATE THE PLAYERS SCORING TOTAL
+											$totalVal += $row->$colName * $val;
+										} // END if
+									} // END foreach
 									// APPLY VALUES TO THE STATS AND SAVE THEM TO THE PLAYERS SCORING TABLEf
 									$this->db->flush_cache();
 									$this->db->select('id');
@@ -1466,6 +1465,60 @@ class league_model extends base_model {
 						$player_types = array('batting','pitching');
 						foreach ($player_types as $type) {
 							foreach($scoring_rules[$type] as $cat => $val) {
+								$value = 0;
+								switch ($type) {
+									case 'batting':
+										switch($cat) {
+											// AVG
+											case 18:
+												$value =  $score_vals['h'] / $score_vals['ab'];
+												break;
+											// OBP
+											case 19:
+												$value = ($score_vals['h']+$score_vals['bb']+$score_vals['hp']) / ($score_vals['ab']+$score_vals['bb']+$score_vals['ab']+$score_vals['hp']+$score_vals['sf']);
+												break;
+											// SLG
+											case 20:
+												$value = ($score_vals['h']+($score_vals['d']*2)+($score_vals['t']*3)+$score_vals['hr']) / $score_vals['ab'];
+												break;
+											// OPS (OBP + SLG)
+											case 25:
+												$value = (($score_vals['h']+$score_vals['bb']+$score_vals['hp']) / ($score_vals['ab']+$score_vals['bb']+$score_vals['ab']+$score_vals['hp']+$score_vals['sf'])) + (($score_vals['h']+($score_vals['d']*2)+($score_vals['t']*3)+$score_vals['hr']) / $score_vals['ab']);
+												break;
+											// SKIP ISO, TAVG and VORP
+											case 23:
+											case 24;
+											case 26;
+												break;
+											// ALL OTHERS
+											default:
+												$stat = strtolower(get_ll_cat($cat, true));
+												break;
+										} // END switch
+										break;
+									case 'pitching':
+										switch($cat) {
+											// ERA
+											case 40:
+												$value =  (9*$score_vals['er']) / ($score_vals['ip']+($score_vals['ipf']/3));
+												break;
+											// WHIP
+											case 42:
+												$value = ($score_vals['ha']+$score_vals['bb']) / ($score_vals['ip']+($score_vals['ipf']/3));
+												break;
+											// BABIP
+											case 41:
+												$value = ($score_vals['ha']-$score_vals['hra']) / ($score_vals['ab']-$score_vals['k']-$score_vals['hra']+$score_vals['sf']);
+												break;
+											// ALL OTHERS
+											default:
+												$stat = strtolower(get_ll_cat($cat, true));
+												break;
+										} // END switch
+										break;
+								} // END switch
+								
+								
 								if (isset($score_vals[$cat])) {
 									$team_vals['value_'.$colCount] = $score_vals[$cat];
 								} else {

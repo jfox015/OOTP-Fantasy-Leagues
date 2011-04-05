@@ -637,7 +637,7 @@ class team_model extends base_model {
 			}
 		}
 		$this->db->flush_cache();
-		$sql = 'SELECT fantasy_players.id, "add", fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';		
+		$sql = 'SELECT fantasy_players.id, "add", fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,rating,';		
 		$where = '';
 		if ($player_type == 1) {
 			if ($stats_range == 4) {
