@@ -146,7 +146,7 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
 		$colnames .= "|FPTS";
 	}
 	if ($showRating) {
-		$colnames .= "|RATING";
+		$colnames .= "|PR15";
 	}
 	return $colnames;
 }

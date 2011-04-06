@@ -492,12 +492,15 @@ if ( ! function_exists('checkModVersion')) {
 			
 			$mod_version = explode(".",$local_version);
 			$web_version = explode(".",$version);
-			for ($i = 0; $i < sizeof($mod_version); $i++) {
-				if (isset($mod_version[$i]) && isset($web_version[$i])) {
-					if (intval($mod_version[$i]) < intval($web_version[$i])) {
-						$current = false;
-					}
-				}
+			
+			if ($mod_version[0] < $web_version[0]) {
+				$current = false;
+			}
+			if ($current && $mod_version[1] < $web_version[1]) {
+				$current = false;
+			}
+			if ($current && ($mod_version[1] == $web_version[1] && $mod_version[2] < $web_version[2])) {
+				$current = false;
 			}
 			if (!$current) {
 				return array('error',str_replace('[NEW_VERSION]',$version,$ci->lang->line('admin_version_outdated')));
@@ -509,7 +512,6 @@ if ( ! function_exists('checkModVersion')) {
 		}
 	}
 }
-
 // ------------------------------------------------------------------------
 /**
  *	UPDATE DB CONNECTION FILE

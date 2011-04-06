@@ -685,17 +685,17 @@ class player_model extends base_model {
 		/	1.0 ARRAY PREP
 		/
 		/-------------------------------------*/
-		
+		$error = false;
 		/*--------------------------------------
-		/	1.1 GET PLAYERS
+		/	1.1 GET PLAYERS ARRAY
 		/-------------------------------------*/
 		$player_list = $this->getActiveOOTPPlayers();
 		$summary = $this->lang->line('sim_player_ratings');
+		/*--------------------------------------
+		/	1.2 DEFINE RATING PERIOD
+		/-------------------------------------*/
 		$day = 60*60*24;
 		$period_start = date('Y-m-d',((strtotime($scoring_period['date_end']))-($day*$ratingsPeriod)));
-		//print ("Period start = ".$period_start."<br />");
-		//print ("Period End = ".$scoring_period['date_end']."<br />");
-		//return true;
 		$statsTypes = array(1=>'batting',2=>'pitching');
 		$statCats = array();
 		$ratingsCats = array();
@@ -704,17 +704,16 @@ class player_model extends base_model {
 		$period_str = str_replace('[END_DATE]',$scoring_period['date_end'],$period_str);
 		$summary .= str_replace('[DAYS]',$ratingsPeriod,$period_str);
 		/*--------------------------------------
-		/	1.2 CREATE AND STORE SQL SELECT VALUES
-		/-------------------------------------*/
-
-		/*--------------------------------------
 		/
-		/	2.0 PLAYER LOOP
+		/	2.0 STAT AVG,STDDEV LOOP
 		/
 		/-------------------------------------*/
 		if (sizeof($player_list) > 0) {
 			$summary .= str_replace('[PLAYER_COUNT]',sizeof($player_list),$this->lang->line('sim_player_rating_count'));										
 			$processCount = 0;
+			/*-------------------------------------------
+			/	2.1 BUOLD LIST OF ACTIVE PLAYERS
+			/-------------------------------------------*/
 			$players_str = "(";
 			foreach($player_list as $row) {
 				if ($players_str != "(") { $players_str .= ","; }
@@ -722,9 +721,8 @@ class player_model extends base_model {
 			}
 			$players_str .= ")";
 			/*-------------------------------
-			/	2.1 GET GAME DATA
+			/	2.2 SWITCH ON PLAYER TYPE
 			/------------------------------*/
-			// BUILD QUERY TO PULL CURRENT GAME DATA FOR THIS PLAYER
 			$statTotals = array(1=>array(),2=>array());
 			$statSummaries = array(1=>array(),2=>array());
 			$summary .= $this->lang->line('sim_player_rating_statload');										
@@ -739,29 +737,24 @@ class player_model extends base_model {
 					$qualifier = "ip";
 					$minQualify = 1;
 				} // END if
-				//$statCats = $statCats + array($typeId => get_stats_for_scoring($typeId));
+				/*-------------------------------
+				/	2.2.1 INDIVIDUAL STAT LOOP
+				/------------------------------*/
+				// BUILD QUERY TO PULL CURRENT GAME DATA FOR THIS PLAYER
 				$ratingsCats = $ratingsCats + array($typeId => get_stats_for_ratings($typeId));
 				$localStats = array();
 				$statSum = "";
 				foreach($ratingsCats[$typeId] as $id => $val) {
-					//print("typeId = ".$typeId."<br />");
 					$statSum .= "<b>Stat = ".$val."</b><br />";
-					$this->db->flush_cache();
 					$tmpSelect = 'games.date, ';
 					$id = intval($id);
 					$stat = '';
+					// FILTER OUT COMPILED STATS LIKE AVG, ERA AND WHIP
 					switch($typeId) {
 						case 1:
-							switch($id) {
-								case 18:
-								case 19:
-								case 20:
-								case 25:
-									break;
-								default:
-									$stat = strtolower(get_ll_cat($id, true));
-									break;
-							} // END switch
+							if ($id <= 17 || $id >= 26) {
+								$stat = strtolower(get_ll_cat($id, true));
+							} // END if
 							break;
 						case 2:
 							if ($id <= 39 || $id >= 43) {
@@ -772,19 +765,19 @@ class player_model extends base_model {
 							break;
 					} // END switch
 					if (!empty($stat)) { $tmpSelect .= 'SUM(g) as sum_g, SUM('.$stat.') as sum_'.$stat.', SUM('.$qualifier.') as sum_'.$qualifier; }
+					/*-----------------------------------------
+					/	2.2.1.1 EXECUTE THE QUERY FOR THIS STAT
+					/----------------------------------------*/
+					$this->db->flush_cache();
 					$this->db->select($tmpSelect);
 					$this->db->join($table,'games.game_id = '.$table.'.game_id','left');
 					$this->db->where($table.'.player_id IN '.$players_str);
 					$this->db->where("DATEDIFF('".$period_start."',games.date)<=",0);
 					$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
-					//$this->db->where('sum_'.$qualifier.' > '.$minQualify);
 					$this->db->group_by($table.'.player_id');
 					$this->db->order_by($table.'.player_id', 'asc');
 					$query = $this->db->get($this->tables['OOTP_GAMES']);
-					//$summary .= "Num of games found for player ".$row['first_name']." ".$row['last_name']." = ".$query->num_rows() .", status = ".$row['player_status']."<br/>";
 					//echo($this->db->last_query()."<br />");
-					//$statCount = $query->num_rows();
-					//print("statCount = ".$statCount."<br />");
 					if ($query->num_rows() > 0) {
 						$statCount = 0;
 						$statTotal = 0;
@@ -796,19 +789,15 @@ class player_model extends base_model {
 								$statCount++;
 							}
 						}
-						//print ("statTotal = ".$statTotal."<br />");
 						$statAvg = $statTotal / $statCount;
 						$statSum .= $stat." total = ".$statTotal."<br />";
 						$statSum .= $stat." AVG = ".sprintf('%.3f',$statAvg)." (".$statTotal."/".$statCount.")<br />";
 						$stdDevTotal = 0;
 						foreach($query->result() as $row) {
-							//print("Deviation = ".intval($row->$statStr - $statAvg)."<br />");
 							if (($row->$statQalifier / $row->sum_g) > $minQualify) {
 								$stdDevTotal += (intval($row->$statStr - $statAvg) * 2);
 							}
 						}
-						//$statSum .= $stat." STDDEV = ".intval($stdDevTotal)."<br />");
-						//print ("sqrt of stdDevTotal = ".sqrt(intval($stdDevTotal))."<br />");
 						$statDev = $stdDevTotal / ($statCount-1);
 						if ($statDev < 0) { $statDev = -$statDev; }
 						$statSum .= $stat." STDDEV = ".$statDev."<br />";
@@ -846,14 +835,12 @@ class player_model extends base_model {
 							if ($id <= 17 || $id >= 26) {
 								$tmpStat = strtolower(get_ll_cat($id, true));
 								$stat = "SUM(".$tmpStat.") as sum_".$tmpStat;
-								//$statsToQuery[$typeId] = $statsToQuery[$typeId] + array($id=>$val);
 							} // END if
 							break;
 						case 2:
 							if ($id <= 39 || $id >= 43) {
 								$tmpStat = strtolower(get_ll_cat($id, true));
 								$stat = "SUM(".$tmpStat.") as sum_".$tmpStat;
-								//$statsToQuery[$typeId] = $statsToQuery[$typeId] + array($id=>$val);
 							} // END if
 							break;
 						default:
@@ -873,19 +860,13 @@ class player_model extends base_model {
 				$this->db->group_by($table.'.player_id');
 				$this->db->order_by($table.'.'.$qualifier,'desc');
 				$query = $this->db->get($this->tables['OOTP_GAMES']);
-				//$playerSum .= "Num of games found for player ".$row['first_name']." ".$row['last_name']." = ".$query->num_rows() .", status = ".$row['player_status']."<br/>";
-				//print("-----------------------------------------<br />");
-				//echo($this->db->last_query()."<br />");
 				$statCount = 0;
-				
-				//print("playerId = ".$row['player_id']."<br />");
 				$rating = 0;
 				if ($query->num_rows() > 0) {
 					$pRow = $query->row();
 					$tmpQulaify = "sum_".$qualifier;
 					// ONLY PROCESS THIS PLAYER IS THERE ARE GOING TO BE STATS TO PROCESS
 					if ($pRow->$tmpQulaify > 0) {
-						//print($qualifier." = ".$pRow->$tmpQulaify ."<br />");
 						foreach($ratingsCats[$type] as $id => $val) {
 							$stat = strtolower(get_ll_cat($id, true));
 							$tmpStat = "sum_".$stat;
@@ -894,16 +875,13 @@ class player_model extends base_model {
 							if (($type == 1 && $id == 4) || ($type == 2 && $id == 36) || ($type == 2 && $id == 37)) {
 								$negative = true;
 							}
-							//print($stat." = ".$pRow->$tmpStat."<br />");
 							$rawRating = $pRow->$tmpStat - $statTotals[$type][$stat]['avg'];
-							//print("rawRating = ".$rawRating." (".$pRow->$tmpStat." / ".$statTotals[$type][$stat]['avg'].")<br />");
 							if ($statTotals[$type][$stat]['stddev'] != 0) {
 								$upRating = $rawRating / $statTotals[$type][$stat]['stddev'];
-								print("rawRating /stdev = ".$upRating." (".$rawRating." / ".$statTotals[$type][$stat]['stddev'].")<br />");
+								//print("rawRating /stdev = ".$upRating." (".$rawRating." / ".$statTotals[$type][$stat]['stddev'].")<br />");
 							} else {
 								$upRating = $rawRating;
 							}
-							//print("negative stat = ".(($negative) ? 'true':'false')."<br />");
 							if ($negative) {
 								$rating -= $upRating;
 							} else {
@@ -911,7 +889,6 @@ class player_model extends base_model {
 							}
 							$statCount++;
 						}
-						//print("final rating = ".$rating."<br />");
 					}
 				}
 				$query->free_result();
@@ -926,12 +903,15 @@ class player_model extends base_model {
 				$this->db->update($this->tblName,$data);
 				$processCount++;
 			}
+			$result = 1;
 			$summary .= str_replace('[PLAYER_COUNT]',$processCount,$this->lang->line('sim_players_rating_result'));
 			
 		} else {
+			$result = -1;
 			$summary .= $this->lang->line('sim_players_rating_no_players');
 		}
-		print("<br />".$summary."<br />");
+		//print("<br />".$summary."<br />");
+		return array($result,$summary);
 	}
 	/**
 	 *	UPDATE PLAYER SCORING

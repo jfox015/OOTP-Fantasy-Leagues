@@ -19,6 +19,10 @@
 			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/elidgibility"); 
 			event.preventDefault();
 		});
+		$('a[rel=rating]').click(function (event) {
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/playerRatings"); 
+			event.preventDefault();
+		});
 		$('a[rel=sched]').click(function (event) {
 			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/scoringSchedule"); 
 			event.preventDefault();
@@ -232,7 +236,7 @@
             Update Players</li>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
            	Update Player Elidgibility</li>
-			<li><?php echo anchor('/admin/playerRatings','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />'); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'rating')); ?><br />
            	Update Player Ratings</li>
            	<?php 
 			if (defined('ENV') && ENV != "live") { ?>

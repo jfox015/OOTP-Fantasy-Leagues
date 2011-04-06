@@ -692,13 +692,17 @@ class team_model extends base_model {
 		}
 		$year_time = (60*60*24*365);
 		//echo($this->_NAME." league date = ".$ootp_league_date."<br />");
+		//echo($this->_NAME." stats_range = ".$stats_range."<br />");
 		if ($ootp_league_date === false || $ootp_league_date == EMPTY_DATE_STR) {
 			$base_year = time();
 		} else {
 			$base_year = strtotime($ootp_league_date);
 		}
 		if ($stats_range != 4) {
-			$sql .= ' AND '.$tblName.'.year = '.date('Y',$base_year-($year_time * $stats_range));
+			if($stats_range > 0) {
+				$base_year = $base_year-($year_time * $stats_range);
+			}
+			$sql .= ' AND '.$tblName.'.year = '.date('Y',$base_year);
 		} else {
 			$sql .= ' AND ('.$tblName.'.year = '.date('Y',$base_year-($year_time))." OR ".$tblName.'.year = '.date('Y',time()-($year_time * 2))." OR ".$tblName.'.year = '.date('Y',time()-($year_time * 3)).")";
 		}
@@ -708,6 +712,8 @@ class team_model extends base_model {
 		$sql.=' GROUP BY '.$tblName.'.player_id';
 		if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
 			$order = 'fpts';	
+		} else {
+			$order = 'rating';	
 		}
 		$sql.=" ORDER BY ".$order." DESC ";
 		if ($limit != -1 && $startIndex == 0) {

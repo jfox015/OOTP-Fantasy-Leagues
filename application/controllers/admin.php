@@ -1116,18 +1116,28 @@ class admin extends MY_Controller {
 		$status = '';
 		// CHECK FOR DUPLICATE
 		$this->load->model('player_model');
-		$mess = $this->player_model->updatePlayerRatings(15,getCurrentScoringPeriod($this->ootp_league_model->current_date),$this->params['config']['ootp_league_id']);
+		$resp = $this->player_model->updatePlayerRatings(15,getCurrentScoringPeriod($this->ootp_league_model->current_date),$this->params['config']['ootp_league_id']);
 		
-		
-		if (empty($mess)) {
-			$status = "error:An error occured during processing.";
+		if (is_array($resp)) {
+			$rslt = $resp[0];
+			$mess = $resp[1];
+			
 		} else {
-			print($mess);
+			$rslt = $resp;
+			$mess = "";
+		}
+		if ($rslt == -1) {
+			$status = "error:An error occured during processing.";
+			$outMess = "An error occured during processing.";
+		} else {
+			//print($mess);
+			// TODO - LOG SUMMARY SOMEWHERE
 			$status = "OK";
+			$outMess = "Ratings updated successfully.";
 		}
 		$code = 200;
 
-		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{result:"'.$outMess.'",code:"'.$code.'",status:"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}

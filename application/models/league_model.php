@@ -1492,7 +1492,9 @@ class league_model extends base_model {
 												break;
 											// ALL OTHERS
 											default:
-												$stat = strtolower(get_ll_cat($cat, true));
+												if (isset($score_vals[$cat])) {
+													$value = $score_vals[$cat];
+												}
 												break;
 										} // END switch
 										break;
@@ -1512,19 +1514,15 @@ class league_model extends base_model {
 												break;
 											// ALL OTHERS
 											default:
-												$stat = strtolower(get_ll_cat($cat, true));
+												if (isset($score_vals[$cat])) {
+													$value = $score_vals[$cat];
+												}
 												break;
 										} // END switch
 										break;
 								} // END switch
-								
-								
-								if (isset($score_vals[$cat])) {
-									$team_vals['value_'.$colCount] = $score_vals[$cat];
-								} else {
-									$team_vals['value_'.$colCount] = 0;
-								} // END if
-								$colCount++;	
+								$team_vals['value_'.$colCount] = $value;
+								$colCount++;
 							} // END foreach
 							if ($colCount > 0 && $colCount < 6) { $colCount = 6; }
 						} // END foreach
