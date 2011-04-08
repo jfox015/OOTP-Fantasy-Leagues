@@ -66,6 +66,22 @@ class team extends BaseEditor {
 	function init() {
 		parent::init();
 		$this->modelName = 'team_model';
+		
+		$this->getURIData();
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		$this->load->model('league_model');
+		$this->league_model->load($this->dataModel->league_id);
+		
+		if ($this->league_model->access_type == -1) {
+			$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+			$isCommish = $this->league_model->userIsCommish($this->params['currUser']) ? true: false;
+			if (!$isAdmin && !$isCommish) {
+				if (!$this->league_model->userHasAccess($this->params['currUser'])) {
+					redirect('/league/privateLeague/'.$this->uriVars['id']);
+				}
+			}
+		}
 		$this->views['EDIT'] = 'team/team_editor';
 		$this->views['VIEW'] = 'team/team_info';
 		$this->views['FAIL'] = 'team/team_message';

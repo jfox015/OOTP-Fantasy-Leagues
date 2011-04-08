@@ -96,7 +96,7 @@ class search extends MY_Controller {
 			case 'league':
 			case 'leagues':
 				$this->load->model('league_model','dataModel');
-				$this->data['subTitle'] = 'Public Leagues';
+				$this->data['subTitle'] = 'Leagues';
 				$this->data['searchType'] = 'leagues';
 				if (isset($this->uriVars['filterAction']) && $this->uriVars['filterAction'] == 'search') {
 					if ($this->input->post('league_type'))

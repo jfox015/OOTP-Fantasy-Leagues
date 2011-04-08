@@ -251,7 +251,18 @@ class league_model extends base_model {
 		$query->free_result();
 		return $owners;
 	}
+	public function userHasAccess($user_id = false, $league_id = false) {
+		
+		$access = false;
+		if ($user_id === false) { return false; }
+		if ($league_id === false) { $league_id = $this->id; }
+		
+		$ownerIds = $this->getOwnerIds($league_id);
+		
+		$access = (sizeof($ownerIds) > 0 && in_array($user_id,$ownerIds));
+		return $access;
 	
+	}
 	public function getLeagueInvites($league_id = false) {
 		
 		$invites = array();

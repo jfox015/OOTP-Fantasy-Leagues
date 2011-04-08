@@ -35,6 +35,21 @@ class league extends BaseEditor {
 		parent::init();
 		$this->modelName = 'league_model';
 		
+		if ($this->uri->segment(2) != 'privateLeague') {
+			$this->getURIData();
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			
+			if ($this->dataModel->access_type == -1) {
+				$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+				$isCommish = $this->dataModel->userIsCommish($this->params['currUser']) ? true: false;
+				if (!$isAdmin && !$isCommish) {
+					if (!$this->dataModel->userHasAccess($this->params['currUser'])) {
+						redirect('/league/privateLeague/'.$this->uriVars['id']);
+					}
+				}
+			}
+		}
 		$this->views['HOME'] = 'league/league_home';
 		$this->views['EDIT'] = 'league/league_editor';
 		$this->views['VIEW'] = 'league/league_info';
@@ -61,6 +76,13 @@ class league extends BaseEditor {
 	/*---------------------------------------
 	/	CONTROLLER SUBMISSION HANDLERS
 	/--------------------------------------*/
+	public function privateLeague() {
+		$this->makeNav(true);
+		$this->data['subTitle'] = "Private League";
+		$this->data['theContent'] = $this->lang->line('private_league_access');
+		$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+	    $this->displayView();
+	}
 	/**
 	 *	INDEX.
 	 *	The default handler when the controller is called.
@@ -1376,13 +1398,13 @@ class league extends BaseEditor {
 		
 		parent::showInfo();
 	}
-	protected function makeNav() {
+	protected function makeNav($private = false) {
 		$admin = false;
 		$scoring_type = $this->dataModel->getScoringType();
 		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->dataModel->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)){
 			$admin = true;
 		}
-		array_push($this->params['subNavSection'],league_nav($this->dataModel->id, $this->dataModel->league_name,$admin,false,$this->dataModel->getScoringType()));
+		array_push($this->params['subNavSection'],league_nav($this->dataModel->id, $this->dataModel->league_name,$admin,false,$this->dataModel->getScoringType(),$private));
 	}
 }
 /* End of file league.php */

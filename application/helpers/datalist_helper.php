@@ -278,7 +278,7 @@ if ( ! function_exists('listLeagueTypes')) {
 		if ($onlyActive) {
 			$ci->db->where('active',1); 
 		}
-		$ci->db->order_by('leagueType','asc');
+		$ci->db->order_by('id','asc');
 		$query = $ci->db->get();
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {

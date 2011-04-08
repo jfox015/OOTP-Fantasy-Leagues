@@ -47,27 +47,31 @@ function about_nav($bug_link = "") {
 	return $nav;
 }
 
-function league_nav($league_id = false, $league_name = false, $show_admin = false, $show_draft = false, $scoring_type = LEAGUE_SCORING_ROTO) {
+function league_nav($league_id = false, $league_name = false, $show_admin = false, $show_draft = false, $scoring_type = LEAGUE_SCORING_ROTO,$private = false) {
     if ($league_id === false || $league_id == -1) { return; }
-	$nav = array(array('url'=>'/league/home/id/'.$league_id,'label'=>$league_name));
-	if ($show_admin) {
-		array_push($nav,array('url'=>'/league/admin/id/'.$league_id,'label'=>'Admin'));
+	if ($private) {
+		$nav = array(array('url'=>''.$league_id,'label'=>$league_name." (Private)"));
+	} else {
+		$nav = array(array('url'=>'/league/home/id/'.$league_id,'label'=>$league_name));
+		if ($show_admin) {
+			array_push($nav,array('url'=>'/league/admin/id/'.$league_id,'label'=>'Admin'));
+		}
+		array_push($nav,array('url'=>'/league/rules/id/'.$league_id,'label'=>'Rules'));
+		array_push($nav,array('url'=>'/league/standings/id/'.$league_id,'label'=>'Standings'));
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			array_push($nav,array('url'=>'/league/results/id/'.$league_id,'label'=>'Results'));
+		}
+		array_push($nav,array('url'=>'/players/stats/league_id/'.$league_id,'label'=>'Players'));
+		array_push($nav,array('url'=>'/league/info/'.$league_id,'label'=>'Teams & Owners'));
+		//if ($show_draft) {
+		array_push($nav,array('url'=>'/draft/load/league_id/'.$league_id,'label'=>'Draft'));
+		//}
+		//array_push($nav,array('url'=>'/league/messages/id/'.$league_id,'label'=>'League Message Board'));
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			array_push($nav,array('url'=>'/league/schedule/id/'.$league_id,'label'=>'Schedule'));
+		}
+		array_push($nav,array('url'=>'/league/transactions/id/'.$league_id,'label'=>'Transactions'));
 	}
-	array_push($nav,array('url'=>'/league/rules/id/'.$league_id,'label'=>'Rules'));
-	array_push($nav,array('url'=>'/league/standings/id/'.$league_id,'label'=>'Standings'));
-	if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
-		array_push($nav,array('url'=>'/league/results/id/'.$league_id,'label'=>'Results'));
-	}
-	array_push($nav,array('url'=>'/players/stats/league_id/'.$league_id,'label'=>'Players'));
-	array_push($nav,array('url'=>'/league/info/'.$league_id,'label'=>'Teams & Owners'));
-	//if ($show_draft) {
-	array_push($nav,array('url'=>'/draft/load/league_id/'.$league_id,'label'=>'Draft'));
-	//}
-	//array_push($nav,array('url'=>'/league/messages/id/'.$league_id,'label'=>'League Message Board'));
-	if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
-		array_push($nav,array('url'=>'/league/schedule/id/'.$league_id,'label'=>'Schedule'));
-	}
-	array_push($nav,array('url'=>'/league/transactions/id/'.$league_id,'label'=>'Transactions'));
 	return $nav;
 }
  
