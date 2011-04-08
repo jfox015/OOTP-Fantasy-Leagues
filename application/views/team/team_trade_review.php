@@ -17,7 +17,8 @@
 			}
 		});
 		$('#btnCounter').click(function(){
-			alert("Counter offer");
+			$('#type').val(<?php print(TRADE_REJECTED_COUNTER); ?>);
+			$('#tradeForm').submit();
 		});
 		$('input[rel=protestBtn]').click(function(){
 			if ($('#comments').val() == "") {
@@ -274,7 +275,7 @@
                         <input type="button" class="button" id="btnReject" name="btnReject" value="Reject Offer" />
                         <input type="button" class="button" id="btnCounter" name="btnCounter" value="Make Counter Offer" />
                         <input type="button" class="button" id="btnAccept" name="btnAccept" value="Accept Offer" />
-                        
+                        <input type="hidden" name="prevTradeId" value="<?php print($trade_id); ?>" />
                    	<?php } 
 					 }
                    	// TRADE OWNER REVIEW (READ ONLY)

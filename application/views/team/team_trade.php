@@ -80,10 +80,14 @@
 		$('input[rel=responsebtn]').live('click',function () {
 			var params = this.id.split("|");
 			var  proceed = true;
-			if (params[0] == <?php print(TRADE_REJECTED_OWNER); ?>) {
+			if (params[0] == <?php print(TRADE_REJECTED_OWNER); ?> || params[0] == <?php print(TRADE_REJECTED_COUNTER); ?>) {
 				proceed = confirm("Do you wish to reject this trade WITHOUT adding a response to the proposing team's owner? Click 'OK' to submit the rejection, click 'Cancel' to provide a response,");
 				if (!proceed) {
-					document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeReview/league_id/'+league_id+'/team_id/'+team_id+'/trans_type/2/trade_id/'+params[1];
+					if (params[0] == <?php print(TRADE_REJECTED_OWNER); ?>) {
+						document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeReview/league_id/'+league_id+'/team_id/'+team_id+'/trans_type/2/trade_id/'+params[1];
+					} else {
+						document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeResponse/league_id/'+league_id+'/team_id/'+team_id+'/type/'+params[0]+'/trade_id/'+params[1];
+					}
 				}
 			}
 			if (proceed) {

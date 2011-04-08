@@ -313,8 +313,8 @@ class team_model extends base_model {
 					  'expiration_date'=>date('Y-m-d h:m:s', $expireDate),'in_period'=>intval($scoring_period_id));
 		
 		$this->db->insert($this->tables['TRADES'],$data);
-		
-		return true;
+
+		return $this->db->insert_id();
 	}
 	/**
 	 * PROCESS TRADE
