@@ -1502,7 +1502,7 @@ class draft extends BaseEditor {
 		if ($league_id != -1 && $this->league_model->id == -1) {
 			$this->league_model->load($league_id);
 		}
-		array_push($this->params['subNavSection'],league_nav($league_id, $this->league_model->league_name,$admin));
+		array_push($this->params['subNavSection'],league_nav($league_id, $this->league_model->league_name,$admin,true, $this->league_model->getScoringType()));
 		array_push($this->params['subNavSection'],draft_nav($league_id));
 		
 	}

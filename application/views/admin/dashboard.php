@@ -174,7 +174,7 @@
             <?php } else { ?>
             <li><?php echo anchor('admin/configInfo','<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
             Review Settings</li>
-            <?php $hidden_funcs = true;
+            <?php //$hidden_funcs = true;
 			}
 			?>
 			<li><?php echo anchor('admin/configSocial','<img src="'.$config['fantasy_web_root'].'images/icons/facebook-64x64.png" width="48" height="48" border="0" />'); ?><br />
@@ -238,9 +238,9 @@
            	Update Player Elidgibility</li>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'rating')); ?><br />
            	Update Player Ratings</li>
-           	<?php 
-			if (defined('ENV') && ENV != "live") { ?>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'resetSim')); ?><br />
+            <?php 
+		  	 if ($config['last_process_time'] > $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && $summary_size > 0) { ?>
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'resetSim')); ?><br />
             Undo last Sim</li>
 			<?php 
 			}

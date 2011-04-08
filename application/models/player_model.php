@@ -255,6 +255,24 @@ class player_model extends base_model {
 		}
 		return $playerPoints;
 	}
+	public function getPlayerName($player_id = false) {
+		
+		if ($player_id === false) { $player_id = $this->player_id; }
+		
+		$name = "";
+		// GET PLAYER POSITION
+		$this->db->select('first_name, last_name');
+		$this->db->join("players","fantasy_players.player_id = players.player_id", "right outer");
+		$this->db->where('id',$player_id);
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$name = $row->first_name." ".$row->last_name;
+		}
+		$query->free_result();
+		return $name;
+		
+	}
 	public function getOOTPPlayerPosition($player_id = false) {
 		
 		if ($player_id === false) { $player_id = $this->player_id; }
@@ -426,7 +444,7 @@ class player_model extends base_model {
 		$excludeLostStr .= ")";		
 				
 		// BUILD QUERY TO PULL CURRENT GAME DATA FOR THIS PLAYER
-		$sql = 'SELECT fantasy_players.id, fantasy_players.positions, players.position, players.role, players.player_id ,first_name, last_name,players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';
+		$sql = 'SELECT fantasy_players.id, fantasy_players.positions, players.position, players.role, players.player_id ,first_name, last_name,players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,rating,';
 		$sql .= player_stat_query_builder($playerType, $query_type, $rules);
 		if ($playerType == 1) {
 			$sql .= ",players.position as pos ";
@@ -783,22 +801,17 @@ class player_model extends base_model {
 						$statTotal = 0;
 						$statStr = 'sum_'.$stat;
 						$statQalifier = 'sum_'.$qualifier;
+						$statArr = array();
 						foreach($query->result() as $row) {
 							if (($row->$statQalifier / $row->sum_g) > $minQualify) {
-								$statTotal += $row->$statStr;
-								$statCount++;
+								array_push($statArr,$row->$statStr);
 							}
 						}
-						$statAvg = $statTotal / $statCount;
+						$statAvg = average($statArr);
 						$statSum .= $stat." total = ".$statTotal."<br />";
 						$statSum .= $stat." AVG = ".sprintf('%.3f',$statAvg)." (".$statTotal."/".$statCount.")<br />";
 						$stdDevTotal = 0;
-						foreach($query->result() as $row) {
-							if (($row->$statQalifier / $row->sum_g) > $minQualify) {
-								$stdDevTotal += (intval($row->$statStr - $statAvg) * 2);
-							}
-						}
-						$statDev = $stdDevTotal / ($statCount-1);
+						$statDev = deviation($statArr);
 						if ($statDev < 0) { $statDev = -$statDev; }
 						$statSum .= $stat." STDDEV = ".$statDev."<br />";
 					} // END if
@@ -893,9 +906,9 @@ class player_model extends base_model {
 				}
 				$query->free_result();
 				// GET THE AVERAGE OVERALL RATING
-				if ($rating != 0 && $statCount != 0) {
-					$rating = $rating / $statCount;
-				}
+				//if ($rating != 0 && $statCount != 0) {
+				//	$rating = $rating / $statCount;
+				//}
 				// SAVE THE UPDATED RATING
 				$this->db->flush_cache();
 				$data = array('rating'=>$rating);

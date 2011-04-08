@@ -660,7 +660,9 @@
                 </table>
                 </div>
                 
-                
+                <?php 
+				if (!isset($scoring_type) || (isset($scoring_type) && $scoring_type == LEAGUE_SCORING_HEADTOHEAD)) {
+				?>
                 <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" border="0" width="575">
                 <tr class='title'>
@@ -713,6 +715,7 @@
                 </tr>
                 </table>
                 </div>
+                <?php } ?>
                 
                 	<!-- CURRETN SEASON STATS -->
                 <div class='textbox'>

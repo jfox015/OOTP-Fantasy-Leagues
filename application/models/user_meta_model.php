@@ -102,9 +102,10 @@ class user_meta_model extends base_model {
 		if ($userId === false) $userId = $this->userId;
 		
 		$teamList = array();
-		$this->db->select('fantasy_teams.id, teamname, teamnick, fantasy_teams.avatar, fantasy_teams.league_id, league_name, commissioner_id,w,l,pct,gb');
+		$this->db->select('fantasy_teams.id, teamname, teamnick, fantasy_teams.avatar, fantasy_teams.league_id, league_name, league_type, commissioner_id,w,l,pct,gb,fantasy_teams_scoring.total');
 		$this->db->join('fantasy_leagues','fantasy_leagues.id = fantasy_teams.league_id', 'left');
 		$this->db->join('fantasy_teams_record','fantasy_teams_record.team_id = fantasy_teams.id', 'left');
+		$this->db->join('fantasy_teams_scoring','fantasy_teams_scoring.team_id = fantasy_teams.id', 'left');
 		if ($league_id !== false) {
 			$this->db->where('fantasy_teams.league_id', $league_id);
 		}
@@ -114,8 +115,9 @@ class user_meta_model extends base_model {
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				array_push($teamList,array('id'=>$row->id, 'teamname'=>$row->teamname,'teamnick'=>$row->teamnick,'avatar'=>$row->avatar,
-										   'league_id'=>$row->league_id,'league_name'=>$row->league_name,'commissioner_id'=>$row->commissioner_id,
-										   'w'=>$row->w,'l'=>$row->l,'pct'=>$row->pct,'gb'=>$row->gb));
+										   'league_id'=>$row->league_id,'league_name'=>$row->league_name,'league_type'=>$row->league_type,
+										   'commissioner_id'=>$row->commissioner_id,'w'=>$row->w,'l'=>$row->l,'pct'=>$row->pct,'gb'=>$row->gb,
+										   'total'=>$row->total));
 			}
 		}
 		return $teamList;

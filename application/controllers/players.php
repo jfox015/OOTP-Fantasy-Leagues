@@ -250,7 +250,7 @@ class players extends MY_Controller {
 					$league_id = -1;
 				}
 			}
-			print($this->data['currentScoringPeriod']['id']."<br />");
+			//print($this->data['currentScoringPeriod']['id']."<br />");
 			$this->data['league_id'] = $league_id;
 			$this->data['current_team'] = array('id'=>-1);
 			if (isset($league_id) && !empty($league_id) && $league_id != -1) {
@@ -296,6 +296,8 @@ class players extends MY_Controller {
 				$this->data['pick_id'] = $pick_id;
 				$this->data['pick_team_id'] = $pick_team_id;
 				$this->data['current_team'] = $this->dataModel->getFantasyTeam($pid, $this->data['currentScoringPeriod']['id']);
+				$this->data['scoring_type'] = $this->league_model->getScoringType($league_id);
+				
 				
 				// UPDATE 1.0.16 - JF
 				// WAIVERS
@@ -365,8 +367,11 @@ class players extends MY_Controller {
 				$this->load->model('league_model');
 			}
 			$this->league_model->load($this->uriVars['league_id']);
+			
+			$scoring_type = LEAGUE_SCORING_ROTO;
 			if ($this->league_model->id != -1) {
 				$league_name = $this->league_model->league_name;
+				$scoring_type = $this->league_model->getScoringType();
 			} else {
 				$league_name = "Unknown League";
 			}
@@ -374,7 +379,7 @@ class players extends MY_Controller {
 			if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->league_model->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 				$lg_admin = true;
 			}
-			array_push($this->params['subNavSection'], league_nav($this->uriVars['league_id'], $league_name,$lg_admin));
+			array_push($this->params['subNavSection'], league_nav($this->uriVars['league_id'], $league_name,$lg_admin,true,$scoring_type));
 		}
 		
 		array_push($this->params['subNavSection'],player_nav());

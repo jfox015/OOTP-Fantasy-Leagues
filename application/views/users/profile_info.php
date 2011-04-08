@@ -62,25 +62,47 @@
 					<?php echo((!empty($profile->bio) ? $profile->bio : "No Bio provided.")); ?>
                                       
                   	<?php  if (isset($userTeams) && sizeof($userTeams) > 0) { ?>
+                    <h3>Fantasy Teams</h3>
                     <br clear="all" class="clear" />
                     <div class='textbox'>
+                    <?php 
+					$teamList = array('rot'=>array(),'h2h'=>array());
+					if (sizeof($userTeams) > 0) { 
+						foreach($userTeams as $data) { 
+							$type = "";
+							if ($data['league_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+								$type = "h2h";
+							} else {
+								$type = "rot";
+							}
+							array_push($teamList[$type], $data);	
+						}
+					} 
+					foreach($teamList as $type => $teams) {
+						if (sizeof($teams) > 0) {
+					?>
                     <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
                     <tr class='title'>
-                        <td colspan='8' class='lhl'>Fantasy Teams</td>
+                        <td colspan='8' class='lhl'><?php print((($type == 'rot') ? 'Rotisserie' : "Head to Head")." Leagues"); ?></td>
                     </tr>
                     <tr class='headline'>
                         <td class='hsc2_c' colspan="2">Team</td>
                         <td class='hsc2_c'>League</td>
+                        <?php
+						if ($type == 'rot') { ?>
+                        <td class='hsc2_c'>Total</td>
+                        <td class='hsc2_c'>Rank</td>
+                        <?php } else { ?>
                         <td class='hsc2_c'>W</td>
                         <td class='hsc2_c'>L</td>
                         <td class='hsc2_c'>%</td>
                         <td class='hsc2_c'>GB</td>
+                        <?php } ?>
                         <td class='hsc2_c'>Options</td>
                     </tr>
+                    
                     <?php 
-                    if (sizeof($userTeams) > 0) { 
-					foreach($userTeams as $data) { ?>
-                     <?php 
+					foreach($teams as $data) {
 						$rowcount = 0;
 						$leadW = 0;
 						$leadG = 0;
@@ -97,12 +119,18 @@
 						?>
 						<img src="<?php echo($avatar); ?>" width="24" height="24" border="0" align="absmiddle" />
 						</td>
-                        <td class='hsc2_l'><?php echo(anchor('/team/info/'.$data['id'],$data['teamname']." ".$data['teamnick'])); ?></td>
-						<td class='hsc2_l'><?php echo(anchor('/league/info/'.$data['league_id'],$data['league_name'])); ?></td>
-						<td class='hsc2_l'><?php echo($data['w']); ?></td>
-						<td class='hsc2_l'><?php echo($data['l']); ?></td>
-						<td class='hsc2_l'><?php echo(sprintf("%.3f",$data['pct'])); ?></td>
-						<td class='hsc2_l'><?php echo($data['gb']); ?></td>
+                        <td class='hsc2_r'><?php echo(anchor('/team/info/'.$data['id'],$data['teamname']." ".$data['teamnick'])); ?></td>
+						<td class='hsc2_r'><?php echo(anchor('/league/info/'.$data['league_id'],$data['league_name'])); ?></td>
+						<?php
+						if ($type == 'rot') { ?>
+                        <td class='hsc2_l' align="right"><?php echo($data['total']); ?></td>
+						<td class='hsc2_l' align="right"><?php ?></td>
+						<?php } else { ?>
+                        <td class='hsc2_r' align="right"><?php echo($data['w']); ?></td>
+						<td class='hsc2_r' align="right"><?php echo($data['l']); ?></td>
+						<td class='hsc2_r' align="right"><?php echo(sprintf("%.3f",$data['pct'])); ?></td>
+						<td class='hsc2_r' align="right"><?php echo($data['gb']); ?></td>
+                        <?php } ?>
                         <td class='hsc2_l'><?php echo anchor('/league/select/id/'.$data['league_id'].'/team_id/'.$data['id'],'Select'); ?></td>
 					</tr>
                     <?php if (isset($userDrafts) && isset($userDrafts[$data['league_id']])) { 
@@ -147,6 +175,7 @@
 						<td class="hsc2_l" colspan="4">No Teams were Found</td>
 					</tr>
                     <?php } // END if (sizeof($userTeams)
+					}
 					?>
                     </table>
                     </div>

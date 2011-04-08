@@ -73,7 +73,26 @@
 							foreach ($thisItem['rules'][$type] as $cat => $val) {
 								print('<td class="hsc2_r" align="right">');
 								if (isset($teamData['value_'.$i]) && $teamData['value_'.$i] != -1) {
-									print($teamData['value_'.$i]);
+									$outVal = 0;
+									switch ($cat) {
+										case 18:
+										case 19:
+										case 20:
+										case 25:
+										case 41:
+											$outVal=sprintf("%.3f",$teamData['value_'.$i]);
+											if ($outVal<1) {$outVal=strstr($outVal,".");}
+											break;
+										case 40:
+										case 42:
+											$outVal=sprintf("%.2f",$teamData['value_'.$i]);
+											if (($outVal<1)&&($cat==42)) {$outVal=strstr($outVal,".");}
+											break;
+										default:
+											$outVal = intval($teamData['value_'.$i]);
+											break;
+									}
+									print($outVal);
 								} else {
 									print(' - - ');
 								} // END if
@@ -81,7 +100,7 @@
 								$i++;
 							} // END foreach
 							if ($i < 6) {
-								$I = 6;
+								$i = 6;
 							} // END if
 							print('<td>&nbsp;</td>'); 
 						} // END foreach

@@ -809,7 +809,7 @@ function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 	switch ($type) {
 		case 1:
 			$stats = array(
-			//2=>"AB",
+			2=>"AB",
 			//1=>"PA",
 			3=>"1B",
 			6=>"2B",
@@ -863,7 +863,8 @@ function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 			56=>"SHO",
 			59=>"HA",
 			60=>"ER",
-			61=>"BS"
+			61=>"BS",
+			62=>"IPF"
 			//28=>"GS",
 			);
 			if ($scoring_type != LEAGUE_SCORING_HEADTOHEAD) {
@@ -1107,6 +1108,7 @@ function get_ll_cat($catID,$forSQL = false)
 	  case 59: $txt="HA"; break;
 	  case 60: $txt="ER"; break;
 	  case 61: $txt="BS"; break;
+	  case 62: $txt="IPF"; break;
       default: $txt=$catID; break;
     }	    
    return $txt;
