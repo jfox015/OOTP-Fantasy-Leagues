@@ -46,7 +46,8 @@
                 if (isset($divisionData['teams']) && sizeof($divisionData['teams']) > 0) { 
                     foreach($divisionData['teams'] as $teamId => $teamData) { 
                     if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
-                    ?> // END if
+                    // END if
+					?> 
                 <tr style="background-color:<?php echo($color); ?>">
                     <?php
                     if (isset($teamData['avatar']) && !empty($teamData['avatar'])) { 

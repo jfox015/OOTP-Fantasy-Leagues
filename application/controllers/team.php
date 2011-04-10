@@ -561,7 +561,8 @@ class team extends BaseEditor {
 				$data['messageBody']= $msg;
 				//print("email template path = ".$this->config->item('email_templates')."<br />");
 				$data['leagueName'] = $this->league_model->league_name;
-				$message = $this->load->view($this->config->item('email_templates').'trades_template', $data, true);
+				$data['title'] = $this->lang->line('team_email_title_trade_response');
+				$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 				// SEND MESSAGES
 				// SEND TO TEAM ONE
 				$tradeTypes = loadSimpleDataList('tradeStatus');
@@ -728,7 +729,8 @@ class team extends BaseEditor {
 				$msg = str_replace('[LEAGUE_NAME]', $this->league_model->getLeagueName($this->dataModel->league_id),$msg);
 				$data['messageBody']= $msg;
 				$data['leagueName'] = $this->league_model->league_name;
-				$emailMess = $this->load->view($this->config->item('email_templates').'trades_template', $data, true);
+				$data['title'] = $this->lang->line('team_email_title_trade_offer');
+				$emailMess = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 				// SEND TO TEAM ONE
 				$subject = str_replace('[LEAGUE_NAME]',$this->league_model->getLeagueName($this->dataModel->league_id),$this->lang->line('team_trade_email_subject_offer_to'));
 				$emailSend = sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId($team2Id)),$this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId($team_id)),
@@ -759,7 +761,7 @@ class team extends BaseEditor {
 				$msg = str_replace('[EXPIRES]',$expireStr,$msg);
 				$msg = str_replace('[LEAGUE_NAME]', $this->league_model->getLeagueName($this->dataModel->league_id),$msg);
 				$data['messageBody'] = $msg;
-				$emailMess = $this->load->view($this->config->item('email_templates').'trades_template', $data, true);
+				$emailMess = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 				// SEND TO TEAM ONE
 				$subject = str_replace('[LEAGUE_NAME]',$this->league_model->getLeagueName($this->dataModel->league_id),$this->lang->line('team_trade_email_subject_offer_from'));
 				$emailSend = sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId()),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),

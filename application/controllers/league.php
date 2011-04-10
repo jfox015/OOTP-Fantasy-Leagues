@@ -34,8 +34,11 @@ class league extends BaseEditor {
 	function init() {
 		parent::init();
 		$this->modelName = 'league_model';
-		
-		if ($this->uri->segment(2) != 'privateLeague') {
+		// UPDATE - 1.0.5
+		// PRIVATE LEAGUE CHECK
+		// IF WE HAVE A LEAGUE ID AND THE LEAGUE TURNS OUT TO BE PRIVATE, CHECK IF THE CURRENT USER 
+		// HAS ACCESS AND IF NOT, ROUTE TO A PRIVATE LEAGUE VIEW
+		if ($this->uri->segment(2) != 'privateLeague' && isset($this->uriVars['id'])) {
 			$this->getURIData();
 			$this->load->model($this->modelName,'dataModel');
 			$this->dataModel->load($this->uriVars['id']);

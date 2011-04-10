@@ -27,6 +27,10 @@ $lang['team_trade_email_subject_offer_from'] = '[LEAGUE_NAME] Fantasy League - Y
 //-------------------------------
 //	EMAIL MESSAGING
 //-------------------------------
+// TITLES
+$lang['team_email_title_trade_offer'] = 'Trade Offer';
+$lang['team_email_title_trade_response'] = 'Trade Response';
+
 // OFFER SUBMITTED
 $lang['team_trade_offer'] = 'To [USERNAME],
 <p>[OFFERING_TEAM_NAME] has submitted the following trade proposal to you.</p>
