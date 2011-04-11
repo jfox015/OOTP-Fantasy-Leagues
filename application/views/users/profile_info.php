@@ -61,11 +61,9 @@
                     <label><strong>Bio:</strong></label><br />
 					<?php echo((!empty($profile->bio) ? $profile->bio : "No Bio provided.")); ?>
                                       
-                  	<?php  if (isset($userTeams) && sizeof($userTeams) > 0) { ?>
-                    <h3>Fantasy Teams</h3>
-                    <br clear="all" class="clear" />
-                    <div class='textbox'>
-                    <?php 
+                  	<h3>Fantasy Teams</h3>
+                   	<div class='textbox'>
+                   	<?php  if (isset($userTeams) && sizeof($userTeams) > 0) {
 					$teamList = array('rot'=>array(),'h2h'=>array());
 					if (sizeof($userTeams) > 0) { 
 						foreach($userTeams as $data) { 
@@ -170,15 +168,21 @@
 						<?php
 						$rowcount++;
 						} // END for
-					} else { ?>
-					<tr>
-						<td class="hsc2_l" colspan="4">No Teams were Found</td>
-					</tr>
-                    <?php } // END if (sizeof($userTeams)
+					} // END if (sizeof($userTeams)
 					}
 					?>
                     </table>
                     </div>
+					<?php } else { ?>
+					<table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
+                    <tr class='title'>
+                        <td colspan='8' class='lhl'>No Teams Found</td>
+                    </tr>
+					<tr>
+						<td align="center">No teams were found.</td>
+					</tr>
+					</table>
+					</div>
 					<?php } ?>
                     <br clear="all" class="clear" />
                     </div>
