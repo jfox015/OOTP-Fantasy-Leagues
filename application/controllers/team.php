@@ -68,17 +68,19 @@ class team extends BaseEditor {
 		$this->modelName = 'team_model';
 		
 		$this->getURIData();
-		$this->load->model($this->modelName,'dataModel');
-		$this->dataModel->load($this->uriVars['id']);
-		$this->load->model('league_model');
-		$this->league_model->load($this->dataModel->league_id);
-		
-		if ($this->league_model->access_type == -1) {
-			$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
-			$isCommish = $this->league_model->userIsCommish($this->params['currUser']) ? true: false;
-			if (!$isAdmin && !$isCommish) {
-				if (!$this->league_model->userHasAccess($this->params['currUser'])) {
-					redirect('/league/privateLeague/'.$this->uriVars['id']);
+		if (!$this->isAjax() && isset($this->uriVars['id'])) {
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			$this->load->model('league_model');
+			$this->league_model->load($this->dataModel->league_id);
+			
+			if ($this->league_model->id != -1 && $this->league_model->access_type == -1) {
+				$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+				$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
+				if (!$isAdmin && !$isCommish) {
+					if (!$this->league_model->userHasAccess($this->params['currUser'])) {
+						redirect('/league/privateLeague/'.$this->uriVars['id']);
+					}
 				}
 			}
 		}
