@@ -243,6 +243,22 @@ if ( ! function_exists('reset_sim')) {
 		return true;
 	}
 }
+
+// ------------------------------------------------------------------------
+
+if ( ! function_exists('reset_scoring')) {
+	function reset_scoring() {
+		$ci =& get_instance(); 
+		$ci->db->flush_cache();
+		$ci->db->query('TRUNCATE TABLE fantasy_players_compiled_batting');
+		$ci->db->query('TRUNCATE TABLE fantasy_players_compiled_pitching');
+		$ci->db->query('TRUNCATE TABLE fantasy_players_scoring');
+		$ci->db->query('TRUNCATE TABLE fantasy_sim_summary');
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_record');
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_scoring');
+		return true;
+	}
+}
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('reset_draft')) {

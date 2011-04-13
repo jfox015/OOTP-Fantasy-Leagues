@@ -1386,6 +1386,7 @@ class league extends BaseEditor {
 	    }
 	}
 	protected function showInfo() {
+		$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
 		$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
 		$this->data['thisItem']['description'] = $this->dataModel->description; 
 		$this->data['scoring_type'] = $this->dataModel->getScoringType();

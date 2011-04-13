@@ -37,6 +37,7 @@ class admin extends MY_Controller {
 		$this->views['CONFIG_OOTP'] = 'admin/config_ootp';
 		$this->views['SIM_SUMMARY'] = 'admin/sim_summary';
 		$this->views['FILE_UPLOADS'] = 'admin/config_uploads';
+		$this->views['ACTIVATE_USERS'] = 'admin/activate_user_list';
 		$this->views['MESSAGE'] = 'admin/admin_message';
 		
 		$this->load->helper('admin');
@@ -165,6 +166,8 @@ class admin extends MY_Controller {
 			'ootp_league_name' => 'OOTP League Name',
 			'ootp_league_abbr' => 'OOTP League Abbreviation',
 			'ootp_league_id' => 'OOTP League ID',
+			'user_activation_required' => 'User Activiation Required',
+			'user_activation_method' => 'User Activiation Method',
 			'google_analytics_enable' => 'Google Analytics Tracking',
 			'google_analytics_tracking_id' => 'Google Analytics Tracking Code',
 			'stats_lab_compatible' => 'Stats Lab Compatibility Mode',
@@ -192,10 +195,7 @@ class admin extends MY_Controller {
 			'draft_rounds_min' => 'Minimum Draft Rounds',
 			'draft_rounds_max' => 'Maximum Draft Rounds'),
 			'Roster Settings'=>array('min_game_current' => 'Eligibility: Games This Season',
-			'min_game_last' => 'Eligibility: Games Last Season',
-			'active_max' => 'Active Roster Max',
-			'reserve_max' => 'Reserve Roster Max',
-			'injured_max' => 'Injured Roster Max'));
+			'min_game_last' => 'Eligibility: Games Last Season'));
 			$this->data['fields'] = $fields;
 			
 			$gameStart = $this->params['config']['season_start'];
@@ -245,7 +245,9 @@ class admin extends MY_Controller {
 			'google_analytics_enable' => 'Google Analytics Tracking',
 			'google_analytics_tracking_id' => 'Google Analytics Tracking Code',
 			'stats_lab_compatible' => 'Stats Lab Compatibility Mode',
-			'primary_contact' => 'Primary Contact');
+			'primary_contact' => 'Primary Contact',
+			'user_activation_required' => 'User Activiation Required',
+			'user_activation_method' => 'User Activiation Method');
 			foreach($fields as $field => $label) {
 				if (!in_array($field,$exceptions)) {
 					$this->form_validation->set_rules($field, $label, 'required');
@@ -427,9 +429,6 @@ class admin extends MY_Controller {
 			'draft_rounds_max' => 'Maximum Draft Rounds',
 			'min_game_current' => 'Eligibility: Games This Season',
 			'min_game_last' => 'Eligibility: Games Last Season',
-			'active_max' => 'Active Roster Max',
-			'reserve_max' => 'Reserve Roster Max',
-			'injured_max' => 'Injured Roster Max',
 			'restrict_admin_leagues' => 'Restrict # of Admin Leagues',
 			'users_create_leagues' => 'Users can create leagues',
 			'max_user_leagues' => 'Max # of user leagues');
@@ -711,6 +710,54 @@ class admin extends MY_Controller {
 		}
 	}
 	/**
+	 *	ACTIVATE USER
+	 *	Converts a user waiting for admin activation to active
+	 *
+	 *	@param	$this->uriVars['user_id']	User ID
+	 *
+	 *	Redirects to userActivations()  on success
+	 *
+	 *	@since	1.0.5
+	 */
+	public function activateUser() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			$this->getURIData();
+			if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id']) && $this->uriVars['user_id'] != -1) {
+				$activated = $this->user_auth_model->adminActivation($this->uriVars['user_id'],$this->params['currUser']);
+				if ($activated) {
+					$this->session->set_flashdata('message', '<span class="success">The user has been activated.</span>');
+					$this->auth->confirmationEmail($this->user_auth_model->getEmail($this->uriVars['user_id']),$this->user_auth_model->getUsername($this->uriVars['user_id']));
+				} else {
+					$this->session->set_flashdata('error', '<span class="error">The user was not activated. Error: '.$this->user_auth_model->statusMess.'</span>');
+				} //NED if
+			} else {
+				$this->session->set_flashdata('message', '<span class="error">No User ID was recieved.</span>');
+			}
+			redirect('admin/userActivations');
+		}
+	}
+	/**
+	 *	USER ACTIVATIONS
+	 *	Lists all users awaiting activation.
+	 *
+	 *	@since	1.0.5
+	 */
+	public function userActivations() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			$this->data['activations'] = $this->user_auth_model->getAdminActivations();
+			$this->params['subTitle'] = $this->data['subTitle'] = "Activate Users";
+			$this->params['content'] = $this->load->view($this->views['ACTIVATE_USERS'], $this->data, true);
+			$this->params['pageType'] = PAGE_FORM;
+			$this->displayView();
+		}
+	}
+	/**
 	 *	AVATAR
 	 *	Update the team's avatar.
 	 */
@@ -749,9 +796,6 @@ class admin extends MY_Controller {
 						$this->load->library('upload',$config);
 						$change = $this->upload->do_upload('dataFile');
 						if ($change) {
-							
-							
-							
 							$this->session->set_flashdata('message', '<p class="success">The data file has been successfully uploaded.</p>');
 							redirect('team/info/'.$this->dataModel->id);
 						} else {
@@ -1176,9 +1220,10 @@ class admin extends MY_Controller {
 		$mess = reset_team_data();
 		$mess = reset_league_data();
 		$mess = reset_draft();
+		$mess = reset_scoring();
 		update_config('current_period',1);
 		update_config('last_sql_load_time',date('Y-m-d',(strtotime(date('Y-m-d'))-(60*60*24))));
-		update_config('last_process_time','1970-1-1 00:00:00');
+		update_config('last_process_time','1970-01-01 00:00:00');
 		reset_ootp_league($this->params['config']['ootp_league_id']);
 		if (!$mess) {
 			$status = "error:".$mess;
@@ -1214,6 +1259,7 @@ class admin extends MY_Controller {
 	
 	/**
 	 *	GENERATE LEAGUE SCHEDULES.
+	 *	Creates game schedule for head to head scoring leagues.
 	 */
 	function generateSchedules() {
 		// DIVIDE THE LEAGUE GAME SCHEDULE STARTING AT THE LEAGUE DATE BY THE SIM/PERIODS
@@ -1224,8 +1270,12 @@ class admin extends MY_Controller {
 		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
 		$error = false;
 		foreach($this->data['leagues'] as $id => $details) {
-			$this->league_model->load($id);
-			$mess = $this->league_model->createLeagueSchedule();
+			if ($details['league_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+				$this->league_model->load($id);
+				$mess = $this->league_model->createLeagueSchedule();
+			} else {
+				$mess = true;
+			}
 		}
 		if (!$mess) {
 			$status = "error:".$mess;
@@ -1411,6 +1461,9 @@ class admin extends MY_Controller {
 		} // END if
 		if ($this->input->post('scoring_type')) {
 			$this->uriVars['scoring_type'] = $this->input->post('scoring_type');
+		} // END if
+		if ($this->input->post('user_id')) {
+			$this->uriVars['user_id'] = $this->input->post('user_id');
 		} // END if
 	}
 }

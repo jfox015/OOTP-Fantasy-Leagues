@@ -125,9 +125,9 @@ class team extends BaseEditor {
 			$this->data['avatar'] = $this->dataModel->avatar;
 			$this->data['team_id'] = $this->dataModel->id;
 			$this->data['teamname'] = $this->dataModel->teamname;
+			$this->data['teamnick'] = $this->dataModel->teamnick;
 			$this->data['subTitle'] = 'Edit Team Avatar';
 			
-			//echo("Submitted = ".(($this->input->post('submitted')) ? 'true':'false')."<br />");
 			if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name']))) {
 				if ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name'])) {
 					$fv = & _get_validation_object();
@@ -137,7 +137,7 @@ class team extends BaseEditor {
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
 			} else {
-				if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || strpos($_FILES['avatarFile']['name'],'.jpeg') || strpos($_FILES['avatarFile']['name'],'.gif') || strpos($_FILES['avatarFile']['name'],'.png'))) {
+				if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || !strpos($_FILES['avatarFile']['name'],'.jpeg') || !strpos($_FILES['avatarFile']['name'],'.gif') || !strpos($_FILES['avatarFile']['name'],'.png'))) {
 					$fv = & _get_validation_object();
 					$fv->setError('avatarFile','The file selected is not a valid image file.');  
 					$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
@@ -158,13 +158,13 @@ class team extends BaseEditor {
 						}
 					} else {
 						throw new UploadException($_FILES['avatarFiles']['error']);
-					}
-				}
-			}
+					} // END if
+				} // END if
+			} // END if
 		} else {
 	        $this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
-	    }
+	    } // END if
 	}
 	/**
 	 *	REMOVE AVATAR

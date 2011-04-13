@@ -1,4 +1,11 @@
 <?php
+
+// DASHBOARD
+$lang['dash_settings_pre_add_leagues'] = 'General league functions are available once one or more fantasy leagues have been created.';
+// DASH ERRORS
+$lang['dash_error_no_players'] = '<strong>Warning:</strong> No players have been loaded into the database. Many site functions will not work correctly until this is done.';
+$lang['dash_error_no_players_short'] = '<strong>Warning:</strong> Players not loaded';
+
 $lang['sim_success'] = '<span class="success_txt">Success</span>';
 $lang['sim_error'] = '<span class="error_txt">Error</span>';
 $lang['sim_notice'] = '<span class="notice_txt">Notice</span>';

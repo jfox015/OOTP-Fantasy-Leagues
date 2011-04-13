@@ -217,12 +217,15 @@ class user extends MY_Controller {
 	 */
 	function user() {
 		parent::MY_Controller();
+		
 		$this->views['REGISTER'] = DIR_VIEWS_USERS.'register';
 		$this->views['LOGIN'] = DIR_VIEWS_USERS.'login';
 		$this->views['CHANGE_PASSWORD'] = DIR_VIEWS_USERS.'change_password';
 		$this->views['PROFILE'] = DIR_VIEWS_USERS.'profile_info';
 		$this->views['PROFILE_EDIT'] = DIR_VIEWS_USERS.'profile_edit';
 		$this->views['PROFILE_PICK'] = DIR_VIEWS_USERS.'profile_pick';
+		$this->views['ACTIVATE'] = DIR_VIEWS_USERS.'activate';
+		$this->views['ACTIVATE_RESEND'] = DIR_VIEWS_USERS.'activate_resend';
 		$this->views['ACCOUNT'] = DIR_VIEWS_USERS.'account';
 		$this->views['ACCOUNT_EDIT'] = DIR_VIEWS_USERS.'account_edit';
 		$this->views['AVATAR_UPLOAD'] = DIR_VIEWS_USERS.'profile_avatar';
@@ -446,6 +449,80 @@ class user extends MY_Controller {
 	    }
 	}
 	/**
+	 * activation
+	 *
+	 * @return void
+	 **/
+	public function activate() {
+	    $this->getURIData();
+		$code = '';
+		$this->params['subTitle'] = "Account Activation";
+		if (isset($this->uriVars['code']) && !empty($this->uriVars['code'])) {
+			$code = $this->uriVars['code'];
+		} else {
+			$this->form_validation->set_rules('code', 'Verification Code', 'required');
+			if ($this->form_validation->run() == false) {
+				$this->params['content'] = "Account Activation";
+				$this->params['content'] = $this->load->view($this->views['ACTIVATE'], $this->data, true);
+	       		$this->params['pageType']= PAGE_FORM;
+				$this->makeNav();
+				$this->displayView();
+			} else {
+				$code = $this->input->post('code');
+			}
+		}
+		if (!empty($code)) {
+			$activated = $this->auth->activate($code);
+			if ($activated) {
+				$message = '<span class="success">Congratulations. Your account has been activated. You may now login and begin using the site.</span>';
+				$this->session->set_flashdata('message', $message);
+	        	redirect('/user/login');
+			} else {
+				$this->data['outMess'] = '<span class="error">Your membership could not be activated at this time due to the following reason: '.$this->auth->get_status_message().'. Please check your code and try again or '.anchor('/about/contact','contact the site administrator').' for help</span>';
+				$this->params['content'] = $this->load->view($this->views['ACTIVATE'], $this->data, true);
+	       		$this->params['pageType']= PAGE_FORM;
+				$this->makeNav();
+				$this->displayView();
+			}
+		}
+	}
+	/**
+	 * forgotten password
+	 *
+	 * @return void
+	 * @author Mathew
+	 **/
+	function resend_activation() {
+	    $this->makeNav();
+		$this->params['subTitle'] = $this->lang->line('user_missing_activation_title');
+		$this->form_validation->set_rules('email', 'Email Address', 'required|valid_email|max_length[500]');
+	    if ($this->form_validation->run() == false) {
+	       	$this->data['subTitle'] = $this->lang->line('user_missing_activation_title');
+			$this->data['theContent'] = str_replace('[SITE_URL]',$this->params['config']['fantasy_web_root'],$this->lang->line('user_missing_activation'));
+		   	$this->params['content'] = $this->load->view($this->views['ACTIVATE_RESEND'], $this->data, true);
+	        $this->params['pageType'] = PAGE_FORM;
+			$this->displayView();
+	    } else {
+	        $email = $this->input->post('email');
+			$sent = $this->auth->resend_activation($email,$this->debug);
+			if ($sent) {
+				$this->session->set_flashdata('message', '<span class="success">An email has been sent to '.$email.'. Please check your inbox.</span>');
+	            redirect('/user/login');
+			} else {
+				$message = '<span class="error"><strong>An error has occured.</strong><br />';
+				if ($this->auth->get_status_code() != 0) {
+					$message .= ' The email failed to send for the following reason:<br />'.$this->auth->get_status_message();
+				}
+				$message .= '</span>';
+	            $this->data['subTitle'] = $this->lang->line('user_missing_activation_title');
+				$this->data['theContent'] = $message;
+				$this->params['content'] = $this->load->view($this->views['ACTIVATE_RESEND'], $this->data, true);
+				$this->params['pageType'] = PAGE_FORM;
+				$this->displayView();
+			}
+	    }
+	}
+	/**
 	 * forgotten password
 	 *
 	 * @return void
@@ -453,6 +530,7 @@ class user extends MY_Controller {
 	 **/
 	function forgotten_password() {
 	    $this->makeNav();
+		$this->params['subTitle'] = "Forgot Password";
 		$this->form_validation->set_rules('email', 'Email Address', 'required|valid_email|max_length[500]');
 	    if ($this->form_validation->run() == false) {
 	       	$this->data['subTitle'] = $this->lang->line('user_forgotpass_title');
@@ -463,9 +541,8 @@ class user extends MY_Controller {
 	        $email = $this->input->post('email');
 			$forgotten = $this->auth->forgotten_password($email,$this->debug);
 			if ($forgotten) {
-				$this->session->set_flashdata('message', '<p class="success">An email has been sent to '.$email.'. Please check your inbox. Message:<br />'.$forgotten.'<br /></p>');
-	            $data['content'] = $this->load->view('home', null, true);
-	        	$this->displayView();
+				$this->session->set_flashdata('message', '<span class="success">An email has been sent to '.$email.'. Please check your inbox.</span>');
+	            redirect('/user/login');
 			} else {
 				$message = '<span class="error"><strong>An error has occured.</strong><br />The email failed to send.';
 				if ($this->auth->get_status_code() != 0) {
@@ -489,6 +566,7 @@ class user extends MY_Controller {
 	public function forgotten_password_verify() {
 	    $this->getURIData();
 		$code = '';
+		$this->params['subTitle'] = "New Password Verification";
 		if (isset($this->uriVars['code']) && !empty($this->uriVars['code'])) {
 			$code = $this->uriVars['code'];
 		} else {
@@ -505,15 +583,12 @@ class user extends MY_Controller {
 		if (!empty($code)) {
 			$forgotten = $this->auth->forgotten_password_complete($code);
 			if ($forgotten) {
-				$message = '<span class="success">An email has been sent, please check your inbox.<br />'.$forgotten.'</span>';
+				$message = '<span class="success">A new password has been generated for you. and sent to your email address. Please check your inbox.</span>';
 			} else {
-				$message = '<span class="error">The email failed to send, try again.</span>';
+				$message = '<span class="error">The verification email failed to send, pleaee try again or contact the site administrator for assistance.</span>';
 			}
-			$this->data['subTitle'] = $this->lang->line('user_forgotpass_title');
-			$this->data['theContent'] = $message;
-			$this->params['content'] = $this->load->view($this->views['FORGOT_PASSWORD_VERIFY'], $this->data, true);
-			$this->params['pageType'] = PAGE_FORM;
-			$this->displayView();
+			$this->session->set_flashdata('message', $message);
+	        redirect('/user/login');
 		}
 	}
 	/**
@@ -593,7 +668,6 @@ class user extends MY_Controller {
 			$session_auth = $this->session->userdata($this->config->item('session_auth'));
 			if ($session_auth && $this->user_meta_model->load($session_auth,'userId')) {
 				$this->data['profile'] = $this->user_meta_model->profile();
-				
 				$this->data['subTitle'] = 'Your Profile';
 				$this->data['userId'] = $this->user_meta_model->userId;
 			} else {
@@ -723,7 +797,16 @@ class user extends MY_Controller {
 			if ($this->form_validation->run() == false) {
 				$this->data['subTitle'] = $this->lang->line('user_register_title');
 				$this->data['theContent'] = $this->lang->line('user_register_instruct');
-		   		$this->data['activation'] = $this->lang->line('user_register_activation');
+				if ($this->params['config']['user_activation_required'] != -1) {
+					switch ($this->params['config']['user_activation_method']) {
+						case 1:
+		   					$this->data['activation'] = $this->lang->line('user_register_activation_email');
+							break;
+						case 2:
+							$this->data['activation'] = $this->lang->line('user_register_activation_admin');
+							break;
+					} // END switch
+				} // END if
 				$this->data['input'] = $this->input;
 				$this->params['content'] = $this->load->view($this->views['REGISTER'], $this->data, true);
 				$this->params['pageType'] = PAGE_FORM;
@@ -731,17 +814,31 @@ class user extends MY_Controller {
 			} else {       	       
 				$message = $this->auth->register($this->input,$this->debug);
 				if ($message !== false) {
-					$this->session->set_flashdata('message', '<span class="success">You have now been successfully registered. Please login to begin using the site.</p>');
+					$registered = $this->lang->line('user_registered');
+					if ($this->params['config']['user_activation_required'] != -1) {
+						switch ($this->params['config']['user_activation_method']) {
+							case 1:
+								$registered .= $this->lang->line('user_register_activate_email');
+								break;
+							case 2:
+								$registered .= $this->lang->line('user_register_activate_admin');
+								break;
+						} // END switch
+					} else {
+						$registered .= $this->lang->line('user_register_activate_none');
+					} // END if
+					$this->session->set_flashdata('message', '<span class="success">'.$registered.'</p>');
 					redirect('user/login');
 				} else {
-					$message = '<p class="error">Something went wrong.';
+					$message = '<span class="error">An error has occured. ';
 					if ($this->auth->get_status_code() != 0) {
 						$message .= "The server replied with the following status: <b>".$this->auth->get_status_message()."</b>";
+						$message .= 'Please <a rel="back" href="#">go back</a>, try a different username and try submitting again.';
 					}	
-					$message .= "</p>";
+					$message .= "</span>";
 					$this->data['subTitle'] = $this->lang->line('user_register_title');
 					$this->data['theContent'] = $message;
-					$this->params['content'] = $this->load->view($this->views['REGISTER'], $this->data, true);
+					$this->params['content'] = $this->load->view($this->views['MESSAGE'], $this->data, true);
 					$this->params['pageType'] = PAGE_FORM;
 					$this->displayView();
 				}

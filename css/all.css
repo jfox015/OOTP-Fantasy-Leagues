@@ -198,6 +198,9 @@ img.league_news_tall {
 	font-size:9px;
 }
 
+.floated_icon {	 float:left;margin-right:6px; }
+.floated_caption { width:70%;color:#c00;text-align:left; float:left; }
+
 /* hilighting */
 .hilight { background:#FF9; color:#C00; font-weight:bold; }
 /*Error messages*/

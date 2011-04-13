@@ -4,8 +4,7 @@
         <br />
 		<?php echo($theContent); ?>
         <?php 
-		$this->ci =& get_instance();
-		if ($this->ci->config->item('email_activation')) { ?>
+		if (!empty($activation)) { ?>
         <p /><br />
         <?php echo($activation); ?>
 		<?php } ?>

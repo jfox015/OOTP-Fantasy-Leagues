@@ -68,8 +68,16 @@ $lang['user_register_title'] = 'Register';
 $lang['user_register_instruct'] = 'Are you a part of this OOTP Online Fantasy community yet? If not here\'s now\'s the time to join!
 <p /><br />
 Already a member? <a href="./user/login">Login Now</a>!';
-$lang['user_register_activation'] = 'Shortly after registering, you will recieve an e-mail containing an <b>activation code</b>. if you do not recieve this e-mail, you 
+$lang['user_register_activation_email'] = 'Shortly after registering, you will recieve an e-mail containing an <b>activation code</b>. if you do not recieve this e-mail, you 
 may request it to be sent again or contact the site adminsitrator for help.';
+$lang['user_register_activation_admin'] = 'Your membership requires approval of the site administrator.';
+
+$lang['user_registered'] = 'You have now been successfully registered. ';
+$lang['user_register_activate_email'] = 'An email containing your activation code has been sent to [EMAIL].';
+$lang['user_register_activate_admin'] = 'You will be notified when the site administrator has approved your membership.';
+$lang['user_register_activate_none'] = 'Please login to begin using the site.';
+
+
 $lang['user_register_existing'] = "You are already registered for this site.";
 // FORGOT PASSWORD
 $lang['user_forgotpass_title'] = 'Forgotten Password';
@@ -83,6 +91,14 @@ If you have already received a reset code, <a href="[SITE_URL]user/forgotten_pas
 $lang['league_start_standings'] = "The [GAME_YEAR] season begins on <b>[START_DATE]</b>. Check back after the season begins for up to date league standings.";
 $lang['leeague_admin_intro_str'] = "<b>Welcome to the League Admin Screen.</b><br /><p>Here you can review youe league settings, invite owners to join your league, manage invites and tranactions in progress and prior to the start oif the season, 
 begin and manage your draft.";
+// MISSING ACTIVATION CODE
+$lang['user_missing_activation_title'] = 'Request Activation Code';
+$lang['user_missing_activation'] = 'Use the following form to request that your activation code be rssent to the your email address. You will recieve 
+the <b>activation code</b> by e- mail shortly after submitting this 
+form.
+<br /><br />
+Once you receive your reset code, you can proceed to <a href="[SITE_URL]user/activate">activate your membership</a>.
+';
 
 //DEPRECATED
 //$lang['site_name'] = "OOTP Fantasy Leagues";

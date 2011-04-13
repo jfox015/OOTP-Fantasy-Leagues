@@ -82,15 +82,6 @@
             $form->nobr();
            	$form->text('min_game_last','Last Season','required|trim|number',($input->post('min_game_last') ? $input->post('min_game_last') : $config['min_game_last']),array('class'=>'shorttext'));
             $form->space();
-			$form->span("Maximum Roster Totals by Status:");
-			$form->br();
-			$form->fieldset('',array('class'=>'dateLists'));
-            $form->text('active_max','Active','required|trim|number',($input->post('active_max') ? $input->post('active_max') : $config['active_max']),array('class'=>'shorttext'));
-            $form->nobr();
-           	$form->text('reserve_max','Reserve','required|trim|number',($input->post('reserve_max') ? $input->post('reserve_max') : $config['reserve_max']),array('class'=>'shorttext'));
-            $form->nobr();
-           	$form->text('injured_max','Injured','required|trim|number',($input->post('injured_max') ? $input->post('injured_max') : $config['injured_max']),array('class'=>'shorttext'));
-            $form->space();
 			
 			$form->fieldset('Trading');
 			$expireList = array(-1=>"Select One",100=>"Until Next Sim"); 

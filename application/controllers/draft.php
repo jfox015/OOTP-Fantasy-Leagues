@@ -567,63 +567,66 @@ class draft extends BaseEditor {
 									$teamInfo = $this->league_model->getTeamDetails($this->dataModel->league_id);
 									
 									$prevRound = $pickRound-1;
-									## Generate Subject Line
-									$subject=$leagueName." Draft Summary, Round ".$prevRound;
-									## Generate Message Text
-									$message = "<b>Draft Summary</b><br><br>Round ".$prevRound." of the ".$this->league_model->getLeagueName($this->dataModel->league_id)." Draft<br><br>";
 									if (!isset($this->player_model)) {
 										$this->load->model('player_model');
 									}
 									$startPick = (($nextPick)-($nTeams));
-									for ($m=$startPick;$m<($startPick+$nTeams);$m++) {
-										$eteam=$picks[$m]['team'];
-										$message.=$picks[$m]['round'].".".$picks[$m]['pick']." - ".$teamInfo[$eteam]['teamname']." ".$teamInfo[$eteam]['teamnick'];
+									$roundSummary = "";
+									for ($i=$startPick;$i<($startPick+$nTeams);$i++) {
+										$dteam=$picks[$i]['team'];
+										$roundSummary.=$picks[$i]['round'].".".$picks[$i]['pick']." - ".$teams[$dteam]['teamname']." ".$teams[$dteam]['teamnick'];
 										$playerInfo = array();
-										if (isset($picks[$m]['player']) && !empty($picks[$m]['player']) && $picks[$m]['player'] != -999) {
-											$playerInfo = $this->player_model->getPlayerDetails($picks[$m]['player']);
+										if (isset($picks[$i]['player']) && !empty($picks[$i]['player']) && $picks[$i]['player'] != -999) {
+											$playerInfo = $this->player_model->getPlayerDetails($picks[$i]['player']);
 											if (sizeof($playerInfo) > 0) {
-												$message.= " picked  ".get_pos($playerInfo['position'])." ".$playerInfo['first_name']." ".$playerInfo['last_name'];
+												$roundSummary.= " picked  ".get_pos($playerInfo['position'])." ".$playerInfo['first_name']." ".$playerInfo['last_name'];
 											} else {
-												$message.= "Pick Details unavailable";
+												$roundSummary.= "Pick Details unavailable";
 											}
-										} else if ($picks[$m]['player'] == -999) {
-											$message.= "Pick Skipped";
+										} else if ($picks[$i]['player'] == -999) {
+											$roundSummary.= "Pick Skipped";
 										} else {
-											$message.= "Pick information not available";
+											$roundSummary.= "Pick information not available";
 										} // END if 
-										$message.="<br/>\n";
 									} // END for
-									$stopAt=min($nextPick+$nTeams+1,$lastPick);
+									$nextSummary = "";
 									if ((($round +1)+$nTeams) < $stopAt) {
-										$message.="<br><br><b>Upcoming Draft Picks for round ".$pickRound.":</b><br/>\n";
-										for ($m=$nextPick;$m<$stopAt-1;$m++) {
-											$eteam=$picks[$m]['team'];
-											$message.=$picks[$m]['round'].".".$picks[$m]['pick']." - ".$teamInfo[$eteam]['teamname']." ".$teamInfo[$eteam]['teamnick'];
+										$nextSummary.="";
+										for ($i=$nextPick;$i<$stopAt-1;$i++) {
+											$dteam=$picks[$i]['team'];
+											$nextSummary.=$picks[$i]['round'].".".$picks[$i]['pick']." - ".$teams[$dteam]['teamname']." ".$teams[$dteam]['teamnick'];
 											if ($this->dataModel->timerEnable == 1) {
-												$message.=" due at ".$picks[$m]['due'];
+												$nextSummary.=" due at ".$picks[$i]['due'];
 											}
-											$message.="<br/>\n";
 										} // END for
-									} // END if 
-									
-									## Send Message
-									if (!empty($this->dataModel->emailList) && !empty($message)) {
-										if (!$this->debug) {
-											$mailTo = '';// SUMMARY EMAIL
-											if (strpos($this->dataModel->emailList,",")) {
-												$recipients = explode(",",$this->dataModel->emailList);
-											} else {
-												$recipients = array($this->dataModel->emailList);
+									} // END if ## Generate Subject Line
+									$subject=str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_subject'));
+									## Generate Message Text
+									$msg = str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_message'));
+									$msg .= str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+									$msg .= str_replace('[ROUND_NUM_SUMMARY]', $roundSummary,$msg);
+									$msg .= str_replace('[ROUND_NEXT_SUMMARY]', $nextSummary,$msg);
+									$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+									// LOAD OWNER ID AND EMAILS OF ALL OWNERS OF LEAGUE
+									$ownerIds = $this->league_model->getOwnerIds($this->dataModel->league_id);
+									if (isset($ownerIds) && sizeof($ownerIds) > 0) {
+										$ownerCount = sizeof($ownerIds);
+										foreach($ownerIds as $owner) {
+											$email = $this->user_auth_model->getEmail($owner);
+											$ownerUsername = $this->user_auth_model->getUsername($owner);
+											if (!empty($email)) {
+												$emailSend = sendEmail($email,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+												$this->params['config']['site_name']." Administrator",$subject,$message);
+												if (!empty($emailSend) && $ownerCount == 0 && ($this->debug === TRUE || ENV == 'dev')) {
+													if (!function_exists('write_file')) {
+														$this->load->helper('file');
+													} // END if 
+													write_file(PATH_MEDIA_WRITE.'/email_draft_summary_'.$this->league_model->id."_".substr(md5($this->league_model->id.time()),0,8).".html",$message);
+												}
+												$ownerCount++;
 											}
-											foreach($recipients as $mailTo) {
-												mail($mailTo,$subject,$message.$this->makeEmailFooter($leagueName),$this->makeEmailHeader());
-											}  // END foreach
-										} // END if 
-									} // END if 
-									if ($this->debug) {
-										echo  ("<br /><b>mail to:</b> ".$mailTo."<br />");
-										echo $message.$this->makeEmailFooter($leagueName);
-									} // END if 
+										}
+									} 
 								} // END if ($rndPick == $nTeams)
 								
 								##### Check that pick is open slot #####
@@ -840,74 +843,6 @@ class draft extends BaseEditor {
 									unset($subject);
 									unset($message);
 								}
-								/*-----------------------------------------
-								/
-								/	ROUND SUMMARY EMAIL
-								/
-								/----------------------------------------*/
-								if (($pickNum-1) == 0) {
-									$prevRound = $pickRound-1;
-									if (!isset($this->player_model)) {
-										$this->load->model('player_model');
-									}
-									$startPick = (($nextPick)-($nTeams));
-									$roundSummary = "";
-									for ($i=$startPick;$i<($startPick+$nTeams);$i++) {
-										$dteam=$picks[$i]['team'];
-										$roundSummary.=$picks[$i]['round'].".".$picks[$i]['pick']." - ".$teams[$dteam]['teamname']." ".$teams[$dteam]['teamnick'];
-										$playerInfo = array();
-										if (isset($picks[$i]['player']) && !empty($picks[$i]['player']) && $picks[$i]['player'] != -999) {
-											$playerInfo = $this->player_model->getPlayerDetails($picks[$i]['player']);
-											if (sizeof($playerInfo) > 0) {
-												$roundSummary.= " picked  ".get_pos($playerInfo['position'])." ".$playerInfo['first_name']." ".$playerInfo['last_name'];
-											} else {
-												$roundSummary.= "Pick Details unavailable";
-											}
-										} else if ($picks[$i]['player'] == -999) {
-											$roundSummary.= "Pick Skipped";
-										} else {
-											$roundSummary.= "Pick information not available";
-										} // END if 
-									} // END for
-									$nextSummary = "";
-									if ((($round +1)+$nTeams) < $stopAt) {
-										$nextSummary.="";
-										for ($i=$nextPick;$i<$stopAt-1;$i++) {
-											$dteam=$picks[$i]['team'];
-											$nextSummary.=$picks[$i]['round'].".".$picks[$i]['pick']." - ".$teams[$dteam]['teamname']." ".$teams[$dteam]['teamnick'];
-											if ($this->dataModel->timerEnable == 1) {
-												$nextSummary.=" due at ".$picks[$i]['due'];
-											}
-										} // END for
-									} // END if ## Generate Subject Line
-									$subject=str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_subject'));
-									## Generate Message Text
-									$msg = str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_message'));
-									$msg .= str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
-									$msg .= str_replace('[ROUND_NUM_SUMMARY]', $roundSummary,$msg);
-									$msg .= str_replace('[ROUND_NEXT_SUMMARY]', $nextSummary,$msg);
-									$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-									// LOAD OWNER ID AND EMAILS OF ALL OWNERS OF LEAGUE
-									$ownerIds = $this->league_model->getOwnerIds($this->dataModel->league_id);
-									if (isset($ownerIds) && sizeof($ownerIds) > 0) {
-										$ownerCount = sizeof($ownerIds);
-										foreach($ownerIds as $owner) {
-											$email = $this->user_auth_model->getEmail($owner);
-											$ownerUsername = $this->user_auth_model->getUsername($owner);
-											if (!empty($email)) {
-												$emailSend = sendEmail($email,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-												$this->params['config']['site_name']." Administrator",$subject,$message);
-												if (!empty($emailSend) && $ownerCount == 0 && ($this->debug === TRUE || ENV == 'dev')) {
-													if (!function_exists('write_file')) {
-														$this->load->helper('file');
-													} // END if 
-													write_file(PATH_MEDIA_WRITE.'/email_draft_summary_'.$this->league_model->id."_".substr(md5($this->league_model->id.time()),0,8).".html",$message);
-												}
-												$ownerCount++;
-											}
-										}
-									}
-								} // END if ($rndPick == $nTeams)
 								
 								/*-----------------------------------------
 								/
@@ -1514,6 +1449,13 @@ class draft extends BaseEditor {
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('autoOpen',$responses,'Auto Open Teams (no human owner)',($this->input->post('autoOpen') ? $this->input->post('autoOpen') : $this->dataModel->autoOpen));
 		$form->space();
+		$form->fieldset('Email Settings');
+		$form->fieldset('',array('class'=>'radioGroup'));
+		$form->radiogroup ('emailOwnersForPick',$responses,'Send owners pick alerts:',($this->input->post('emailOwnersForPick') ? $this->input->post('emailOwnersForPick') : $this->dataModel->emailOwnersForPick));
+		$form->space();
+		$form->fieldset('',array('class'=>'radioGroup'));
+		$form->radiogroup ('emailDraftSummary',$responses,'Send round summaries:',($this->input->post('emailDraftSummary') ? $this->input->post('emailDraftSummary') : $this->dataModel->emailDraftSummary));
+		$form->space();
 		$form->br();
 		$form->fieldset('Draft Schedule Settings');
 		$form->fieldset('',array('class'=>'radioGroup'));
@@ -1541,14 +1483,13 @@ class draft extends BaseEditor {
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('pauseWkEnd',$responses,'Pause Timer on Weekends',($this->input->post('pauseWkEnd') ? $this->input->post('pauseWkEnd') : $this->dataModel->pauseWkEnd));
 		$form->space();
-		$form->fieldset('Email Settings');
-		$form->text('emailList','Email List','trim',($this->input->post('emailList')) ? $this->input->post('emailList') : $this->dataModel->emailList);
-		$form->br();
-		$form->text('replyList','Reply-to List','trim',($this->input->post('replyList')) ? $this->input->post('replyList') : $this->dataModel->replyList);
+		//$form->text('emailList','Email List','trim',($this->input->post('emailList')) ? $this->input->post('emailList') : $this->dataModel->emailList);
+		//$form->br();
+		//$form->text('replyList','Reply-to List','trim',($this->input->post('replyList')) ? $this->input->post('replyList') : $this->dataModel->replyList);
 		$form->br();
 		$form->fieldset('',array('class'=>'button_bar'));
 		$form->span(' ','style="margin-right:8px;display:inline;"');
-		$form->button('Cancel','cancel','button',array('class'=>'button'));
+		$form->button('Cancel','cancel','button',array('class'=>'button'));	
 		$form->nobr();
 		$form->span(' ','style="margin-right:8px;display:inline;"');
 		$form->submit('Submit');

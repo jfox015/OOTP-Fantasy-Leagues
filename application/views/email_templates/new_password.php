@@ -2,10 +2,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>New Password</title>
+		<title><?php echo($siteName); ?> New Password</title>
 	</head>
 	<body>
-		<h1>New Password</h1>
+		<h1><?php echo($siteName); ?> New Password</h1>
 		<p>Your new password is : <b><?php echo $new_password; ?></b></p>
+        <p>Login using your new password on the <?php echo anchor('/usder/login','Login page'); ?>.</p>
 	</body>
 </html>

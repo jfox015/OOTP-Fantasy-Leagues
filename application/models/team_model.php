@@ -92,7 +92,6 @@ class team_model extends base_model {
 		$this->fieldList = array('league_id','division_id','teamname','teamnick','owner_id','auto_draft','auto_list','auto_round_x');
 		$this->conditionList = array('avatarFile');
 		$this->readOnlyList = array('avatar');  
-		$this->textList = array('teamname','teamnick');  
 		
 		$this->columns_select = array('id','avatar','league_id','division_id','teamname','teamnick','owner_id');
 		
@@ -113,10 +112,12 @@ class team_model extends base_model {
 	 * 
 	 */
 	public function applyData($input,$userId = -1) {
+		//print("Model team name = ".$this->teamname." ".$this->teamnick."<br />");
 		$success = parent::applyData($input,$userId);
 		if ($success) {
 			if (isset($_FILES['avatarFile']['name']) && !empty($_FILES['avatarFile']['name'])) { 
 				$success = $this->uploadFile('avatar',PATH_TEAMS_AVATAR_WRITE,$input,'avatar',$this->teamname);
+				//print("Model team name = ".$this->teamname." ".$this->teamnick."<br />");
 			}
 			if ($input->post('auto_round_x') && $input->post('auto_round_x') == -1) {
 				$this->auto_round_x = 0;

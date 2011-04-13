@@ -18,7 +18,7 @@
 			$avatar = (isset($avatar) && !empty($avatar)) ? $avatar : DEFAULT_AVATAR;
 			echo('<img src="'.PATH_TEAMS_AVATARS.$avatar.'" border="0" width="50" height="50" align="left" />');
 			?>
-            <br clear="all" /><br /><br />
+            <br clear="all" /><br />
             <?php
 			echo(form_open_multipart($config['fantasy_web_root']."team/avatar",array("id"=>"detailsForm","name"=>"detailsForm")));
 			echo(form_fieldset());

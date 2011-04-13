@@ -120,7 +120,9 @@ function user_nav($loggedIn = false, $name = false, $userId = false) {
 	} else {
 		array_push($nav,array('url'=>'/user/forgotten_password','label'=>"Forgot Password"));
 	}
-	array_push($nav,array('url'=>'/search/users','label'=>"Browse User Profiles"));
+	if ($loggedIn) {
+		array_push($nav,array('url'=>'/search/users','label'=>"Browse User Profiles"));
+	}
 	return $nav;
 }
 

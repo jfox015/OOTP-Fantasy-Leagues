@@ -32,6 +32,14 @@
             $form->space();
             $form->select('primary_contact|primary_contact',$adminList,'Primary Contact',($this->input->post('primary_contact')) ? $this->input->post('primary_contact') : $config['primary_contact'],'required');
 			$form->br();
+			$responses[] = array('1','Enabled');
+			$responses[] = array('-1','Disabled');       
+			$form->fieldset('User Management');
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('user_activation_required',$responses,'Users must be activated',($this->input->post('user_activation_required') ? $this->input->post('user_activation_required') : $config['user_activation_required']),'required');
+			$form->fieldset('');
+			$form->select('user_activation_method|user_activation_method',loadSimpleDataList('activationType'),'Activation Method',($this->input->post('user_activation_method')) ? $this->input->post('user_activation_method') : $config['user_activation_method'],'required');
+			$form->space();
 			$form->fieldset('URLs and Paths');
 			$form->text('fantasy_web_root','Fantasy League Root URL','required|trim',($input->post('fantasy_web_root') ? $input->post('fantasy_web_root') : $config['fantasy_web_root']),array("class"=>"longtext"));
             $form->space();
@@ -40,8 +48,6 @@
 			$form->span("Web URL to your OOTP HTML reports folder.",array('class'=>'field_caption'));
 			$form->space();
            	$form->fieldset('Tools');
-			$responses[] = array('1','Enabled');
-			$responses[] = array('-1','Disabled');       
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('stats_lab_compatible',$responses,'StatsLab Compatibility Mode',($this->input->post('stats_lab_compatible') ? $this->input->post('stats_lab_compatible') : $config['stats_lab_compatible']),'required');
 			$form->fieldset();

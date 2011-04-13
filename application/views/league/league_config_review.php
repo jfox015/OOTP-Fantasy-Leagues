@@ -7,7 +7,7 @@
         <h1>
 		<?php 
 		if (isset($thisItem['avatar']) && !empty($thisItem['avatar'])) { 
-			$avatar = PATH_LEAGUES_AVATARS.$row['avatar']; 
+			$avatar = PATH_LEAGUES_AVATARS.$thisItem['avatar']; 
 		} else {
 			$avatar = PATH_LEAGUES_AVATARS.DEFAULT_AVATAR;
 		} ?>
@@ -24,9 +24,9 @@
         <tr>
             <td style="padding:10px;">
             
-            <label>League Name:</label> <?php print($thisItem['league_name'].'('.anchor('submit/mode/edit/id/'.$league_id,'Edit').')'); ?>
+            <label>League Name:</label> <?php print($thisItem['league_name'].'('.anchor('league/submit/mode/edit/id/'.$league_id,'Edit').')'); ?>
             <p /><br />
-            <label>Description</label> <?php print($thisItem['description'].'('.anchor('submit/mode/edit/id/'.$league_id,'Edit').')'); ?>
+            <label>Description</label> <?php print($thisItem['description'].'('.anchor('league/submit/mode/edit/id/'.$league_id,'Edit').')'); ?>
             <p /><br />
             <label>Team Count</label> <?php print($thisItem['max_teams']); ?>
             <p /><br />

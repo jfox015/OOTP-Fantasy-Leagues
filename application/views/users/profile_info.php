@@ -45,9 +45,14 @@
            		</div>
                	<!-- BEGIN MAIN COLUMN -->
                 <div id="detailColumn">
-                    <h1><?php if (isset($profile->avatar) && !empty($profile->avatar)) { ?>
-                    <img src="<?php echo(PATH_USERS_AVATARS.$profile->avatar) ?>" width="50" height="50" border="0" alt="avatar" title="avatar" align="absmiddle" />
-                    <?php } ?>
+                    <h1><?php 
+					if (isset($profile->avatar) && !empty($profile->avatar)) { 
+						$avatar = $profile->avatar;
+					} else {
+						$avatar = DEFAULT_AVATAR;
+					} 
+					?>
+                    <img src="<?php echo(PATH_USERS_AVATARS.$avatar) ?>" width="50" height="50" border="0" alt="avatar" title="avatar" align="absmiddle" />
 					<?php if (isset($profile->firstName) && isset($profile->lastName)) {
 						echo($profile->firstName." ".$profile->lastName); 
 					} else {
@@ -110,12 +115,12 @@
 						<td class='hsc2_l'>
                         <?php 
 						if (isset($data['avatar']) && !empty($data['avatar'])) { 
-							$avatar = PATH_TEAMS_AVATARS.$data['avatar'];
+							$avatar = $data['avatar'];
 						} else {
-							$avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
+							$avatar = DEFAULT_AVATAR;
 						}
 						?>
-						<img src="<?php echo($avatar); ?>" width="24" height="24" border="0" align="absmiddle" />
+						<img src="<?php echo(PATH_TEAMS_AVATARS.$avatar); ?>" width="24" height="24" border="0" align="absmiddle" />
 						</td>
                         <td class='hsc2_r'><?php echo(anchor('/team/info/'.$data['id'],$data['teamname']." ".$data['teamnick'])); ?></td>
 						<td class='hsc2_r'><?php echo(anchor('/league/info/'.$data['league_id'],$data['league_name'])); ?></td>

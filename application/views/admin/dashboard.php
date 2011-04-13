@@ -161,7 +161,7 @@
         <?php } ?>
 		<ul class="iconmenu">
 			<?php 
-			$hidden_funcs = false; 
+			// SETTING OPTIONS (PRE-SEASON ONLY)
 			if ((isset($league_info) && $league_info->current_date <= $league_info->start_date) || !isset($league_info)) { ?>
         	<li><?php echo anchor('admin/configGame','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
             Global Settings</li>
@@ -171,54 +171,57 @@
             Rosters Rules Settings</li>
 			<li><?php echo anchor('admin/configScoringRules','<img src="'.$config['fantasy_web_root'].'images/icons/application_edit.png" width="48" height="48" border="0" />'); ?><br />
             Scoring Rules Settings</li>
-            <?php } else { ?>
+            <?php 
+			} else { 
+			// SETTING REVIEW (REGULAR SEASON)
+			?>
             <li><?php echo anchor('admin/configInfo','<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
             Review Settings</li>
-            <?php //$hidden_funcs = true;
-			}
+            <?php 
+			} // END if
 			?>
 			<li><?php echo anchor('admin/configSocial','<img src="'.$config['fantasy_web_root'].'images/icons/facebook-64x64.png" width="48" height="48" border="0" />'); ?><br />
             Social Media Settings</li>
+            <?php if ($config['user_activation_method'] == 2) { ?>
+            <li><?php echo anchor('admin/userActivations','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
+            User Activations</li>
             <?php 
+			} // END if
 			if (defined('ENV') && ENV != "live") { ?>
 			<li><?php echo anchor('admin/configOOTP','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
             Date/Scoring Period Settings</li>
 			<?php 
-			}
-			if ($hidden_funcs) { ?>
-            <li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png" width="24" height="24" border="0" align="left" alt="" title="" /><span style="color:#c00;text-align:left;">More functions are available once your league setup is more complete.</span>
-			<?php }
+			} // END if
 			?>
         </ul>
         <br clear="all" /><br />
         <?php if (isset($league_info) && $league_info->current_date <= $league_info->start_date) { ?>
         <h3>Pre-Season Functions</h3>
         <?php if ($playerCount == 0) { 
-		echo('<br /><span class="error" style="margin:0px; width:90%;"><strong>Warning:</strong> No players have been loaded into the database. Many site functions will not work correctly until this is done.</span><br />'); } ?>
+		echo('<br /><span class="error" style="margin:0px; width:90%;">'.$this->lang->line('dash_error_no_players').'</span><br />'); } ?>
         <ul class="iconmenu">
            	<?php 
 			$hidden_funcs = false; 
-			//if (!$in_season) { ?>
+			?>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'reset')); ?><br />
             Reset game to Pre-season</li>
-            <?php //} ?>
-            <?php if (isset($league_info)) { ?>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />',array('rel'=>'avail')); ?><br />
             Import Available Players</li>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar_empty.png" width="48" height="48" border="0" />',array('rel'=>'sched')); ?><br />
             Generate Scoring Schedule</li>
-            <?php } else { 
-				$hidden_funcs = true;
-			} ?>
-            <?php if (isset($leagues) && sizeof($leagues) > 0) { ?>
+            
+            <?php 
+			// LEAGUE SETTINGS
+			if (isset($leagues) && sizeof($leagues) > 0) { ?>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar.png" width="48" height="48" border="0" />',array('rel'=>'games')); ?><br />
-            Generate Head-to-Head  Schedules</li>
-            <?php } else { 
-				$hidden_funcs = true;
-			} 
-			if ($hidden_funcs) { ?>
-            <li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png" width="24" height="24" border="0" align="left" alt="" title="" /><span style="color:#c00;text-align:left;">More functions are available once your league setup is more complete.</span>
-			<?php }
+            Generate Head-to-Head Schedules</li>
+            <?php 
+			} else { ?>
+            <li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png" 
+            width="24" height="24" border="0" align="left" alt="" title="" class="floated_icon" /><div 
+            class="floated_caption"><?php print($this->lang->line('dash_settings_pre_add_leagues')); ?></div>
+            </li>
+			<?php } // END if
 			?>
         </ul>
         <br clear="all" /><br />
@@ -388,7 +391,7 @@
 		else { echo("No scoring periods processed yet."); } ?>
         <br /><br /><b>OOTP Players Loaded:</b> 
         <?php if ($playerCount > 0) { echo($playerCount); }
-		else { echo('<br /><span class="error" style="margin:0px; width:90%;"><strong>Warning:</strong> Players not loaded</span>'); } ?>
+		else { echo('<br /><span class="error" style="margin:0px; width:90%;">'.$this->lang->line('dash_error_no_players_short').'</span>'); } ?>
         <?php 
 		} else { ?>
         <span class="error" style="margin:0px; width:90%;"><strong>League Files not loaded</strong>

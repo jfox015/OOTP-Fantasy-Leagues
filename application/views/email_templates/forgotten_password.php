@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>Forgotten Password Request</title>
+		<title><?php echo($siteName); ?> Forgotten Password Request</title>
 	</head>
 	<body>
-		<h1>Forgotten Password Request</h1>
-		<p>You have requested a new password.</p>
-		<p>Please click the following link and enter this code</p>
-		<p><b><?php echo $forgotten_password_code; ?></b></p>
-		<p><?php echo anchor('welcome/forgotten_password/', 'New Password'); ?></p>
+		<h1><?php echo($siteName); ?> Forgotten Password Request</h1>
+		<p>A requeste for a new password has been created on the <?php echo($siteName); ?>  site for this account.</p>
+		<p>Please click the following link and enter the verification code below to create your new password:</p>
+		<p>Verification Code: <b><?php echo $forgotten_password_code; ?></b></p>
+		<p><?php echo anchor('welcome/forgotten_password_verify/', 'Verify this code to get your new password now'); ?></p>
 	</body>
 </html>

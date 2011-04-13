@@ -95,6 +95,9 @@ if ( ! function_exists('loadSimpleDataList')) {
 			case 'tradeApprovalType':
 				$table = 'fantasy_teams_trades_approvals';
 				break;	
+			case 'activationType':
+				$table = 'users_activation_types';
+				break;	
 			default:
 				break;
 		} // END switch

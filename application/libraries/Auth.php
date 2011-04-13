@@ -87,30 +87,39 @@ class Auth
 	 * @author Mathew
 	 **/
 	public function forgotten_password($email,$debug) {
+		
 		$forgotten_password = $this->ci->user_auth_model->forgotten_password($email);
 		
 		if ($forgotten_password) {
 			// Get user information.
-			$this->ci->user_auth_model->load($this->ci->user_auth_model->checkEmail($email),'email',true);
-
-			$data = array('passConfirmKey' => $this->ci->user_auth_model->passConfirmKey);
-                
-			$message = $this->ci->load->view($this->ci->config->item('email_templates').'forgotten_password', $data, true);
-			
-			$this->ci->email->clear();
-			$this->ci->email->set_newline("\r\n");
-			$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
-			$this->ci->email->to($this->ci->user_auth_model->email);
-			$this->ci->email->subject('Email Verification (Forgotten Password)');
-			$this->ci->email->message($message);
-			if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-				if ($this->email->send()) {
-					return true;
+			if ($this->ci->user_auth_model->checkEmail($email)) {
+				$this->ci->user_auth_model->load($email,'email',true);
+	
+				$data = array('forgotten_password_code' => $this->ci->user_auth_model->passConfirmKey,'siteName'=>$this->ci->params['config']['site_name']);
+					
+				$message = $this->ci->load->view($this->ci->config->item('email_templates').'forgotten_password', $data, true);
+				
+				$this->ci->email->clear();
+				$this->ci->email->set_newline("\r\n");
+				$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
+				$this->ci->email->to($this->ci->user_auth_model->email);
+				$this->ci->email->subject($this->ci->params['config']['site_name'].' Email Verification Forgotten Password');
+				$this->ci->email->message($message);
+				if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
+					if ($this->ci->email->send()) {
+						return true;
+					} else {
+						return false;
+					}
 				} else {
-					return false;
+					if (!function_exists('write_file')) {
+						$this->ci->load->helper('file');
+					} // END if 
+					write_file(PATH_MEDIA_WRITE.'/email_get_passrd_'.substr(md5($email.time()),0,8).".html",$message);
+					return true;
 				}
 			} else {
-				return $message;
+				return false;
 			}
 		} else {
 			return false;
@@ -129,7 +138,7 @@ class Auth
 
 		if ($fpc) {
 			$this->ci->user_auth_model->load($fpc);
-			$data = array('new_password' => $this->ci->user_auth_model->newPassword);
+			$data = array('new_password' => $this->ci->user_auth_model->newPassword,'siteName'=>$this->ci->params['config']['site_name']);
             
 			$message = $this->ci->load->view($this->ci->config->item('email_templates').'new_password', $data, true);
 				
@@ -137,16 +146,20 @@ class Auth
 			$this->ci->email->set_newline("\r\n");
 			$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
 			$this->ci->email->to($this->ci->user_auth_model->email);
-			$this->ci->email->subject('New Password');
+			$this->ci->email->subject($this->ci->params['config']['site_name'].', New Password');
 			$this->ci->email->message($message);
 			if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-				if ($this->email->send()) {
+				if ($this->ci->email->send()) {
 					return true;
 				} else {
 					return false;
 				}
 			} else {
-				return $message;
+				if (!function_exists('write_file')) {
+					$this->ci->load->helper('file');
+				} // END if 
+				write_file(PATH_MEDIA_WRITE.'/email_get_pass_verify_'.substr(md5($code.time()),0,8).".html",$message);
+				return true;
 			}
 		} else {
 			return false;
@@ -204,7 +217,7 @@ class Auth
 
 		$activation_code = $this->ci->user_auth_model->emailConfirmKey;
 		
-		$email_activation = $this->ci->config->item('email_activation');
+		$email_activation = ($this->ci->params['config']['user_activation_method'] != -1) ? true : false;
 		
 		if (!$email_activation) {
 			if ($this->ci->user_auth_model->activate($activation_code)) {
@@ -213,39 +226,88 @@ class Auth
 				return false;
 			}
 		} else {
-			$email_folder     = $this->ci->config->item('email_templates');
-
-			$activation_code = $this->ci->user_auth_model->emailConfirmKey;
-
-			$data = array('username' => $formInput->post('username'),
-       				'password'   => $formInput->post('password'),
-       				'email'      => $formInput->post('email'),
-       				'activation' => $activation_code);
-            
-			$message = $this->ci->load->view($email_folder.'activation', $data, true);
-            
+			$email_folder = $this->ci->config->item('email_templates');
 			$this->ci->email->clear();
 			$this->ci->email->set_newline("\r\n");
-			$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['game_name']." Administrator");
-			$this->ci->email->to($formInput->post('email'));
-			$this->ci->email->subject('Email Activation (Registration)');
-			$this->ci->email->message($message);
 			
+			if ($this->ci->params['config']['user_activation_method']== 1) {
+				$activation_code = $this->ci->user_auth_model->emailConfirmKey;
+	
+				$data = array('siteName'=>$this->ci->params['config']['site_name'],
+						'username' => $formInput->post('username'),
+						'password'   => $formInput->post('password'),
+						'email'      => $formInput->post('email'),
+						'activation' => $activation_code);
+				
+				$message = $this->ci->load->view($email_folder.'activation', $data, true);
+				$this->ci->email->to($formInput->post('email'));
+				$this->ci->email->subject($this->ci->params['config']['site_name'].' Registration - Activation Required');
+			} else {
+				$this->ci->user_auth_model->activate($activation_code, true);
+				$data = array('siteName'=>$this->ci->params['config']['site_name'],
+						'username' => $formInput->post('username'),
+						'email'    => $formInput->post('email'));
+				$message = $this->ci->load->view($email_folder.'admin_activation', $data, true);
+				$this->ci->email->to($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']));
+				$this->ci->email->subject($this->ci->params['config']['site_name'].' User Activation Required');
+			}
+			$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
+			$this->ci->email->message($message);
 			if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-				if ($this->email->send()) {
+				if ($this->ci->email->send()) {
 					return true;
 				} else {
 					return false;
 				}
 			} else {
-				return $message;
+				if (!function_exists('write_file')) {
+					$this->ci->load->helper('file');
+				} // END if 
+				write_file(PATH_MEDIA_WRITE.'/email_get_register_'.substr(md5($formInput->post('email').time()),0,8).".html",$message);
+				return true;
 			}
 		} // END if
+	}
+	public function resend_activation($email,$debug = false) {
+		
+		$forgotten_activation = $this->ci->user_auth_model->forgotten_activation($email);
+		
+		if (!empty($forgotten_activation)) {
+			$data = array('siteName'=>$this->ci->params['config']['site_name'],
+					'username' => $this->ci->user_auth_model->username,
+       				'activation' => $forgotten_activation);
+            
+			$message = $this->ci->load->view($this->ci->config->item('email_templates').'activation', $data, true);
+            
+			$this->ci->email->clear();
+			$this->ci->email->set_newline("\r\n");
+			$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
+			$this->ci->email->to($email);
+			$this->ci->email->subject($this->ci->params['config']['site_name'].' Activation Code Request');
+			$this->ci->email->message($message);
+			
+			if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
+				if ($this->ci->email->send()) {
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				if (!function_exists('write_file')) {
+					$this->ci->load->helper('file');
+				} // END if 
+				write_file(PATH_MEDIA_WRITE.'/email_get_activate_resend_'.substr(md5($email.time()),0,8).".html",$message);
+				return true;
+			}
+		} else {
+			return false;
+		}
+		
 	}
 	protected function confirmationEmail($email, $username,$debug = false) {
 
 		$message = $this->ci->load->view($this->ci->config->item('email_templates').'activation', 
-										array('username' => $username,
+										array('siteName'=>$this->ci->params['config']['site_name'],'username' => $username,
 										'email'=> $email), true);
 		
 		$this->ci->email->clear();
@@ -256,13 +318,17 @@ class Auth
 		$this->ci->email->message($message);
 		
 		if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-			if ($this->email->send()) {
+			if ($this->ci->email->send()) {
 				return true;
 			} else {
 				return false;
 			}
 		} else {
-			return $message;
+			if (!function_exists('write_file')) {
+				$this->ci->load->helper('file');
+			} // END if 
+			write_file(PATH_MEDIA_WRITE.'/email_get_activate_'.substr(md5($email.time()),0,8).".html",$message);
+			return true;
 		}
 	}
 	

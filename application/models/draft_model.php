@@ -39,6 +39,10 @@ class draft_model extends base_model {
 	var $pauseWkEnd = -1;
 	var $emailList = '';
 	var $replyList = '';
+	
+	var $emailDraftSummary = -1;
+	var $emailOwnersForPick = -1;
+	
 	var $completed = -1;
 	/*---------------------------------------------
 	/
@@ -54,7 +58,7 @@ class draft_model extends base_model {
 		$this->tables['DRAFT'] = 'fantasy_draft';
 		$this->tables['TEAMS'] = 'fantasy_teams';
 		
-		$this->fieldList = array('league_id','draftEnable','nRounds','dispLimit','pauseAuto','setAuto','autoOpen','timerEnable','flexTimer','dStartDt','timePick1','timePick2','rndSwitch','timeStart','timeStop','pauseWkEnd','emailList','replyList');
+		$this->fieldList = array('league_id','draftEnable','nRounds','dispLimit','pauseAuto','setAuto','autoOpen','timerEnable','flexTimer','dStartDt','timePick1','timePick2','rndSwitch','timeStart','timeStop','pauseWkEnd','emailDraftSummary','emailOwnersForPick');
 		$this->conditionList = array('whenDraft');
 		$this->readOnlyList = array('draftDate','completed','dStartTm');  
 		

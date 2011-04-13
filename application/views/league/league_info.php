@@ -2,7 +2,7 @@
    		<div id="single-column">
             <div class="top-bar"><h1><?php 
 		if (isset($thisItem['avatar']) && !empty($thisItem['avatar'])) { 
-			$avatar = PATH_LEAGUES_AVATARS.$row['avatar']; 
+			$avatar = PATH_LEAGUES_AVATARS.$thisItem['avatar']; 
 		} else {
 			$avatar = PATH_LEAGUES_AVATARS.DEFAULT_AVATAR;
 		} ?>

@@ -1,34 +1,38 @@
-		<!-- BEGIN LOGIN FORM -->
-    <div id="col_s">
+	<div id="single-column"> 
         <h1>Account Activation.</h1>
-		<p />
-        Please enter your activation code from the registration email.<br />
-        <div class="content-form">
-            <div id="dialog">
-                <div class="dialog_head">
-                Activation Code
-                </div>
-                <div class="dialog_body">
-                <?php 
-				$errors = validation_errors();
-				if ($errors) {
-					echo '<span class="error">The following errors were found with your submission:<br/ ><b>'.$errors.'</b></span><p />';
-				}
-				$form = new Form();
-                $form->open('home/activate','activate');
-                $form->fieldset();
-                $form->text('code','Activation Code','required');
-                $form->space();
-                $form->fieldset('',array('class'=>'button_bar'));
-				$form->submit('Activate');
-                echo($form->get());
-                ?>
-                </div>
-                <div class="dialog_foot"></div>
-                <br class="clear" clear="all" />
-            </div>
-            <br class="clear" clear="all" />
-        </div>
-        Didn't recieve an <b>activation code</b>? Request a new one or contact the site administrator for help.
     </div>
-    <p /><br />
+    <div id="center-column">
+        <div class='textbox'>
+        <table cellpadding="0" cellspacing="0" border="0" style="width:525px;">
+        <tr class='title'>
+            <td style='padding:3px' colspan="2">Please enter your activation code to continue.</td>
+        </tr>
+        <tr>
+            <td>
+			<?php 
+            $errors = validation_errors();
+            if ($errors) {
+                echo '<span class="error">The following errors were found with your submission:<br/ ><b>'.$errors.'</b></span><p />';
+            }
+            $form = new Form();
+            $form->open('home/activate','activate');
+            $form->fieldset();
+            $form->text('code','Activation Code','required');
+            $form->space();
+            $form->fieldset('',array('class'=>'button_bar'));
+            $form->submit('Activate');
+            echo($form->get());
+            ?>
+            </td>
+        </tr>
+        </table>
+        </div>
+        <br class="clear" />
+    	<p /><br />
+        Didn't recieve an <b>activation code</b>? 
+        <ul>
+        	<li>Check your mailboxes <strong>spam</strong> folder. Sometimes they get caught there by accident.</li>
+            <li><?php print anchor('/user/resend_activation','Request a new one'); ?></li>
+            <li><?php print anchor('/about/contact','Contact the site administrator'); ?> for help.</li>
+        </ul>
+    </div>

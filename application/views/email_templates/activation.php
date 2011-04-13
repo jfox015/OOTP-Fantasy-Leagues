@@ -2,10 +2,11 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>Activation Code</title>
+		<title><?php echo($siteName); ?> User Activation Code</title>
 	</head>
 	<body>
-		<h1>Your Comic Rack Activation Code</h1>
-		<p>Your activation code for <?php echo $username; ?> is : <b><?php echo $activation; ?></b></p>
+		<h1><?php print($siteName); ?> User Activation Code</h1>
+		<p>Your activation code for <?php print($username); ?> is : <b><?php print($activation); ?></b></p>
+         <p>Activate your membership on the site using the <?php print(anchor('user/activate','email activiation form')); ?>.</p>
 	</body>
 </html>

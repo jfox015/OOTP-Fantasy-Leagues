@@ -101,7 +101,7 @@ class user_auth_model extends base_model {
 	 * @return void
 	 *
 	 */
-	public function activate($code = false) {
+	public function activate($code = false, $leaveInactive = false) {
 	    
 	    if ($code === false) {
 	        $this->errorCode = 1;
@@ -121,7 +121,37 @@ class user_auth_model extends base_model {
 		}
 	    
 		$identity = $result->{$this->uniqueField};
-		$data = array('emailConfirmKey' => '','active' => 1, 'dateModified' => date('Y-m-d h:m:s'));
+		$active = ($leaveInactive === false) ? 1 : 0;
+		$data = array('emailConfirmKey' => '','active' => $active, 'dateModified' => date('Y-m-d h:m:s'));
+		$this->db->update($this->tblName, $data, array($this->uniqueField => $identity));
+		return ($this->db->affected_rows() == 1) ? true : false;
+	}
+	
+	public function adminActivation($userId = false, $approvedBy = false) {
+		
+		if ($userId === false) {
+			$this->errorCode = 1;
+			$this->statusMess = "No user id was recieved.";
+	        return false;
+	    }
+		if ($approvedBy === false) {
+			$this->errorCode = 1;
+			$this->statusMess = "An approver ID is required but none was recieved.";
+	        return false;
+	    }
+		$query = $this->db->select($this->uniqueField)
+               	      ->where('id', $userId)
+               	      ->limit(1)
+               	      ->get($this->tblName);
+               	      
+		$result = $query->row();
+		if ($query->num_rows() !== 1) {
+		    $this->errorCode = 3;
+			$this->statusMess = "No matching user id was found in the system.";
+	        return false;
+		}
+		$identity = $result->{$this->uniqueField};
+		$data = array('active' => 1, 'dateModified' => date('Y-m-d h:m:s'), 'lastModifiedBy' => $approvedBy);
 		$this->db->update($this->tblName, $data, array($this->uniqueField => $identity));
 		return ($this->db->affected_rows() == 1) ? true : false;
 	}
@@ -258,6 +288,41 @@ class user_auth_model extends base_model {
 		
 		return ($this->db->affected_rows() == 1) ? true : false;
 	}
+	public function forgotten_activation($email = false) {
+	 	
+		
+		$activation_code = '';
+		if ($email === false) {
+	        $this->errorCode = 1;
+			$this->statusMess = "A required email address was missing.";
+	        return false;
+	    }
+	    $query = $this->db->select('active, emailConfirmKey')
+               	      ->where('email', $email)
+               	      ->limit(1)
+               	      ->get($this->tblName);		 
+		if ($query->num_rows() == 0) {
+		    $this->errorCode = 2;
+			$this->statusMess = "No matching email address was found in the system.";
+	        return false;
+		} else {
+			$row = $query->row();
+			if ($row->active == 1) {
+				$this->errorCode = 3;
+				$this->statusMess = "This account has already been activated.";
+				return false; 
+			} else {
+				$activation_code = $row->emailConfirmKey;
+				if (empty($activation_code)) {
+					$this->errorCode = 4;
+					$this->statusMess = "No activation code is pending for this account.";
+					return false;  
+				}
+			}
+		}
+		$query->free_result();
+		return $activation_code;
+	}
 	/**
 	 * Insert a forgotten password key.
 	 *
@@ -313,10 +378,10 @@ class user_auth_model extends base_model {
 			$this->statusMess = "The required password reset confirmation code was missing.";
 	        return false;
 	    }
-	    $query = $this->db->select('id')
-                   	   ->where('passConfirmKey', $code)
-                           ->limit(1)
-                   	   ->get($this->tblName);
+	    $this->db->select('id');
+        $this->db->where('passConfirmKey', $code);
+        $this->db->limit(1);
+        $query = $this->db->get($this->tblName);
         
         $result = $query->row();
 
@@ -324,13 +389,9 @@ class user_auth_model extends base_model {
 			$this->load($result->id);
 			$clearPw = substr($this->hashPassword(microtime().$this->email),0,12);
 		    $password   = $this->hashPassword($clearPw);
-		    if ($debug) {
-				echo("New clear PW = ".$clearPw."<br />");
-			}
-            $data = array('password' => $password,
-                          'passConfirmKey' => '0');
+            $data = array('password' => $password);
             
-			$this->newPassword = $password;
+			$this->newPassword = $clearPw;
             $this->db->update($this->tblName, $data, array('id' => $result->id));
 			
             return $result->id;
@@ -393,6 +454,26 @@ class user_auth_model extends base_model {
 			return false;
 		}
 	}
+	public function getAdminActivations() {
+		
+		$query = $this->db->select('id,username,email,dateCreated')
+                   	   ->where('active', 0)
+					   ->where("emailConfirmKey = ''")
+                   	   ->get($this->tblName);
+		$users = array();
+		//print($this->db->last_query()."<br />");
+        if ($query->num_rows() > 0) {
+			foreach ($query->result() as $row) {
+				array_push($users,array('id'=>$row->id,'username'=>$row->username,'email'=>$row->email,
+										'dateCreated'=>$row->dateCreated));
+			}
+		} else {
+			$this->errorCode = 1;
+			$this->statusMess = "No users requiring admin activation were found in the system.";
+		}
+		return $users;
+	}
+	
 	
 	/**
 	 *	LOGIN

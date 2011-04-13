@@ -411,7 +411,7 @@ class base_model extends Model implements Serializable {
 			if ($field != 'dateCreated') {
 				//echo($field ." = ".$this->$field."<br />");
 				$data = $data + array($field =>$this->$field);
-			}
+			} // END if
 		} // END foreach
 		
 		if ($this->id != -1) {
@@ -644,6 +644,7 @@ class base_model extends Model implements Serializable {
 	protected function fieldsFromSQL($row) {
 		foreach($this->allFields as $field) {
 			if ($field != "id" && isset($row->$field)) {
+				//echo($field ." = ".$row->$field."<br />");
 				$this->$field = $row->$field;
 			} // END if
 		} // END foreach

@@ -1,6 +1,8 @@
+#----------------------------------------------------
 #	UPDATE SQL QUERY
 #	Version 1.0 and 1.0.1 TO 1.0.2
 #	REMOVE ALL COMMENTS FOR DIST
+
 ALTER TABLE `fantasy_leagues` ADD `playoff_rounds` TINYINT NOT NULL;
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('sharing_enabled', '1');
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('share_facebook', '1');
@@ -8,9 +10,11 @@ INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('share_twitter', '1
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('share_digg', '1');
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('share_stumble', '1');
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('share_addtoany', '1');
+
 #	UPDATE SQL QUERY
 #	Version 1.0.2 to 1.0.3
 #	REMOVE ALL COMMENTS FOR DIST
+
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('google_analytics_enable', '-1');
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('google_analytics_tracking_id', '');
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('stats_lab_compatible', '1');
@@ -18,9 +22,20 @@ INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('restrict_admin_lea
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('users_create_leagues', '1');
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('max_user_leagues', '1');
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('primary_contact', '1');
+
 #	UPDATE SQL QUERY
 #	Version 1.0.3 to 1.0.4
 #	REMOVE ALL COMMENTS FOR DIST
+DROP TABLE IF EXISTS `fantasy_players_scoring`;
+DROP TABLE IF EXISTS `fantasy_sim_summary`;
+DROP TABLE IF EXISTS `fantasy_teams_scoring`;
+DROP TABLE IF EXISTS `fantasy_teams_trades`;
+DROP TABLE IF EXISTS `fantasy_teams_trades_approvals`;
+DROP TABLE IF EXISTS `fantasy_teams_trades_status`;
+DROP TABLE IF EXISTS `fantasy_teams_trade_protests`;
+DROP TABLE IF EXISTS `fantasy_players_compiled_batting`;
+DROP TABLE IF EXISTS `fantasy_players_compiled_pitching`;
+DROP TABLE IF EXISTS `users_activation_types`;
 ALTER TABLE `fantasy_transactions` ADD `trade_team_id` INT NOT NULL AFTER `dropped`;
 ALTER TABLE `fantasy_teams_record` ADD `scoring_period_id` TINYINT NOT NULL AFTER `year`;
 ALTER TABLE `fantasy_leagues_scoring_batting` ADD `scoring_type` TINYINT NOT NULL AFTER `league_id`;
@@ -36,15 +51,8 @@ INSERT INTO `fantasy_leagues_scoring_pitching` (`league_id`, `scoring_type`, `ty
 INSERT INTO `fantasy_leagues_scoring_pitching` (`league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(0, 3, 40, 0, 29, 0, 38, 0, 42, 0, 32, 0, 52, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 INSERT INTO `fantasy_leagues_scoring_pitching` (`league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(0, 4, 29, 7, 30, -5, 38, 1, 34, 1, 37, -1, 60, -1, 54, 10, 56, 10, 32, 5, 61, -3, -1, -1, -1, -1);
 ALTER TABLE `fantasy_players` ADD `rating` FLOAT NOT NULL DEFAULT '0', ADD `rank` SMALLINT NOT NULL DEFAULT '0', ADD `last_rank` SMALLINT NOT NULL DEFAULT '0', ADD `2nd_last_rank` SMALLINT NOT NULL DEFAULT '0';
-DROP TABLE IF EXISTS `fantasy_players_scoring`;
-DROP TABLE IF EXISTS `fantasy_sim_summary`;
-DROP TABLE IF EXISTS `fantasy_teams_scoring`;
-DROP TABLE IF EXISTS `fantasy_teams_trades`;
-DROP TABLE IF EXISTS `fantasy_teams_trades_approvals`;
-DROP TABLE IF EXISTS `fantasy_teams_trades_status`;
-DROP TABLE IF EXISTS `fantasy_teams_trade_protests`;
-DROP TABLE IF EXISTS `fantasy_players_compiled_batting`;
-DROP TABLE IF EXISTS `fantasy_players_compiled_pitching`;
+ALTER TABLE `fantasy_draft_config` ADD `emailOwnersForPick` TINYINT NOT NULL DEFAULT '1' AFTER `replyList` , ADD `emailDraftSummary` TINYINT NOT NULL DEFAULT '1' AFTER `emailOwnersForPick` ;
+UPDATE `fantasy_draft_config` SET `emailOwnersForPick` = 1, `emailDraftSummary` = 1;
 CREATE TABLE IF NOT EXISTS `fantasy_players_compiled_batting` ( `id` int(11) NOT NULL auto_increment, `player_id` int(11) NOT NULL default '-1', `scoring_period_id` tinyint(4) NOT NULL default '-1', `ab` smallint(6) default NULL, `h` smallint(6) default NULL, `k` smallint(6) default NULL, `pa` smallint(6) default NULL, `g` smallint(6) default NULL, `gs` smallint(6) default NULL, `d` smallint(6) default NULL, `t` smallint(6) default NULL, `hr` smallint(6) default NULL, `r` smallint(6) default NULL, `rbi` smallint(6) default NULL, `sb` smallint(6) default NULL, `cs` smallint(6) default NULL, `bb` smallint(6) default NULL, `ibb` smallint(6) default NULL, `gdp` smallint(6) default NULL, `sh` smallint(6) default NULL, `sf` smallint(6) default NULL, `hp` smallint(6) default NULL, `ci` smallint(6) default NULL, `avg` float default NULL, `obp` float default NULL, `slg` float default NULL, `ops` float default NULL, PRIMARY KEY  (`id`), KEY `player_id` (`player_id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 CREATE TABLE IF NOT EXISTS `fantasy_players_compiled_pitching` ( `id` int(11) NOT NULL auto_increment, `player_id` int(11) NOT NULL default '0', `scoring_period_id` tinyint(4) NOT NULL default '-1', `ip` smallint(6) default NULL, `ab` smallint(6) default NULL, `tb` smallint(6) default NULL, `ha` smallint(6) default NULL, `k` smallint(6) default NULL, `bf` smallint(6) default NULL, `rs` smallint(6) default NULL, `bb` smallint(6) default NULL, `r` smallint(6) default NULL, `er` smallint(6) default NULL, `gb` smallint(6) default NULL, `fb` smallint(6) default NULL, `pi` smallint(6) default NULL, `ipf` smallint(6) default NULL, `g` smallint(6) default NULL, `gs` smallint(6) default NULL, `w` smallint(6) default NULL, `l` smallint(6) default NULL, `s` smallint(6) default NULL, `sa` smallint(6) default NULL, `da` smallint(6) default NULL, `sh` smallint(6) default NULL, `sf` smallint(6) default NULL, `ta` smallint(6) default NULL, `hra` smallint(6) default NULL, `bk` smallint(6) default NULL, `ci` smallint(6) default NULL, `iw` smallint(6) default NULL, `wp` smallint(6) default NULL, `hp` smallint(6) default NULL, `gf` smallint(6) default NULL, `dp` smallint(6) default NULL, `qs` smallint(6) default NULL, `svo` smallint(6) default NULL, `bs` smallint(6) default NULL, `ra` smallint(6) default NULL, `cg` smallint(6) default NULL, `sho` smallint(6) default NULL, `sb` smallint(6) default NULL, `cs` smallint(6) default NULL, `hld` smallint(6) default NULL, `era` float default NULL, `whip` float default NULL, PRIMARY KEY  (`id`), KEY `player_id` (`player_id`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 CREATE TABLE IF NOT EXISTS `fantasy_players_scoring` ( `id` int(11) NOT NULL auto_increment, `player_id` int(11) NOT NULL, `league_id` int(11) NOT NULL default '0', `scoring_period_id` tinyint(4) NOT NULL default '1', `scoring_type` tinyint(4) NOT NULL default '1', `total` varchar(15) collate utf8_unicode_ci NOT NULL, PRIMARY KEY  (`id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
@@ -78,4 +86,10 @@ INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('defaultExpiration
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('minProtests', '3');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('protestPeriodDays', '3');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('limit_load_all_sql', '1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('user_activation_required', '1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('user_activation_method', '1');
 UPDATE `fantasy_leagues_types` SET `active` = 1 WHERE id = 1 OR id = 2 OR id = 3;
+CREATE TABLE IF NOT EXISTS `users_activation_types` (`id` tinyint(4) NOT NULL auto_increment,`activationType` varchar(50) collate utf8_unicode_ci NOT NULL,PRIMARY KEY  (`id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=3 ;
+INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(-1, 'None');
+INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(1, 'Email');
+INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(2, 'Administrator');
