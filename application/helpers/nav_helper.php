@@ -1,7 +1,16 @@
 <?php
 function top_nav($logged_in = false, $show_admin = false, $userTeams = array()) {
 	$nav = array(array('url'=>'/home','label'=>'Home'));
-	array_push($nav,array('url'=>'/search/leagues','label'=>'Leagues'));
+	$leagueSubMenu = '<div class="drop">
+						<span class="t">&nbsp;</span>
+						<ul>';
+	$leagueSubMenu .= '<li>'.anchor('/search/leagues','Search Leagues').'</li>';
+	$leagueSubMenu .= '<li>'.anchor('/league/joinleague','Join a League').'</li>';
+	$leagueSubMenu .= '</ul>
+					<span class="b">&nbsp;</span>
+				</div>';
+	array_push($nav,array('url'=>'','label'=>'<span class="opener">Leagues</span>','menu'=>$leagueSubMenu));
+	
 	$ctrlr = 'user';
 	if ($logged_in) {
 		if ($show_admin) {

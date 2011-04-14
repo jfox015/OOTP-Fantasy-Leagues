@@ -64,6 +64,18 @@ Please note that any and all dependant information associated with this record m
 </fieldset>
 </form>';
 /*------------------------------------
+/	LEAGUE MESSAGING
+/-----------------------------------*/
+$lang['league_finder_title'] = 'Join a League';
+$lang['league_finder_intro_str'] = 'Below is a list of leagues with team openings that are accepting new members. Click the <b>Request a Team</b> link below to send the league commissioner a request for a team.';
+
+$lang['league_finder_request_title'] = 'Request a Team';
+$lang['league_finder_request_inst'] = 'Select a team from the list below and click <b>Request</b> to send your selection to the league commissioner.';
+
+$lang['league_finder_request_no_id'] = 'The request could not be completed because a required league identifier was not recieved.';
+$lang['league_finder_request_success'] = 'Your request to join the [LEAGUE_NAME] league has been sent.';
+
+/*------------------------------------
 /	USER REGISTRATION/ ACCOUNT
 /-----------------------------------*/
 // REGISTER PAGE

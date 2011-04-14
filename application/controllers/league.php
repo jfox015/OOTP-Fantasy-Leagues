@@ -74,6 +74,9 @@ class league extends BaseEditor {
 		$this->views['WAIVER_CLAIMS'] = 'league/league_waiver_claims';
 		$this->views['TRADES'] = 'league/league_trades';
 		$this->views['REVIEW_SETTINGS'] = 'league/league_config_review';
+		$this->views['LEAGUE_LIST'] = 'league/league_listing';
+		$this->views['TEAM_REQUEST'] = 'league/league_team_request';
+		
 		$this->debug = false;
 	}
 	/*---------------------------------------
@@ -415,6 +418,91 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/**
+	 *	FIND A LEAGUE.
+	 *	Show a list of leagues that are 1) have teams without owners and 2) are open to requests from 
+	 *	site members.
+	 *
+	 *	@since	1.0.5
+	 *
+	 */
+	public function joinleague() {
+		$this->init();
+		$this->data['league_finder_intro_str'] = $this->lang->line('league_finder_intro_str');
+		$this->data['subTitle'] = $this->lang->line('league_finder_title');
+		$this->data['league_list'] = $this->dataModel->getOpenLeagues();
+		$this->makeNav();
+		$this->params['content'] = $this->load->view($this->views['LEAGUE_LIST'], $this->data, true);
+		$this->displayView();
+	}
+	/**
+	 *	FIND A LEAGUE.
+	 *	Show a list of leagues that are 1) have teams without owners and 2) are open to requests from 
+	 *	site members.
+	 *
+	 *	@since	1.0.5
+	 *
+	 */
+	public function requestTeam() {
+		if ($this->params['loggedIn']) {
+			$this->init();
+			$this->getURIData();	
+			$this->loadData();
+			if ($this->dataModel->id != -1) {
+				$this->form_validation->set_rules('team_id', 'Team Selection', 'required|trim');
+				$this->form_validation->set_error_delimiters('<p class="error">', '</p>');
+				if ($this->form_validation->run() == true) {
+					$success = $this->dataModel->teamRequest($this->input->post('team_id'),$this_params['currUser']);
+					if ($success) {
+						
+						$msg .= $this->lang->line('email_footer');
+						$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->dataModel->getTeamName($trade['team_2_id']), $msg);
+						$msg = str_replace('[OFFERING_TEAM_NAME]', $this->dataModel->getTeamName($trade['team_1_id']), $msg);
+						$msg = str_replace('[USERNAME]', getUsername($this->dataModel->getTeamOwnerId($trade['team_1_id'])), $msg);
+						$msg = str_replace('[COMMENTS]', $this->data['comments'],$msg);
+						$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$trade['team_1_id'],'adjust your lineup'),$msg);
+						$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+						$data['messageBody']= $msg;
+						//print("email template path = ".$this->config->item('email_templates')."<br />");
+						$data['leagueName'] = $this->league_model->league_name;
+						$data['title'] = $this->lang->line('team_email_title_trade_response');
+						$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+				
+						$subject 	 = $this->dataModel->league_name. " Team Request";
+						
+						$success = sendEmail($this->user_auth_model->getEmail($this->dataModel->commissioner_id),
+										 $this->user_auth_model->getEmail($this->params['config']['primary_contact']), 
+										 $this->params['config']['site_name']." Adminstrator",
+				             			 $subject, $message,'','email_team_request_');
+						
+						
+						$this->session->set_flashdata('message', '<p class="success">'.$this->lang->line('league_finder_request_success').'</p>');
+						redirect('league/joinleague/');
+					}
+				}
+				$this->data['subTitle'] = $this->lang->line('league_finder_request_title');
+				$this->data['scoring_type'] = $this->dataModel->getScoringType();
+				if ($this->data['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+					$this->data['thisItem']['divisions'] = $this->dataModel->getFullLeageDetails(false, true);
+				} else {
+					$this->data['thisItem']['teams'] = $this->dataModel->getTeamDetails(false,false,true);
+				}
+				$this->data['league_finder_intro_str'] = $this->lang->line('league_finder_request_inst');
+				$this->params['content'] = $this->load->view($this->views['TEAM_REQUEST'], $this->data, true);
+				$this->params['pageType'] = PAGE_FORM;
+				$this->makeNav();
+				$this->displayView();
+			} else {
+				$this->session->set_flashdata('message', '<p class="error">'.$this->lang->line('league_finder_request_no_id').'</p>');
+				redirect('league/joinleague/');
+			}
+			
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
+	}
+	
 	/**
 	 *	TEAM ADMIN.
 	 *	Draws and accepts changes to the team structure from the team admin screen.

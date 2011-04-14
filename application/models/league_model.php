@@ -528,11 +528,9 @@ class league_model extends base_model {
 			$totalGames = 0;
 			if (sizeof($gamesPerTeam) > 0) {
 				foreach($gamesPerTeam as $team_id_val => $game_count) {
-					//echo($team_id_val ." has ".$game_count." games this period.<br />");
 					$totalGames += $game_count;
 				}
 			}
-			//echo("Total games for period = ".$totalGames."<br />");
 			foreach($data as $query) {
 				$this->db->flush_cache();
 				$this->db->insert('fantasy_leagues_games',$query);
@@ -540,6 +538,22 @@ class league_model extends base_model {
 		} // END for
 		return "OK";
 	} // END function
+	
+	public function teamRequest($team_id = false, $user_id = false, $league_id = false) {
+		if ($league_id === false) { $league_id = $this->id; }
+		if ($team_id === false || $user_id === false) { return false; }
+		
+		$requestData = array('team_id'=>$team_id,'user_id'=>$user_id,'league_id'=>$league_id);
+		$this->db->insert('fantasy_leagues_request',$requestData);
+		if ($this->db->affected_rows() == 0) {
+			$this->errorCode = 1;
+			$this->statusMess = 'The request data was not saved to the database.';
+			return false;
+		}
+		return true;
+	}
+	
+	
 	protected function loadLeagueTeams($league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$teamNames = array();
@@ -671,8 +685,40 @@ class league_model extends base_model {
 			}
 		}
 		$query->free_result();
+		unset($query);
 		return $transactions;
 	}
+	/**
+	 *	GET OPEN LEAGUES.
+	 *	Returns pending waiver claims for the specified league.
+	 *  @param	$team_id - If not specified, the schedule for the entire league is returned.
+	 *  @param	$league_id - If not specified, no league filter is applied.
+	 *	@return	schedule array, false on failure
+	 */
+	public function getOpenLeagues() {
+		
+		$leagues = array();
+		
+		$this->db->select($this->tblName.'.id,league_name,commissioner_id,username,leagueType, max_teams, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount');
+		$this->db->join("fantasy_leagues_types","fantasy_leagues_types.id = ".$this->tblName.".league_type", "left");
+		$this->db->join("users_core","users_core.id = ".$this->tblName.".commissioner_id", "left");
+		$this->db->where('league_status',1);
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				if ($row->openCount > 0) {
+					array_push($leagues,array('id'=>$row->id,'league_name'=>$row->league_name, 'max_teams'=>$row->max_teams, 
+										 'leagueType'=>$row->leagueType, 'openings'=>$row->openCount, 
+										 'commissioner_id'=>$row->commissioner_id,'commissioner_name'=>$row->username));
+					
+				} // END if
+			} // END foreach
+		} // END if
+		$query->free_result();
+		unset($query);
+		return $leagues;
+	}
+	
 	/**
 	 *	GET WAIVER CLAIMS.
 	 *	Returns pending waiver claims for the specified league.
@@ -710,6 +756,7 @@ class league_model extends base_model {
 			}
 		}
 		$query->free_result();
+		unset($query);
 		return $claims;
 	}
 	/**
@@ -877,6 +924,7 @@ class league_model extends base_model {
 				$rules[$key] = $cats;
 			} // END if
 			$query->free_result();
+			unset($query);
 		} // END foreach
 		$rules['league_id'] = $league_id;
 		$rules['scoring_type'] = $scoring_type;
@@ -2024,7 +2072,7 @@ class league_model extends base_model {
 		$query->free_result();
 		return $divisions;
 	}
-	public function getTeamDetails($league_id = false,$selectBox = false) {
+	public function getTeamDetails($league_id = false,$selectBox = false, $noOwner = false) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
 		
@@ -2032,6 +2080,9 @@ class league_model extends base_model {
 		$this->db->join('users_core','users_core.id = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->join('users_meta','users_meta.userId = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->where('league_id',$league_id);
+		if ($noOwner !== false) {
+			$this->db->where('(owner_id = 0 OR owner_id = -1)');
+		}
 		$this->db->order_by('id','asc');
 		$query2 = $this->db->get($this->tables['TEAMS']);
 		$teams = array();
@@ -2070,7 +2121,7 @@ class league_model extends base_model {
 		return $teams;
 	}
 		
-	public function getFullLeageDetails($league_id = false) {
+	public function getFullLeageDetails($league_id = false, $noOwner = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$divisions = array();
 		$this->db->select('id, division_name');
@@ -2085,6 +2136,9 @@ class league_model extends base_model {
 				$this->db->join('users_meta','users_meta.userId = fantasy_teams.owner_id','left');
 				$this->db->where('league_id',$league_id);
 				$this->db->where('division_id',$row->id);
+				if ($noOwner !== false) {
+					$this->db->where('(owner_id = 0 OR owner_id = -1)');
+				}
 				$this->db->order_by('teamname, teamnick','asc');
 				$query2 = $this->db->get($this->tables['TEAMS']);
 				$teams = array();

@@ -7,6 +7,6 @@
 	<body>
 		<h1><?php print($siteName); ?> Registration Confirmation</h1>
 		<p>Congratulations <?php print($username); ?>! Your membership to the <?php print($siteName); ?> Fantasy league web site is confirmed.</p>
-        <p>Login using your password on the <?php echo anchor('/usder/login','Login page'); ?> to begin using the site.</p>
+        <p>Login using your password on the <?php echo anchor('/user/login','Login page'); ?> to begin using the site.</p>
 	</body>
 </html>
