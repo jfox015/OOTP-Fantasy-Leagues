@@ -1,5 +1,5 @@
 <div id="one-column">
-	<h1>Login</h1>
+	<h1><?php print($this->lang->line('user_login_title'); ?></h1>
 	<?php echo validation_errors(); ?>
     <p />
 	<?php echo form_open('user/login'); ?>

@@ -86,28 +86,22 @@ class about extends MY_Controller {
 			
 			$toMail = $this->user_auth_model->getEmail($this->params['config']['primary_contact']);
 			if (isset($toMail) && !empty($toMail)) {
-				$this->email->clear();
-				$this->email->set_newline("\r\n");
-				$this->email->from($this->input->post('email'), $this->input->post('name'));
-				$this->email->to($toMail, "Site Admin");
-				$this->email->subject($this->input->post('subject'));
-				$this->email->message($message);
-				if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-					if ($this->email->send()) {
-						$outMess = "Thanks you. Your submission has been sent successfully.<p />
-						<b>Hera re the details of your submission:</b><p />
-						<b>From:</b> ".$this->input->post('name')."<br />
-						<b>Subject:</b> ".$this->input->post('subject')."<p />
-						<b>Details:</b> ".$this->input->post('details');
-						if ($this->debug) {
-							$outMess .= "<h3>Technical Details</h3>
-							<b>To:</b> ".$toMail;
-						} // END if
-					} else {
-						$outMess  = "There was a problem with your submission.";
+			
+				$sent = sendEmail($toMail, $this->input->post('email'), $this->input->post('name'),
+									$this->input->post('subject'), $message, "Site Admin", 'email_contact_');									   
+				
+				if ($sent) {
+					$outMess = "Thank you. Your submission has been sent successfully.<p />
+					<b>Hera re the details of your submission:</b><p />
+					<b>From:</b> ".$this->input->post('name')."<br />
+					<b>Subject:</b> ".$this->input->post('subject')."<p />
+					<b>Details:</b> ".$this->input->post('details');
+					if ($this->debug) {
+						$outMess .= "<h3>Technical Details</h3>
+						<b>To:</b> ".$toMail;
 					} // END if
 				} else {
-					$outMess  = "This is the email that would be sent:<p />".$message;
+					$outMess  = "There was a problem with your submission. The email could not be sent at this time. Please try again later.";
 				} // END if
 			} else {
 				$outMess  = "There was a problem with your submission. A propper recipient email address could not be found.";

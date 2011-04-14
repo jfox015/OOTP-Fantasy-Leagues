@@ -109,7 +109,8 @@ class admin extends MY_Controller {
 			// CHECKS IF UPDATE CONSTANTS ARE DEFINED AND IF UPDATED FILES ARE 
 			// IN THE INSTALL DIRECTORY FOR INSTALATION
 			$web_version = array();
-			if ((!defined('ENV') || (defined('ENV') && ENV != 'dev')) && defined('PATH_INSTALL')) {
+			if ((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development')) && 
+				  defined('PATH_INSTALL')) {
 				if (defined('MAIN_INSTALL_FILE') && file_exists(PATH_INSTALL.MAIN_INSTALL_FILE)) {
 					$this->data['installWarning'] = true;
 					$this->data['install_message'] = $this->lang->line('install_warning');
@@ -166,7 +167,6 @@ class admin extends MY_Controller {
 			'ootp_league_name' => 'OOTP League Name',
 			'ootp_league_abbr' => 'OOTP League Abbreviation',
 			'ootp_league_id' => 'OOTP League ID',
-			'user_activation_required' => 'User Activiation Required',
 			'user_activation_method' => 'User Activiation Method',
 			'google_analytics_enable' => 'Google Analytics Tracking',
 			'google_analytics_tracking_id' => 'Google Analytics Tracking Code',
@@ -246,7 +246,6 @@ class admin extends MY_Controller {
 			'google_analytics_tracking_id' => 'Google Analytics Tracking Code',
 			'stats_lab_compatible' => 'Stats Lab Compatibility Mode',
 			'primary_contact' => 'Primary Contact',
-			'user_activation_required' => 'User Activiation Required',
 			'user_activation_method' => 'User Activiation Method');
 			foreach($fields as $field => $label) {
 				if (!in_array($field,$exceptions)) {
@@ -592,7 +591,7 @@ class admin extends MY_Controller {
 				$change = $this->league_model->setScoringRules($this->input);
 				if ($change) {
 					$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
-					redirect('admin/dashboard');
+					redirect('admin/configScoringRules');
 				} else {
 					$message = '<span class="error">Settings update failed.</span>';
 					$this->data['outMess'] = $message;
@@ -726,10 +725,8 @@ class admin extends MY_Controller {
 		} else {
 			$this->getURIData();
 			if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id']) && $this->uriVars['user_id'] != -1) {
-				$activated = $this->user_auth_model->adminActivation($this->uriVars['user_id'],$this->params['currUser']);
-				if ($activated) {
+				if ($this->auth->adminActivate($this->uriVars['user_id'],$this->params['currUser'])) {
 					$this->session->set_flashdata('message', '<span class="success">The user has been activated.</span>');
-					$this->auth->confirmationEmail($this->user_auth_model->getEmail($this->uriVars['user_id']),$this->user_auth_model->getUsername($this->uriVars['user_id']));
 				} else {
 					$this->session->set_flashdata('error', '<span class="error">The user was not activated. Error: '.$this->user_auth_model->statusMess.'</span>');
 				} //NED if

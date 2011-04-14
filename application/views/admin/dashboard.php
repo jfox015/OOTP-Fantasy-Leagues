@@ -155,7 +155,7 @@
         </ul>
         <?php } ?>
         <br clear="all" /><br />
-        <h3>Settings</h3>
+        <h3>Site Management</h3>
         <?php if (isset($settingsError) && !empty($settingsError)) { ?>
         <span class="error"><?php echo($settingsError); ?></span><br />
         <?php } ?>
@@ -181,13 +181,11 @@
 			} // END if
 			?>
 			<li><?php echo anchor('admin/configSocial','<img src="'.$config['fantasy_web_root'].'images/icons/facebook-64x64.png" width="48" height="48" border="0" />'); ?><br />
-            Social Media Settings</li>
-            <?php if ($config['user_activation_method'] == 2) { ?>
+            Social Media Settings</li>  
             <li><?php echo anchor('admin/userActivations','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
-            User Activations</li>
+            Users requiring activation</li>          
             <?php 
-			} // END if
-			if (defined('ENV') && ENV != "live") { ?>
+			if (defined('ENVIRONMENT') && ENVIRONMENT != "production") { ?>
 			<li><?php echo anchor('admin/configOOTP','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
             Date/Scoring Period Settings</li>
 			<?php 

@@ -248,7 +248,7 @@ class league extends BaseEditor {
 			$this->load->model($this->modelName,'dataModel');
 			$this->load->model('draft_model');
 			$this->dataModel->load($this->uriVars['id']);
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
 				$this->data['leeague_admin_intro_str'] = $this->lang->line('leeague_admin_intro_str');
 				$this->data['subTitle'] = "League Admin";
 				$this->data['league_id'] = $this->uriVars['id'];
@@ -305,7 +305,7 @@ class league extends BaseEditor {
 			$this->load->model('draft_model');
 			$this->dataModel->load($this->uriVars['id']);
 			
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
 				$this->data['subTitle'] = "Initialize Draft";
 				$this->draft_model->load($this->uriVars['id'], 'league_id');
 				$this->draft_model->sheduleDraft($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug);
@@ -335,7 +335,7 @@ class league extends BaseEditor {
 			$this->load->model('draft_model');
 			$this->dataModel->load($this->uriVars['id']);
 			
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
 				$this->data['subTitle'] = "League Admin";
 				$this->draft_model->deleteCurrentDraft($this->dataModel->id);
 				$this->admin();
@@ -360,7 +360,7 @@ class league extends BaseEditor {
 			$this->getURIData();
 			$this->loadData();
 			
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
 				$this->data['avatar'] = $this->dataModel->avatar;
 				$this->data['league_id'] = $this->dataModel->id;
 				$this->data['leagueName'] = $this->dataModel->league_name;
@@ -428,7 +428,7 @@ class league extends BaseEditor {
 			$this->getURIData();
 			$this->loadData();
 			
-			if ($this->dataModel->commissioner_id == $this->params['currUser']) {
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
 				
 				$this->data['scoring_type'] = $this->dataModel->getScoringType();
 				
@@ -963,8 +963,8 @@ class league extends BaseEditor {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
 			$this->loadData();
-			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
-				$this->dataModel->commissioner_id = $this->params['currUser'];
+			if ((isset($this->uriVars['owner_id']) && !empty($this->uriVars['owner_id']) && $this->uriVars['owner_id'] != -1) &&($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id)) {
+				$this->dataModel->commissioner_id = $this->uriVars['owner_id'];
 				$this->dataModel->save();
 				$message = '<p class="success">Commissioer ID has been changed.';
 			} else {
@@ -1009,23 +1009,20 @@ class league extends BaseEditor {
 					if ($count == 0) {
 						
 						$confirmStr  = substr(md5(time().$this->input->post('email')),0,16);
-						$confirmKey  = substr(md5($this->config->item('password_crypt')),0,8);
+						$confirmKey  = substr(md5($this->input->post('email').time()),0,8);
 						$email_mesg	 = "To ".$this->input->post('email').",";
 						$email_mesg	.= $this->input->post('inviteMessage');
 						$link 		 = $this->params['config']['fantasy_web_root'].'user/inviteResponse/email/'.urlencode($this->input->post('email')).'/team_id/'.$this->data['team_id'].'/league_id/'.$this->dataModel->id.'/ck/'.md5($confirmStr.$confirmKey);
 						$email_mesg	.= '<p><a href="'.$link.'/ct/1">Accept the invitation</a> <br /><br />';
 						$email_mesg	.= '<p><a href="'.$link.'/ct/-1">Decline the invitation</a> <br /><br />';
 						$subject 	 = $this->dataModel->league_name. " Owner Invitation";
-						$headers  	 = "MIME-Version: 1.0\r\n";
-						$headers 	.= "Content-type: text/html; charset=iso-8859-1\r\n";
-						$headers 	.= "To: ".$this->input->post('email')." \r\n";
-						$headers 	.= "From: ".$this->dataModel->league_name." \r\n";
-						if (defined('ENV') && ENV != "dev") {
-							$success = mail($this->input->post('email'),$subject,$email_mesg,$headers);
-						} else {
-							$success = true;
-							if ($this->debug === true) { $message = $email_mesg; }
-						}
+						//$headers  	 = "MIME-Version: 1.0\r\n";
+						//$headers 	.= "Content-type: text/html; charset=iso-8859-1\r\n";
+						
+						$success = sendEmail($this->input->post('email'),
+										 $this->user_auth_model->getEmail($this->dataModel->commissioner_id), 
+										 $this->dataModel->league_name." Commissioner",
+				             			 $subject, $email_mesg,'','email_lg_invite_');
 						if (!$success) {
 							$error = true;
 							$message = 'The mail message failed to send.';

@@ -12,7 +12,7 @@
 class Auth
 {
 	/**
-	 * CodeIgniter global
+	 * CodeIgniter global object
 	 *
 	 * @var string
 	 **/
@@ -25,12 +25,12 @@ class Auth
 	 **/
 	protected $status;
 
-	/**
-	 * __construct
-	 *
-	 * @return void
-	 * @author Mathew
-	 **/
+	/*---------------------------------------------
+	/
+	/	C'TOR
+	/	Creates a new instance of Auth
+	/
+	/---------------------------------------------*/
 	public function __construct() {
 		$this->ci =& get_instance();
 		$email = $this->ci->config->item('email');
@@ -49,8 +49,7 @@ class Auth
 	/**
 	 * Activate user.
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function activate($code) {
 		if ($this->ci->user_auth_model->activate($code)) {
@@ -60,10 +59,21 @@ class Auth
 		}
 	}
 	/**
+	 * Administrator Activate user.
+	 *
+	 * @return TRUE on sucess, FALSE on error
+	 **/
+	public function adminActivate($user_id, $approverId) {
+		if ($this->ci->user_auth_model->adminActivation($user_id, $approverId)) {
+			return $this->confirmationEmail($this->ci->user_auth_model->getEmail($user_id),$this->ci->user_auth_model->getUsername($user_id));
+		} else {
+			return false;
+		}
+	}
+	/**
 	 * Change password.
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function change_password($identity, $old, $new) {
         return $this->ci->user_auth_model->change_password($identity, $old, $new);
@@ -72,8 +82,7 @@ class Auth
 	/**
 	 * Deactivate user.
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function deactivate($code) {
 	    return $this->ci->user_auth_model->deactivate($code);
@@ -83,8 +92,7 @@ class Auth
 	/**
 	 * forgotten password feature
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function forgotten_password($email,$debug) {
 		
@@ -99,25 +107,12 @@ class Auth
 					
 				$message = $this->ci->load->view($this->ci->config->item('email_templates').'forgotten_password', $data, true);
 				
-				$this->ci->email->clear();
-				$this->ci->email->set_newline("\r\n");
-				$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
-				$this->ci->email->to($this->ci->user_auth_model->email);
-				$this->ci->email->subject($this->ci->params['config']['site_name'].' Email Verification Forgotten Password');
-				$this->ci->email->message($message);
-				if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-					if ($this->ci->email->send()) {
-						return true;
-					} else {
-						return false;
-					}
-				} else {
-					if (!function_exists('write_file')) {
-						$this->ci->load->helper('file');
-					} // END if 
-					write_file(PATH_MEDIA_WRITE.'/email_get_passrd_'.substr(md5($email.time()),0,8).".html",$message);
-					return true;
-				}
+				return sendEmail($this->ci->user_auth_model->email,
+							 $this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']),
+							 $this->ci->params['config']['site_name']." Administrator",
+				             $this->ci->params['config']['site_name'].' Forgotten Password - Verification',
+							 $message,'','email_get_passrd_');
+				
 			} else {
 				return false;
 			}
@@ -128,8 +123,7 @@ class Auth
 	/**
 	 * undocumented function
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function forgotten_password_complete($code) {
 	    $identity = $this->ci->config->item('session_auth');
@@ -141,26 +135,13 @@ class Auth
 			$data = array('new_password' => $this->ci->user_auth_model->newPassword,'siteName'=>$this->ci->params['config']['site_name']);
             
 			$message = $this->ci->load->view($this->ci->config->item('email_templates').'new_password', $data, true);
-				
-			$this->ci->email->clear();
-			$this->ci->email->set_newline("\r\n");
-			$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
-			$this->ci->email->to($this->ci->user_auth_model->email);
-			$this->ci->email->subject($this->ci->params['config']['site_name'].', New Password');
-			$this->ci->email->message($message);
-			if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-				if ($this->ci->email->send()) {
-					return true;
-				} else {
-					return false;
-				}
-			} else {
-				if (!function_exists('write_file')) {
-					$this->ci->load->helper('file');
-				} // END if 
-				write_file(PATH_MEDIA_WRITE.'/email_get_pass_verify_'.substr(md5($code.time()),0,8).".html",$message);
-				return true;
-			}
+			
+			return sendEmail($this->ci->user_auth_model->email,
+							 $this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']),
+							 $this->ci->params['config']['site_name']." Administrator",
+				             $this->ci->params['config']['site_name'].', New Password',
+							 $message,'','email_get_pass_verify_');
+			
 		} else {
 			return false;
 		}
@@ -190,8 +171,7 @@ class Auth
 	/**
 	 * register
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function register($formInput,$debug = false) {
 	    
@@ -240,32 +220,21 @@ class Auth
 						'activation' => $activation_code);
 				
 				$message = $this->ci->load->view($email_folder.'activation', $data, true);
-				$this->ci->email->to($formInput->post('email'));
-				$this->ci->email->subject($this->ci->params['config']['site_name'].' Registration - Activation Required');
+				$to = $formInput->post('email');
+				$subject = $this->ci->params['config']['site_name'].' Registration - Activation Required';
 			} else {
 				$this->ci->user_auth_model->activate($activation_code, true);
 				$data = array('siteName'=>$this->ci->params['config']['site_name'],
 						'username' => $formInput->post('username'),
 						'email'    => $formInput->post('email'));
 				$message = $this->ci->load->view($email_folder.'admin_activation', $data, true);
-				$this->ci->email->to($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']));
-				$this->ci->email->subject($this->ci->params['config']['site_name'].' User Activation Required');
-			}
-			$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
-			$this->ci->email->message($message);
-			if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-				if ($this->ci->email->send()) {
-					return true;
-				} else {
-					return false;
-				}
-			} else {
-				if (!function_exists('write_file')) {
-					$this->ci->load->helper('file');
-				} // END if 
-				write_file(PATH_MEDIA_WRITE.'/email_get_register_'.substr(md5($formInput->post('email').time()),0,8).".html",$message);
-				return true;
-			}
+				$to = $this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']);
+				$subject = $this->ci->params['config']['site_name'].' User Activation Required';
+			} // END if
+			
+			return sendEmail($to,$this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator",
+				             $subject,$message,'','email_register_');
+			
 		} // END if
 	}
 	public function resend_activation($email,$debug = false) {
@@ -278,27 +247,11 @@ class Auth
        				'activation' => $forgotten_activation);
             
 			$message = $this->ci->load->view($this->ci->config->item('email_templates').'activation', $data, true);
-            
-			$this->ci->email->clear();
-			$this->ci->email->set_newline("\r\n");
-			$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
-			$this->ci->email->to($email);
-			$this->ci->email->subject($this->ci->params['config']['site_name'].' Activation Code Request');
-			$this->ci->email->message($message);
+			$subject = $this->ci->params['config']['site_name'].' Activation Code Request';
 			
-			if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-				if ($this->ci->email->send()) {
-					return true;
-				} else {
-					return false;
-				}
-			} else {
-				if (!function_exists('write_file')) {
-					$this->ci->load->helper('file');
-				} // END if 
-				write_file(PATH_MEDIA_WRITE.'/email_get_activate_resend_'.substr(md5($email.time()),0,8).".html",$message);
-				return true;
-			}
+			return sendEmail($email,$this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator",
+				  $subject,$message,'','email_get_activate_resend_');
+			
 		} else {
 			return false;
 		}
@@ -306,37 +259,19 @@ class Auth
 	}
 	protected function confirmationEmail($email, $username,$debug = false) {
 
-		$message = $this->ci->load->view($this->ci->config->item('email_templates').'activation', 
-										array('siteName'=>$this->ci->params['config']['site_name'],'username' => $username,
-										'email'=> $email), true);
+		$data = array('siteName'=>$this->ci->params['config']['site_name'],
+					  'username' => $username,
+					  'email'=> $email);
+		$message = $this->ci->load->view($this->ci->config->item('email_templates').'reg_confirmation', $data, true);
 		
-		$this->ci->email->clear();
-		$this->ci->email->set_newline("\r\n");
-		$this->ci->email->from($this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator");
-		$this->ci->email->to($email, $username);
-		$this->ci->email->subject($this->ci->params['config']['site_name'].' Registration Confirmation');
-		$this->ci->email->message($message);
-		
-		if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
-			if ($this->ci->email->send()) {
-				return true;
-			} else {
-				return false;
-			}
-		} else {
-			if (!function_exists('write_file')) {
-				$this->ci->load->helper('file');
-			} // END if 
-			write_file(PATH_MEDIA_WRITE.'/email_get_activate_'.substr(md5($email.time()),0,8).".html",$message);
-			return true;
-		}
+		return sendEmail($email,$this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator",
+				  $this->ci->params['config']['site_name'].' Registration Confirmation',$message,$username,'email_reg_confirm_');
 	}
 	
 	/**
 	 * load user
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function load_user() {
 		$session  = $this->ci->config->item('session_auth');
@@ -352,8 +287,7 @@ class Auth
 	/**
 	 * login
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function login($identity, $password) {
 		return $this->ci->user_auth_model->login($identity, $password);
@@ -362,8 +296,7 @@ class Auth
 	/**
 	 * logout
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function logout($endSession = false) {
 	    $identity = $this->ci->config->item('session_auth');
@@ -377,8 +310,7 @@ class Auth
 	/**
 	 * logged_in
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function logged_in(){
 	    $identity = $this->ci->config->item('session_auth');
@@ -388,8 +320,7 @@ class Auth
 	/**
 	 * Account Details
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function accountDetails() {
 	    $session  = $this->ci->config->item('session_auth');
@@ -400,8 +331,7 @@ class Auth
 	/**
 	 * Profile
 	 *
-	 * @return void
-	 * @author Mathew
+	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function profile() {
 	    $session  = $this->ci->config->item('session_auth');

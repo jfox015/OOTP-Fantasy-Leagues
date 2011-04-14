@@ -11,7 +11,6 @@
 
 Creator/Lead Developer:	jfox015 (Jeff Fox)
 
-
 Contributions by:      	fhommes (Frank Holmes) SQL Loading, Draft, PLayer Stats, Stats Engine, Template
                        	getch ( who inspired Frank)
 
@@ -25,7 +24,7 @@ OOTP Fantasy Leagues contains code from the following authors:
 Verifier Class 			(c) Jacob "Pygon" Sparks
 
 DBAD licenced:
-Curl Class 				(c) Philip Sturgeon 	http://philsturgeon.co.uk/code/codeigniter-curl
+Curl, Unzip Classes 	(c) Philip Sturgeon 	http://philsturgeon.co.uk/
 
 MIT License:
 Form Generator Class 	(c) Frank Michel 	http://frankmichel.com/formgenlib
@@ -42,5 +41,3 @@ Sort Table				(c) Stuart Langridge 	http://www.kryogenix.org/code/browser/sortta
 
 BeerWare Licensed,
 Redux Authentication 2 	(c) Mathew Davies 	thepixeldeveloper@googlemail.com
-
-

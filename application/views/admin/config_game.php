@@ -35,9 +35,6 @@
 			$responses[] = array('1','Enabled');
 			$responses[] = array('-1','Disabled');       
 			$form->fieldset('User Management');
-			$form->fieldset('',array('class'=>'radioGroup'));
-			$form->radiogroup ('user_activation_required',$responses,'Users must be activated',($this->input->post('user_activation_required') ? $this->input->post('user_activation_required') : $config['user_activation_required']),'required');
-			$form->fieldset('');
 			$form->select('user_activation_method|user_activation_method',loadSimpleDataList('activationType'),'Activation Method',($this->input->post('user_activation_method')) ? $this->input->post('user_activation_method') : $config['user_activation_method'],'required');
 			$form->space();
 			$form->fieldset('URLs and Paths');

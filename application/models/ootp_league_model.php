@@ -60,7 +60,7 @@ class ootp_league_model extends base_model {
 	/-------------------------------------------------*/
 	// SPECIAL QUERIES
 	public function writeConfigDates($start_date,$current_date,$adminConfirm = false) {
-		if ((defined('ENV') && ENV != "live") && $adminConfirm) {
+		if ((defined('ENVIRONMENT') && ENVIRONMENT != "production") && $adminConfirm) {
 			$data = array('start_date' => $start_date, 'current_date' => $current_date);
 			$this->db->where('league_id',$this->league_id);
 			$this->db->update($this->tblName,$data);

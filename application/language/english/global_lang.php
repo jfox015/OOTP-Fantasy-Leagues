@@ -28,7 +28,7 @@ $lang['dbConnect_message'] = '<b>WARNING</b><br />A required database connection
 $lang['update_required'] = '<b>Update Required</b><br />Updates are required to your MySQL database and/or site config files. Perform this update in the <a href="[ADMIN_URL]">Admin Dashboard</a> now.';
 $lang['admin_error_fantasy_settings'] = '<b>Warning</b><br />You have not yet reviewed and completed your sites fantasy leagues setup. League commissioners will not be able to set their draft dates until this is done. Review and update your sites <a href="[FANTASY_SETTINGS_URL]">fantasy settings</a> now.';
 
-// !.0.3 - VERSION CHECK LANGUAGE
+// 1.0.3 - VERSION CHECK LANGUAGE
 $lang['admin_version_no_value'] = 'No version information was passed.';
 $lang['admin_version_check_error'] = 'Version information could not be accessed at this time.';
 $lang['admin_version_current'] = 'Your fantasy league mod is currently up to date.';
@@ -39,9 +39,9 @@ $lang['admin_version_outdated'] = 'Your fantasy league mod is currently out of d
 /---------------------------*/
 $lang['user_too_many_leagues'] = 'We&#039;re sorry, but you are only allowed to create and own [MAX_LEAGUES] league[PLURAL] at a time.<p />If you have a league that is no longer active and you&#039;d like to close it, please [CONTACT_URL] for assitance.';
 $lang['no_user_leagues'] = 'We&#039;re sorry, but you are not allowed to create a league at a time.';
-/*--------------------
+/*--------------------------------
 /	FORM EDITOR MESSAGING
-/-------------------*/
+/-------------------------------*/
 $lang['form_complete_success'] = "The operation was sucessfully completed.";
 $lang['form_complete_success_delete'] = "The record was sucessfully deleted.";
 $lang['form_complete_fail'] = "The operation failed. Error: [ERROR_MESSAGE]";
@@ -63,22 +63,38 @@ Please note that any and all dependant information associated with this record m
 <input type="button" class="button" value="Yes" id="deleteConfirm" />
 </fieldset>
 </form>';
-// REGISTER
+/*------------------------------------
+/	USER REGISTRATION/ ACCOUNT
+/-----------------------------------*/
+// REGISTER PAGE
 $lang['user_register_title'] = 'Register';
 $lang['user_register_instruct'] = 'Are you a part of this OOTP Online Fantasy community yet? If not here\'s now\'s the time to join!
 <p /><br />
 Already a member? <a href="./user/login">Login Now</a>!';
 $lang['user_register_activation_email'] = 'Shortly after registering, you will recieve an e-mail containing an <b>activation code</b>. if you do not recieve this e-mail, you 
-may request it to be sent again or contact the site adminsitrator for help.';
-$lang['user_register_activation_admin'] = 'Your membership requires approval of the site administrator.';
+may [REQUEST_URL] it to be sent again or [CONTACT_URL] the site adminsitrator for help.';
+$lang['user_register_activation_admin'] = '<b class="error_txt">NOTE: Your membership requires approval of the site administrator.</b> Once registered, you will recieve a confirmation if your membership is approved.';
 
+// RESPONSE MESSAGING
 $lang['user_registered'] = 'You have now been successfully registered. ';
 $lang['user_register_activate_email'] = 'An email containing your activation code has been sent to [EMAIL].';
 $lang['user_register_activate_admin'] = 'You will be notified when the site administrator has approved your membership.';
 $lang['user_register_activate_none'] = 'Please login to begin using the site.';
-
-
 $lang['user_register_existing'] = "You are already registered for this site.";
+
+// LOGIN PAGE
+$lang['user_login_title'] = 'Login';
+$lang['user_login_inst'] = 'Please enter your login information to continue.';
+$lang['user_login_errors'] = 'The following errors were found with your submission:';
+$lang['user_login_activate_title'] = 'Need to activate your account?';
+$lang['user_login_activate_email'] = '<b>Have an activation code to enter to activate your membership?</b><br /><br />Enter it on the [ACCOUNT_ACTIVATE_URL] page.<br /><br /><b>Need your code again?</b><br /><br />If you need your activation code sent again, you can request it on the [ACTIVATE_RESEND_URL] page.';
+
+$lang['user_login_register_title'] = 'Not a member yet?';
+$lang['user_login_register_body'] = 'What are you waiting for? 
+            <br /><br />
+            Jump in and test your skills at running an Out of the Park 
+            baseball Fantasy League Team.';
+
 // FORGOT PASSWORD
 $lang['user_forgotpass_title'] = 'Forgotten Password';
 $lang['user_forgotpass_instruct'] = 'Use the following form to <b>reset</b> your password. You will recieve 
@@ -91,6 +107,7 @@ If you have already received a reset code, <a href="[SITE_URL]user/forgotten_pas
 $lang['league_start_standings'] = "The [GAME_YEAR] season begins on <b>[START_DATE]</b>. Check back after the season begins for up to date league standings.";
 $lang['leeague_admin_intro_str'] = "<b>Welcome to the League Admin Screen.</b><br /><p>Here you can review youe league settings, invite owners to join your league, manage invites and tranactions in progress and prior to the start oif the season, 
 begin and manage your draft.";
+
 // MISSING ACTIVATION CODE
 $lang['user_missing_activation_title'] = 'Request Activation Code';
 $lang['user_missing_activation'] = 'Use the following form to request that your activation code be rssent to the your email address. You will recieve 
@@ -100,6 +117,5 @@ form.
 Once you receive your reset code, you can proceed to <a href="[SITE_URL]user/activate">activate your membership</a>.
 ';
 
-//DEPRECATED
-//$lang['site_name'] = "OOTP Fantasy Leagues";
-//$lang['tag_line'] = "";
+/* End of file global_lang.php */
+/* Location: ./application/language/english/global_lang.phpp */

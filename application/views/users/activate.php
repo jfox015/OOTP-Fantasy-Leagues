@@ -14,8 +14,11 @@
             if ($errors) {
                 echo '<span class="error">The following errors were found with your submission:<br/ ><b>'.$errors.'</b></span><p />';
             }
+			if (isset($outMess) && !empty($outMess)) {
+                print($outMess);
+            }
             $form = new Form();
-            $form->open('home/activate','activate');
+            $form->open('user/activate','activate');
             $form->fieldset();
             $form->text('code','Activation Code','required');
             $form->space();

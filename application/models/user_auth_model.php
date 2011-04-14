@@ -98,7 +98,7 @@ class user_auth_model extends base_model {
 	/**
 	 * activate
 	 *
-	 * @return void
+	 * @return TREU on success, FALSE on error
 	 *
 	 */
 	public function activate($code = false, $leaveInactive = false) {
@@ -126,7 +126,12 @@ class user_auth_model extends base_model {
 		$this->db->update($this->tblName, $data, array($this->uniqueField => $identity));
 		return ($this->db->affected_rows() == 1) ? true : false;
 	}
-	
+	/**
+	 * activate
+	 *
+	 * @return TRUE on success, FALSE on error
+	 *
+	 */
 	public function adminActivation($userId = false, $approvedBy = false) {
 		
 		if ($userId === false) {
@@ -473,7 +478,25 @@ class user_auth_model extends base_model {
 		}
 		return $users;
 	}
-	
+	public function getDateDetails($userId = false) {
+		
+		if ($userId === false) { $userId = $this->id; }
+		$dates = array();
+		$query = $this->db->select('dateCreated, dateModified')
+                   	   ->where('id', $userId)
+                       ->limit(1)
+                   	   ->get($this->tblName);
+		$result = $query->row();
+
+        if ($query->num_rows() > 0) {
+			$dates = array('dateCreated'=>$result->dateCreated,'dateModified'=>$result->dateModified);
+		} else {
+			$this->errorCode = 1;
+			$this->statusMess = "No user matching id pass was found in the system.";
+			return false;
+		}
+		return $dates;
+	}
 	
 	/**
 	 *	LOGIN

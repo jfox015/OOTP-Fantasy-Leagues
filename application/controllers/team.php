@@ -568,15 +568,9 @@ class team extends BaseEditor {
 				// SEND MESSAGES
 				// SEND TO TEAM ONE
 				$tradeTypes = loadSimpleDataList('tradeStatus');
-				$emailSend = sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId()),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+				$error = !sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId()),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
 				$this->params['config']['site_name']." Administrator",$this->league_model->league_name.' Fantasy League - Trade Update - Offer '.$tradeTypes[$this->data['type']],
-				$message);
-				if (!empty($emailSend) && ($this->debug === TRUE || ENV == 'dev')) {
-					if (!function_exists('write_file')) {
-						$this->load->helper('file');
-					} // END if 
-					write_file(PATH_MEDIA_WRITE.'/email_trd_'.$trade['trade_id']."_".substr(md5($trade['trade_id'].time()),0,8).".html",$message);
-				}
+				$message,'','email_trd_');
 			} // END if (messaging)
 		} else {
 			$error = true;
@@ -735,16 +729,10 @@ class team extends BaseEditor {
 				$emailMess = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 				// SEND TO TEAM ONE
 				$subject = str_replace('[LEAGUE_NAME]',$this->league_model->getLeagueName($this->dataModel->league_id),$this->lang->line('team_trade_email_subject_offer_to'));
-				$emailSend = sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId($team2Id)),$this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId($team_id)),
-				getUsername($this->dataModel->getTeamOwnerId($team_id)),$subject,$emailMess);
-				if (!empty($emailSend) && ($this->debug === TRUE || ENV == 'dev')) {
-					if (!function_exists('write_file')) {
-						$this->load->helper('file');
-					} // END if 
-					write_file(PATH_MEDIA_WRITE.'/email_trd_offer_'.$trade_id."_".substr(md5($trade_id.time()),0,8).".html",$emailSend);
-				}
+				$error = !sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId($team2Id)),$this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId($team_id)),
+				getUsername($this->dataModel->getTeamOwnerId($team_id)),$subject,$emailMess, '','email_trd_offer_');
+
 				unset($data['messageBody']);
-				unset($emailSend);
 				unset($emailMess);
 				unset($msg);
 				
@@ -766,11 +754,9 @@ class team extends BaseEditor {
 				$emailMess = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 				// SEND TO TEAM ONE
 				$subject = str_replace('[LEAGUE_NAME]',$this->league_model->getLeagueName($this->dataModel->league_id),$this->lang->line('team_trade_email_subject_offer_from'));
-				$emailSend = sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId()),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-				$this->params['config']['site_name']." Administrator",$subject,$emailMess);
-				if (!empty($emailSend) && ($this->debug === TRUE || ENV == 'dev')) {
-					write_file(PATH_MEDIA_WRITE.'/email_trd_confirm_'.$trade_id."_".substr(md5($trade_id.time()),0,8).".html",$emailSend);
-				}
+				$error = !sendEmail($this->user_auth_model->getEmail($this->dataModel->getTeamOwnerId()),$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+				$this->params['config']['site_name']." Administrator",$subject,$emailMess,'','/email_trd_confirm_');
+
 				$message .= str_replace('[ACCEPTING_TEAM_NAME]',$this->dataModel->getTeamName($team2Id),$this->lang->line('team_trade_offer_submitted'));
 				
 			} else {

@@ -105,11 +105,13 @@ class user extends MY_Controller {
 			$this->makeNav();
 			$this->displayView();
 		}
-	}
+	}	
 	/**
-	 * INVITE RESPONSE
+	 * 	INVITE RESPONSE.
+	 * 	A function that validates a response from an invitation response and handles the users choice or
+	 *	faults on an error.
 	 *
-	 * @return void
+	 * 	@since	1.0
 	 **/
 	public function inviteResponse() {
 		$error = false;
@@ -120,7 +122,7 @@ class user extends MY_Controller {
 		$inviteObj = NULL;
 		$accetped = false;
 		$this->getURIData();
-		if ((isset($this->uriVars['league_id']) && isset($this->uriVars['email']) && isset($this->uriVars['ck'])) || isset($this->uriVars['id'])) {
+		if (((isset($this->uriVars['league_id']) && isset($this->uriVars['email'])) || isset($this->uriVars['id'])) && isset($this->uriVars['ck'])) {
 			$this->db->select('*');
 			if (isset($this->uriVars['league_id']) && isset($this->uriVars['email'])) {
 				$this->db->where('league_id',$this->uriVars['league_id']);
@@ -163,7 +165,7 @@ class user extends MY_Controller {
 							$cleanDB = true;
 						}
 					} else if (isset($this->uriVars['ct']) && $this->uriVars['ct'] == -1) {
-						$message = 'You have chosent to decline this invitation. We\'re sorry you decided not to join. An email has been sent to the league commissioner to inform them of your choice.';
+						$message = 'You have chosen to decline this invitation. We\'re sorry you decided not to join. An email has been sent to the league commissioner to inform them of your choice.';
 						$cleanDB = true;
 					} else {
 						$error = true;
@@ -480,7 +482,7 @@ class user extends MY_Controller {
 			} else {
 				$this->data['outMess'] = '<span class="error">Your membership could not be activated at this time due to the following reason: '.$this->auth->get_status_message().'. Please check your code and try again or '.anchor('/about/contact','contact the site administrator').' for help</span>';
 				$this->params['content'] = $this->load->view($this->views['ACTIVATE'], $this->data, true);
-	       		$this->params['pageType']= PAGE_FORM;
+	       		$this->params['pageType'] = PAGE_FORM;
 				$this->makeNav();
 				$this->displayView();
 			}
@@ -609,6 +611,11 @@ class user extends MY_Controller {
 			$this->form_validation->set_rules('username', 'Username', 'required');
 			$this->form_validation->set_rules('password', 'Password', 'required');
 			if ($this->form_validation->run() == false) {
+				$this->data['authenticationType'] = $this->params['config']['user_activation_method'];
+				if ($this->data['authenticationType'] == 1) {
+					$this->data['activate_str'] = str_replace('[ACCOUNT_ACTIVATE_URL]',anchor('/user/activate','Account Activation'),$this->lang->line('user_login_activate_email'));
+					$this->data['activate_str'] = str_replace('[ACTIVATE_RESEND_URL]',anchor('/user/resend_activation','Activation Code Request'),$this->data['activate_str']);
+				}
 				$this->data['input'] = $this->input;
 				$this->params['content'] = $this->load->view($this->views['LOGIN'], $this->data, true);
 				$this->params['subTitle'] = "User Login";
@@ -667,7 +674,11 @@ class user extends MY_Controller {
 			$view = $this->views['PROFILE'];
 			$session_auth = $this->session->userdata($this->config->item('session_auth'));
 			if ($session_auth && $this->user_meta_model->load($session_auth,'userId')) {
+				$this->data['invites'] = $this->user_meta_model->getTeamInvites();
 				$this->data['profile'] = $this->user_meta_model->profile();
+				$this->data['dateCreated'] = $this->user_auth_model->dateCreated;
+				$this->data['dateModified'] = $this->user_auth_model->dateModified;
+				$this->data['myProfile'] = true;
 				$this->data['subTitle'] = 'Your Profile';
 				$this->data['userId'] = $this->user_meta_model->userId;
 			} else {
@@ -704,6 +715,7 @@ class user extends MY_Controller {
 				
 			}
 			$this->params['content'] = $this->load->view($view, $this->data, true);
+			$this->params['pageType'] = PAGE_FORM;
 			$this->makeNav();
 			$this->displayView();
 		} else {
@@ -765,6 +777,9 @@ class user extends MY_Controller {
 			}
 			if ($this->user_meta_model->load($userId,'userId')) {
 				$this->data['profile'] = $this->user_meta_model->profile();
+				$dates = $this->user_auth_model->getDateDetails($userId);
+				$this->data['dateCreated'] = $dates['dateCreated'];
+				$this->data['dateModified'] = $dates['dateModified'];
 				$this->data['subTitle'] = 'User Profile';
 			} else {
 				$this->session->set_flashdata('message', '<span class="error">No user profile was be found. It\'s possible the record has been renamed, moved or deleted.</span>');
@@ -797,10 +812,12 @@ class user extends MY_Controller {
 			if ($this->form_validation->run() == false) {
 				$this->data['subTitle'] = $this->lang->line('user_register_title');
 				$this->data['theContent'] = $this->lang->line('user_register_instruct');
-				if ($this->params['config']['user_activation_required'] != -1) {
+				if ($this->params['config']['user_activation_method'] != -1) {
 					switch ($this->params['config']['user_activation_method']) {
 						case 1:
-		   					$this->data['activation'] = $this->lang->line('user_register_activation_email');
+		   					$this->data['activation'] = str_replace('[REQUEST_URL]',anchor('/user/resend_activation','request'),$this->lang->line('user_register_activation_email'));
+							$this->data['activation'] = str_replace('[CONTACT_URL]',anchor('/about/contact','contact'),$this->data['activation']);
+							
 							break;
 						case 2:
 							$this->data['activation'] = $this->lang->line('user_register_activation_admin');
@@ -815,10 +832,10 @@ class user extends MY_Controller {
 				$message = $this->auth->register($this->input,$this->debug);
 				if ($message !== false) {
 					$registered = $this->lang->line('user_registered');
-					if ($this->params['config']['user_activation_required'] != -1) {
+					if ($this->params['config']['user_activation_method'] != -1) {
 						switch ($this->params['config']['user_activation_method']) {
 							case 1:
-								$registered .= $this->lang->line('user_register_activate_email');
+								$registered .= str_replace('[EMAIL]',$this->input->post('email'),$this->lang->line('user_register_activate_email'));
 								break;
 							case 2:
 								$registered .= $this->lang->line('user_register_activate_admin');

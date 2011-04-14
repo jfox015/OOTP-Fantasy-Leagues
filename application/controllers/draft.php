@@ -615,14 +615,8 @@ class draft extends BaseEditor {
 											$email = $this->user_auth_model->getEmail($owner);
 											$ownerUsername = $this->user_auth_model->getUsername($owner);
 											if (!empty($email)) {
-												$emailSend = sendEmail($email,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-												$this->params['config']['site_name']." Administrator",$subject,$message);
-												if (!empty($emailSend) && $ownerCount == 0 && ($this->debug === TRUE || ENV == 'dev')) {
-													if (!function_exists('write_file')) {
-														$this->load->helper('file');
-													} // END if 
-													write_file(PATH_MEDIA_WRITE.'/email_draft_summary_'.$this->league_model->id."_".substr(md5($this->league_model->id.time()),0,8).".html",$message);
-												}
+												$sent = sendEmail($email,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+												$this->params['config']['site_name']." Administrator",$subject,$message,$ownerUsername,'email_draft_summary_');
 												$ownerCount++;
 											}
 										}
@@ -828,17 +822,6 @@ class draft extends BaseEditor {
 									if ((!empty($mailTo)) && (!empty($message)) && ($this->uriVars['action'] !='manualpick')) {
 										$emailSend = sendEmail($mailTo,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
 										$this->params['config']['site_name']." Administrator",$subject,$message);
-										if (!empty($emailSend) && ($this->debug === TRUE || ENV == 'dev')) {
-											if (!function_exists('write_file')) {
-												$this->load->helper('file');
-											} // END if 
-											$message .= "<br /><b>mail to:</b> ".$mailTo."<br />";
-											$message .= "<br /><b>nextOwnerEmail to:</b> ".$nextOwnerEmail."<br />";
-											$message .= "pickNum = ".$pickNum."<br />";
-											$message .= "Pick Number = ".($pickNum-1)."<br />";
-											$message .= "(pickNum-1) == nTeams = ".((($pickNum-1) == $nTeams) ? 'true' : 'false')."<br />";
-											write_file(PATH_MEDIA_WRITE.'/email_draft_'.$this->league_model->id."_".substr(md5($this->league_model->id.time()),0,8).".html",$message);
-										}
 									}
 									unset($subject);
 									unset($message);

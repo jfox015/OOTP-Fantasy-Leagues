@@ -1,47 +1,77 @@
-   	<div id="subPage">
+   	<script type="text/javascript" charset="UTF-8">
+	$(document).ready(function(){	
+		$('input[rel=inviteRespond]').click(function(){
+			var params = this.id.split("|");
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>user/inviteResponse/id/'+params[0]+'/ct/'+params[1]+'/ck/'+params[2];
+		});
+	});
+	</script>
+    <div id="subPage">
        	<div id="content">
            	<!-- BEGIN RIGHT COLUMN -->
            	<div id="metaColumn">
 					<?php if ($loggedIn && $currUser == $profile->userId) { ?>
-                   	<!-- Tool Box -->
-                    <div id="contentBox" class="dashboard">
-                        <div class="title">My Options</div>
-                        <div id="row">
+                   	<!-- LEAGUE INVITATIONS BOX -->
+                    <?php if (isset($invites) && sizeof($invites) > 0) { ?>
+                    <div class='textbox'>
+                    <table cellpadding="0" cellspacing="0" border="0" style="width:325px;" class="dashboard">
+                    <tr class='title'>
+                        <td style="padding:3px">League Invitations</td>
+                    </tr>
+                    <tr>
+                    	<td style="padding:12px; line-height:1.5;">
+						<?php 
+						foreach($invites as $invite) { 
+							if (isset($invite['avatar']) && !empty($invite['avatar'])) { 
+								$avatar = $invite['avatar'];
+							} else {
+								$avatar = DEFAULT_AVATAR;
+							} // END if
+							?>
+							<img src="<?php echo(PATH_LEAGUES_AVATARS.$avatar) ?>" width="18" height="18" border="0" alt="avatar" title="avatar" align="absmiddle" />
+							<b><?php echo(anchor('/league/info/'.$invite['league_id'],'<b>'.$invite['league_name'].'</b>')); ?></b><br />
+                            Invite from: <?php echo($invite['username']); ?><br />
+                            Sent On: <?php echo(date('m/d/Y h:m A',strtotime($invite['send_date ']))); ?><br />
+                        	<input type='button' rel="inviteRespond" id="<?php echo($invite['id']); ?>|1|<?php echo($invite['ck']); ?>" class="button" value='Accept' style="float:left;margin-right:8px;" />
+							<input type='button' rel="inviteRespond" id="<?php echo($invite['id']); ?>|-1|<?php echo($invite['ck']); ?>" class="button" value='Decline' style="float:left;margin-right:8px;" />
+                        <div class="rule"></div>
+                        <?php
+						} // END if
+						?></td>
+                    </tr>
+                    </table>
+                    </div>
+                    <?php
+					} // END if
+					?>
+                    <!-- Tool Box -->
+                    <div class='textbox'>
+                    <table cellpadding="0" cellspacing="0" border="0" style="width:325px;" class="dashboard">
+                    <tr class='title'>
+                        <td style="padding:3px">My Options</td>
+                    </tr>
+                    <tr>
+                    	<td style="padding:3px">
                         <ul class="iconmenu">
                         <li><?php echo anchor('/user/profile/edit','<img src="'.$config['fantasy_web_root'].'images/icons/notes_edit.png" width="48" height="48" border="0" />'); ?><br />
                         Edit My Profile</li>
                         <li><?php echo anchor('/user/avatar','<img src="'.$config['fantasy_web_root'].'images/icons/image_edit.png" width="48" height="48" border="0" />'); ?><br />
             			Change My Avatar</li>
-                        <?php 
+                        <li><?php echo anchor('/search/leagues','<img src="'.$config['fantasy_web_root'].'images/icons/search.png" width="48" height="48" border="0" />'); ?><br />
+            			Find a team</li><br clear="all" />
+						<?php 
 						if ($config['users_create_leagues'] == 1) { ?>
                         <li><?php echo anchor('/user/createLeague','<img src="'.$config['fantasy_web_root'].'images/icons/window_add.png" width="48" height="48" border="0" />'); ?><br />
             			Create a new League</li>
                         <?php } ?>
-                        <li><?php echo anchor('/search/leagues','<img src="'.$config['fantasy_web_root'].'images/icons/search.png" width="48" height="48" border="0" />'); ?><br />
-            			Find a team</li>
-						</ul>
-                        </div>
+						</ul></td>
+                    </tr>
+                    </table>
                     </div>
                     <?php } ?>
-                   	<!-- INFO BOX -->
-                    <div id="contentBox">
-                        <div class="title">General Information</div>
-                        <div id="row">
-                            <?php if (isset($profile->dateOfBirth) && $profile->dateOfBirth != EMPTY_DATE_STR) { ?>
-                            <label>Birthday:</label>
-                            <span><?php echo date('m/d/Y',strtotime($profile->dateOfBirth)); ?></span><br />
-                            <?php } 
-							if (isset($profile->gender) && ($profile->gender == "m" || $profile->gender == "f")) { ?>
-                            <label>Gender:</label>
-                            <span><?php echo ($profile->gender == 'm') ? 'Male' : 'Female'; ?></span><br />
-                            <?php } 
-							if (isset($countryStr)) { ?>
-                            <label>Country:</label>
-                            <span><?php echo($countryStr); ?></span><br />
-                            <?php } ?>
-                        </div>
-                        <br clear="all" class="clear" />
-                    </div>
+                    
+                    
+                   	
            		</div>
                	<!-- BEGIN MAIN COLUMN -->
                 <div id="detailColumn">
@@ -58,14 +88,18 @@
 					} else {
 						echo("No Name Provided"); 
 					}?></h1>
-					<?php if (isset($profile->nickName)) { echo($profile->nickName); } ?>
+					<b>Nickname:</b> <?php if (isset($profile->nickName)) { echo($profile->nickName); } ?><br />
                     <br />
-                    <label><strong>Title:</strong></label><br />
+                    <label><strong>Title:</strong></label>
 					<?php echo((!empty($profile->title) ? $profile->title : "No Title provided.")); ?>
                     <p />&nbsp;&nbsp;
-                    <label><strong>Bio:</strong></label><br />
-					<?php echo((!empty($profile->bio) ? $profile->bio : "No Bio provided.")); ?>
-                                      
+                    <label><strong>Bio:</strong></label>
+					<?php echo((!empty($profile->bio) ? $profile->bio : "No Bio provided. ".anchor('/user/profile/edit','Add a bio').".")); ?>
+                    <br /><br />  
+                    <b>Joined:</b> <?php print(date('m/d/Y',strtotime($dateCreated))); ?><br />    
+                    <br />     
+                    <b>Last Updated:</b> <?php print(date('m/d/Y',strtotime($dateModified))); ?><br />    
+                    <br />                
                   	<h3>Fantasy Teams</h3>
                    	<div class='textbox'>
                    	<?php  if (isset($userTeams) && sizeof($userTeams) > 0) {
@@ -86,7 +120,10 @@
 					?>
                     <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
                     <tr class='title'>
-                        <td colspan='8' class='lhl'><?php print((($type == 'rot') ? 'Rotisserie' : "Head to Head")." Leagues"); ?></td>
+                    	<?php 
+						$cols = 7;
+						if ($loggedIn && $currUser == $profile->userId) { $cols = 8; } ?>
+                        <td colspan='<?php print($cols); ?>' class='lhl'><?php print((($type == 'rot') ? 'Rotisserie' : "Head to Head")." Leagues"); ?></td>
                     </tr>
                     <tr class='headline'>
                         <td class='hsc2_c' colspan="2">Team</td>
@@ -101,7 +138,9 @@
                         <td class='hsc2_c'>%</td>
                         <td class='hsc2_c'>GB</td>
                         <?php } ?>
+                        <?php if ($loggedIn && $currUser == $profile->userId) { ?>
                         <td class='hsc2_c'>Options</td>
+                        <?php } ?>
                     </tr>
                     
                     <?php 
@@ -134,7 +173,9 @@
 						<td class='hsc2_r' align="right"><?php echo(sprintf("%.3f",$data['pct'])); ?></td>
 						<td class='hsc2_r' align="right"><?php echo($data['gb']); ?></td>
                         <?php } ?>
+                        <?php if ($loggedIn && $currUser == $profile->userId) { ?>
                         <td class='hsc2_l'><?php echo anchor('/league/select/id/'.$data['league_id'].'/team_id/'.$data['id'],'Select'); ?></td>
+                        <?php } ?>
 					</tr>
                     <?php if (isset($userDrafts) && isset($userDrafts[$data['league_id']])) { 
 						$draftInfo = $userDrafts[$data['league_id']];

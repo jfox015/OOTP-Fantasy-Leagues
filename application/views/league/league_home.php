@@ -250,7 +250,7 @@
             <td style='padding:3px'>League Details</td>
         </tr>
         <tr>
-            <td style='padding:6px'>
+            <td style='padding:12px; line-height:1.5;'>
             <div id="row">
             <b>Status:</b>
             <span <?php if ($thisItem['statusType'] == 'Active') { echo('style="color:#060"'); } else { echo('style="color:#C00"'); } ?>>

@@ -15,24 +15,49 @@ function getUsername($userId, $access = false) {
 	}
 	return $ci->user_auth_model->getUsername($userId, $access);
 }
-function sendEmail($to,$fromEmail, $fromName,$subject,$message) {
+function getEmail($userId, $access = false) {
+	$ci =& get_instance();
+	if (!isset($ci->user_auth_model)) {
+		$ci->load->model('user_auth_model');
+	}
+	return $ci->user_auth_model->getEmail($userId, $access);
+}
+/**
+ *	SEND E-MAIL
+ *
+ *	A standardized function to send emails. If we are in a development enivornment, this function backs down 
+ *	to saving the email as a .html in the media folder.
+ *
+ *	@param	$to				The recipient email address
+ *	@param	fromEmail		The sender email address
+ *	@param	$fromName		The name of the sender
+ *	@param	$subject		Email subject line
+ *	@param	$message		The message body
+ *	@param	$filePrefix		(OPTIONAL) A name to append to the email file if in development
+ *	@return					TRUE on success, FALSE on error
+ *	@since	1.0.5
+ */
+function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$filePrefix = 'email_') {
 	$ci =& get_instance();
 	$ci->email->clear();
 	$ci->email->set_newline("\r\n");
 	$ci->email->from($fromEmail,$fromName);
-	$ci->email->to($to);
-	$tradeTypes = loadSimpleDataList('tradeStatus');
+	$ci->email->to($to,$to_name);
 	$ci->email->subject($subject);
 	$ci->email->message($message);
-	if ((!defined('ENV') || (defined('ENV') && ENV != 'dev'))) {
+	if ((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development'))) {
 		if ($this->email->send()) {
 			return true;
 		} else {
 			return false;
-		}
+		} // END if 
 	} else {
-		return $message;
-	}
+		if (!function_exists('write_file')) {
+			$ci->load->helper('file');
+		} // END if 
+		write_file(PATH_MEDIA_WRITE.'/'.$filePrefix.substr(md5($to.time()),0,8).".html",$message);
+		return true;
+	} // END if 
 }
 /**
  *	PLAYERS STAT QUERY BUILDER

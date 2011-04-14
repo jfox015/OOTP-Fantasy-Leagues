@@ -43,6 +43,11 @@ class user_meta_model extends base_model {
 		parent::__construct();
 
 		$this->tblName = $this->tables['users_meta'];
+		$this->tables['LEAGUES'] = 'fantasy_leagues';
+		$this->tables['TEAMS'] = 'fantasy_teams';
+		$this->tables['DRAFT'] = 'fantasy_draft';
+		$this->tables['INVITES'] = 'fantasy_invites';
+		
 
 		$this->fieldList = array('firstName', 'lastName', 'nickName', 'city', 'state', 'country', 'zipCode', 'title', 'bio', 'gender');
 		$this->conditionList = array('birthDay','birthMonth','birthYear','avatarFile');
@@ -92,7 +97,7 @@ class user_meta_model extends base_model {
 		
 		$teamList = array();
 		$this->db->select('id');
-		$this->db->from('fantasy_leagues');
+		$this->db->from($this->tables['LEAGUES']);
 		$this->db->where('commissioner_id', $userId);
 		return $this->db->count_all_results();
 	}
@@ -102,15 +107,15 @@ class user_meta_model extends base_model {
 		if ($userId === false) $userId = $this->userId;
 		
 		$teamList = array();
-		$this->db->select('fantasy_teams.id, teamname, teamnick, fantasy_teams.avatar, fantasy_teams.league_id, league_name, league_type, commissioner_id,w,l,pct,gb,fantasy_teams_scoring.total');
-		$this->db->join('fantasy_leagues','fantasy_leagues.id = fantasy_teams.league_id', 'left');
+		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, fantasy_teams.avatar, fantasy_teams.league_id, league_name, league_type, commissioner_id,w,l,pct,gb,fantasy_teams_scoring.total');
+		$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = fantasy_teams.league_id', 'left');
 		$this->db->join('fantasy_teams_record','fantasy_teams_record.team_id = fantasy_teams.id', 'left');
 		$this->db->join('fantasy_teams_scoring','fantasy_teams_scoring.team_id = fantasy_teams.id', 'left');
 		if ($league_id !== false) {
-			$this->db->where('fantasy_teams.league_id', $league_id);
+			$this->db->where($this->tables['TEAMS'].'.league_id', $league_id);
 		}
 		$this->db->where('owner_id', $userId);
-		$query = $this->db->get('fantasy_teams');
+		$query = $this->db->get($this->tables['TEAMS']);
 		//echo($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
@@ -137,13 +142,46 @@ class user_meta_model extends base_model {
 		}
 		return $teamIds;
 	}
-	
+	public function getTeamInvites($userId = false) {
+		
+		$invites = array();
+		if ($userId === false) { $userId = $this->userId; }
+		if ($userId == -1) { 
+			$this->errorCode = 1;
+			$this->statusMess = "No user Id was found.";
+		} else {
+			$inviteList = array();
+			$userEmail = getEmail($userId);
+			
+			$this->db->flush_cache();
+			$this->db->select($this->tables['INVITES'].'.id,'.$this->tables['INVITES'].'.league_id, league_name, avatar, username, team_id, confirm_str, confirm_key,send_date ');
+			$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = '.$this->tables['INVITES'].'.league_id', 'left');
+			$this->db->join($this->tables['users_core'],$this->tables['users_core'].'.id = '.$this->tables['INVITES'].'.from_id', 'left');
+			$this->db->where('to_email',$userEmail);
+			$query = $this->db->get($this->tables['INVITES']);
+			
+			if ($query->num_rows() == 0) {
+				$this->errorCode = 1;
+				$this->statusMess = "No user Id was found.";
+			} else {
+				foreach ($query->result() as $row) {
+					array_push($invites, array('id'=>$row->id,'ck'=>md5($row->confirm_str.$row->confirm_key),
+											   'league_id'=>$row->league_id,'team_id'=>$row->team_id,
+											   'league_name'=>$row->league_name,'avatar'=>$row->avatar,
+											   'username'=>$row->username,'send_date '=>$row->send_date));
+					
+				}
+			}
+		}
+		return $invites;
+		
+	}
 	public function getUserDrafts() {
 		
 		$draftList = array();
 		$this->db->select('league_id');
 		$this->db->where('owner_id', $this->userId);
-		$query = $this->db->get('fantasy_teams');
+		$query = $this->db->get($this->tables['TEAMS']);
 		$leagues = array();
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
@@ -163,11 +201,11 @@ class user_meta_model extends base_model {
 				if ($completed) { continue;}
 				else {
 					// GET CURRENT PICK
-					$this->db->select('fantasy_draft.*, teamname, teamnick');
-					$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_draft.team_id','left');
-					$this->db->where('fantasy_draft.league_id', $row->league_id);
+					$this->db->select($this->tables['DRAFT'].'.*, teamname, teamnick');
+					$this->db->join($this->tables['TEAMS'],$this->tables['TEAMS'].'.id = '.$this->tables['DRAFT'].'.team_id','left');
+					$this->db->where($this->tables['DRAFT'].'.league_id', $row->league_id);
 					$this->db->order_by('pick_overall');
-					$query3 = $this->db->get('fantasy_draft');
+					$query3 = $this->db->get($this->tables['DRAFT']);
 					if ($query3->num_rows() > 0) {
 						foreach($query3->result_array() as $drow) {
 							if (!isset($drow['player_id']) || empty($drow['player_id'])) {

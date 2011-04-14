@@ -171,7 +171,7 @@ class MY_Controller extends Controller {
 		$this->params['pageType'] = PAGE_NORMAL;
 		$this->params['update_message'] = '';
 		if (strpos(current_url(),'dashboard') === false) { 
-			if (((!defined('ENV') || (defined('ENV') && ENV != 'dev')) && 
+			if (((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development')) && 
 				defined('PATH_INSTALL')) && $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
 				
 				if (defined('MAIN_INSTALL_FILE') && file_exists(PATH_INSTALL.MAIN_INSTALL_FILE)) {

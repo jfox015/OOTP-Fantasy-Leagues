@@ -3,7 +3,7 @@
     <h1><?php echo($subTitle); ?></h1>
         <div class="content-form">
             <p style="text-align:left;" />
-            Users currently requiring activation.
+            Users currently requiring administrative activation.
             
             <div class='tablebox'>
             <table cellspacing="0" cellpadding="3" width="725">
