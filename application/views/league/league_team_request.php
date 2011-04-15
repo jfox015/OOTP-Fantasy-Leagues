@@ -1,7 +1,6 @@
     
     <div id="column-single">
-   	<?php include_once('admin_breadcrumb.php'); ?>
-    <h1><?php echo($subTitle); ?></h1>
+   	<h1><?php echo($subTitle); ?></h1>
             <?php 
 			if ( ! function_exists('form_open')) {
 				$this->load>helper('form');
@@ -16,13 +15,15 @@
 			?>
             <!-- BEGIN MAIN COLUMN -->
             <?php 
-            echo(form_open_multipart($config['fantasy_web_root']."league/requestTeam",array("id"=>"requestForm","name"=>"requestForm")));
-			echo(form_fieldset());
+            
 			?>
             <div class='textbox' style="width:435px">
                 <table style="margin:6px; width:425px" cellpadding="5" cellspacing="0" border="0">
                 <?php 
-                $division_options = array();
+                $drawn = false;
+				echo(form_open_multipart($config['fantasy_web_root']."league/requestTeam",array("id"=>"requestForm","name"=>"requestForm")));
+				echo(form_fieldset());
+				$division_options = array();
 				if (isset($thisItem['divisions']) && sizeof($thisItem['divisions']) > 0) { 
 					foreach($thisItem['divisions'] as $id=>$divisionData) { 
 						$division_options = $division_options + array($id=>$divisionData['division_name']);
@@ -65,6 +66,7 @@
                 </tr>
                     <?php
                     $rowcount++;
+					if (!$drawn) { $drawn = true; }
                     } // END foreach
                 } else { ?>
                 <tr>
@@ -107,6 +109,7 @@
                 </tr>
                     <?php
                     $rowcount++;
+					if (!$drawn) { $drawn = true; }
                     } // END foreach
                 } else { ?>
                 <tr>
@@ -116,17 +119,28 @@
 				}  // END if
                 	
 				} // END if isset($divisions) 
-                ?>
+				
+				
+				if ($drawn) {
+				echo(form_fieldset_close());
+				?>
+                <tr>
+                    <td class="hsc2_l" colspan="4">
+				<?php 	
+                
+				echo(form_fieldset('',array('class'=>"button_bar")));
+				echo(form_submit('submit',"Request"));
+				echo(form_hidden('id',$league_id));
+				echo(form_hidden('submitted',"1"));
+				echo(form_fieldset_close());
+				?>
+                	</td>
+                </tr>
+                <?php
+                }
+				echo(form_close()); ?>
                 </table>
             </div>  <!-- end batting stat div -->
-            <?php
-			echo(form_fieldset_close());
-			echo(form_fieldset('',array('class'=>"button_bar")));
-			echo(form_submit('submit',"Request"));
-			echo(form_hidden('id',$league_id));
-			echo(form_hidden('submitted',"1"));
-			echo(form_fieldset_close());
-			echo(form_close()); ?>
             <p /><br />          
     </div>
     <p /><br />

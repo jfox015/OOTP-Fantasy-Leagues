@@ -52,11 +52,11 @@
 			 } ?></td>
              
               <?php if ($accessLevel == ACCESS_ADMINISTRATE) { ?>
-              <td class="last" nowrap="nowrap">
+              <td class="last" nowrap="nowrap" align="center">
             <?php 
 			echo( anchor('/league/submit/mode/edit/id/'.$row['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/edit-icon.gif" width="16" height="16" alt="Edit" title="Edit" />'));
-			echo('&nbsp;');
-            echo( anchor('/league/submit/mode/delete/id/'.$row['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/hr.gif" width="16" height="16" alt="Delete" title="Delete" />')); ?></td>
+			//echo('&nbsp;');
+           // echo( anchor('/league/submit/mode/delete/id/'.$row['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/hr.gif" width="16" height="16" alt="Delete" title="Delete" />')); ?></td>
             <?php } ?>
           </tr>
 			<?php $rowCount++;

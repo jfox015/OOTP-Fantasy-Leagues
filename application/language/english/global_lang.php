@@ -75,6 +75,19 @@ $lang['league_finder_request_inst'] = 'Select a team from the list below and cli
 $lang['league_finder_request_no_id'] = 'The request could not be completed because a required league identifier was not recieved.';
 $lang['league_finder_request_success'] = 'Your request to join the [LEAGUE_NAME] league has been sent.';
 
+$lang['email_league_team_request'] = 'To [COMMISH],
+<p>[USERNAME] has submitted a request to own the [REQUESTED_TEAM_NAME]. You can accept or reject this request on the [REQUEST_ADMIN_URL].</p>
+<p>';
+$lang['email_league_team_request_accepted'] = 'To [USERNAME],
+<p>Congratulations! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has approved your request to own the [TEAM_NAME]. You can login to the site and begin [TEAM_HOME_URL] anytime.</p>
+<p>';
+$lang['email_league_team_request_denied'] = 'To [USERNAME],
+<p>We&#039;re Sorry! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has denied your request to own the [TEAM_NAME].</p>
+<p>';
+$lang['email_league_team_request_title'] = 'Team Request';
+$lang['email_league_team_request_accepted_title'] = 'Team Request Accepted';
+$lang['email_league_team_request_denied_title'] = 'Team Request Denied';
+
 /*------------------------------------
 /	USER REGISTRATION/ ACCOUNT
 /-----------------------------------*/

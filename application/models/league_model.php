@@ -282,6 +282,29 @@ class league_model extends base_model {
 		$query->free_result();
 		return $invites;
 	}
+	public function getLeagueRequests($league_id = false, $request_id = false) {
+		
+		$requests = array();
+		if ($league_id === false) { $league_id = $this->id; }
+		
+		$this->db->select('fantasy_leagues_requests.id, user_id, username, date_requested, team_id, teamname, teamnick');
+		$this->db->from('fantasy_leagues_requests');
+		$this->db->join('users_core','users_core.id = fantasy_leagues_requests.user_id','right outer');
+		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_leagues_requests.team_id','right outer');
+		$this->db->where("fantasy_leagues_requests.league_id",$league_id);
+		if ($request_id !== false) {
+			$this->db->where("fantasy_leagues_requests.id",$request_id);
+		}
+		$query = $this->db->get();
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				array_push($requests,array('id'=>$row->id,'user_id'=>$row->user_id, 'username'=>$row->username,'date_requested'=>$row->date_requested,
+										  'team_id'=>$row->team_id,'team'=>$row->teamname." ".$row->teamnick));
+			}
+		}
+		$query->free_result();
+		return $requests;
+	}
 	
 	/**
 	 *	GET LEAGUES.
@@ -543,12 +566,55 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($team_id === false || $user_id === false) { return false; }
 		
+		$this->db->where('team_id',$team_id);
+		$this->db->where('user_id',$user_id);
+		$this->db->where('league_id',$league_id);
+		$this->db->from('fantasy_leagues_requests');
+		$count = $this->db->count_all_results();
+		if ($count > 0) {
+			$this->errorCode = 2;
+			$this->statusMess = 'A request has already been submitted for this team. Please wait for a response.';
+			return false;
+		}
 		$requestData = array('team_id'=>$team_id,'user_id'=>$user_id,'league_id'=>$league_id);
-		$this->db->insert('fantasy_leagues_request',$requestData);
+		$this->db->insert('fantasy_leagues_requests',$requestData);
 		if ($this->db->affected_rows() == 0) {
 			$this->errorCode = 1;
 			$this->statusMess = 'The request data was not saved to the database.';
 			return false;
+		}
+		return true;
+	}
+	
+	public function updateRequest($request_id = false, $response = false, $league_id = false) {
+		
+		if ($league_id === false) { $league_id = $this->id; }
+		if ($request_id === false || $response === false) { return false; }
+		
+		$this->db->select('*');
+		$this->db->where('id',$request_id);
+		$query = $this->db->get('fantasy_leagues_requests');
+		
+		if ($query->num_rows() == 0) {
+			$this->errorCode = 1;
+			$this->statusMess = 'No request matching the passed ID was found in the system.';
+			return false;
+		} else {
+			$row = $query->row();
+			$cleanDb = true;
+			if ($response == 1) {
+				$data = array('owner_id'=>$row->user_id);
+				$this->db->where('id',$row->team_id);
+				$this->db->update($this->tables['TEAMS'],$data);
+				if ($this->db->affected_rows() == 0) {
+					$this->errorCode = 2;
+					$this->statusMess = 'The team owner update could not be saved to the database.';
+					return false;
+				}
+			}
+			$this->db->flush_cache();
+			$this->db->where('id',$request_id);
+			$this->db->delete('fantasy_leagues_requests');	
 		}
 		return true;
 	}
