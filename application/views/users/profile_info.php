@@ -4,6 +4,10 @@
 			var params = this.id.split("|");
 			document.location.href = '<?php echo($config['fantasy_web_root']); ?>user/inviteResponse/id/'+params[0]+'/ct/'+params[1]+'/ck/'+params[2];
 		});
+		$('input[rel=requestRespond]').click(function(){
+			var params = this.id.split("|");
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>league/requestResponse/request_id/'+params[0]+'/type/'+params[1]+'/id/'+params[2];
+		});
 	});
 	</script>
     <div id="subPage">
@@ -35,6 +39,37 @@
                         	<input type='button' rel="inviteRespond" id="<?php echo($invite['id']); ?>|1|<?php echo($invite['ck']); ?>" class="button" value='Accept' style="float:left;margin-right:8px;" />
 							<input type='button' rel="inviteRespond" id="<?php echo($invite['id']); ?>|-1|<?php echo($invite['ck']); ?>" class="button" value='Decline' style="float:left;margin-right:8px;" />
                         <div class="rule"></div>
+                        <?php
+						} // END if
+						?></td>
+                    </tr>
+                    </table>
+                    </div>
+                    <?php
+					} // END if
+					?>
+                    <?php if (isset($requests) && sizeof($requests) > 0) { ?>
+                    <div class='textbox'>
+                    <table cellpadding="0" cellspacing="0" border="0" style="width:325px;" class="dashboard">
+                    <tr class='title'>
+                        <td style="padding:3px">Team Requests</td>
+                    </tr>
+                    <tr>
+                    	<td style="padding:12px; line-height:1.5;">
+						<?php 
+						foreach($requests as $request) { 
+							if (isset($request['avatar']) && !empty($request['avatar'])) { 
+								$avatar = $request['avatar'];
+							} else {
+								$avatar = DEFAULT_AVATAR;
+							} // END if
+							?>
+							<img src="<?php echo(PATH_TEAMS_AVATARS.$avatar) ?>" width="18" height="18" border="0" alt="avatar" title="avatar" align="absmiddle" />
+							<?php echo(anchor('/team/info/'.$request['team_id'],'<b>'.$request['team'].'</b>')); ?> 
+                            of the <?php echo(anchor('/league/info/'.$request['league_id'],$request['league_name'])); ?> league.<br />
+                            Requested On: <?php echo(date('m/d/Y h:m A',strtotime($request['date_requested']))); ?><br />
+                        	<input type='button' rel="requestRespond" id="<?php echo($request['id']); ?>|2|<?php print($request['league_id']); ?>" class="button" value='Withdraw' style="float:left;margin-right:8px;" />
+							<div class="rule"></div>
                         <?php
 						} // END if
 						?></td>

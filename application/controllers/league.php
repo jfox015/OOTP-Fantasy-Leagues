@@ -430,7 +430,8 @@ class league extends BaseEditor {
 		$this->init();
 		$this->data['league_finder_intro_str'] = $this->lang->line('league_finder_intro_str');
 		$this->data['subTitle'] = $this->lang->line('league_finder_title');
-		$this->data['league_list'] = $this->dataModel->getOpenLeagues();
+		$userVar = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->params['currUser'] : false;
+		$this->data['league_list'] = $this->dataModel->getOpenLeagues($userVar);
 		$this->makeNav();
 		$this->params['content'] = $this->load->view($this->views['LEAGUE_LIST'], $this->data, true);
 		$this->displayView();
@@ -515,12 +516,16 @@ class league extends BaseEditor {
 			$this->init();
 			$this->getURIData();
 			$this->loadData();
-			
-			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
-				if ($this->dataModel->id != -1) {
-					if (isset($this->uriVars['request_id']) && !empty($this->uriVars['request_id']) && $this->uriVars['request_id'] != -1 && 
-						  $this->uriVars['type'] && !empty($this->uriVars['type']) && $this->uriVars['type'] != -1) {
-						$request = $this->dataModel->getLeagueRequests(false, $this->uriVars['request_id']);
+			if (isset($this->uriVars['request_id']) && !empty($this->uriVars['request_id']) && $this->uriVars['request_id'] != -1 && 
+						  $this->uriVars['type'] && !empty($this->uriVars['type'])) {
+						
+				if (($this->uriVars['type'] == 2) || ($this->uriVars['type'] != 2 && $this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
+					if ($this->dataModel->id != -1) {
+						$targetUri = 'league/leagueInvites/'.$this->dataModel->id;
+						$requestArr = $this->dataModel->getLeagueRequests(false, false, $this->uriVars['request_id']);
+						if (is_array($requestArr) && sizeof($requestArr) > 0) {
+							$request = $requestArr[0];
+						}
 						$success = $this->dataModel->updateRequest($this->uriVars['request_id'], $this->uriVars['type']);
 						if ($success) {
 							// MESSAGE THE USER
@@ -528,15 +533,27 @@ class league extends BaseEditor {
 								$this->load->model('team_model');
 							}
 							$outMess = "";
-							if ($this->uriVars['type'] == 1) {
-								$msg = $this->lang->line('email_league_team_request_accepted');
-								$data['title'] = $this->lang->line('email_league_team_request_accepted_title');
-								$outMess .= "The user has been assigned as the owner of this team successfully.";
-							} else {
-								$msg = $this->lang->line('email_league_team_request_denied');
-								$data['title'] = $this->lang->line('email_league_team_request_denied_title');
-								$outMess .= "The users request has been denied and removed.";
+							$to = $this->user_auth_model->getEmail($request['user_id']);
+							switch ($this->uriVars['type']) {
+								case 1:
+									$msg = $this->lang->line('email_league_team_request_accepted');
+									$data['title'] = $this->lang->line('email_league_team_request_accepted_title');
+									$outMess .= "The user has been assigned as the owner of this team successfully.";
+									break;
+								case -1:
+									$msg = $this->lang->line('email_league_team_request_denied');
+									$data['title'] = $this->lang->line('email_league_team_request_denied_title');
+									$outMess .= "The users request has been denied.";
+									break;
+								case 2:
+									$msg = $this->lang->line('email_league_team_request_withdrawn');
+									$data['title'] = $this->lang->line('email_league_team_request_denied_title');
+									$outMess .= "The team request has been successfully withdrawn.";
+									$to = $this->user_auth_model->getEmail($this->dataModel->commissioner_id);
+									$targetUri = '/user/profile';
+									break;
 							}
+							$msg .= $this->lang->line('email_footer');
 							$msg = str_replace('[COMMISH]', getUsername($this->dataModel->commissioner_id), $msg);
 							$msg = str_replace('[TEAM_HOME_URL]', anchor('/team/info/'.$request['team_id'],'managing your team'),$msg);
 							$msg = str_replace('[USERNAME]', getUsername($request['user_id']), $msg);
@@ -545,16 +562,24 @@ class league extends BaseEditor {
 							$data['messageBody']= $msg;
 							//print("email template path = ".$this->config->item('email_templates')."<br />");
 							$data['leagueName'] = $this->dataModel->league_name;
-							
 							$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 							$subject 	 = $this->dataModel->league_name. " Team Request Response";
-							$emailSent = sendEmail($this->user_auth_model->getEmail($request['user_id']),
-											 $this->user_auth_model->getEmail($this->params['config']['primary_contact']), 
+							$emailSent = sendEmail($to,$this->user_auth_model->getEmail($this->params['config']['primary_contact']), 
 											 $this->params['config']['site_name']." Adminstrator",
 											 $subject, $message,'','email_team_request_resp');
 							
 							if($emailSent) {
-								$outMess .= "An email notifying them of their acceptance has been sent.";
+								switch ($this->uriVars['type']) {
+									case 1:
+										$outMess .= "An email notifying them of their acceptance has been sent.";
+										break;
+									case -1:
+										$outMess .= "An email notifying them of their denial has been sent.";
+										break;
+									case 2:
+										$outMess .= "An email notifying the commissioner of your decision has been sent.";
+										break;
+								}
 							} else {
 								$outMess .= "<b>FYI</b>: An email notifying them of their acceptance could not be sent at this time. Be sure to follow up with this user.";
 							}
@@ -564,16 +589,23 @@ class league extends BaseEditor {
 								$this->session->set_flashdata('message', '<span class="error">An error occured submitting your response: '.$this->dataModel->statusMess.'</span>');
 							}
 						}
+						
+						redirect($targetUri);
 					} else {
-						$this->session->set_flashdata('message', '<span class="error">Required parameters were missing.</span>');
-					}	
+						$this->data['subTitle'] = "An error has occured.";
+						$this->data['theContent'] = '<span class="error">'.$this->lang->line('league_finder_request_no_id').'</span>';
+						$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+						$this->displayView();
+					}
 				} else {
-					$this->session->set_flashdata('message', '<span class="error">'.$this->lang->line('league_finder_request_no_id').'</span>');
+					$this->data['subTitle'] = "Unauthorized Access";
+					$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+					$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+					$this->displayView();
 				}
-				redirect('league/leagueInvites/'.$this->dataModel->id);
 			} else {
 				$this->data['subTitle'] = "Unauthorized Access";
-				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->data['theContent'] = '<span class="error">Required parameters were missing.</span>';
 				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 				$this->displayView();
 			}
@@ -1244,8 +1276,8 @@ class league extends BaseEditor {
 			$this->getURIData();
 			$this->loadData();
 			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
-				$this->data['thisItem']['invites'] = $this->dataModel->getLeagueInvites();
-				$this->data['thisItem']['requests'] = $this->dataModel->getLeagueRequests();
+				$this->data['thisItem']['invites'] = $this->dataModel->getLeagueInvites(true);
+				$this->data['thisItem']['requests'] = $this->dataModel->getLeagueRequests(true);
 				$this->data['league_id'] = $this->dataModel->id;
 				$this->data['subTitle'] = 'Pending Invitiations';
 				$this->params['content'] = $this->load->view($this->views['INVITES'], $this->data, true);
@@ -1457,10 +1489,15 @@ class league extends BaseEditor {
 		
 		$form->fieldset('League Details');
 		
-		$form->text('league_name','League Name','required|trim',($this->input->post('league_name')) ? $this->input->post('league_name') : $this->dataModel->league_name,array('class','first longText'));
+		$form->text('league_name','League Name','required|trim',($this->input->post('league_name')) ? $this->input->post('league_name') : $this->dataModel->league_name,array("class"=>"longtext"));
 		$form->br();
 		$form->textarea('description','Description:','',($this->input->post('description')) ? $this->input->post('description') : $this->dataModel->description,array('rows'=>5,'cols'=>65));
 		$form->br();
+		$responses[] = array('1','Yes');
+		$responses[] = array('-1','No');       
+		$form->fieldset('',array('class'=>'radioGroup'));
+		$form->radiogroup ('accept_requests',$responses,'Accept Public Team Requests',($this->input->post('accept_requests') ? $this->input->post('accept_requests') : $this->dataModel->accept_requests),'required');
+		$form->fieldset();
 		if ($this->mode != 'edit') {
 			$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
 			$form->br();
@@ -1519,6 +1556,7 @@ class league extends BaseEditor {
 				$this->data['thisItem']['league_id'] = $this->dataModel->id;
 				$this->data['thisItem']['description'] = $this->dataModel->description;
 				$this->data['thisItem']['max_teams'] = $this->dataModel->max_teams;
+				$this->data['thisItem']['accept_requests'] = $this->dataModel->accept_requests;
 				$accessType = loadSimpleDataList('accessType');
 				$this->data['thisItem']['access_type'] = $accessType[$this->dataModel->access_type];
 				$leagueType = loadSimpleDataList('leagueType');
@@ -1565,6 +1603,9 @@ class league extends BaseEditor {
 		} else {
 			$this->data['thisItem']['teams'] = $this->dataModel->getTeamDetails();
 		}
+		
+		$this->data['hasAccess'] = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->dataModel->userHasAccess($this->params['currUser']) : false;
+		
 		
 		$this->params['subTitle'] = "Fantasy League Overview";
 		

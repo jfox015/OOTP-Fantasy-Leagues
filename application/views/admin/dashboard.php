@@ -160,11 +160,11 @@
         <span class="error"><?php echo($settingsError); ?></span><br />
         <?php } ?>
 		<ul class="iconmenu">
+			<li><?php echo anchor('admin/configGame','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
+            Global Settings</li>
 			<?php 
 			// SETTING OPTIONS (PRE-SEASON ONLY)
 			if ((isset($league_info) && $league_info->current_date <= $league_info->start_date) || !isset($league_info)) { ?>
-        	<li><?php echo anchor('admin/configGame','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
-            Global Settings</li>
             <li><?php echo anchor('admin/configFantasy','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
             Fantasy Settings</li>
             <li><?php echo anchor('admin/configRosters','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
@@ -176,7 +176,7 @@
 			// SETTING REVIEW (REGULAR SEASON)
 			?>
             <li><?php echo anchor('admin/configInfo','<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
-            Review Settings</li>
+            Review Fantasy Settings</li>
             <?php 
 			} // END if
 			?>

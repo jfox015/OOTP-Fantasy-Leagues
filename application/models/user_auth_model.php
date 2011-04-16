@@ -406,6 +406,24 @@ class user_auth_model extends base_model {
 			return false;
 		}
 	}
+	public function getUserId($username = false) {
+		
+		if ($username === false) { return false; }
+		
+		$this->db->select('id')
+			 ->where('username',$this->uriVars['id'])
+			 ->limit(1);
+		$query = $this->db->get($this->tblName);
+		$result = $query->row();
+        if ($query->num_rows() > 0) {
+			return $result->id;
+		} else {
+			$this->errorCode = 1;
+			$this->statusMess = "No user matching the username passed was found in the system.";
+			return false;
+		}
+	}
+	
 	public function getUsername($userId = false) {
 		
 		if ($userId === false) { $userId = $this->id; }

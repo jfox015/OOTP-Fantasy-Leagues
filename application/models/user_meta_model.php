@@ -47,6 +47,7 @@ class user_meta_model extends base_model {
 		$this->tables['TEAMS'] = 'fantasy_teams';
 		$this->tables['DRAFT'] = 'fantasy_draft';
 		$this->tables['INVITES'] = 'fantasy_invites';
+		$this->tables['REQUESTS'] = 'fantasy_leagues_requests';
 		
 
 		$this->fieldList = array('firstName', 'lastName', 'nickName', 'city', 'state', 'country', 'zipCode', 'title', 'bio', 'gender');
@@ -150,7 +151,6 @@ class user_meta_model extends base_model {
 			$this->errorCode = 1;
 			$this->statusMess = "No user Id was found.";
 		} else {
-			$inviteList = array();
 			$userEmail = getEmail($userId);
 			
 			$this->db->flush_cache();
@@ -158,11 +158,12 @@ class user_meta_model extends base_model {
 			$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = '.$this->tables['INVITES'].'.league_id', 'left');
 			$this->db->join($this->tables['users_core'],$this->tables['users_core'].'.id = '.$this->tables['INVITES'].'.from_id', 'left');
 			$this->db->where('to_email',$userEmail);
+			$this->db->where('status_Id',REQUEST_STATUS_PENDING);
 			$query = $this->db->get($this->tables['INVITES']);
 			
 			if ($query->num_rows() == 0) {
 				$this->errorCode = 1;
-				$this->statusMess = "No user Id was found.";
+				$this->statusMess = "No team invites were found.";
 			} else {
 				foreach ($query->result() as $row) {
 					array_push($invites, array('id'=>$row->id,'ck'=>md5($row->confirm_str.$row->confirm_key),
@@ -174,7 +175,37 @@ class user_meta_model extends base_model {
 			}
 		}
 		return $invites;
+	}
+	public function getTeamRequests($userId = false) {
 		
+		$requests = array();
+		if ($userId === false) { $userId = $this->userId; }
+		if ($userId == -1) { 
+			$this->errorCode = 1;
+			$this->statusMess = "No user Id was recieved.";
+		} else {
+			
+			$this->db->flush_cache();
+			$this->db->select($this->tables['REQUESTS'].'.id,'.$this->tables['REQUESTS'].'.league_id, date_requested, league_name, '.$this->tables['TEAMS'].'.avatar, team_id, teamname, teamnick');
+			$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = '.$this->tables['REQUESTS'].'.league_id', 'left');
+			$this->db->join($this->tables['TEAMS'],$this->tables['TEAMS'].'.id = '.$this->tables['REQUESTS'].'.team_id', 'left');
+			$this->db->where('user_id',$userId);
+			$this->db->where('status_Id',REQUEST_STATUS_PENDING);
+			$query = $this->db->get($this->tables['REQUESTS']);
+			
+			if ($query->num_rows() == 0) {
+				$this->errorCode = 1;
+				$this->statusMess = "No team requests were found.";
+			} else {
+				foreach ($query->result() as $row) {
+					array_push($requests, array('id'=>$row->id,'league_id'=>$row->league_id,'league_name'=>$row->league_name,'team_id'=>$row->team_id,
+											   'team'=>$row->teamname.' '.$row->teamnick,
+											   'avatar'=>$row->avatar,'date_requested'=>$row->date_requested));
+					
+				}
+			}
+		}
+		return $requests;
 	}
 	public function getUserDrafts() {
 		

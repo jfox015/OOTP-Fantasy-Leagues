@@ -26,6 +26,7 @@ INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('primary_contact', 
 #	UPDATE SQL QUERY
 #	Version 1.0.3 to 1.0.5
 #	REMOVE ALL COMMENTS FOR DIST
+DROP TABLE IF EXISTS `fantasy_leagues_requests_status`;
 DROP TABLE IF EXISTS `fantasy_leagues_requests`;
 DROP TABLE IF EXISTS `fantasy_players_scoring`;
 DROP TABLE IF EXISTS `fantasy_sim_summary`;
@@ -37,9 +38,17 @@ DROP TABLE IF EXISTS `fantasy_teams_trade_protests`;
 DROP TABLE IF EXISTS `fantasy_players_compiled_batting`;
 DROP TABLE IF EXISTS `fantasy_players_compiled_pitching`;
 DROP TABLE IF EXISTS `users_activation_types`;
+ALTER TABLE `fantasy_invites` ADD `status_id` TINYINT NOT NULL DEFAULT '1';
 ALTER TABLE `fantasy_transactions` ADD `trade_team_id` INT NOT NULL AFTER `dropped`;
 ALTER TABLE `fantasy_teams_record` ADD `scoring_period_id` TINYINT NOT NULL AFTER `year`;
-CREATE TABLE IF NOT EXISTS `fantasy_leagues_requests` (`id` int(11) NOT NULL auto_increment, `league_id` int(11) NOT NULL, `team_id` int(11) NOT NULL, `userId` int(11) NOT NULL, `date_requested` timestamp NOT NULL default CURRENT_TIMESTAMP, PRIMARY KEY  (`id`), KEY `league_id` (`league_id`,`team_id`,`userId`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+CREATE TABLE IF NOT EXISTS `fantasy_leagues_requests` ( `id` int(11) NOT NULL auto_increment, `league_id` int(11) NOT NULL, `team_id` int(11) NOT NULL, `user_id` int(11) NOT NULL, `date_requested` timestamp NOT NULL default CURRENT_TIMESTAMP, `status_Id` tinyint(4) NOT NULL default '1', PRIMARY KEY  (`id`), KEY `league_id` (`league_id`,`team_id`,`user_id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
+CREATE TABLE IF NOT EXISTS `fantasy_leagues_requests_status` (`id` tinyint(4) NOT NULL auto_increment,`requestStatus` varchar(100) collate utf8_unicode_ci NOT NULL,PRIMARY KEY  (`id`),KEY `requestStatus` (`requestStatus`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=6 ;
+INSERT INTO `fantasy_leagues_requests_status` (`id`, `requestStatus`) VALUES(1, 'Pending');
+INSERT INTO `fantasy_leagues_requests_status` (`id`, `requestStatus`) VALUES(2, 'Accepted');
+INSERT INTO `fantasy_leagues_requests_status` (`id`, `requestStatus`) VALUES(3, 'Denied');
+INSERT INTO `fantasy_leagues_requests_status` (`id`, `requestStatus`) VALUES(4, 'Withdrawn');
+INSERT INTO `fantasy_leagues_requests_status` (`id`, `requestStatus`) VALUES(5, 'Removed');
+INSERT INTO `fantasy_leagues_requests_status` (`id`, `requestStatus`) VALUES(-1, 'Unknown');
 ALTER TABLE `fantasy_leagues_scoring_batting` ADD `scoring_type` TINYINT NOT NULL AFTER `league_id`;
 ALTER TABLE `fantasy_leagues_scoring_pitching` ADD `scoring_type` TINYINT NOT NULL AFTER `league_id`;
 TRUNCATE TABLE `fantasy_leagues_scoring_batting`;

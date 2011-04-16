@@ -24,9 +24,9 @@
         <tr>
             <td style="padding:10px;">
             
-            <label>League Name:</label> <?php print($thisItem['league_name'].'('.anchor('league/submit/mode/edit/id/'.$league_id,'Edit').')'); ?>
+            <label>League Name:</label> <?php print($thisItem['league_name'].' ('.anchor('league/submit/mode/edit/id/'.$league_id,'Edit').')'); ?>
             <p /><br />
-            <label>Description</label> <?php print($thisItem['description'].'('.anchor('league/submit/mode/edit/id/'.$league_id,'Edit').')'); ?>
+            <label>Description</label> <?php print($thisItem['description'].' ('.anchor('league/submit/mode/edit/id/'.$league_id,'Edit').')'); ?>
             <p /><br />
             <label>Team Count</label> <?php print($thisItem['max_teams']); ?>
             <p /><br />
@@ -35,6 +35,8 @@
              <label>Scoring</label> <?php print($thisItem['league_type']); ?>
             <p /><br />
            	<label>Commissioner</label> <?php print(anchor('/user/profile/id/'.$thisItem['commissioner_id'],$thisItem['commissioner']).'('.anchor('/league/teamAdmin/'.$league_id,'Change').')'); ?>
+            <p /><br />
+            <label>Accept Team Requests</label> <?php print((($thisItem['accept_requests'] == 1) ? 'Yes' : 'no').' ('.anchor('league/submit/mode/edit/id/'.$league_id,'Change').')'); ?>
             <p /><br />
             
             <?php 

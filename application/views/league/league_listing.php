@@ -33,7 +33,7 @@
 				} 
 			} else { ?>
             <tr class='s1_1' align="center">
-                <td colspan="4">No leagues currently have opeings or are accepting new members.</td>
+                <td colspan="4">No leagues currently have openings,  are accepting new members or are available to you at this time.</td>
             </tr>
             <?php } ?>
             </table> 

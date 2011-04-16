@@ -8,7 +8,7 @@
             <div class='tablebox'>
             <table cellspacing="0" cellpadding="3" width="625">
             <tr class='title'><td colspan="3">Pending Invites</td></tr>
-            <tr class='headline'>
+            <tr class='headline' align="center">
                 <td width="40%">E-Mail</td>
                 <td width="30%">Date Sent</td>
                 <td width="30%">Team</td>
@@ -43,11 +43,11 @@
             <div class='tablebox'>
             <table cellspacing="0" cellpadding="3" width="625">
             <tr class='title'><td colspan="4">Pending Team Requests</td></tr>
-            <tr class='headline'>
-                <td width="40%">Username</td>
-                <td width="30%">Date Requested</td>
-                <td width="30%">Team</td>
-                <td width="30%">Options</td>
+            <tr class='headline' align="center">
+                <td width="25%">Username</td>
+                <td width="25%">Date Requested</td>
+                <td width="25%">Team</td>
+                <td width="25%">Options</td>
             </tr>
             <?php 
             if (isset($thisItem['requests']) && sizeof($thisItem['requests']) > 0) {
@@ -59,8 +59,8 @@
 					<td><?php echo(anchor('/user/profiles/'.$row['user_id'],$row['username'])); ?></td>
                     <td><?php echo(date('M, j Y h:m A',strtotime($row['date_requested']))); ?></td>
 					<td><?php echo(anchor('team/info/'.$row['team_id'],$row['team'])); ?></td>
-                    <td><?php print(anchor('/league/requestResponse/id/'.$league_id.'/request_id/'.$row['id'].'/type/1','Accept').' &nbsp;'.
-									anchor('/league/requestResponse/id/'.$league_id.'/request_id/'.$row['id'].'/type/-1','Reject')	); ?>  
+                    <td><?php print(anchor('/league/requestResponse/id/'.$league_id.'/request_id/'.$row['id'].'/type/1','<img src="'.PATH_IMAGES.'/icons/accept.png" width="16" height="16" border="0" alt="Accept" align="absmiddle" /> Accept').' &nbsp;'.
+									anchor('/league/requestResponse/id/'.$league_id.'/request_id/'.$row['id'].'/type/-1','<img src="'.PATH_IMAGES.'/icons/icon_fail.png" width="16" height="16" border="0" alt="Reject" align="absmiddle" /> Reject')	); ?>  
                     
     			</tr>
 				<?php 
@@ -68,7 +68,7 @@
 				} 
 			} else { ?>
             <tr class='s1_1' align="center">
-                <td colspan="3">No pending invitations were found.</td>
+                <td colspan="4">No pending invitations were found.</td>
             </tr>
             <?php } ?>
             </table> 

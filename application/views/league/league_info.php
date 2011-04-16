@@ -19,17 +19,20 @@
                     <div class='textbox'>
                     	<table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="725px">
                     	<?php 
+						$cols = ($hasAccess) ? 5 : 4;
 						if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
 							if (isset($thisItem['divisions']) && sizeof($thisItem['divisions']) > 0) { 
 						foreach($thisItem['divisions'] as $id=>$divisionData) { ?>
                     	<tr class='title'>
-                        	<td colspan='5' class='lhl'><?php echo($divisionData['division_name']); ?></td></tr>
+                        	<td colspan='<?php print($cols); ?>' class='lhl'><?php echo($divisionData['division_name']); ?></td></tr>
               			<tr class='headline'>
                        		<td class='hsc2_c'>&nbsp;</td>
                         	<td class='hsc2_c'>Team</td>
                             <td class='hsc2_c'>Owner</td>
                             <td class='hsc2_c'>Contact</td>
+                            <?php if ($hasAccess) { ?>
                             <td class='hsc2_c'>E-Mail</td>
+                            <?php } ?>
                         </tr>
               			<?php 
 						$rowcount = 0;
@@ -49,14 +52,16 @@
                             <td class='hsc2_l'><?php echo(anchor('/team/info/'.$teamId,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
                             <td class='hsc2_l'><?php if(isset($teamData['owner_id']) && isset($teamData['owner_name'])) {echo(anchor('/user/profiles/'.$teamData['owner_id'],$teamData['owner_name'])); } ?></td>
                             <td class='hsc2_l'><?php //echo($teamData['owner_aim']); ?></td>
+                            <?php if ($hasAccess) { ?>
                             <td class='hsc2_l'><?php echo($teamData['owner_email']); ?></td>
+                            <?php } ?>
                         </tr>
 							<?php
 							$rowcount++;
 							}
 						} else { ?>
                         <tr>
-                            <td class="hsc2_l" colspan="4">No Teams were Found</td>
+                            <td class="hsc2_l" colspan="<?php print($cols); ?>">No Teams were Found</td>
                         </tr>
 						<?php } ?>
 
@@ -74,13 +79,15 @@
 						 
 						?>
                     	<tr class='title'>
-                        	<td colspan='5' class='lhl'>Team List</td></tr>
+                        	<td colspan='<?php print($cols); ?>' class='lhl'>Team List</td></tr>
               			<tr class='headline'>
                        		<td class='hsc2_c'>&nbsp;</td>
                         	<td class='hsc2_c'>Team</td>
                             <td class='hsc2_c'>Owner</td>
                             <td class='hsc2_c'>Contact</td>
+                            <?php if ($hasAccess) { ?>
                             <td class='hsc2_c'>E-Mail</td>
+                            <?php } ?>
                         </tr>
               			<?php 
 						$rowcount = 0;
@@ -99,14 +106,16 @@
                             <td class='hsc2_l'><?php echo(anchor('/team/info/'.$teamId,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
                             <td class='hsc2_l'><?php if(isset($teamData['owner_id']) && isset($teamData['owner_name'])) {echo(anchor('/user/profiles/'.$teamData['owner_id'],$teamData['owner_name'])); } ?></td>
                             <td class='hsc2_l'><?php //echo($teamData['owner_aim']); ?></td>
+                            <?php if ($hasAccess) { ?>
                             <td class='hsc2_l'><?php echo($teamData['owner_email']); ?></td>
+                            <?php } ?>
                         </tr>
 							<?php
 							$rowcount++;
 							}
 						} else { ?>
                         <tr>
-                            <td class="hsc2_l" colspan="4">No Teams were Found</td>
+                            <td class="hsc2_l" colspan="<?php print($cols); ?>">No Teams were Found</td>
                         </tr>
 						<?php } 
 						}

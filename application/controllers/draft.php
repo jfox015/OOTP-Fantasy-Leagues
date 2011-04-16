@@ -61,18 +61,19 @@ class draft extends BaseEditor {
 		$this->enqueStyle('content.css');
 		
 		$this->getURIData();
-		if (!$this->isAjax() && isset($this->uriVars['id'])) {
+		if (!$this->isAjax() && isset($this->uriVars['league_id'])) {
 			$this->load->model($this->modelName,'dataModel');
 			$this->loadModel();
 			$this->load->model('league_model');
-			$this->league_model->load($this->dataModel->league_id);
+			$this->league_model->load($this->uriVars['league_id']);
 			
+			//print("ID = ".$this->uriVars['id']."<br />");
 			if ($this->league_model->id != -1 && $this->league_model->access_type == -1) {
 				$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
 				$isCommish = $this->league_model->userIsCommish($this->params['currUser']) ? true: false;
 				if (!$isAdmin && !$isCommish) {
 					if (!$this->league_model->userHasAccess($this->params['currUser'])) {
-						redirect('/league/privateLeague/'.$this->uriVars['id']);
+						redirect('/league/privateLeague/'.$this->uriVars['league_id']);
 					}
 				}
 			}
@@ -89,7 +90,7 @@ class draft extends BaseEditor {
 		$this->restrictAccess = true;
 		$this->minAccessLevel = ACCESS_WRITE;
 		
-		$this->debug = false; 
+		$this->debug = true; 
 	}
 	/*--------------------------------
 	/	PRIVATE FUNCTIONS
@@ -504,6 +505,8 @@ class draft extends BaseEditor {
 										$teams[$id]['autoList']=$this->team_model->auto_list;
 										$teams[$id]['autoRound']=$this->team_model->auto_round_x;
 										$teams[$id]['owner_id']=$this->team_model->owner_id;
+										$teams[$id]['teamname']=$this->team_model->teamname;
+										$teams[$id]['teamnick']=$this->team_model->teamnick;
 										$teamQuotas[$id] = array();
 									}
 								}
@@ -558,75 +561,92 @@ class draft extends BaseEditor {
 								echo("firstPick = '".$firstPick."'<br />");
 								echo("Current player pick id = '".$dpick."'<br />");
 							}
+							$this->lang->load('draft');
 							##### Process Selection: Loop from first open slot to final pick of the draft #####
 							for ($i=$firstPick;$i<=$lastPick;$i++) {
+								
+								##### Check that pick is open slot #####
+								if (isset($picks[$i]['player'])) {
+									continue;
+								} ## This pick already made, move on to next one
+								
 								//-----------------------------------------------
 								// ROUND SUMMARY EMAIL
 								//-----------------------------------------------
-								if (($pickNum-1) == 0) {
+								$round = $picks[$i]['round'];
+								//print('round pick = '.$picks[$i]['pick']."<br />");
+								if ($i > 1 && $picks[$i]['pick'] == 1) {
 									$teamInfo = $this->league_model->getTeamDetails($this->dataModel->league_id);
 									
-									$prevRound = $pickRound-1;
+									$prevRound = $picks[$i-1]['round'];
+									//print('prevRound = '.$prevRound."<br />");
 									if (!isset($this->player_model)) {
 										$this->load->model('player_model');
-									}
-									$startPick = (($nextPick)-($nTeams));
+									} // END if
+									$startPick = ($i - ($nTeams*$prevRound));
+									//print('startPick = '.$startPick."<br />");
 									$roundSummary = "";
-									for ($i=$startPick;$i<($startPick+$nTeams);$i++) {
-										$dteam=$picks[$i]['team'];
-										$roundSummary.=$picks[$i]['round'].".".$picks[$i]['pick']." - ".$teams[$dteam]['teamname']." ".$teams[$dteam]['teamnick'];
+									$stopAt= ($startPick+$nTeams);
+									for ($t=$startPick;$t<$stopAt;$t++) {
+										$tmpTeam=$picks[$t]['team'];
+										$roundSummary.=$picks[$t]['round'].".".$picks[$t]['pick']." - ".anchor('/team/info/'.$tmpTeam,$teams[$tmpTeam]['teamname']." ".$teams[$tmpTeam]['teamnick']);
 										$playerInfo = array();
-										if (isset($picks[$i]['player']) && !empty($picks[$i]['player']) && $picks[$i]['player'] != -999) {
-											$playerInfo = $this->player_model->getPlayerDetails($picks[$i]['player']);
+										if (isset($picks[$t]['player']) && !empty($picks[$t]['player']) && $picks[$t]['player'] != -999) {
+											$playerInfo = $this->player_model->getPlayerDetails($picks[$t]['player']);
 											if (sizeof($playerInfo) > 0) {
-												$roundSummary.= " picked  ".get_pos($playerInfo['position'])." ".$playerInfo['first_name']." ".$playerInfo['last_name'];
+												$roundSummary.= " picked  ".get_pos($playerInfo['position'])." ".anchor('/player/info/'.$picks[$t]['player'],$playerInfo['first_name']." ".$playerInfo['last_name']);
 											} else {
 												$roundSummary.= "Pick Details unavailable";
-											}
-										} else if ($picks[$i]['player'] == -999) {
+											} // END if
+										} else if ($picks[$t]['player'] == -999) {
 											$roundSummary.= "Pick Skipped";
 										} else {
 											$roundSummary.= "Pick information not available";
 										} // END if 
+										$roundSummary.= "<br />\n";
 									} // END for
 									$nextSummary = "";
-									if ((($round +1)+$nTeams) < $stopAt) {
-										$nextSummary.="";
-										for ($i=$nextPick;$i<$stopAt-1;$i++) {
-											$dteam=$picks[$i]['team'];
-											$nextSummary.=$picks[$i]['round'].".".$picks[$i]['pick']." - ".$teams[$dteam]['teamname']." ".$teams[$dteam]['teamnick'];
-											if ($this->dataModel->timerEnable == 1) {
-												$nextSummary.=" due at ".$picks[$i]['due'];
-											}
-										} // END for
-									} // END if ## Generate Subject Line
+									$stopAt = ($i+$nTeams);
+									$nextSummary.="";
+									for ($z=$i;$z<$stopAt;$z++) {
+										$tmpTeam=$picks[$z]['team'];
+										$nextSummary.=$picks[$z]['round'].".".$picks[$z]['pick']." - ".anchor('/team/info/'.$tmpTeam,$teams[$tmpTeam]['teamname']." ".$teams[$tmpTeam]['teamnick']);
+										if ($this->dataModel->timerEnable == 1) {
+											$nextSummary.=" due at ".$picks[$z]['due'];
+										} // END if
+										$nextSummary.= "<br />\n";
+									} // END for
+									## Generate Subject Line
 									$subject=str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_subject'));
 									## Generate Message Text
 									$msg = str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_message'));
-									$msg .= str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
-									$msg .= str_replace('[ROUND_NUM_SUMMARY]', $roundSummary,$msg);
-									$msg .= str_replace('[ROUND_NEXT_SUMMARY]', $nextSummary,$msg);
+									$msg = str_replace('[ROUND_NEXT]', $picks[$i]['round'],$msg);
+									$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+									$msg = str_replace('[ROUND_NUM_SUMMARY]', $roundSummary,$msg);
+									$msg = str_replace('[ROUND_NEXT_SUMMARY]', $nextSummary,$msg);
+									
+									$data['leagueName'] = $this->league_model->league_name;
+									$data['messageBody'] = $msg;
+									$data['title'] = ' Draft Summary';
 									$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 									// LOAD OWNER ID AND EMAILS OF ALL OWNERS OF LEAGUE
+									if ($this->league_model->id == -1) {
+										$this->league_model->load($this->dataModel->league_id);
+									} // END if
+									//print ("league id = ".$this->dataModel->league_id."<br />");
 									$ownerIds = $this->league_model->getOwnerIds($this->dataModel->league_id);
+									//print ("owner id size = ".sizeof($ownerIds)."<br />");
 									if (isset($ownerIds) && sizeof($ownerIds) > 0) {
-										$ownerCount = sizeof($ownerIds);
 										foreach($ownerIds as $owner) {
 											$email = $this->user_auth_model->getEmail($owner);
 											$ownerUsername = $this->user_auth_model->getUsername($owner);
 											if (!empty($email)) {
 												$sent = sendEmail($email,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
 												$this->params['config']['site_name']." Administrator",$subject,$message,$ownerUsername,'email_draft_summary_');
-												$ownerCount++;
-											}
-										}
-									} 
+											} // END if
+										} // END foreach
+									}  // END if
 								} // END if ($rndPick == $nTeams)
-								
-								##### Check that pick is open slot #####
-								if (isset($picks[$i]['player'])) {
-									continue;
-								} ## This pick already made, move on to next one
 								
 								if ($this->debug) {
 									echo("------------NEW PICK---------------<br />");
@@ -684,6 +704,7 @@ class draft extends BaseEditor {
 								}
 								if ($this->debug) {
 									echo("Next pick ID = ".$j."<br />");
+									echo("Next pick = ".$nextPick."<br />");
 									echo("Next team to pick = ".$dteam."<br />");
 									echo($dteam." has auto list? ".($teams[$dteam]['autoList']==1?'true':'false')."<br />");
 								}
@@ -785,14 +806,14 @@ class draft extends BaseEditor {
 								/-----------------------------------------*/
 								// EDIT 7/7/10
 								// CHANGE FROM MASS MAIL FOR EVERY PICK TO SINGLE USER EMAIL AND ROUND SUMMARY
-								$this->lang->load('draft');
+								
 								##### Email next team with manual pick #####
 								//-----------------------------------------------
 								// INDIVIDUAL EMAIL
 								//-----------------------------------------------
 								// GET NEXT PICKING OWNER INFO
 								$nextOwnerEmail = '';
-								if (isset($teams[$dteam]['owner_id']) && !empty($teams[$dteam]['owner_id'])) {
+								if (isset($teams[$dteam]['owner_id']) && !empty($teams[$dteam]['owner_id']) && $teams[$dteam]['owner_id'] != -1) {
 									$nextOwnerDetails = $this->user_auth_model->accountDetails($teams[$dteam]['owner_id']);
 									if (isset($nextOwnerDetails)) {
 										$nextOwnerEmail = $nextOwnerDetails->email;
@@ -806,10 +827,10 @@ class draft extends BaseEditor {
 									
 									$msg = $this->lang->line('draft_user_message_pick_next');
 									$msg .= $this->lang->line('email_footer');
-									$msg .= str_replace('[USER_NAME]',$nextOwnerName,$msg);
-									$msg .= str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
-									$msg .= str_replace('[DRAFT_URL]', anchor('draft/selection/league_id/'.$this->league_model->id,'Draft Selection Site'),$msg);
-									$data['messageBody']= $msg;
+									$msg = str_replace('[USER_NAME]',$nextOwnerName,$msg);
+									$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+									$msg = str_replace('[DRAFT_URL]', anchor('draft/selection/league_id/'.$this->league_model->id,'Draft Selection Site'),$msg);
+									$data['messageBody'] = $msg;
 									//print("email template path = ".$this->config->item('email_templates')."<br />");
 									$data['leagueName'] = $this->league_model->league_name;
 									$data['title'] = $this->lang->line('draft_email_title_pick_due');
@@ -821,8 +842,10 @@ class draft extends BaseEditor {
 									
 									if ((!empty($mailTo)) && (!empty($message)) && ($this->uriVars['action'] !='manualpick')) {
 										$emailSend = sendEmail($mailTo,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-										$this->params['config']['site_name']." Administrator",$subject,$message);
+										$this->params['config']['site_name']." Administrator",$subject,$message,'','email_draft_next_pick_');
 									}
+									unset($data['title']);
+									unset($data['messageBody']);
 									unset($subject);
 									unset($message);
 								}
@@ -1031,7 +1054,7 @@ class draft extends BaseEditor {
 					if (!function_exists('getNonFreeAgentsByLeague')) {
 						$this->load->helper('roster');
 					}
-					$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : -1;
+					$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : DEFAULT_RESULTS_COUNT;
 					$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;	
 					
 					$startIdx = 0;

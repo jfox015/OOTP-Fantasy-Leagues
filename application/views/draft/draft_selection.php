@@ -482,7 +482,7 @@
             </tr>
             </table>
             <br />
-            <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" align="absmiddle" width="15" height="15" border="0" /><?php echo anchor('/draft/load/'.$league_id,'View complete draft results'); ?>
+            <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" align="absmiddle" width="15" height="15" border="0" /><?php echo anchor('/draft/load/league_id/'.$league_id,'View complete draft results'); ?>
             </div>
 			<br clear="all" />
     </div>

@@ -12,7 +12,7 @@ $lang['draft_user_subject_pick_next'] = '[LEAGUE_NAME] Draft: Your pick is up!';
 $lang['draft_user_message_pick_next'] = '[USER_NAME]<br><br>
 									Your pick in the [LEAGUE_NAME] Draft is now up.<br><br>
 									Please browse to the league draft selection page at: [DRAFT_URL] to make your pick.';
-$lang['draft_email_title_pick_due')'] = 'Draft Pick Due';
+$lang['draft_email_title_pick_due'] = 'Draft Pick Due';
 
 /* End of file draft_lang.php */
 /* Location: ./application/language/english/draft_lang.php */

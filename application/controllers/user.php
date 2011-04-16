@@ -675,6 +675,7 @@ class user extends MY_Controller {
 			$session_auth = $this->session->userdata($this->config->item('session_auth'));
 			if ($session_auth && $this->user_meta_model->load($session_auth,'userId')) {
 				$this->data['invites'] = $this->user_meta_model->getTeamInvites();
+				$this->data['requests'] = $this->user_meta_model->getTeamRequests();
 				$this->data['profile'] = $this->user_meta_model->profile();
 				$this->data['dateCreated'] = $this->user_auth_model->dateCreated;
 				$this->data['dateModified'] = $this->user_auth_model->dateModified;
@@ -768,12 +769,7 @@ class user extends MY_Controller {
 			} else if (preg_match('/[A-z0-9]$/',$this->uriVars['id'])) {
 				//echo("String id");
 				// LOOK UP USER ID
-				$this->db->select('id')->from('users_core')->where('username',$this->uriVars['id'])->limit(1);
-				$query = $this->db->get();
-				if ($query->num_rows > 0) {
-					$userId = $query->row()->id;
-				}
-				$query->free_result();
+				$userId = $this->user_auth_model->getUserId($this->uriVars['id']);
 			}
 			if ($this->user_meta_model->load($userId,'userId')) {
 				$this->data['profile'] = $this->user_meta_model->profile();
@@ -785,11 +781,13 @@ class user extends MY_Controller {
 				$this->session->set_flashdata('message', '<span class="error">No user profile was be found. It\'s possible the record has been renamed, moved or deleted.</span>');
 				$this->data['subTitle'] = 'User Profiles';
 				$this->data['users'] = loadSimpleDataList('username');
-				$view = $this->views['PROFILE_PICK'];
+				$this->params['pageType'] = PAGE_FORM;
+			$view = $this->views['PROFILE_PICK'];
 			}
 		} else {
 			$this->data['subTitle'] = 'User Profiles';
 			$this->data['users'] = loadSimpleDataList('username');
+			$this->params['pageType'] = PAGE_FORM;
 			$view = $this->views['PROFILE_PICK'];
 		}
 		$this->params['content'] = $this->load->view($view, $this->data, true);

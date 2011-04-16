@@ -74,6 +74,12 @@ class league_model extends base_model {
 	 *	@var $max_teams:Int
 	 */
 	var $max_teams = 0;
+	/**
+	 *	ACCEPT TEAM REQUEST.
+	 *	@var $accept_requests:Int
+	 */
+	var $accept_requests = 0;
+	
 	/*---------------------------------------------
 	/
 	/	C'TOR
@@ -94,7 +100,7 @@ class league_model extends base_model {
 		$this->tables['SCORING_RULES_BATTING'] = 'fantasy_leagues_scoring_batting';
 		$this->tables['SCORING_RULES_PITCHING'] = 'fantasy_leagues_scoring_pitching';
 		
-		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds');
+		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests');
 		$this->conditionList = array('avatarFile','new_commisioner');
 		$this->readOnlyList = array('avatar','commissioner_id');  
 		$this->textList = array('description');
@@ -258,20 +264,23 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 		
 		$ownerIds = $this->getOwnerIds($league_id);
-		
 		$access = (sizeof($ownerIds) > 0 && in_array($user_id,$ownerIds));
 		return $access;
 	
 	}
-	public function getLeagueInvites($league_id = false) {
+	public function getLeagueInvites($onlyPending = false, $league_id = false) {
 		
 		$invites = array();
 		if ($league_id === false) { $league_id = $this->id; }
 		
-		$this->db->select('to_email, send_date, team_id, teamname, teamnick');
+		$this->db->select('to_email, send_date, team_id, teamname, teamnick, requestStatus');
 		$this->db->from('fantasy_invites');
 		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_invites.team_id','right outer');
+		$this->db->join('fantasy_leagues_requests_status','fantasy_leagues_requests_status.id = fantasy_invites.status_id','right outer');
 		$this->db->where("fantasy_invites.league_id",$league_id);
+		if ($onlyPending !== false) {
+			$this->db->where('status_id', REQUEST_STATUS_PENDING);
+		}
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
@@ -282,18 +291,22 @@ class league_model extends base_model {
 		$query->free_result();
 		return $invites;
 	}
-	public function getLeagueRequests($league_id = false, $request_id = false) {
+	public function getLeagueRequests($onlyPending = false, $league_id = false, $request_id = false) {
 		
 		$requests = array();
 		if ($league_id === false) { $league_id = $this->id; }
 		
-		$this->db->select('fantasy_leagues_requests.id, user_id, username, date_requested, team_id, teamname, teamnick');
+		$this->db->select('fantasy_leagues_requests.id, user_id, username, date_requested, team_id, teamname, teamnick, requestStatus');
 		$this->db->from('fantasy_leagues_requests');
 		$this->db->join('users_core','users_core.id = fantasy_leagues_requests.user_id','right outer');
 		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_leagues_requests.team_id','right outer');
+		$this->db->join('fantasy_leagues_requests_status','fantasy_leagues_requests_status.id = fantasy_leagues_requests.status_id','right outer');
 		$this->db->where("fantasy_leagues_requests.league_id",$league_id);
 		if ($request_id !== false) {
 			$this->db->where("fantasy_leagues_requests.id",$request_id);
+		}
+		if ($onlyPending !== false) {
+			$this->db->where('status_id', REQUEST_STATUS_PENDING);
 		}
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
@@ -521,8 +534,8 @@ class league_model extends base_model {
 							if (!isset($gamesPerTeam[$team_id_val])) {
 								$team1Id = $team_id_val;
 								break;
-							}
-						}
+							} // END if
+						} // END foreach
 						//echo("Team missing games = ".$team1Id."<br />");
 						// THIS TEAM HAS NO MATCHUPS THIS PERIOD
 						// BREAK UP ANOTHER GAME AND GIVE THE OPPOENTS TO THIS TEAM
@@ -546,18 +559,18 @@ class league_model extends base_model {
 					break;
 				}
 				$loops++;
-				if ($loops == 100) { break; }
+				if ($loops == 100) { break; } // END if
 			}
 			$totalGames = 0;
 			if (sizeof($gamesPerTeam) > 0) {
 				foreach($gamesPerTeam as $team_id_val => $game_count) {
 					$totalGames += $game_count;
-				}
-			}
+				} // END foreach
+			} // END if
 			foreach($data as $query) {
 				$this->db->flush_cache();
 				$this->db->insert('fantasy_leagues_games',$query);
-			}
+			} // END foreach
 		} // END for
 		return "OK";
 	} // END function
@@ -566,14 +579,27 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($team_id === false || $user_id === false) { return false; }
 		
+		$this->db->select('id, status_id');
 		$this->db->where('team_id',$team_id);
 		$this->db->where('user_id',$user_id);
 		$this->db->where('league_id',$league_id);
-		$this->db->from('fantasy_leagues_requests');
-		$count = $this->db->count_all_results();
-		if ($count > 0) {
+		$this->db->where('(status_id = '.REQUEST_STATUS_PENDING.' OR status_id = '.REQUEST_STATUS_ACCEPTED.' OR status_id = '.REQUEST_STATUS_DENIED.')');
+		$query = $this->db->get('fantasy_leagues_requests');
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
 			$this->errorCode = 2;
-			$this->statusMess = 'A request has already been submitted for this team. Please wait for a response.';
+			switch($row->status_id) {
+				case REQUEST_STATUS_PENDING:
+					$mess = 'A request has already been submitted for this team. Please wait for a response to your request.';
+					break;
+				case REQUEST_STATUS_ACCEPTED:
+					$mess = 'You already manage a team in this league. Only one team is allowed per owner per league.';
+					break;
+				case REQUEST_STATUS_DENIED:
+					$mess = 'A previous request for this team was already denied by the league commissioner, sorry.';
+					break;
+			}
+			$this->statusMess = $mess;
 			return false;
 		}
 		$requestData = array('team_id'=>$team_id,'user_id'=>$user_id,'league_id'=>$league_id);
@@ -602,24 +628,44 @@ class league_model extends base_model {
 		} else {
 			$row = $query->row();
 			$cleanDb = true;
-			if ($response == 1) {
-				$data = array('owner_id'=>$row->user_id);
-				$this->db->where('id',$row->team_id);
-				$this->db->update($this->tables['TEAMS'],$data);
-				if ($this->db->affected_rows() == 0) {
-					$this->errorCode = 2;
-					$this->statusMess = 'The team owner update could not be saved to the database.';
-					return false;
-				}
-			}
+			$newStatus = 0;;
+			switch($response) {
+				case 1:
+					$data = array('owner_id'=>$row->user_id);
+					$this->db->where('id',$row->team_id);
+					$this->db->update($this->tables['TEAMS'],$data);
+					if ($this->db->affected_rows() == 0) {
+						$this->errorCode = 2;
+						$this->statusMess = 'The team owner update could not be saved to the database.';
+						return false;
+					}
+					$newStatus = REQUEST_STATUS_ACCEPTED;
+					break;
+				case 2:
+					$newStatus = REQUEST_STATUS_WITHDRAWN;
+					break;
+				case -1:
+					$newStatus = REQUEST_STATUS_DENIED;
+					break;
+				case 3:
+					$newStatus = REQUEST_STATUS_REMOVED;
+					break;
+				default:
+					$newStatus = REQUEST_STATUS_UNKNOWN;
+					break;
+			} // END switch
 			$this->db->flush_cache();
 			$this->db->where('id',$request_id);
-			$this->db->delete('fantasy_leagues_requests');	
-		}
+			$this->db->update('fantasy_leagues_requests',array('status_id'=>$newStatus));
+			if ($this->db->affected_rows() == 0) {
+				$this->errorCode = 3;
+				$this->statusMess = 'The update could not be saved at this time.';
+				return false;
+			} // END if
+		} // END if
 		return true;
 	}
-	
-	
+
 	protected function loadLeagueTeams($league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$teamNames = array();
@@ -761,18 +807,22 @@ class league_model extends base_model {
 	 *  @param	$league_id - If not specified, no league filter is applied.
 	 *	@return	schedule array, false on failure
 	 */
-	public function getOpenLeagues() {
+	public function getOpenLeagues($user_id = false) {
 		
 		$leagues = array();
-		
-		$this->db->select($this->tblName.'.id,league_name,commissioner_id,username,leagueType, max_teams, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount');
+		$select = $this->tblName.'.id,league_name,commissioner_id,username,leagueType, max_teams, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount';
+		if ($user_id !== false) {
+			$select .=  ', (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND owner_id = '.$user_id.') as teamsOwned';
+		}
+		$this->db->select($select);
 		$this->db->join("fantasy_leagues_types","fantasy_leagues_types.id = ".$this->tblName.".league_type", "left");
 		$this->db->join("users_core","users_core.id = ".$this->tblName.".commissioner_id", "left");
+		$this->db->where('accept_requests',1);
 		$this->db->where('league_status',1);
 		$query = $this->db->get($this->tblName);
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
-				if ($row->openCount > 0) {
+				if ($row->openCount > 0 && ($user_id === false || ($user_id !== false && isset($row->teamsOwned) && $row->teamsOwned == 0))) {
 					array_push($leagues,array('id'=>$row->id,'league_name'=>$row->league_name, 'max_teams'=>$row->max_teams, 
 										 'leagueType'=>$row->leagueType, 'openings'=>$row->openCount, 
 										 'commissioner_id'=>$row->commissioner_id,'commissioner_name'=>$row->username));

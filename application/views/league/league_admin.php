@@ -35,7 +35,7 @@
             <h3>General Functions</h3> 
             <ul class="iconmenu">  
             	<li><?php echo anchor('/league/leagueInvites/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
-            	View Pending Owner Invites</li>
+            	Pending Owner Invites/Requests</li>
                 <?php if ($this->params['config']['useWaivers'] == 1) { ?>
                 <li><?php echo anchor('/league/waiverClaims/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/user_accept.png" width="48" height="48" border="0" />'); ?><br />
             	Pending Waiver Claims</li>

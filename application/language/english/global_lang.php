@@ -84,9 +84,13 @@ $lang['email_league_team_request_accepted'] = 'To [USERNAME],
 $lang['email_league_team_request_denied'] = 'To [USERNAME],
 <p>We&#039;re Sorry! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has denied your request to own the [TEAM_NAME].</p>
 <p>';
+$lang['email_league_team_request_withdrawn'] = 'To [COMMISH],
+<p>The user, [USERNAME], has withdrawn the ur request to own the [TEAM_NAME]. This request is no longer active in the system</p>
+<p>';
 $lang['email_league_team_request_title'] = 'Team Request';
 $lang['email_league_team_request_accepted_title'] = 'Team Request Accepted';
 $lang['email_league_team_request_denied_title'] = 'Team Request Denied';
+$lang['email_league_team_request_withdrawn_title'] = 'Team Request Withdrawn';
 
 /*------------------------------------
 /	USER REGISTRATION/ ACCOUNT
