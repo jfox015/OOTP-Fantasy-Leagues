@@ -90,7 +90,7 @@ class draft extends BaseEditor {
 		$this->restrictAccess = true;
 		$this->minAccessLevel = ACCESS_WRITE;
 		
-		$this->debug = true; 
+		$this->debug = false; 
 	}
 	/*--------------------------------
 	/	PRIVATE FUNCTIONS
