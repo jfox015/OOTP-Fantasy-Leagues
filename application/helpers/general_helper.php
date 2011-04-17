@@ -2,8 +2,8 @@
 /**
  *	GENERAL HELPER
  *
- *	This helper includes a general set of functions used by the site to run common 
- * 	helper functions such as reslving positon names and numbers, building common 
+ *	This helper includes a general set of functions used by the site to run common
+ * 	helper functions such as reslving positon names and numbers, building common
  *	stat queries and display lists and more.
  *
  * 	@author 	All functions are written by Frank Holmes unless otherwise noted.
@@ -25,7 +25,7 @@ function getEmail($userId, $access = false) {
 /**
  *	SEND E-MAIL
  *
- *	A standardized function to send emails. If we are in a development enivornment, this function backs down 
+ *	A standardized function to send emails. If we are in a development enivornment, this function backs down
  *	to saving the email as a .html in the media folder.
  *
  *	@param	$to				The recipient email address
@@ -46,18 +46,18 @@ function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$fi
 	$ci->email->subject($subject);
 	$ci->email->message($message);
 	if ((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development'))) {
-		if ($this->email->send()) {
+		if ($ci->email->send()) {
 			return true;
 		} else {
 			return false;
-		} // END if 
+		} // END if
 	} else {
 		if (!function_exists('write_file')) {
 			$ci->load->helper('file');
-		} // END if 
+		} // END if
 		write_file(PATH_MEDIA_WRITE.'/'.$filePrefix.substr(md5($to.time()),0,8).".html",$message);
 		return true;
-	} // END if 
+	} // END if
 }
 /**
  *	PLAYERS STAT QUERY BUILDER
@@ -66,7 +66,7 @@ function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$fi
  *
  * 	@author	Jeff Fox
  *	@since	1.0
- */ 
+ */
 function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDARD, $rules = array(),$sumTotals = true) {
 	$sql = '';
 	$sqlOperator = 'SUM';
@@ -111,7 +111,7 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 		$ptsSQL .= ' as fpts ';
 		$sql .= $ptsSQL;
 	} else {
-		// TODO - GET PLAYER RATING (AS SUBQUERY?)	
+		// TODO - GET PLAYER RATING (AS SUBQUERY?)
 	}
 	return $sql;
 }
@@ -122,9 +122,9 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
  *
  * 	@author	Jeff Fox
  *	@since	1.0
- */ 
-function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDARD, $showFpts = true, 
-									$statsOnly = false, $showTrans = false, $showDraft = false, $showGenInfo = false, 
+ */
+function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDARD, $showFpts = true,
+									$statsOnly = false, $showTrans = false, $showDraft = false, $showGenInfo = false,
 									$showRating = false) {
 	$colnames = "";
 	if (!$statsOnly) {
@@ -182,11 +182,11 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
  *
  * 	@author	Jeff Fox
  *	@since	1.0
- */ 
-function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD, $showFpts = true, $statsOnly = false, 
-								 $showTrans = false, $showDraft = false, $showGenInfo = false, 
+ */
+function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD, $showFpts = true, $statsOnly = false,
+								 $showTrans = false, $showDraft = false, $showGenInfo = false,
 								 $showRating = false) {
-	
+
 	$defaultFields = array('player_name','teamname','pos','positions');
 	$genInfoFields = array('age','throws','bats');
 	$fieldList = array();
@@ -254,14 +254,14 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
  * 	@author	Frank Holmes
  * 	@author	Jeff Fox
  *	@since	1.0
- */ 
+ */
 function formatStatsForDisplay($player_stats = array(), $fields = array(), $config = array(), $league_id = -1, $player_teams = array(), $team_list = array(), $statsOnly = false, $showTrans = false, $showDraft = false,
 								$pick_team_id = false,  $user_team_id = false, $draftStatus = false, $accessLevel = false, $isCommish = false, $draftDate = EMPTY_DATE_TIME_STR) {
 	$count = 10;
 	$newStats = array();
 	foreach($player_stats as $row) {
 		$newRow = array();
-		foreach ($fields as $col) { 
+		foreach ($fields as $col) {
 			if (isset($row[$col]) && !empty($row[$col])) {
 				$newRow['id'] = $id = $row['id'];
 				switch ($col) {
@@ -274,13 +274,13 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 						if ($showDraft === true) {
 							if (($pick_team_id == $user_team_id && ($draftStatus >= 2 && $draftStatus < 4)) || (($accessLevel == ACCESS_ADMINISTRATE || $isCommish) && ($draftDate != EMPTY_DATE_TIME_STR && time() > strtotime($draftDate)))) {
 								$newRow[$col] = '<a href="#" rel="draft" id="'.$row['id'].'"><img src="'.$config['fantasy_web_root'].'images/icons/next.png" width="16" height="16" alt="Draft Player" title="Draft Player" /></a>';
-							} else { 
+							} else {
 								$newRow[$col] = '- -';
 							}
 						}
 						break;
 					case 'player_name':
-						
+
 						if ($statsOnly === false) {
 							$link = '/players/info/';
 							if (isset($league_id) && !empty($league_id) && $league_id != -1) {
@@ -289,17 +289,17 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 								$link .= $id;
 							}
 							$val = anchor($link,$row['first_name']." ".$row['last_name'],array('target'=>'_blank')).' <span style="font-size:smaller;">'.makeElidgibilityString($row['positions']).'</span>';
-							
+
 							// INJURY STATUS
 							$injStatus = "";
 							if ($row['injury_is_injured'] == 1) {
 								$injStatus = makeInjuryStatusString($row);
 							}
-							if (!empty($injStatus)){ 
+							if (!empty($injStatus)){
 								if (isset($row['injury_dl_left']) && $row['injury_dl_left'] > 0) {
 									$val .= '&nbsp;<img src="'.$config['fantasy_web_root'].'images/icons/red_cross.gif" width="7" height="7" align="absmiddle" alt="'.$injStatus.'" title="'.$injStatus.'" />&nbsp; ';
 								} else if (isset($row['injury_dtd_injury']) && $row['injury_dtd_injury'] != 0) {
-									$val .= '&nbsp;<acronym style="font-size:smaller;text-decoration:none, outline:none;font-weight:bold; color:#C00;" title="'.$injStatus.'">DTD</acronym>'; 
+									$val .= '&nbsp;<acronym style="font-size:smaller;text-decoration:none, outline:none;font-weight:bold; color:#C00;" title="'.$injStatus.'">DTD</acronym>';
 								}
 							}
 							if (isset($row['on_waivers']) && $row['on_waivers'] == 1) {
@@ -338,7 +338,7 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 									$team_obj = $team_list[$player_teams[$id]];
 									$val = anchor('/team/info/'.$player_teams[$id],$team_obj['teamname']." ".$team_obj['teamnick'])."</td>";
 								} else {
-									$val = "Free Agent"; 
+									$val = "Free Agent";
 								}
 							} else {
 								$val = '';
@@ -346,41 +346,41 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 							$newRow[$col] = $val;
 						}
 						break;
-					case 'bats': 
-					case 'throws': 
+					case 'bats':
+					case 'throws':
 						$newRow[$col] = get_hand($row[$col]);
 						break;
-					case 'pos': 
-					case 'positions': 
+					case 'pos':
+					case 'positions':
 						if (strpos($row[$col],":")) {
 							$newRow[$col] = makeElidgibilityString($row[$col]);
 						} else {
 							$newRow[$col] = get_pos($row[$col]);
 						}
 						break;
-					case 'position': 
-					case 'role': 
+					case 'position':
+					case 'role':
 						$newRow[$col] = get_pos($row[$col]);
 						break;
-					case 'level_id': 
+					case 'level_id':
 						$newRow[$col] = get_level($row[$col]);
 						break;
-					case 'avg': 
-					case 'obp': 
-					case 'slg': 
-					case 'ops': 
-					case 'wOBA': 
-					case 'oavg': 
+					case 'avg':
+					case 'obp':
+					case 'slg':
+					case 'ops':
+					case 'wOBA':
+					case 'oavg':
 					case 'babip':
 						$val=sprintf("%.3f",$row[$col]);
 						if ($val<1) {$val=strstr($val,".");}
 						$newRow[$col] = $val;
 						break;
-					case 'era': 
+					case 'era':
 					case 'whip':
 					case 'k9':
 					case 'bb9':
-					case 'hr9': 
+					case 'hr9':
 						$val=sprintf("%.2f",$row[$col]);
 						if (($val<1)&&($col=='whip')) {$val=strstr($val,".");}
 						$newRow[$col] = $val;
@@ -406,18 +406,18 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 					case 'wiff':
 						$newRow[$col] = intval($row[$col])."%";
 						break;
-					default: 
+					default:
 						$newRow[$col] = intval($row[$col]);
 						break;
 				} // END switch
-				
+
 				// DEBUGGING
 				if ($count < 5) {
 					if (isset($newRow[$col])) {
 						echo($col." = ".$newRow[$col]."<br />");
 					}
 				}
-				
+
 			} else {
 				$newRow[$col] = 0;
 			}
@@ -430,12 +430,12 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 /**
  *	MAKE INJURY STATUS STRING
  *
- *	Converts standard OOTP injury data (found in the player profile data object and injuries 
+ *	Converts standard OOTP injury data (found in the player profile data object and injuries
 										in the database) into a human readbale string.
  *
  * 	@author	Jeff Fox
  *	@since	1.0.2
- */ 
+ */
 function makeInjuryStatusString($row) {
 	$injStatus = '';
 	if (isset($row['injury_dtd_injury']) && $row['injury_dtd_injury'] == 1) {
@@ -466,7 +466,7 @@ function makeInjuryStatusString($row) {
  *
  * 	@author	Jeff Fox
  *	@since	1.0
- */ 
+ */
 function makeElidgibilityString($positions) {
 	$gmPos = "";
 	if (strpos($positions,":")) {
@@ -478,7 +478,7 @@ function makeElidgibilityString($positions) {
 			}
 		}
 	}
-	return $gmPos;	
+	return $gmPos;
 }
 function calc_rating($rating,$ratOrTal=0,$max="")
  {
@@ -496,7 +496,7 @@ function calc_rating($rating,$ratOrTal=0,$max="")
              {
 	        case 'RATINGS'  : $e=explode("\n",$split[1]);$ratings=$e[0];     break;
 	        case 'TALENTS'  : $e=explode("\n",$split[1]);$talents=$e[0];     break;
-	        case 'OTHERS'   : $e=explode("\n",$split[1]);$others=$e[0];      break;	    
+	        case 'OTHERS'   : $e=explode("\n",$split[1]);$others=$e[0];      break;
 	     }
           }
 	 fclose($f);
@@ -504,7 +504,7 @@ function calc_rating($rating,$ratOrTal=0,$max="")
 	 $_SESSION['talents']=$talents;
 	 $_SESSION['others']=$others;
        }
-    }	   
+    }
    $scale=$_SESSION['ratings'];
    if ($ratOrTal==1) {$scale=$_SESSION['talents'];}
    if ($ratOrTal==2) {$scale=$_SESSION['others'];}
@@ -529,7 +529,7 @@ function calc_rating($rating,$ratOrTal=0,$max="")
       default:
         switch ($scale)
 	 {
-	   case "1-5":   $maxRat=5;   break; 
+	   case "1-5":   $maxRat=5;   break;
            case "1-10":  $maxRat=10;  break;
            case "1-20":  $maxRat=20;  break;
 	   case "1-100"; $maxRat=100; break;
@@ -540,20 +540,20 @@ function calc_rating($rating,$ratOrTal=0,$max="")
 	$rat=max(1,$rat);
     }
 
-   return $rat;    
+   return $rat;
  }
 
-function formatBytes($bytes, $precision = 1) { 
-    $units = array('B', 'KB', 'MB', 'GB', 'TB'); 
-   
-    $bytes = max($bytes, 0); 
-    $pow = floor(($bytes ? log($bytes) : 0) / log(1024)); 
-    $pow = min($pow, count($units) - 1); 
-   
-    $bytes /= pow(1024, $pow); 
-   
-    return round($bytes, $precision) . ' ' . $units[$pow]; 
-} 
+function formatBytes($bytes, $precision = 1) {
+    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+
+    $bytes = max($bytes, 0);
+    $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+    $pow = min($pow, count($units) - 1);
+
+    $bytes /= pow(1024, $pow);
+
+    return round($bytes, $precision) . ' ' . $units[$pow];
+}
 
 function calc_movement($mvmnt,$gb)
  {
@@ -609,7 +609,7 @@ function get_level($lvl)
       case 9: $txt="COL"; break;
       case 10: $txt="HS"; break;
       default: $txt=$lvl; break;
-      
+
     }
    return $txt;
  }
@@ -654,7 +654,7 @@ function get_award($awid)
      }
     return $txt;
  }
- 
+
 function get_pos($pos)
  {
    switch ($pos)
@@ -818,7 +818,7 @@ function get_pos_num($pos)
  }
 /**
  * 	GET STATS FOR SCORING EDITOR
- *	This function returns an array of stats by OOTP stat index and Label. 
+ *	This function returns an array of stats by OOTP stat index and Label.
  *
  *	@param	$type			1 = Batters, 2 = Pitchers
  *	@param	$scoring_type	1 = Head2Head, 2 = Basic Roto, 3 = Roto 5X5, 4 = Super Roto
@@ -1031,11 +1031,11 @@ function hof_pos($pos)
       case 7: $val=3;break;
       case 8: $val=12;break;
       case 9: $val=6;break;
-      default: $val=0;break;      
+      default: $val=0;break;
     }
    return $val;
  }
- 
+
 function ss_pos($pos)
  {
    switch ($pos)
@@ -1129,13 +1129,13 @@ function get_ll_cat($catID,$forSQL = false)
       case 57: $txt="GB%"; break;
 
 	  case 58: $txt="CS"; break;
-	  
+
 	  case 59: $txt="HA"; break;
 	  case 60: $txt="ER"; break;
 	  case 61: $txt="BS"; break;
 	  case 62: $txt="IPF"; break;
       default: $txt=$catID; break;
-    }	    
+    }
    return $txt;
  }
 
@@ -1189,7 +1189,7 @@ function cm_to_ft_in($len)
    return $sum/$count;
  }
 
-function deviation($array) 
+function deviation($array)
  {
    $avg = average($array);
    foreach ($array as $value)
