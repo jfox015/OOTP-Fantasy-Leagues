@@ -158,7 +158,7 @@ class user_meta_model extends base_model {
 			$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = '.$this->tables['INVITES'].'.league_id', 'left');
 			$this->db->join($this->tables['users_core'],$this->tables['users_core'].'.id = '.$this->tables['INVITES'].'.from_id', 'left');
 			$this->db->where('to_email',$userEmail);
-			$this->db->where('status_Id',REQUEST_STATUS_PENDING);
+			$this->db->where('status_id',REQUEST_STATUS_PENDING);
 			$query = $this->db->get($this->tables['INVITES']);
 			
 			if ($query->num_rows() == 0) {
@@ -190,7 +190,7 @@ class user_meta_model extends base_model {
 			$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = '.$this->tables['REQUESTS'].'.league_id', 'left');
 			$this->db->join($this->tables['TEAMS'],$this->tables['TEAMS'].'.id = '.$this->tables['REQUESTS'].'.team_id', 'left');
 			$this->db->where('user_id',$userId);
-			$this->db->where('status_Id',REQUEST_STATUS_PENDING);
+			$this->db->where('status_id',REQUEST_STATUS_PENDING);
 			$query = $this->db->get($this->tables['REQUESTS']);
 			
 			if ($query->num_rows() == 0) {

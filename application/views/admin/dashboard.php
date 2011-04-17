@@ -1,4 +1,6 @@
-<script type="text/javascript" charset="UTF-8">
+<link media="screen" rel="stylesheet" href="<?php echo($config['fantasy_web_root']); ?>css/colorbox.css" />
+	<script src="<?php echo($config['fantasy_web_root']); ?>js/jquery.colorbox.js"></script>
+	<script type="text/javascript" charset="UTF-8">
 	var ajaxWait = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
 	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
 	var fader = null;
@@ -79,10 +81,10 @@
 	});
 	function runAjax (url) {
 		//clearTimeout(fader);
-		$('div#activeStatus').removeClass('error');
-		$('div#activeStatus').removeClass('success');
-		$('div#activeStatus').html(ajaxWait);
-		$('div#activeStatusBox').fadeIn("slow");
+		//$('div#activeStatus').removeClass('error');
+		//$('div#activeStatus').removeClass('success');
+		//$('div#activeStatus').html(ajaxWait);
+		$.colorbox({html:ajaxWait});
 		$.getJSON(url, function(data){
 			error = false;
 			if (data.status.indexOf(":") != -1) {
@@ -95,8 +97,10 @@
 				}
 				$('div#activeStatus').html(response);
 			} else {
+				$.colorbox.remove();
 				$('div#activeStatus').addClass('success');
 				$('div#activeStatus').html('Operation Completed Successfully');
+				$('div#activeStatusBox').fadeIn("slow");
 			}
 			if (!error && refreshAfterUpdate) {
 				setTimeout('refreshPage()',3000);
@@ -230,11 +234,22 @@
 		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.
         <br clear="all" /><br />
         <ul class="iconmenu">
-            <?php if ($config['last_process_time'] < $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date) { ?>
+            <?php if ($config['last_process_time'] < $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && (isset($leagues) && sizeof($leagues) > 0)) { ?>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" border="0" />',array('rel'=>'sim')); ?><br />
             Process Current Sim Results</li><?php } ?>
+			<?php 
+			// LEAGUE SETTINGS
+			if (isset($leagues) && sizeof($leagues) > 0) { ?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" border="0" />',array('rel'=>'upavail')); ?><br />
             Update Players</li>
+			<?php 
+			} else { ?>
+            <li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png" 
+            width="24" height="24" border="0" align="left" alt="" title="" class="floated_icon" /><div 
+            class="floated_caption"><?php print($this->lang->line('dash_seasonfuncs_pre_add_leagues')); ?></div>
+            </li>
+			<?php } // END if
+			?>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
            	Update Player Elidgibility</li>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'rating')); ?><br />

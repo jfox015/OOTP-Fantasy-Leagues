@@ -25,7 +25,10 @@
     </script>
     <div id="single-column">
    	 	
-		<?php include_once('admin_breadcrumb.php'); ?>
+		<?php if (isset($thisItem['id']) && ($thisItem['id'] != "add" && $thisItem['id'] != -1)) {
+		include_once('admin_breadcrumb.php'); 
+		}
+		?>
         <div class="top-bar"> <h1><?php echo $subTitle; ?></h1></div>
         <br class="clear" />
         <?php if (isset($dump) && !empty($dump)) {

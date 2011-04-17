@@ -39,6 +39,7 @@ DROP TABLE IF EXISTS `fantasy_players_compiled_batting`;
 DROP TABLE IF EXISTS `fantasy_players_compiled_pitching`;
 DROP TABLE IF EXISTS `users_activation_types`;
 ALTER TABLE `fantasy_invites` ADD `status_id` TINYINT NOT NULL DEFAULT '1';
+ALTER TABLE `fantasy_leagues` ADD `accept_requests` TINYINT NOT NULL DEFAULT '1';
 ALTER TABLE `fantasy_transactions` ADD `trade_team_id` INT NOT NULL AFTER `dropped`;
 ALTER TABLE `fantasy_teams_record` ADD `scoring_period_id` TINYINT NOT NULL AFTER `year`;
 CREATE TABLE IF NOT EXISTS `fantasy_leagues_requests` ( `id` int(11) NOT NULL auto_increment, `league_id` int(11) NOT NULL, `team_id` int(11) NOT NULL, `user_id` int(11) NOT NULL, `date_requested` timestamp NOT NULL default CURRENT_TIMESTAMP, `status_Id` tinyint(4) NOT NULL default '1', PRIMARY KEY  (`id`), KEY `league_id` (`league_id`,`team_id`,`user_id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;

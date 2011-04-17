@@ -394,8 +394,10 @@ function updateOwnership($playerId = false) {
 			$start++;
 		}
 	}
-	$own = ($own / $league_count) * 100;
-	$start = ($start / $league_count) * 100;
+	if ($league_count > 0) {
+		$own = ($own / $league_count) * 100;
+		$start = ($start / $league_count) * 100;
+	}
 	return array($own, $start);
 }
 ?>

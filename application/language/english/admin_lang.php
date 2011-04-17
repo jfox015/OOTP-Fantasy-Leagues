@@ -2,6 +2,7 @@
 
 // DASHBOARD
 $lang['dash_settings_pre_add_leagues'] = 'General league functions are available once one or more fantasy leagues have been created.';
+$lang['dash_seasonfuncs_pre_add_leagues'] = 'More functions will be available once one or more fantasy leagues have been created.';
 // DASH ERRORS
 $lang['dash_error_no_players'] = '<strong>Warning:</strong> No players have been loaded into the database. Many site functions will not work correctly until this is done.';
 $lang['dash_error_no_players_short'] = '<strong>Warning:</strong> Players not loaded';
