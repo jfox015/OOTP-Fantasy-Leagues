@@ -2,18 +2,18 @@
     <script type="text/javascript">
 	var order = "<?php echo($sortOrder); ?>";
 	$(document).ready( function() {
-		$('#itemsPerPage').change(function() {			
+		$('#itemsPerPage').change(function() {
 			$('#input_itemsPerPage').val($('#itemsPerPage').val());
 			if ((($('#pageNumber').val()-1) * $('#input_itemsPerPage').val()) > $('#resultCount').val()) {
 				$('#pageNumber').val('1');
 			}
 			$('#filterForm').submit();
 		});
-		$('#sortBy').change(function() {			
+		$('#sortBy').change(function() {
 			$('#input_sortBy').val($('#sortBy').val());
 			sendForm();
 		});
-		$('#sortOrderIcon').click(function() {			
+		$('#sortOrderIcon').click(function() {
 			if (order.toLowerCase() == 'asc')
 				order = 'desc';
 			else
@@ -21,14 +21,14 @@
 			$('#input_sortOrder').val(order);
 			sendForm();
 		});
-		$('a[rel=pageSelect]').click(function() {			
+		$('a[rel=pageSelect]').click(function() {
 			$('#pageNumber').val(this.id);
 			sendForm();
 			return false;
 		});
 		$('#formBtnSearch').click(function(){
 			sendForm();
-		});	
+		});
 		$('#formBtnClear').click(function(){
 			$('#filterAction').val('clear');
 			$('#filterForm').submit();
@@ -44,7 +44,7 @@
    	<?php if ($accessAllowed) { ?>
    	<form name="filterForm" id="filterForm" method="post" action="<?php echo($config['fantasy_web_root']); ?>search/doSearch/<?php echo($searchType); ?>">
         <div id="toolbox">
-       	<?php 
+       	<?php
 			$searchOK = false;
 			if (isset($filters) && sizeof($filters) > 0) { ?>
 			<div id="title">Filter Results</div>
@@ -53,7 +53,7 @@
                 <div id="row" class="clearfix">
                 <label><?php echo $filter->label ?>:</label>
                 <select name="<?php echo $filter->id ?>" id="<?php echo $filter->id ?>">
-                    <?php 
+                    <?php
                     if (sizeof($filter->getList()) > 0) {
                         $selected = $filter->selectedIndex;
                         $theList =$filter->getList();
@@ -72,20 +72,20 @@
 				$searchOK = true;
 			} // END if $filters
 			/*-----------------------------------
-			/	TEXT SEARCH BOX 
+			/	TEXT SEARCH BOX
 			/----------------------------------*/
 			if ($textSearch) {
-			?>        
+			?>
             <div id="row" class="clearfix">
             <label for="searchTerm">Text Search</label>
             <input type="text" name="searchTerm" id="searchTerm" value="<?php echo($searchTerm); ?>" />
             <br class="clear" />
             </div>
-            <?php 
+            <?php
 				$searchOK = true;
 			} // END if textSearch
 			/*-----------------------------------
-			/	Alpha SEARCH Select 
+			/	Alpha SEARCH Select
 			/----------------------------------*/
 
 			if ($alphaSearch) { ?>
@@ -93,7 +93,7 @@
             <label for="searchAlpha">Starts With</label>
             <select name="searchAlpha" id="searchAlpha">
             <option value="">Select Letter</option>
-			<?php 
+			<?php
 			for ($i = 65; $i < 91; $i++) {
 				echo('<option value="'.chr($i).'"');
 				if ($searchAlpha == chr($i)) { echo(' selected="selected"'); }
@@ -105,8 +105,8 @@
             <?php
 				$searchOK = true;
 			} // END if alphaSearch
-			
-			if ($searchOK) { 
+
+			if ($searchOK) {
 			?>
             <div id="row" class="clearfix">
                     <!-- BUTTON BAR -->
@@ -133,7 +133,7 @@
         <?php if (isset($debug)) { echo('<input type="hidden" name="debug" id="debug" value="1" />'); } ?>
         </div>
         </form>
-        <?php } // END if accessAllowed 
+        <?php } // END if accessAllowed
         ?>
         <br /><br />
     </div>
@@ -146,19 +146,19 @@
             <?php } ?>
         <br class="clear" />
         <div class="headbar">
-		
+
 			<?php if (isset($resultsHeader) && !empty($resultsHeader)) { ?>
             <div class="headitem headline"><?php echo($resultsHeader); ?></div>
             <?php } ?>
             <div class="headitem headline" style="float:left;">
-            <strong><span 
+            <strong><span
         class="search_result_count"><?php echo($resultCount); ?></span> <?php echo($searchType); ?> found</strong>.
             </div>
             <div class="headitem sortBox">
             <label for="sortBy">Sort:</label>
             <select id="sortBy" name="sortBy">
            	<?php foreach ($sortFields as $value => $label) : ?>
-                <option value="<?php echo $value; ?>"<?php 
+                <option value="<?php echo $value; ?>"<?php
 				if ($sortBy == $value) { echo(' selected="selected"'); } ?>><?php echo $label; ?></option>
                 <?php endforeach; ?>
             </select>
@@ -172,15 +172,15 @@
         </div>
         <div class="searchFooterBar">
        	<div class="footerItem">
-            <span class="results_meta"><?php if (isset($startIndex)) { ?>Showing results <b><?php echo($startIndex); ?></b> to <?php 
+            <span class="results_meta"><?php if (isset($startIndex)) { ?>Showing results <b><?php echo($startIndex); ?></b> to <?php
 			if ($resultCount > $itemsPerPage) {
 				$endIndex = ($startIndex + $itemsPerPage) -1;
 				if ($endIndex > $resultCount) { $endIndex = $resultCount; }
 			} else {
 				$endIndex = $resultCount;
 			} // END if
-			echo('<b>'.$endIndex.'</b>'); 
-			} ?></span></div> 
+			echo('<b>'.$endIndex.'</b>');
+			} ?></span></div>
         </div>
        	<!-- SEARCH FOOTER -->
         <div class="searchFooterBar">
@@ -194,11 +194,11 @@
                     <a class="prev" href="#" rel="pageSelect" id="<?php echo($pageNumber - 1); ?>" title="Previous results page"><?php } else { ?>
                     <span class="livesearch_prev"><?php } ?>Previous<?php if ($pageNumber > 1) { ?></a><?php } else { ?></span><?php } ?>
                     <ul class="pagelist">
-                    <?php 
+                    <?php
 					$maxPageLinks = 12;
 					$limitPageLinks = $totalPages > $maxPageLinks;
 					$elipsesDrawn = false;
-					for($i=1; $i<=$totalPages; $i++) { 
+					for($i=1; $i<=$totalPages; $i++) {
                    	$draw = true;
 						if ($limitPageLinks && (($i > ($maxPageLinks / 2)) || ($i < ($totalPages - ($maxPageLinks /2))))) {
 							$draw	= false;
@@ -225,7 +225,7 @@
                     <div class="clearfix">&nbsp;</div>
                 <?php endif; ?>
                 </div>
-                
+
             </div>
             <div class="footerItem resultCounter">
                 <!-- Items per page Drop Down -->
@@ -246,12 +246,12 @@
         <?php } else { ?>
         <span class="error">Access error - you are not authorized to view this page.</span>
         <p /><br />
-        The search you are trying to perform requires higher access privlidges than you have 
+        The search you are trying to perform requires higher access privlidges than you have
         been assigned.
         <p />
-        If you feel you have reached this page in error, please <a href="mailto:tech@mediatavern.com?Subject=AW Admin Tools?body=Search page Error">submit a bug report</a>.
-        
-        <?php } // END if accessAllowed 
+        If you feel you have reached this page in error, please <a href="<?php print(BUG_URL); ?>">submit a bug report</a>.
+
+        <?php } // END if accessAllowed
         ?>
-        
+
     </div>
