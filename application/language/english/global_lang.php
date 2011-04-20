@@ -97,7 +97,7 @@ $lang['email_league_team_request_withdrawn_title'] = 'Team Request Withdrawn';
 /-----------------------------------*/
 // REGISTER PAGE
 $lang['user_register_title'] = 'Register';
-$lang['user_register_instruct'] = 'Are you a part of this OOTP Online Fantasy community yet? If not here\'s now\'s the time to join!
+$lang['user_register_instruct'] = 'Are you a part of this OOTP Online Fantasy community yet? If not, now\'s the time to join!
 <p /><br />
 Already a member? <a href="./user/login">Login Now</a>!';
 $lang['user_register_activation_email'] = 'Shortly after registering, you will recieve an e-mail containing an <b>activation code</b>. if you do not recieve this e-mail, you 

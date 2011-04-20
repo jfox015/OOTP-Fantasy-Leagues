@@ -203,7 +203,7 @@ define("ACCESS_ADMINISTRATE",6);
 define('SITE_NAME','OOTP Fantasy Leagues');
 define('SITE_VERSION','1.0.5 Beta');
 define('MOD_SITE_URL','http://www.ootpfantasyleagues.com/');
-define("BUG_URL",'http://nabl.aeoliandigital.com/ootp_fantasy_leagues/about/bug_report');
+define("BUG_URL",'http://www.ootpfantasyleagues.com/fantasyabout/bug_report');
 define("UPDATE_URL",'http://www.ootpfantasyleagues.com/version/curr_version.txt');
 /*
 |--------------------------------------------------------------------------

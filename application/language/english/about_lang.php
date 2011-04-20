@@ -44,8 +44,8 @@ with <a href="http://www.ootpdevelopments.com/ootp11/" target="_blank">Out of th
 If you find a bug or wish to suggest a feature to make the Fantasy Leagues mod better,
 please either visit the official mod web site at
 <ul>
-	<li><b><a href="http://nabl.aeoliandigital.com/ootp_fantasy_leagues/about/bug_report"
-target="_blank">http://nabl.aeoliandigital.com/ootp_fantasy_leagues/about/report_bug/</a></b></li>
+	<li><b><a href="'.BUG_URL.'"
+target="_blank">'.BUG_URL.'</a></b></li>
 </ul>
 
 <h2>Discuss the mod and keep up on changes and updates</h2>
