@@ -108,7 +108,7 @@ class user_auth_model extends base_model {
 			$this->statusMess = "A required validation code was missing.";
 	        return false;
 	    }
-	    $query = $this->db->select($this->uniqueField)
+	    $query = $this->db->select('id, '.$this->uniqueField)
                	      ->where('emailConfirmKey', $code)
                	      ->limit(1)
                	      ->get($this->tblName);
@@ -124,7 +124,10 @@ class user_auth_model extends base_model {
 		$active = ($leaveInactive === false) ? 1 : 0;
 		$data = array('emailConfirmKey' => '','active' => $active, 'dateModified' => date('Y-m-d h:m:s'));
 		$this->db->update($this->tblName, $data, array($this->uniqueField => $identity));
-		return ($this->db->affected_rows() == 1) ? true : false;
+		//print("affected rows = ".$this->db->affected_rows()."<br />");
+		if ($this->db->affected_rows() > 0) {
+			return $result->id;
+		}
 	}
 	/**
 	 * activate

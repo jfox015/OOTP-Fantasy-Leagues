@@ -52,8 +52,8 @@ class Auth
 	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function activate($code) {
-		if ($this->ci->user_auth_model->activate($code)) {
-			return $this->confirmationEmail($this->ci->user_auth_model->email,$this->ci->user_auth_model->username);
+		if (($id = $this->ci->user_auth_model->activate($code)) !== false) {
+			return $this->confirmationEmail($this->ci->user_auth_model->getEmail($id),$this->ci->user_auth_model->getUsername($id));
 		} else {
 			return false;
 		}
