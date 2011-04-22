@@ -124,7 +124,6 @@ class user_auth_model extends base_model {
 		$active = ($leaveInactive === false) ? 1 : 0;
 		$data = array('emailConfirmKey' => '','active' => $active, 'dateModified' => date('Y-m-d h:m:s'));
 		$this->db->update($this->tblName, $data, array($this->uniqueField => $identity));
-		//print("affected rows = ".$this->db->affected_rows()."<br />");
 		if ($this->db->affected_rows() > 0) {
 			return $result->id;
 		}
@@ -139,7 +138,7 @@ class user_auth_model extends base_model {
 		
 		if ($userId === false) {
 			$this->errorCode = 1;
-			$this->statusMess = "No user id was recieved.";
+			$this->statusMess = "A user ID is required but none was recieved.";
 	        return false;
 	    }
 		if ($approvedBy === false) {
@@ -147,7 +146,7 @@ class user_auth_model extends base_model {
 			$this->statusMess = "An approver ID is required but none was recieved.";
 	        return false;
 	    }
-		$query = $this->db->select($this->uniqueField)
+		$query = $this->db->select(id, $this->uniqueField)
                	      ->where('id', $userId)
                	      ->limit(1)
                	      ->get($this->tblName);
@@ -161,7 +160,9 @@ class user_auth_model extends base_model {
 		$identity = $result->{$this->uniqueField};
 		$data = array('active' => 1, 'dateModified' => date('Y-m-d h:m:s'), 'lastModifiedBy' => $approvedBy);
 		$this->db->update($this->tblName, $data, array($this->uniqueField => $identity));
-		return ($this->db->affected_rows() == 1) ? true : false;
+		if ($this->db->affected_rows() > 0) {
+			return $result->id;
+		}
 	}
 	/**
 	 * applyData
