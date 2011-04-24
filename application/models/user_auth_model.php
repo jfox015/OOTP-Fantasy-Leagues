@@ -146,7 +146,7 @@ class user_auth_model extends base_model {
 			$this->statusMess = "An approver ID is required but none was recieved.";
 	        return false;
 	    }
-		$query = $this->db->select(id, $this->uniqueField)
+		$query = $this->db->select('id, '.$this->uniqueField)
                	      ->where('id', $userId)
                	      ->limit(1)
                	      ->get($this->tblName);
@@ -159,7 +159,7 @@ class user_auth_model extends base_model {
 		}
 		$identity = $result->{$this->uniqueField};
 		$data = array('active' => 1, 'dateModified' => date('Y-m-d h:m:s'), 'lastModifiedBy' => $approvedBy);
-		$this->db->update($this->tblName, $data, array($this->uniqueField => $identity));
+		$this->db->update($this->tblName, $data, array('id' => $userId));
 		if ($this->db->affected_rows() > 0) {
 			return $result->id;
 		}

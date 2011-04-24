@@ -64,8 +64,8 @@ class Auth
 	 * @return TRUE on sucess, FALSE on error
 	 **/
 	public function adminActivate($user_id, $approverId) {
-		if (($id = $this->ci->user_auth_model->adminActivation($user_id, $approverId)) !== false) {
-			return $this->confirmationEmail($this->ci->user_auth_model->getEmail($id),$this->ci->user_auth_model->getUsername($id));
+		if ($this->ci->user_auth_model->adminActivation($user_id, $approverId) !== false) {
+			return $this->confirmationEmail($this->ci->user_auth_model->getEmail($user_id),$this->ci->user_auth_model->getUsername($user_id));
 		} else {
 			return false;
 		}
