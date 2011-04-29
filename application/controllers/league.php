@@ -38,8 +38,9 @@ class league extends BaseEditor {
 		// PRIVATE LEAGUE CHECK
 		// IF WE HAVE A LEAGUE ID AND THE LEAGUE TURNS OUT TO BE PRIVATE, CHECK IF THE CURRENT USER 
 		// HAS ACCESS AND IF NOT, ROUTE TO A PRIVATE LEAGUE VIEW
+		$this->getURIData();
 		if ($this->uri->segment(2) != 'privateLeague' && isset($this->uriVars['id'])) {
-			$this->getURIData();
+			
 			$this->load->model($this->modelName,'dataModel');
 			$this->dataModel->load($this->uriVars['id']);
 			
@@ -47,7 +48,7 @@ class league extends BaseEditor {
 				$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 				$isCommish = $this->dataModel->userIsCommish($this->params['currUser']) ? true: false;
 				if (!$isAdmin && !$isCommish) {
-					if (!$this->dataModel->userHasAccess($this->params['currUser'])) {
+					if ($this->params['currUser'] == -1 || !$this->dataModel->userHasAccess($this->params['currUser'])) {
 						redirect('/league/privateLeague/'.$this->uriVars['id']);
 					}
 				}
@@ -85,7 +86,8 @@ class league extends BaseEditor {
 	public function privateLeague() {
 		$this->makeNav(true);
 		$this->data['subTitle'] = "Private League";
-		$this->data['theContent'] = $this->lang->line('private_league_access');
+		$mess = str_replace('[LOGIN_URL]',anchor('/user/login','log in'),$this->lang->line('private_league_access'));
+		$this->data['theContent'] = str_replace('[CONTACT_URL]',anchor('/about/contact','site administrator'),$mess);
 		$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 	    $this->displayView();
 	}

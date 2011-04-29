@@ -37,7 +37,6 @@
                     <td class='hsc2_c'>&nbsp;</td>
                     <td class='hsc2_c'>Team Name</td>
                     <td class='hsc2_c'>Team Nick</td>
-                    <td class='hsc2_c'>Division</td>
                     <td class='hsc2_c'>Request</td>
                 </tr>
                 <?php
@@ -59,7 +58,6 @@
                     <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" border="0" /></td>
                     <td class='hsc2_l'><?php echo($teamData['teamname']); ?></td>
                     <td class='hsc2_l'><?php echo($teamData['teamnick']); ?></td>
-                    <td class='hsc2_l'><?php echo ($divisions['id']); ?></td>
                     <td class='hsc2_l' align='center'>
                     <input type="radio" name="team_id" value="<?php echo($teamId); ?>" />
                     </td>

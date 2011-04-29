@@ -103,7 +103,9 @@ class Auth
 			if ($this->ci->user_auth_model->checkEmail($email)) {
 				$this->ci->user_auth_model->load($email,'email',true);
 	
-				$data = array('forgotten_password_code' => $this->ci->user_auth_model->passConfirmKey,'siteName'=>$this->ci->params['config']['site_name']);
+				$data = array('forgotten_password_code' => $this->ci->user_auth_model->passConfirmKey,
+							  'siteName'=>$this->ci->params['config']['site_name'],
+							  'verify_url'=>anchor('/user/forgotten_password_verify/', 'Verify this code to get your new password now'));
 					
 				$message = $this->ci->load->view($this->ci->config->item('email_templates').'forgotten_password', $data, true);
 				

@@ -55,6 +55,7 @@ class user_meta_model extends base_model {
 		$this->readOnlyList = array('userId','dateOfBirth', 'avatar', 'custom');  
 		$this->uniqueField = 'userId';
 		$this->joinCode = "M";
+		$this->textList = array('nickName');
 		
 		$this->columns_select = array('id','userId','firstName','lastName','nickName','dateOfBirth','gender','country');
 		$this->columns_text_search = array('firstName','lastName','nickName','bio','title');

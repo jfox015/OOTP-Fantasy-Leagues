@@ -5,7 +5,7 @@ $lang['email_footer'] = "<p>The Commish</p>
 $lang['access_heading_not_authorized'] = "403 Error - Not authorized.";
 $lang['access_not_authorized'] = "We're sorry, but you are not authorized to view this content.";
 
-$lang['private_league_access'] = "We're sorry, but the league you have selected is private and accessible only to members.<p />If you are a member of this league, please log in or contact the league commissioer or site adminitrator if you believe you are seeing this message in error.";
+$lang['private_league_access'] = "We're sorry, but the league you have selected is private and accessible only to members.<p />If you are a member of this league, please [LOGIN_URL] or cobtact the league commissioer or [CONTACT_URL] if you believe you are seeing this message in error.";
 // LEAGUE INVITE
 $lang['league_invite_default'] = '<br>Hi, This is the commissioner of the OOTP Fantasy League, [LEAGUE_NAME]. 
 <br>

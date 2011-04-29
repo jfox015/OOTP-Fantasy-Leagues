@@ -233,8 +233,11 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 		if (empty($sql_file_path)) {
 			$errors .= '<li>you must provide a server file path to the sql data files.</li>';
 			$error = true;
-		} // END if
-		
+		} else {
+			if (strpos($sql_file_path."//")) {
+				$sql_file_path = stripslashes($sql_file_path);
+			} // END if
+		}
 		if (empty($fantasy_web_root)) {
 			$errors .= '<li>you must provide a web url for the fanbtasy site.</li>';
 			$error = true;
@@ -261,7 +264,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 				$errors .= '<li>we strongly recommend against using the username <b>admin</b> for security purposes.</li>';
 				$error = true;
 			}
-			include_once('../lib/codeignighter/1_7_2/helpers/email_helper.php');
+			include_once('../lib/codeignighter/1_7_3/helpers/email_helper.php');
 			if (function_exists('valid_email')) {
 				if (!valid_email($admin_email)) {
 					$errors .= '<li>the e-mail address <b>'.$admin_email.'</b> is not valid. please check you entries and try again.</li>';
@@ -288,7 +291,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 				fwrite($fh, " ") or install_die($perm_head."Could not write to database permissions file in the <code>".stripslashes($sql_file_path)."</code> directory.".$perm_message);
 				unset($fh);
 			} else {
-				install_die($perm_head."Could not locate the specified sql upload directory <code>".stripslashes($sql_file_path)."</code> directory.".$perm_message);
+				install_die($perm_head."Could not locate the specified sql upload directory <code>".$sql_file_path."</code> directory.".$perm_message);
 			}
 			// -------------------------------
 			//	CONTINUE INSTALL PROCEDURE BY LOADING THE DATABASE
@@ -416,21 +419,29 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 						unset($fcf);
 						chmod('../application/config/config.php', 0666);
 						unset($fh);
+						
 						$config_write = true;
 					} else {
 						$config_write = false;
 					}
-					$sql_file_path = stripslashes($sql_file_path);
+					if (is_writable('../js/')) {
+						$fcs = file_get_contents("./nicEdit_install.js");
+						$fcf = str_replace("[SITE_PATH]",$site_url,$fcs);
+						$fh = fopen('../js/nicEdit.js',"w");
+						fwrite($fh, $fcf);
+						fclose($fh);
+						unset($fcf);
+						chmod('../application/config/config.php', 0666);
+						unset($fh);
+						
+						$js_write = true;
+					} else {
+						$js_write = false;
+					}
+					
 					$sql_write = false;
 					if (file_exists($sql_file_path) && is_writable($sql_file_path)) {
 						copy('./'.DB_CONNECTION_FILE, $sql_file_path.'/'.DB_CONNECTION_FILE) or ($sql_write = false);
-						/*$fdb = file_get_contents('./'.DB_CONNECTION_FILE);
-						$fh = fopen($sql_file_path.DB_CONNECTION_FILE,"w");
-						fwrite($fh, $fdb);
-						fclose($fh);
-						unset($fdb);
-						chmod($sql_file_path.DB_CONNECTION_FILE, 0666);
-						unset($fh);*/
 						$sql_write = true;
 					} // END if
 
@@ -488,18 +499,30 @@ define("DIR_WRITE_PATH","<?php echo($html_root); ?>");</pre>
                             <p />
                             <pre class="brush: php">$config['base_url']	= "<?php echo($site_url); ?>";</pre>
                             </li>
+                        <?php 
+						} // END if
+						if (!$js_write) { ?>
+                        	<li><code><?php echo($html_root);?>/js/nicEdit.js</code> - Copy and 
+                            paste the following into line 29 of <code>/js/nicEdit.js</code> from your fantasy leagues root folder.
+                            <p />
+                            <pre class="brush: JScript">iconsPath : '<?php echo($site_url); ?>/images/nicEditorIcons.gif',</pre>
+                            </li>
                         <?php } // END if
+						
 						if (!$sql_write) { ?>
                         	<li><code><?php echo($sql_file_path.DB_CONNECTION_FILE);?></code> - Copy and 
                             paste the following into <code><?php echo($sql_file_path."/".DB_CONNECTION_FILE);?></code> from your fantasy leagues root folder.
                             <p />
                             <pre class="brush: php"><?php echo(file_get_contents("./".DB_CONNECTION_FILE)); ?></pre>
                             </li>
-                            <script type="text/javascript" src="shighlight/shCore.js"></script>
-							<script type="text/javascript" src="shighlight/shBrushPhp.js"></script>
-                            <script type="text/javascript">SyntaxHighlighter.all();</script>
                         <?php } // END if
 						?>
+                        <script type="text/javascript" src="shighlight/shCore.js"></script>
+						<script type="text/javascript" src="shighlight/shBrushPhp.js"></script>
+                        <script type="text/javascript" src="shighlight/shBrushJScript.js.js"></script>
+                        <?php if (!$sql_write || !$js_write ||!$config_write || !$htaccess_write) { ?>
+						<script type="text/javascript">SyntaxHighlighter.all();</script>
+                        <?php } ?>
                         </ul>
                         <?php } // END if
 						?>

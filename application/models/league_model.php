@@ -260,10 +260,12 @@ class league_model extends base_model {
 	public function userHasAccess($user_id = false, $league_id = false) {
 		
 		$access = false;
-		if ($user_id === false) { return false; }
+		if ($user_id === false || $user_id == -1) { return false; }
 		if ($league_id === false) { $league_id = $this->id; }
 		
+		//print "user id = ".$user_id."<ber />";
 		$ownerIds = $this->getOwnerIds($league_id);
+		//print "has access? = ".(in_array($user_id,$ownerIds) ? "yes":"no")."<ber />";
 		$access = (sizeof($ownerIds) > 0 && in_array($user_id,$ownerIds));
 		return $access;
 	
