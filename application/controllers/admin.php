@@ -790,8 +790,7 @@ class admin extends MY_Controller {
 			}
 		}
 	}
-	
-	
+
 	public function configUploadFile() {
 		
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -815,19 +814,25 @@ class admin extends MY_Controller {
 				$uploadSuccess = false;
 				if (isset($_FILES['dataFiles']['name']) && !empty($_FILES['dataFiles']['name'])) {
 					
+					//ini_set('post_max_size','8M');
+					$maxinbytes = return_bytes(ini_get('post_max_size'));
+					print($maxinbytes."<br />");
 					$this->load->helper(array('form', 'url'));
 					$config = array();
 					$config['upload_path'] = PATH_ATTACHMENTS_WRITE;
+					//print ("upload path = ".PATH_ATTACHMENTS_WRITE."<br />");
 					$config['allowed_types'] = 'zip';
-					$config['overwrite']	= true;
+					$config['max_size'] = $maxinbytes;
+					$config['overwrite'] = true;
 					$this->load->library('upload');
 					$this->upload->initialize($config);
 					$uploadSuccess = $this->upload->do_upload('dataFiles');
-					
+					//print ("upload path = ".PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name']."<br />");
 					if (!$uploadSuccess) {
 						$error = true;
 						$this->data['outMess']= '<span class="error">'.$this->upload->display_errors().'</span>';
 					} else {
+						$uploadData = $this->upload->data();
 						if ($this->input->post('deflate')) {
 							$def = $this->input->post('deflate');
 							if ($def == 1) {
@@ -842,7 +847,7 @@ class admin extends MY_Controller {
 										$path = $this->params['config']['ootp_html_report_root'];
 										break;	
 								}*/
-								$this->unzip->extract(PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name'],$path);
+								$this->unzip->extract($uploadData['full_path'],$path);
 							} // END if
 						} // END if
 					} // END if
