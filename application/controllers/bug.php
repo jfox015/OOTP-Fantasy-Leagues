@@ -1,4 +1,4 @@
- <?php
+<?php
 require_once('base_editor.php');
 /**
  *	Bug.
