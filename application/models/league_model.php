@@ -379,7 +379,7 @@ class league_model extends base_model {
 
 		$matchups = sizeof($teams) * $this->games_per_team;
 			
-		echo("matchups per period = ".$matchups."<br />");
+		//echo("matchups per period = ".$matchups."<br />");
 		
 		for ($s = 1; $s < ($this->regular_scoring_periods +1); $s++) {
 			
