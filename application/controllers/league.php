@@ -1500,9 +1500,9 @@ class league extends BaseEditor {
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('accept_requests',$responses,'Accept Public Team Requests',($this->input->post('accept_requests') ? $this->input->post('accept_requests') : $this->dataModel->accept_requests),'required');
 		$form->fieldset();
+		$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
+		$form->br();
 		if ($this->mode != 'edit') {
-			$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
-			$form->br();
 			$league_type = ($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type;
 			$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',$league_type,'required');
 			$this->data['league_type'] = $league_type;
