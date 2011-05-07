@@ -8,6 +8,33 @@
  *
  * 	@author 	All functions are written by Frank Holmes unless otherwise noted.
  */
+function getFantasyStatus() {
+	$status = -1; // UNKNOWN
+	// LOAD RELEVANT PROPERTIES
+	$now = time();
+	$ci =& get_instance();
+	$fantasyStart = strtotime($ci->params['config']['season_start']." 00:00:00");
+	if ($now < $fantasyStart) {
+		$status = 1; // PRE-SEASON
+	} else if ($now >= $fantasyStart) {
+		$status = 2; // ACTIVE SEASON
+	} else {
+		
+	}
+	return $status;
+}
+/**
+ *	GET USERNAME
+ *
+ *	An alias for the UserAuthModel->getUsername function. Added so other models can call\
+ *	this function.
+ *	
+ *	@param	userId			The site members ID
+ *	@param	access			Confrimation the requester has access to make this request.
+ *	@return					Username
+ *	@since	1.0.3
+ *	@author	Jeff Fox
+ */
 function getUsername($userId, $access = false) {
 	$ci =& get_instance();
 	if (!isset($ci->user_auth_model)) {
@@ -15,6 +42,18 @@ function getUsername($userId, $access = false) {
 	}
 	return $ci->user_auth_model->getUsername($userId, $access);
 }
+/**
+ *	GET EMAIL
+ *
+ *	An alias for the UserAuthModel->getEmail function. Added so other models can call\
+ *	this function.
+ *	
+ *	@param	userId			The site members ID
+ *	@param	access			Confrimation the requester has access to make this request.
+ *	@return					Email Address
+ *	@since	1.0.3
+ *	@author	Jeff Fox
+ */
 function getEmail($userId, $access = false) {
 	$ci =& get_instance();
 	if (!isset($ci->user_auth_model)) {
@@ -27,7 +66,7 @@ function getEmail($userId, $access = false) {
  *
  *	A standardized function to send emails. If we are in a development enivornment, this function backs down
  *	to saving the email as a .html in the media folder.
- *
+ *	
  *	@param	$to				The recipient email address
  *	@param	fromEmail		The sender email address
  *	@param	$fromName		The name of the sender
@@ -36,6 +75,7 @@ function getEmail($userId, $access = false) {
  *	@param	$filePrefix		(OPTIONAL) A name to append to the email file if in development
  *	@return					TRUE on success, FALSE on error
  *	@since	1.0.5
+ *	@author	Jeff Fox
  */
 function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$filePrefix = 'email_') {
 	$ci =& get_instance();
