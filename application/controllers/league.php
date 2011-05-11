@@ -1586,7 +1586,7 @@ class league extends BaseEditor {
 				// HEAD TO HEAD ONLY
 				$this->data['thisItem']['games_per_team'] = $this->dataModel->games_per_team;
 				$this->data['thisItem']['playoff_rounds'] = $this->dataModel->playoff_rounds;
-				
+				$this->data['thisItem']['regular_scoring_periods'] = $this->dataModel->regular_scoring_periods;
 				
 				$this->data['scoring_type'] = $this->dataModel->getScoringType();
 				$this->params['pageType'] = PAGE_FORM;

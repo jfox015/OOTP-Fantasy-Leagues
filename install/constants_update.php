@@ -122,7 +122,7 @@ if (substr(PHP_OS, 0, 3) == 'WIN') {
     define("URL_PATH_SEPERATOR","/");
     define("PATH_SEPERATOR",":");
 }
-define("JS_JQUERY","jquery-1.3.2.min.js");
+define("JS_JQUERY","jquery.min.js");
 
 define("MAIN_INSTALL_FILE","install.php");
 define("DB_UPDATE_FILE","db_update.sql");

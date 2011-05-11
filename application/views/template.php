@@ -34,7 +34,7 @@
     <?php if (strstr($uri,'info') || strstr($uri,'profile') ||  strstr($uri,'rules')) { echo link_tag('css/content.css')."\n"; } ?>
     <?php if ($pageType == PAGE_FORM || $pageType == PAGE_SEARCH) { ?>
 <script type="text/javascript" src='<?php echo($config['fantasy_web_root']); ?>js/sorttable.js'></script>
-<script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery-1.3.2.min.js"></script>
+<script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/<?php print(JS_JQUERY); ?>"></script>
 <?php  } ?>
 <?php if (isset($scripts) && sizeof($scripts)) {
 	foreach($scripts as $script) {

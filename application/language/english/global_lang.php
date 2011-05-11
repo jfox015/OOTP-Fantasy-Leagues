@@ -44,7 +44,7 @@ $lang['no_user_leagues'] = 'We&#039;re sorry, but you are not allowed to create 
 /-------------------------------*/
 $lang['form_complete_success'] = "The operation was sucessfully completed.";
 $lang['form_complete_success_delete'] = "The record was sucessfully deleted.";
-$lang['form_complete_fail'] = "The operation failed. Error: [ERROR_MESSAGE]";
+$lang['form_complete_fail'] = "[ERROR_MESSAGE]";
 
 // DELETE RECORD
 $lang['form_confirm_delete'] = 'Are you sure you wish to continue with deleting the current [ITEM_TYPE]?

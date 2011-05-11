@@ -174,7 +174,7 @@ class BaseEditor extends MY_Controller {
 							$this->complete();
 						} else {
 							//echo("Form Fail"."<br />");
-							$this->outMess = str_replace('[ERROR_MESSAGE]',$this->outMess.$this->dataModel->statusMess,$this->lang->line('form_complete_fail'));
+							$this->outMess = str_replace('[ERROR_MESSAGE]',$this->dataModel->statusMess,$this->lang->line('form_complete_fail'));
 							$this->form->errors .= $this->form->error_string_open.$this->outMess.$this->form->error_string_close;
 							$fv = & _get_validation_object();
 							$fv->setError('name',$this->outMess);
@@ -336,11 +336,11 @@ class BaseEditor extends MY_Controller {
 			}
 		}
 		if (!$success) {
-			$this->outMess = "Errors were encountered processing your request.";
-			if (!empty($this->form->errors)) {
-				$this->outMess .= "Errors: ".$this->form->errors;
+			//$this->outMess = "Errors were encountered processing your request.";
+			if (!empty($this->form->errors) && empty($this->outMess)) {
+				$this->outMess = $this->form->errors;
 			} else if ($this->dataModel->errorCode != -1) {
-				$this->outMess .= "Errors: ".$this->dataModel->statusMess;
+				$this->outMess = $this->dataModel->statusMess;
 			}
 			$this->messageType = 'fail';
 		}
