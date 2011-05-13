@@ -33,7 +33,9 @@
 	var theMinutes = 0;
 	var theSeconds = 0;
 	$(document).ready(function(){
-		
+		$('#countdown').setCountDown({
+			onComplete: function() { document.location.href = '<?php print($_SERVER['PHP_SELF']); ?>'; }
+		});
 		$('a[rel=makePick]').live('click',function () {					   
 			var params = this.id.split("|");
 			$('input#league_id').val(params[0]);
@@ -77,8 +79,7 @@
 				'hour': 	0,
 				'min': 		theMinutes,
 				'sec': 		theSeconds
-			},
-			onComplete: function() { document.location.href = document.location.href; }
+			}
 		});
 	}
     </script>
