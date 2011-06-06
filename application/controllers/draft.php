@@ -1418,10 +1418,13 @@ class draft extends BaseEditor {
 		} else if ($this->dataModel->draftEnable == 1) {
 			$checked = true;
 		}
+		$this->form_validation->set_message('valid_short_date', 'Please enter a date in mm/dd/yyyy format'); 
 		//$form->label('Enable Draft','draftEnable');
 		//$form->checkbox('draftEnable',1,'',$checked,'',array('class','first'));
 		//$form->space();
-		$form->text('whenDraft','Draft Date','required',($this->input->post('whenDraft')) ? $this->input->post('whenDraft') : ($this->dataModel->draftDate != EMPTY_DATE_TIME_STR ? date('m/d/Y',strtotime($this->dataModel->draftDate)): ''), array('id'=>'dateField'));
+		$form->text('whenDraft','Draft Date','required|valid_short_date',($this->input->post('whenDraft')) ? $this->input->post('whenDraft') : ($this->dataModel->draftDate != EMPTY_DATE_TIME_STR ? date('m/d/Y',strtotime($this->dataModel->draftDate)): ''), array('id'=>'dateField'));
+		$form->span('Click this field to view the draft dates recommended by the site owner that take place BEFORE the fantasy season begins. To select a draft date outside this range, you may manually enter it in MM/DD/YYYY format.',array('class'=>'field_caption'));
+		$form->space();        
 		$form->br();
 		$form->fieldset('',array('class'=>'dateLists'));
 		$form->label('Start Time**','',array('class'=>'required','style'=>'width:225px;text-align:right;'));

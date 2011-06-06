@@ -1,17 +1,14 @@
 <?php
 /**
- *	MY_Controller.
- *	Static base class for all Conrollers.
- *	Provides a minimum of services and necessary functionality.
- *	This includes base template support, script and style queing,
- *	storage of URL passed variable data and basic user authentication
- *	checking.
+ *	MY_Form_validation.
+ *	Custom override to the standard cideigniter form validation class.
+ *	Add custom error message setting and date validation.
  *	
  *	@author			Jeff Fox
- *	@version		1.0.2
+ *	@version		1.0.3
  *	@dateCreated	10/4/09
- *	@lastModified	10/11/09
- *  @copyright   	(c)2009-10 Jeff Fox/Aeolian Digital Studios
+ *	@lastModified	5/10/11
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
  */
 class MY_Form_validation extends CI_Form_validation {
 
@@ -29,7 +26,7 @@ class MY_Form_validation extends CI_Form_validation {
 		parent::CI_Form_validation();
 	}
 	/*--------------------------------
-	/	PROTECTED FUNCTIONS
+	/	PUBLIC FUNCTIONS
 	/-------------------------------*/
 	/**
 	 *	INIT.
@@ -39,6 +36,29 @@ class MY_Form_validation extends CI_Form_validation {
 	public function setError($field,$message,$prefix='',$postfix='') {
 		$this->_error_array[$field] = $prefix.$message.$postfix;
 	}
+	
+	/**
+     * 	Valid Date (Short mm/dd/yyyy format)
+     *
+     * 	@access    public
+     * 	@param    string
+     * 	@return    bool
+	 *	@author		wdm* - CodeIgnighter Forums
+     */
+    public function valid_short_date($str) {
+        if ( ereg("([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})", $str) ) 
+        {
+            $arr = split("/", $str);    // splitting the array
+            $yyyy = $arr[2];            // first element of the array is year
+            $mm = $arr[0];              // second element is month
+            $dd = $arr[1];              // third element is days
+            return ( checkdate($mm, $dd, $yyyy) );
+        } 
+        else 
+        {
+            return FALSE;
+        }
+    }
 }
 /* End of file BaseController.php */
 /* Location: ./application/controllers/BaseController.php */

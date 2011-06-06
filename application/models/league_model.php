@@ -330,7 +330,7 @@ class league_model extends base_model {
 	 */
 	public function getLeagues($league_id = false, $type=1) {
 		$leagues = array();
-		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id,access_type');
+		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id,access_type, league_type');
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		if ($type != -1) $this->db->where('access_type',1);
 		$query = $this->db->get($this->tblName);
@@ -340,7 +340,7 @@ class league_model extends base_model {
 				$commish = resolveUsername($row->commissioner_id);
 				$leagues = $leagues + array($row->id=>array('league_name'=>$row->league_name,'avatar'=>$row->avatar,
 															'commissioner_id'=>$row->commissioner_id,'commissioner'=>$commish,
-															'league_type'=>$row->shortDesc,'description'=>$row->description,
+															'league_type_desc'=>$row->shortDesc,'league_type'=>$row->league_type,'description'=>$row->description,
 															'access_type'=>$row->access_type));
 			}
 		}

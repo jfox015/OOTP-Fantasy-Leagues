@@ -122,7 +122,7 @@ if (substr(PHP_OS, 0, 3) == 'WIN') {
     define("URL_PATH_SEPERATOR","/");
     define("PATH_SEPERATOR",":");
 }
-define("JS_JQUERY","jquery-1.3.2.min.js");
+define("JS_JQUERY","jquery.min.js");
 
 define("MAIN_INSTALL_FILE","install.php");
 define("DB_UPDATE_FILE","db_update.sql");
@@ -168,7 +168,7 @@ define("PATH_MEDIA",DIR_APP_ROOT."media/");
 define("PATH_MEDIA_WRITE","media".URL_PATH_SEPERATOR);
 
 define("PATH_ATTACHMENTS",PATH_MEDIA."uploads/");
-define("PATH_ATTACHMENTS_WRITE","uploads".URL_PATH_SEPERATOR);
+define("PATH_ATTACHMENTS_WRITE",PATH_MEDIA_WRITE."uploads".URL_PATH_SEPERATOR);
 
 define("DEFAULT_AVATAR",'avatar_default.jpg');
 define("PATH_AVATARS_WRITE",PATH_IMAGES_WRITE."avatars".URL_PATH_SEPERATOR);

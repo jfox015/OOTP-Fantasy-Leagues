@@ -34,13 +34,23 @@ class home extends MY_Controller {
 	 *	The default handler when the controller is called.
 	 */
 	public function index() {
+		// GET Fantasy Details
+		$status = getFantasyStatus();
+		$this->data['fantasyStatus'] = ($status == 1)? "Pre-Season" : "Active OOTP Season";
+		$this->data['fantasyStatusID'] = $status;
+		$this->data['fantasyStartDate'] = date('m/d/Y',(strtotime($this->params['config']['season_start'])));
 		
 		// GET OOTP League status
 		$this->data['leagueStatus'] =  $this->ootp_league_model->get_state();
 		$this->data['leagueName'] =  $this->ootp_league_model->name;
 		$this->data['leagueAbbr'] =  $this->ootp_league_model->abbr;
 		$this->data['events'] =  $this->ootp_league_model->getNextEvents();
-		$this->data['nextSimDate'] =  date('m/d/Y',(strtotime($this->params['config']['last_process_time']) + ((60*60*24)*3)));
+		$lastperocess = $this->params['config']['last_process_time'];
+		if ($lastperocess != EMPTY_DATE_TIME_STR && $lastperocess != EMPTY_DATE_STR) {
+			$this->data['nextSimDate'] =  date('m/d/Y',(strtotime($lastperocess) + ((60*60*24)*3)));
+		} else {
+			$this->data['nextSimDate'] = "Not yet determined";
+		}
 		$this->data['current_date'] =  date('m/d/Y',(strtotime($this->ootp_league_model->current_date)));
 		
 		// GET LATEST NEWS ARTICLE FOR THIS LEAGUE

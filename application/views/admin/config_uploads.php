@@ -14,7 +14,7 @@
 		if ($outMess) {
 			print $outMess;
 		} else {
-			print("Use this form to upload your MySQL SQL Data files.<br /><br />* - Uploaded files must be in ZIP format.<br />");
+			print("Use this form to upload your MySQL SQL Data files.<br /><br />NOTE - Uploaded files must be in <b>ZIP</b> format.<br />");
 		}
 		?>
         <div class='textbox'>

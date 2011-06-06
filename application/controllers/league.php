@@ -1500,9 +1500,9 @@ class league extends BaseEditor {
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('accept_requests',$responses,'Accept Public Team Requests',($this->input->post('accept_requests') ? $this->input->post('accept_requests') : $this->dataModel->accept_requests),'required');
 		$form->fieldset();
+		$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
+		$form->br();
 		if ($this->mode != 'edit') {
-			$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
-			$form->br();
 			$league_type = ($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type;
 			$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',$league_type,'required');
 			$this->data['league_type'] = $league_type;
@@ -1516,8 +1516,16 @@ class league extends BaseEditor {
 			$form->space();
 			$form->fieldset('Head To Head Options',array('id'=>'optHeadToHead'));
 			$form->select('games_per_team|games_per_team',array(1=>1,2=>2,3=>3),'Games per team',($this->input->post('games_per_team')) ? $this->input->post('games_per_team') : $this->dataModel->games_per_team);
+			$form->nobr();
+			$form->html('<div style-"display:inline-block;margin-top:4px;">Per Scoring Period</div>');
 			$form->br();
+			if (!function_exists('getScoringPeriods')) {
+				$this->load->helper('admin');
+			}
+			$periodCount = sizeof(getScoringPeriods());
 			$form->select('regular_scoring_periods|regular_scoring_periods',array(24=>25,23=>24,22=>23,21=>22,20=>21),'Playoffs begin in week',($this->input->post('regular_scoring_periods')) ? $this->input->post('regular_scoring_periods') : $this->dataModel->regular_scoring_periods);
+			$form->nobr();
+			$form->html('<div style-"display:inline-block;margin-top:4px;">Scoring Periods Available: '.$periodCount.'</div>');
 			$form->br();
 			$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
 		}
@@ -1578,7 +1586,7 @@ class league extends BaseEditor {
 				// HEAD TO HEAD ONLY
 				$this->data['thisItem']['games_per_team'] = $this->dataModel->games_per_team;
 				$this->data['thisItem']['playoff_rounds'] = $this->dataModel->playoff_rounds;
-				
+				$this->data['thisItem']['regular_scoring_periods'] = $this->dataModel->regular_scoring_periods;
 				
 				$this->data['scoring_type'] = $this->dataModel->getScoringType();
 				$this->params['pageType'] = PAGE_FORM;

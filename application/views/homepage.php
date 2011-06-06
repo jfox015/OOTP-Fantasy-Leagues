@@ -94,57 +94,76 @@
 </div>
 
 <div id="right-column">
-	<!-- League Status -->
-    <div id="contentBox">
-        <div class="title">League Status</div>
-        <br /><br />
-        <?php 
-		if (!isset($league_info)) { ?>
-        <div id="row">
-        <span class="error" style="margin:0px; width:90%;"><strong>League Files not loaded</strong>
-        <br /><br />
-		The OOTP database files have not been uploaded yet for this league.</span>
-        </div>
-        <?php } else { ?>
-        <div id="row">
-        The <?php echo($leagueName." is currently in the:"); ?>
-        <span><b><?php echo($leagueStatus); ?></b></span><br />&nbsp;
-        </div>
-        <div id="row">
-        The current league Date is:
-        <span><b><?php echo($current_date); ?></b></span><br />&nbsp;
-        </div>
-        <div id="row">
-        Next Sim:
-        <span><b><?php echo($nextSimDate); ?></b></span><br />&nbsp;
-        </div>
-        <?php } ?>
-    </div>
-    <div style="margin:6px 0 6px 0;min-height:12px;"><br clear="all" class="clear" /></div>
-                
-	<!-- League Events -->
-    <div id="contentBox">
-        <div class="title">Upcoming OOTP Events</div>
-        <br /><br />
+	<!--  Fantasy League Details -->
+    <div class='textbox'>
+        <table cellpadding="0" cellspacing="0" border="0" style="width:265px;">
+        <tr class='title'>
+            <td style='padding:3px'>Fantasy League Overview</td>
+        </tr>
+		<tr class='headline'>
+            <td style='padding:3px'>Fantasy Site Status</td>
+        </tr>
+        <tr>
+            <td style='padding:6px'>
+			The game is currently in the:<br />
+			<span style="margin-left: 12px;"><b><?php echo($fantasyStatus); ?></b></span><br />&nbsp;<br />
+			<?php if ($fantasyStatusID == 1) { ?>
+			The fantasy season begins:<br />
+			<span style="margin-left: 12px;"><b><?php echo($fantasyStartDate); ?></b></span><br />&nbsp;<br />
+			<?php } ?>
+			The next Sim will be processed on:<br />
+			<span style="margin-left: 12px;"><b><?php echo($nextSimDate); ?></b></span>
+			</td>
+		</tr>
+		</table>
+	</div>
+	
+	<!-- OOTP League Details Box -->
+    <div class='textbox'>
+        <table cellpadding="0" cellspacing="0" border="0" style="width:265px;">
+        <tr class='title'>
+            <td style='padding:3px'>OOTP League Details</td>
+        </tr>
+		<tr class='headline'>
+            <td style='padding:3px'>League Status</td>
+        </tr>
+        <tr>
+            <td style='padding:6px' >
+			<?php 
+			if (!isset($league_info)) { ?>
+			<span class="error" style="margin:0px; width:90%;"><strong>League Files not loaded</strong>
+			<br /><br />
+			The OOTP database files have not been uploaded yet for this league.</span>
+			<?php } else { ?>
+			The <?php echo($leagueName." is currently in the:"); ?><br />
+			<span style="margin-left: 12px;"><b><?php echo($leagueStatus); ?></b></span><br />&nbsp;<br />
+			The current league Date is:<br />
+			<span style="margin-left: 12px;"><b><?php echo($current_date); ?></b></span>
+			<?php } ?>
+			</td>
+		</tr>
+        <tr class='headline'>
+            <td style='padding:3px'>Upcoming OOTP Events</td>
+        </tr>
+        <tr>
+            <td style='padding:6px' >
 		<?php if (isset($events) && sizeof($events) > 0) { 
 			foreach($events as $event) { 
 		?>
-        <div id="row">
-        <b><?php echo(date('F d, Y',strtotime($event['start_date']))); ?></b>
-        <span><?php echo($event['name']); ?></span><br />&nbsp;
-        </div>
-        
+        <b><?php echo(date('F d, Y',strtotime($event['start_date']))); ?></b><br />
+        <span style="margin-left: 12px;"><?php echo($event['name']); ?></span><br />&nbsp;<br />
         <?php 	} // END for
 		} else {
 			?>
-		<div id="row">
         <span class="error" style="margin:0px; width:90%;"><strong>League Files not loaded</strong>
         <br /><br />
 		The OOTP database files have not been uploaded yet for this league. No events are available.</span>
-        </div>
 		<?php
         } // END if 
 		?>
+		</td>
+		</tr>
+		</table>
     </div>
 </div>
 

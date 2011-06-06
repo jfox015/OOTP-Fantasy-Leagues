@@ -1,6 +1,41 @@
-<script type="text/javascript" charset="UTF-8">
-	
+<style>
+	input, select, label {
+		float:none;
+		margin:none;
+		min-width:none;
+		display:inline;
+	}
+	.dash {
+		width:auto;
+		padding: 1px;
+		display:inline-block;
+		color: black;
+	}
+	.dash .digit {
+		font: bold 1.10em Arial;
+		font-weight: bold;
+		float: left;
+		width: 16px;
+		text-align: center;
+		position: relative;
+	}
+	</style>
+    <script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.lwtCountdown-1.0.js"></script>
+	<script type="text/javascript" charset="UTF-8">
+	var counterActiveHTML = 'Refresh in: ';
+	counterActiveHTML += '<div class="dash minutes_dash">';
+	counterActiveHTML += '<div class="digit">0</div>&nbsp;<div class="digit">0</div>';
+	counterActiveHTML += '</div> minutes, ';
+	counterActiveHTML += '<div class="dash seconds_dash">';
+	counterActiveHTML += '<div class="digit">0</div>&nbsp;<div class="digit">0</div>';
+	counterActiveHTML += '</div> seconds';
+	var counterDiabledHTML = 'Refresh in: <span class="warn_txt">Disabled</span>';
+	var theMinutes = 0;
+	var theSeconds = 0;
 	$(document).ready(function(){
+		$('#countdown').setCountDown({
+			onComplete: function() { document.location.href = '<?php print($_SERVER['PHP_SELF']); ?>'; }
+		});
 		$('a[rel=makePick]').live('click',function () {					   
 			var params = this.id.split("|");
 			$('input#league_id').val(params[0]);
@@ -8,8 +43,45 @@
 			$('input#team_id').val(params[2]);
 			$('div#manualForm').css('display','block');
 			return false;
-		});				   
+		});	
+
+		$('#autorefresh').change(function() {
+			if ($('#autorefresh').is(':checked')) {
+				$('#countdown').empty();
+				$('#countdown').html(counterActiveHTML);
+				$('#countdown').startCountDown();
+			} else {
+				$('#countdown').stopCountDown()
+				;$('#countdown').empty();
+				$('#countdown').html(counterDiabledHTML);
+			}
+		});
+		$('#autoTime').change(function() {
+			setTimer();
+			$('#autorefresh').change();
+		});
+		setTimer();
+		$('#autorefresh').change();
 	});
+	function setTimer() {
+		theMinutes = 0;
+		theSeconds = parseInt($('#autoTime').val());
+		if (theSeconds > 60) {
+			theMinutes = parseInt(theSeconds / 60);
+			theSeconds = theSeconds - (theMinutes * 60);
+		}
+		$('#countdown').stopCountDown();
+		$('#countdown').setCountDown({
+			targetOffset: {
+				'day': 		0,
+				'month': 	0,
+				'year': 	0,
+				'hour': 	0,
+				'min': 		theMinutes,
+				'sec': 		theSeconds
+			}
+		});
+	}
     </script>
     <div id="manualForm" class="dialog">
 		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>draft/processDraft" name='manpick' id="manpick">
@@ -32,10 +104,8 @@
 	
 	
 	</div>
-	
-    <div id="center-column">
-   	<div id="subPage">
-    	<?php 
+	<div id="column-single">
+		<?php 
 		// EDIT 1.0.2
 		// ADMIN MESSAGING FOR DRAFT CONTROLS
 		$message = "";
@@ -52,7 +122,28 @@
 			echo '<div class="'.$messageType .'">'.$message.'</div>';
 		}
 		?>
+        </div>
+        <br clear="all" />
+        <div id="center-column">
        	<div class="top-bar"><h1>Draft Results</h1></div>
+        </div>
+        <?php
+		if ($thisItem['draftStatus'] < 4) { ?>
+        <div id="right-column">
+        <input type="checkbox" id="autorefresh" name="autorefresh" value="1" />
+        <b>Enable Auto refresh</b><br />
+        Refresh every <select id="autoTime" name="autoTime">
+        	<option value="30">30</option>
+             <option value="60">60</option>
+             <option value="90">90</option>
+             <option value="120">120</option>
+        </select>
+        seconds.<br />
+        <div id="countdown"></div>
+        </div>
+		<?php } ?>
+        
+        <div id="column-center">
        	<div id="content">
 		<?php $cols = 6; 
 		$width='';
@@ -166,7 +257,6 @@
 		?>
 
             	</table>
-                </div>
             </div>
         </div>
 	</div>

@@ -790,8 +790,7 @@ class admin extends MY_Controller {
 			}
 		}
 	}
-	
-	
+
 	public function configUploadFile() {
 		
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -812,52 +811,69 @@ class admin extends MY_Controller {
 				$error = false;
 				$errorStr = "";
 				$hasFile = false;
+				$this->data['outMess'] = '';
 				$uploadSuccess = false;
 				if (isset($_FILES['dataFiles']['name']) && !empty($_FILES['dataFiles']['name'])) {
 					
-					$this->load->helper(array('form', 'url'));
-					$config = array();
-					$config['upload_path'] = PATH_ATTACHMENTS_WRITE;
-					$config['allowed_types'] = 'zip';
-					$config['overwrite']	= true;
-					$this->load->library('upload');
-					$this->upload->initialize($config);
-					$uploadSuccess = $this->upload->do_upload('dataFiles');
-					
-					if (!$uploadSuccess) {
+					//ini_set('post_max_size','8M');
+					$maxinbytes = return_bytes(ini_get('post_max_size'));
+					//print($_FILES['dataFiles']['name']."<br />");
+					//print($_FILES['dataFiles']['size']."<br />");
+					//print_r($_FILES);
+					if ($_FILES['dataFiles']['size'] > $maxinbytes) {
 						$error = true;
-						$this->data['outMess']= '<span class="error">'.$this->upload->display_errors().'</span>';
+						$this->data['outMess'] .= 'The zip uploaded exceeds the allowable file size of '.$maxinbytes.'.<br />';
 					} else {
-						if ($this->input->post('deflate')) {
-							$def = $this->input->post('deflate');
-							if ($def == 1) {
-								$this->load->library('unzip');
-								$type = $this->input->post('fileType');
-								$path = $this->params['config']['sql_file_path'];
-								/*switch($type) {
-									case 1:
-										$path = $this->params['config']['sql_file_path'];
-										break;
-									case 2:
-										$path = $this->params['config']['ootp_html_report_root'];
-										break;	
-								}*/
-								$this->unzip->extract(PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name'],$path);
+						$target_file_name = DIR_WRITE_PATH.PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name'];
+					//$this->load->helper(array('form', 'url'));
+					//$config = array();
+					//$config['upload_path'] = PATH_ATTACHMENTS_WRITE;
+					//print ("upload path = ".PATH_ATTACHMENTS_WRITE."<br />");
+					//$config['allowed_types'] = 'zip';
+					//$config['max_size'] = $maxinbytes;
+					//$config['overwrite'] = true;
+					//$this->load->library('upload');
+					//$this->upload->initialize($config);
+					//$uploadSuccess = $this->upload->do_upload('dataFiles');
+					//print ("upload path = ".PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name']."<br />");
+					
+					
+					//print ("uploaded file = ".$_FILES['dataFiles']['tmp_name']."<br />");
+					//print ("target file = ".$target_file_name."<br />");
+					
+						if (move_uploaded_file($_FILES['dataFiles']['tmp_name'], $target_file_name)) {
+							chmod($target_file_name,0755);
+							$this->data['outMess'] .= "File upload completed successfully.<br />";
+							
+							if ($this->input->post('deflate')) {
+								$def = $this->input->post('deflate');
+								if ($def == 1) {
+									$this->load->library('unzip');
+									try {
+										$this->unzip->extract($target_file_name,$this->params['config']['sql_file_path']);
+									} catch (Exception $e) {
+										$error = true;
+										$this->data['outMess'] .= $e."<br />";
+									}
+								} // END if
 							} // END if
+						} else {
+							$error = true;
+							$this->data['outMess'] .= "The file upload process did not complete successfully. The file ".basename( $_FILES['dataFiles']['name'])." could not be saved on the server.<br />";
 						} // END if
-					} // END if
+					}
 				} else {
 					$error = true;
-					$this->data['outMess'] = "No files were selected for uploading.";
+					$this->data['outMess'] .= "No files were selected for uploading.<br />";
 				}
 				if ($error) {
+					$this->data['outMess'] = '<span class="error">'.$this->data['outMess'].'</span>';
 					$this->data['subTitle'] = "Upload Files";
 					$this->params['content'] = $this->load->view($this->views['FILE_UPLOADS'], $this->data, true);
 					$this->params['subTitle'] =  "Admin Tools";
 					$this->params['pageType'] = PAGE_FORM;
 					$this->displayView();
 				} else {
-					$data = array('upload_data' => $this->upload->data());
 					$this->session->set_flashdata('message', '<span class="success">All uploads completed successfully.</span>');
 					redirect('admin/dashboard');
 				} // END if
