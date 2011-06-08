@@ -900,14 +900,16 @@ class draft_model extends base_model {
 		}
 		return $picks;
 	}
-	public function getUserResults($userId = false) {
+	public function getUserResults($userId = false, $league_id = false) {
 		
 		if ($userId === false) return;
+		if ($league_id === false) $league_id = $this->league_id;
 		$picks = array();
 		
 		$this->db->select($this->tables['DRAFT'].'.player_id, round as draft_round, pick_round as pick, first_name, last_name, position, role');
 		$this->db->where($this->tables['DRAFT'].'.player_id > 0');
 		$this->db->where('fantasy_teams.owner_id',$userId);
+		$this->db->where($this->tables['DRAFT'].'.league_id',$league_id);
 		$this->db->join('fantasy_teams','fantasy_teams.id = '.$this->tables['DRAFT'].'.team_id');
 		$this->db->join('fantasy_players','fantasy_players.id = '.$this->tables['DRAFT'].'.player_id','left');
 		$this->db->join('players','fantasy_players.player_id = players.player_id','right outer');

@@ -594,7 +594,7 @@ class draft extends BaseEditor {
 										if (isset($picks[$t]['player']) && !empty($picks[$t]['player']) && $picks[$t]['player'] != -999) {
 											$playerInfo = $this->player_model->getPlayerDetails($picks[$t]['player']);
 											if (sizeof($playerInfo) > 0) {
-												$roundSummary.= " picked  ".get_pos($playerInfo['position'])." ".anchor('/player/info/'.$picks[$t]['player'],$playerInfo['first_name']." ".$playerInfo['last_name']);
+												$roundSummary.= " picked  ".get_pos($playerInfo['position'])." ".anchor('/players/info/'.$picks[$t]['player'],$playerInfo['first_name']." ".$playerInfo['last_name']);
 											} else {
 												$roundSummary.= "Pick Details unavailable";
 											} // END if
@@ -618,6 +618,7 @@ class draft extends BaseEditor {
 									} // END for
 									## Generate Subject Line
 									$subject=str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_subject'));
+									$subject=str_replace('[LEAGUE_NAME]',$this->league_model->league_name,$subject);
 									## Generate Message Text
 									$msg = str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_message'));
 									$msg = str_replace('[ROUND_NEXT]', $picks[$i]['round'],$msg);
