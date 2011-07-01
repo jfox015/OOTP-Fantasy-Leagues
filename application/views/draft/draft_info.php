@@ -20,7 +20,9 @@
 		position: relative;
 	}
 	</style>
-    <script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.lwtCountdown-1.0.js"></script>
+    <link media="screen" rel="stylesheet" href="<?php echo($config['fantasy_web_root']); ?>css/colorbox.css" />
+	<script src="<?php echo($config['fantasy_web_root']); ?>js/jquery.colorbox.js"></script>
+	<script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.lwtCountdown-1.0.js"></script>
 	<script type="text/javascript" charset="UTF-8">
 	var counterActiveHTML = 'Refresh in: ';
 	counterActiveHTML += '<div class="dash minutes_dash">';
@@ -29,40 +31,79 @@
 	counterActiveHTML += '<div class="dash seconds_dash">';
 	counterActiveHTML += '<div class="digit">0</div>&nbsp;<div class="digit">0</div>';
 	counterActiveHTML += '</div> seconds';
-	var counterDiabledHTML = 'Refresh in: <span class="warn_txt">Disabled</span>';
+	var labelEnableHTML = 'Enable';
+	var labelDisableHTML = 'Disable';
 	var theMinutes = 0;
 	var theSeconds = 0;
 	$(document).ready(function(){
-		$('#countdown').setCountDown({
-			onComplete: function() { document.location.href = '<?php print($_SERVER['PHP_SELF']); ?>'; }
-		});
-		$('a[rel=makePick]').live('click',function () {					   
-			var params = this.id.split("|");
-			$('input#league_id').val(params[0]);
-			$('input#pick_id').val(params[2]);
-			$('input#team_id').val(params[2]);
-			$('div#manualForm').css('display','block');
-			return false;
+		$('a[rel=makePick]').live('click',function (e) {					   
+			e.preventDefault();
+			openDialog(e, 'manualForm', this.id.split("|"));
 		});	
-
+		$('a[rel=editPick]').live('click',function (e) {					   
+			e.preventDefault();
+			$('#manualForm form#action').val('edit');
+			openDialog(e, 'manualForm', this.id.split("|"));
+		});	
+		$('a[rel=autoPick]').live('click',function (e) {					   
+			e.preventDefault();
+			openDialog(e, 'autoForm', this.id.split("|"));
+		});	
+	    $('#btnCancel').live('click',function (e) {					   
+			e.preventDefault();
+			$.colorbox.close();
+		});
+		$('input[rel=auto_option]').live('click',function (e) {					   
+			var display = 'none';
+			if ($("input[@name=auto_option]:checked").val() == 'x_picks') {
+				display = 'block';
+			}	
+			$('#pick_input').css('display',display);
+		});
+		
+		$('#btnReset').css('display','none');
 		$('#autorefresh').change(function() {
 			if ($('#autorefresh').is(':checked')) {
+				$('#lblEnable').empty();
+				$('#lblEnable').html(labelDisableHTML);
 				$('#countdown').empty();
 				$('#countdown').html(counterActiveHTML);
+				$('#btnReset').css('display','block');
 				$('#countdown').startCountDown();
 			} else {
-				$('#countdown').stopCountDown()
-				;$('#countdown').empty();
-				$('#countdown').html(counterDiabledHTML);
+				$('#lblEnable').empty();
+				$('#lblEnable').html(labelEnableHTML);
+				$('#countdown').stopCountDown();
+				$('#countdown').empty();
+				$('#btnReset').css('display','none');
 			}
 		});
-		$('#autoTime').change(function() {
-			setTimer();
-			$('#autorefresh').change();
+		$('#btnReset').click(function() {
+			refreshTimer();
 		});
+		$('#autoTime').change(function() {
+			refreshTimer();
+		});
+		var autoTime = <?php print(((isset($thisItem['autoTime']) && !empty($thisItem['autoTime'])) ? $thisItem['autoTime'] : '""')); ?>;
+		if (autoTime != null && autoTime != '') {
+			$('#autoTime').val(parseInt(autoTime));
+			$('#autorefresh').attr('checked', true);
+		}
+		refreshTimer();
+		jQuery('.numbersOnly').keyup(function () { 
+		    this.value = this.value.replace(/[^0-9\.]/g,'');
+		});
+	});
+	function refreshTimer() {
 		setTimer();
 		$('#autorefresh').change();
-	});
+	}
+	function openDialog(e,id, params) {
+		$('#'+id + ' input#league_id').val(params[0]);
+		$('#'+id + ' input#pick_id').val(params[2]);
+		$('#'+id + ' input#team_id').val(params[2]);
+		$.colorbox({html:$('div#'+id).html()});
+	}
 	function setTimer() {
 		theMinutes = 0;
 		theSeconds = parseInt($('#autoTime').val());
@@ -72,13 +113,14 @@
 		}
 		$('#countdown').stopCountDown();
 		$('#countdown').setCountDown({
+			onComplete: function() { document.location.href = '<?php echo($config['fantasy_web_root']); ?>draft/info/id/<?php print($thisItem['draft_id']); ?>/autoTime/'+parseInt($('#autoTime').val());  },
 			targetOffset: {
 				'day': 		0,
 				'month': 	0,
 				'year': 	0,
 				'hour': 	0,
-				'min': 		theMinutes,
-				'sec': 		theSeconds
+				'min': 		parseInt(theMinutes),
+				'sec': 		parseInt(theSeconds)
 			}
 		});
 	}
@@ -91,19 +133,64 @@
         <input type='hidden' id="league_id" name='league_id' value=''></input>
         <div class='textbox'>
          <table cellpadding=2 cellspacing=0 cellborder=0>
-          <tr class='title'><td colspan=3>Enter Manual Draft Pick</td></tr>
+          <tr class='title'><td colspan=3>Draft Pick</td></tr>
           <tr>
            <td><label for='selection'>Player ID:</label></td>
-           <td><input type='text' id="Player_id" name='pick' value=''></input></td>
+           <td>
+           <?php  
+           if (isset($playerList) && sizeof($playerList) > 0) { ?>
+           <select name="pick">
+           <?php 
+           		foreach ($playerList as $playerInfo) { ?>
+					<option value="<?php print($playerInfo['id']); ?>"><?php print(get_pos($playerInfo['pos'])." - ".$playerInfo['last_name'].", ".$playerInfo['first_name']); ?></option>
+				<?php 
+           		} // END foreach
+			?>
+			</select>
+			<?php 
+           } else {
+           		print ("Sorry, Draftable Player List not available.");
+           }// END if
+           ?>
+           </td>
            <td><input type='submit' class="button" value='Draft Player'></input></td>
+           <td><input type='button' id="btnCancel" class="button" value='Cancel'></input>
           </tr>
          </table>
         </div>
         </form>
-		
-	
-	
 	</div>
+	
+	<div id="autoForm" class="dialog">
+		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>draft/processDraft" name='autopick' id="autopick">
+        <input type='hidden' id="action" name='action' value='auto'></input>
+        <input type='hidden' id="team_id" name='team_id' value=''></input>
+        <input type='hidden' id="pick_id" name='pick_id' value=''></input>
+        <input type='hidden' id="league_id" name='league_id' value=''></input>
+        <div class='textbox'>
+         <table cellpadding=2 cellspacing=0 cellborder=0>
+          <tr class='title'><td colspan=3>Options</td></tr>
+          <tr>
+           <td>&nbsp;</td>
+           <td>
+           <i>NOTE: This action will override any user auto draft setting in favor of making the auto picks</i><br />
+           <input type="radio" rel="auto_option" name="auto_option" value="current" selected="selected" /> Current Pick Only <br />
+           <input type="radio" rel="auto_option" name="auto_option" value="x_picks" /> X Number of Picks <br />
+           <div id="pick_input"><label for='selection'>Enter Count:</label> <input type='text' id="pick_count" name='pick_count' value='' class="numbersOnly" maxlength="2"></input></div>
+           <input type="radio" rel="auto_option" name="auto_option" value="round" /> Complete Round <br />
+           <input type="radio" rel="auto_option" name="auto_option" value="all" /> Complete Entire Draft <br />
+           </td>
+          </tr>
+          <tr>
+           <td><input type='submit' class="button" value='Auto Draft'></input></td>
+           <td><input type='button' id="btnCancel" class="button" value='Cancel'></input>
+           </td>
+          </tr>
+         </table>
+        </div>
+        </form>
+	</div>
+	
 	<div id="column-single">
 		<?php 
 		// EDIT 1.0.2
@@ -130,16 +217,13 @@
         <?php
 		if ($thisItem['draftStatus'] < 4) { ?>
         <div id="right-column">
-        <input type="checkbox" id="autorefresh" name="autorefresh" value="1" />
-        <b>Enable Auto refresh</b><br />
-        Refresh every <select id="autoTime" name="autoTime">
-        	<option value="30">30</option>
-             <option value="60">60</option>
-             <option value="90">90</option>
-             <option value="120">120</option>
-        </select>
-        seconds.<br />
-        <div id="countdown"></div>
+        <div class="inPageWidget">
+            <div class="title">Auto refresh Page</div>
+            <input type="checkbox" id="autorefresh" name="autorefresh" value="1" />	<b id="lblEnable">Enable</b><br />
+            Refresh every <input id="autoTime" name="autoTime" class="numbersOnly" type="text" size="5" maxlength="4" value="30" /> seconds.<br />
+            <div id="countdown"></div>
+            <input type="button" id="btnReset" name="btnReset" value="Restart" class="button" />
+        </div>
         </div>
 		<?php } ?>
         
@@ -221,7 +305,7 @@
 					 if ($thisItem['draftStatus'] > 0 && $thisItem['draftStatus'] < 4 && time() > strtotime($thisItem['draftDate'])) {
             		if ($pid=="") {
 							if ($first=="") { ?>
-						<td><?php echo anchor('/draft/processDraft/league_id/'.$thisItem['league_id'].'/action/auto/pick_id/'.$pick.'/team_id/'.$tid,'Auto Pick'); ?>
+						<td><?php echo anchor('#','Auto Pick',array('rel'=>'autoPick','id'=>$thisItem['league_id'].'|'.$pick.'|'.$tid)); ?>
 						/<?php echo anchor('#','Manual Pick',array('rel'=>'makePick','id'=>$thisItem['league_id'].'|'.$pick.'|'.$tid)); ?></td>
 							<?php $first=1;
 							} else { ?>
@@ -232,7 +316,7 @@
 						if ($pid!=-999) { ?>
                         <td>
                         <?php echo anchor('/draft/processDraft/league_id/'.$thisItem['league_id'].'/action/clear/pick_id/'.$pick,'Clear'); ?>/
-                        <?php echo anchor('/draft/processDraft/league_id/'.$thisItem['league_id'].'/action/edit/pick_id/'.$pick,'Edit'); ?>/
+                        <?php echo anchor('#','Edit',array('rel'=>'editPick','id'=>$thisItem['league_id'].'|'.$pick.'|'.$tid)); ?>/
                         <?php echo anchor('/draft/processDraft/league_id/'.$thisItem['league_id'].'/action/rollback/pick_id/'.$pick,'Rollback'); ?></td>
                         <td><?php echo $dueText; ?></td>
 						<?php } else { ?>

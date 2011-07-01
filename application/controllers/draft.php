@@ -238,6 +238,8 @@ class draft extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	
+	
 	/**
 	 *	COMPLETE DRAFT.
 	 *	Finalizes the draft by copying the draft selections to the individual team
@@ -348,7 +350,7 @@ class draft extends BaseEditor {
 	 *	PROCESS DRAFT.
 	 *	The heart of the draft engine. This function runs the draft.
 	 *
-	 *	Adapted from the processDraft.php script written by Frank Holmes for StatsLab 9 and 10.
+	 *	Adapted from the processDraft.php script written by fhommes for StatsLab.
 	 */
 	public function processDraft() {
 		if ($this->params['loggedIn']) {
@@ -387,11 +389,9 @@ class draft extends BaseEditor {
 								  $this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been skipped.</span>');
 								  redirect('/draft/load/'.$this->uriVars['league_id']);
 							   case 'edit':
-								  $row = $this->dataModel->getPickInfo($this->uriVars['pick_id']);
-								  $pid=$row['player_id'];
-								  $tid=$row['team_id'];
-								  $row = $this->dataModel->draftPlayer(false, false, NULL, false, $this->uriVars['pick_id']);
-								  redirect('/draft/manualPick/pick_id/'.$this->uriVars['pick_id'].'/team_id/'.$this->uriVars['team_id'].'/pick/'.$this->uriVars['pick']);
+								  $this->dataModel->resetPick($this->uriVars['pick_id'],$this->uriVars['league_id'],false,$this->uriVars['pick']);
+								  $this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been sucessfully edited.</span>');
+								  redirect('/draft/load/'.$this->uriVars['league_id']);
 							   case 'rollback':
 								  $this->dataModel->rollbackPick($this->uriVars['pick_id']);  
 								  $this->rescheduleDraft();
@@ -648,6 +648,9 @@ class draft extends BaseEditor {
 										} // END foreach
 									}  // END if
 								} // END if ($rndPick == $nTeams)
+								// ----------------------------------
+								//	END ROUND SUMMARY EMAIL
+								// ----------------------------------
 								
 								if ($this->debug) {
 									echo("------------NEW PICK---------------<br />");
@@ -1351,6 +1354,9 @@ class draft extends BaseEditor {
 	 */
 	protected function getURIData() {
 		parent::getURIData();
+		if ($this->input->post('draft_id')) {
+			$this->uriVars['draft_id'] = $this->input->post('draft_id');
+		} // END if
 		if ($this->input->post('league_id')) {
 			$this->uriVars['league_id'] = $this->input->post('league_id');
 		} // END if
@@ -1402,7 +1408,14 @@ class draft extends BaseEditor {
 		if ($this->input->post('uid')) {
 			$this->uriVars['uid'] = $this->input->post('uid');
 		} // END if
-		
+		if ($this->input->post('autoTime')) {
+			$this->uriVars['autoTime'] = $this->input->post('autoTime');
+		}
+		// EDIT 1.0.5 
+		// NEW QUERY VARS
+		if ($this->input->post('auto_option')) {
+			$this->uriVars['auto_option'] = $this->input->post('auto_option');
+		} // END if
 	}
 	protected function makeForm() {
 		$this->enqueStyle('jquery.ui.css');
@@ -1555,17 +1568,23 @@ class draft extends BaseEditor {
 		}
 		$teams = array();
 		$isCommish = false;
+		$isAdmin = false;
 		//echo("draft id = ".$this->dataModel->id."<br />");
-		if ($this->dataModel->id != -1) {
+		if ($this->dataModel->id == -1 && isset($this->uriVars['draft_id']) && !empty($this->uriVars['draft_id'])) {
+			$this->dataModel->load($this->uriVars['draft_id']);
+		}
+		if ($this->dataModel->id != -1) {			
 			$this->league_model->load($this->dataModel->league_id);
 			$teams = $this->league_model->getTeamDetails();
 			$isCommish = $this->league_model->commissioner_id == $this->params['currUser'];
+			$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 		}
 		$this->data['thisItem']['isCommish'] = $isCommish;
 		$this->data['thisItem']['draftDate'] = $this->dataModel->draftDate;
 		$this->data['thisItem']['draftStatus'] = $this->dataModel->getDraftStatus();
 		$this->data['thisItem']['timerEnable'] = ($this->dataModel->getDraftStatus() < 4 && $this->dataModel->timerEnable == 1) ? 1 : 0;
 		$this->data['thisItem']['league_id'] = $this->dataModel->league_id;
+		$this->data['thisItem']['draft_id'] = $this->dataModel->id;
 		$this->data['thisItem']['teamList'] = $teams;
 		$draftedPlayers = $this->dataModel->getTakenPicks();
 		//echo($this->db->last_query()."<br />");
@@ -1575,6 +1594,17 @@ class draft extends BaseEditor {
 		
 		$this->data['thisItem']['playersInfo'] = $this->player_model->getPlayersDetails($draftedPlayers);
 		$this->data['thisItem']['draftResults'] = $this->dataModel->getDraftResults();
+		
+		// EDITS 1.0.5
+		// IF ADMIN OR COMMISH, LOAD AVAILABLE PLAYERS FOR MANUAL/EDIT PICK DIALOG
+		if ($isAdmin || $isCommish) {
+			if (!function_exists('getDraftedPlayersByLeague')) {
+				$this->load->helper('roster');
+			}
+			$this->data['playerList'] = $this->dataModel->getPlayerPool(false,$this->params['config']['ootp_league_id'], NULL, NULL,  NULL, NULL, 0, -1, 0, $this->dataModel->league_id,$this->ootp_league_model->current_date,NULL,'all',-1,true);
+		}
+		// END 1.0.5 EDITS
+		
 		//echo($this->db->last_query()."<Br />");
 		$this->params['subTitle'] = "League Draft";
 		$this->makeNav();

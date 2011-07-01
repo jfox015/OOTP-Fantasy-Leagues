@@ -838,7 +838,7 @@ class draft_model extends base_model {
 		if ($year === false) $year = date('Y');
 		$this->resetPick($pick_overall,$league_id = false, $year = false, -999);
 		return true;
-	}
+	}	
 	public function resetPick($pick_overall = false, $league_id = false, $year = false, $player_id = false ) {
 		
 		if ($pick_overall === false) { return; }
@@ -1043,7 +1043,7 @@ class draft_model extends base_model {
 	//public function getPlayerPool($league_id = false, $ootp_league_id, $playerType = 1, $position = -1, $stats_range = 1, $min_var = 0) {
 	public function getPlayerPool($countOnly = false, $ootp_league_id, $player_type=1, $position_type = -1,  
 									$role_type = -1, $stats_range = 1, $min_var = 0, $limit = -1, $startIndex = 0, $league_id = false, $ootp_league_date = false, $rules = array(),
-									$searchType = 'all', $searchParam = -1) {	
+									$searchType = 'all', $searchParam = -1, $noStats = false) {	
 		$stats = array();
 		$players = array();
 		if ($league_id === false) $league_id = $this->league_id;
@@ -1051,48 +1051,58 @@ class draft_model extends base_model {
 		$alreadyDrafted = getDraftedPlayersByLeague($league_id);
 		
 		$this->db->flush_cache();
-		$sql = 'SELECT fantasy_players.id, "add", "draft", age, throws, bats, fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';		
+		$sql = '';
 		$where = '';
-		if ($player_type == 1) {
-			if ($stats_range == 4) {
-				$sql .= player_stat_query_builder(1, QUERY_STANDARD, $rules, false)." ";
-			} else {
-				$sql .= player_stat_query_builder(1, QUERY_STANDARD, $rules)." ";
-			}
-			$tblName = "players_career_batting_stats";
-			$where = "AND players.position <> 1 AND players_career_batting_stats.ab > 0 ";
-			if (!empty($position_type) && $position_type != -1) {
-				if ($position_type == 20) {
-					$where.="AND (players.position = 7 OR players.position = 8 OR players.position = 9) ";
+		if (!$noStats) {
+			$sql = 'SELECT fantasy_players.id, "add", "draft", age, throws, bats, fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';		
+			if ($player_type == 1) {
+				if ($stats_range == 4) {
+					$sql .= player_stat_query_builder(1, QUERY_STANDARD, $rules, false)." ";
 				} else {
-					$where.="AND players.position = ".$position_type." ";
+					$sql .= player_stat_query_builder(1, QUERY_STANDARD, $rules)." ";
 				}
-			}
-			$order = 'ab';
-			if ($min_var != 0) {
-				$where .= 'AND '.$tblName.'.ab >= '.$min_var." ";
-			}
-		} else {
-			if ($stats_range == 4) {
-				$sql .= player_stat_query_builder(2, QUERY_STANDARD, $rules, false)." ";
+				$tblName = "players_career_batting_stats";
+				$where = "AND players.position <> 1 AND players_career_batting_stats.ab > 0 ";
+				if (!empty($position_type) && $position_type != -1) {
+					if ($position_type == 20) {
+						$where.="AND (players.position = 7 OR players.position = 8 OR players.position = 9) ";
+					} else {
+						$where.="AND players.position = ".$position_type." ";
+					}
+				}
+				$order = 'ab';
+				if ($min_var != 0) {
+					$where .= 'AND '.$tblName.'.ab >= '.$min_var." ";
+				}
 			} else {
-				$sql .= player_stat_query_builder(2, QUERY_STANDARD, $rules)." ";
-			}
-			$tblName = "players_career_pitching_stats";
-			$where = "AND players_career_pitching_stats.ip > 0 ";
-			if (!empty($role_type) && $role_type != -1) {
-				$where.="AND players.role = ".$role_type." ";
-			}
-			$order = 'ip';
-			if ($min_var != 0) {
-				$where .= 'AND '.$tblName.'.ip >= '.$min_var." ";
-			}
+				if ($stats_range == 4) {
+					$sql .= player_stat_query_builder(2, QUERY_STANDARD, $rules, false)." ";
+				} else {
+					$sql .= player_stat_query_builder(2, QUERY_STANDARD, $rules)." ";
+				}
+				$tblName = "players_career_pitching_stats";
+				$where = "AND players_career_pitching_stats.ip > 0 ";
+				if (!empty($role_type) && $role_type != -1) {
+					$where.="AND players.role = ".$role_type." ";
+				}
+				$order = 'ip';
+				if ($min_var != 0) {
+					$where .= 'AND '.$tblName.'.ip >= '.$min_var." ";
+				}
+			}	
+		} else {
+			$sql = 'SELECT fantasy_players.id, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name';		
+			$tblName = 'players';
 		}
 		$sql .= ' FROM '.$tblName;
 		$sql .= ' LEFT JOIN fantasy_players ON fantasy_players.player_id = '.$tblName.'.player_id';
-		$sql .= ' LEFT JOIN players ON players.player_id = '.$tblName.'.player_id';
-		$sql .= ' WHERE '.$tblName.'.split_id = 1 AND '.$tblName.'.league_id = '.$ootp_league_id.' AND '.$tblName.'.level_id = 1';
-		$sql .= ' AND players.retired = 0';
+		if (!$noStats) {
+			$sql .= ' LEFT JOIN players ON players.player_id = '.$tblName.'.player_id';
+		}
+		$sql .= ' WHERE '.$tblName.'.league_id = '.$ootp_league_id.' AND players.retired = 0';
+		if (!$noStats) {
+			$sql .= ' AND '.$tblName.'.split_id = 1 AND '.$tblName.'.level_id = 1';
+		}
 		$notDraftableStr = "(";
 		if (sizeof($alreadyDrafted) > 0) {
 			foreach ($alreadyDrafted as $id) {
@@ -1106,24 +1116,30 @@ class draft_model extends base_model {
 		//$this->db->where_not_in('player_id',$notAFreeAgent);
 			$sql .= ' AND fantasy_players.id NOT IN '.$notDraftableStr;
 		}
-		$year_time = (60*60*24*365);
-		if ($ootp_league_date === false || $ootp_league_date == EMPTY_DATE_STR) {
-			$base_year = time();
-		} else {
-			$base_year = strtotime($ootp_league_date);
-		}
-		if ($stats_range != 4) {
-			$sql .= ' AND '.$tblName.'.year = '.date('Y',$base_year-($year_time * $stats_range));
-		} else {
-			$sql .= ' AND ('.$tblName.'.year = '.date('Y',$base_year-($year_time))." OR ".$tblName.'.year = '.date('Y',time()-($year_time * 2))." OR ".$tblName.'.year = '.date('Y',time()-($year_time * 3)).")";
-		}
+		if (!$noStats) {
+			$year_time = (60*60*24*365);
+			if ($ootp_league_date === false || $ootp_league_date == EMPTY_DATE_STR) {
+				$base_year = time();
+			} else {
+				$base_year = strtotime($ootp_league_date);
+			}
+			if ($stats_range != 4) {
+				$sql .= ' AND '.$tblName.'.year = '.date('Y',$base_year-($year_time * $stats_range));
+			} else {
+				$sql .= ' AND ('.$tblName.'.year = '.date('Y',$base_year-($year_time))." OR ".$tblName.'.year = '.date('Y',time()-($year_time * 2))." OR ".$tblName.'.year = '.date('Y',time()-($year_time * 3)).")";
+			}
+		} // END if (!$noStats)
 		if (!empty($where)) {
 			$sql .= " ".$where;
-		}
-		$sql.=' GROUP BY '.$tblName.'.player_id';
-		if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
-			$order = 'fpts';	
-		}
+		} // END if (!empty($where))
+		if ($noStats) {
+			$order = 'players.last_name';
+		} else {
+			$sql.=' GROUP BY '.$tblName.'.player_id';
+			if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+				$order = 'fpts';	
+			}
+		} // END if (!$noStats)
 		$sql.=" ORDER BY ".$order." DESC ";
 		if ($limit != -1 && $startIndex == 0) {
 			$sql.="LIMIT ".$limit;
