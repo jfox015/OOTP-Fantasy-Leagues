@@ -42,17 +42,27 @@
 		});	
 		$('a[rel=editPick]').live('click',function (e) {					   
 			e.preventDefault();
-			$('#manualForm form#action').val('edit');
+			$('#manualForm #action').val('edit');
 			openDialog(e, 'manualForm', this.id.split("|"));
 		});	
 		$('a[rel=autoPick]').live('click',function (e) {					   
 			e.preventDefault();
 			openDialog(e, 'autoForm', this.id.split("|"));
 		});	
+		$('a[rel=draftPlayer]').live('click',function (e) {					   
+			e.preventDefault();
+			$('#manpick input#pick').val(this.id);
+			$('#manpick').submit();
+		});	
 	    $('#btnCancel').live('click',function (e) {					   
 			e.preventDefault();
 			$.colorbox.close();
 		});
+		$('#btnAutoSbt').live('click',function (e) {					   
+			e.preventDefault();
+			$('#frmAuto').submit();
+		});
+		
 		$('input[rel=auto_option]').live('click',function (e) {					   
 			var display = 'none';
 			if ($("input[@name=auto_option]:checked").val() == 'x_picks') {
@@ -100,7 +110,7 @@
 	}
 	function openDialog(e,id, params) {
 		$('#'+id + ' input#league_id').val(params[0]);
-		$('#'+id + ' input#pick_id').val(params[2]);
+		$('#'+id + ' input#pick_id').val(params[1]);
 		$('#'+id + ' input#team_id').val(params[2]);
 		$.colorbox({html:$('div#'+id).html()});
 	}
@@ -125,35 +135,70 @@
 		});
 	}
     </script>
+    <?php 
+    /*-------------------------------------
+    /	ADMIN/COMMISH ONLY DIALOGS
+    /	OMIT LOAD FOR NORMAL USERS	
+    /------------------------------------*/
+    if ($thisItem['isCommish'] || $thisItem['isAdmin']) { ?>
     <div id="manualForm" class="dialog">
 		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>draft/processDraft" name='manpick' id="manpick">
         <input type='hidden' id="action" name='action' value='manualpick'></input>
         <input type='hidden' id="team_id" name='team_id' value=''></input>
         <input type='hidden' id="pick_id" name='pick_id' value=''></input>
+		<input type='hidden' id="pick" name='pick' value=''></input>
         <input type='hidden' id="league_id" name='league_id' value=''></input>
         <div class='textbox'>
          <table cellpadding=2 cellspacing=0 cellborder=0>
-          <tr class='title'><td colspan=3>Draft Pick</td></tr>
+          <tr class='title'><td>Draft Pick</td></tr>
           <tr>
-           <td><label for='selection'>Player ID:</label></td>
+          <tr class='highlight'><td>Choose Player</td></tr>
+          <tr>
            <td>
-           <?php  
-           if (isset($playerList) && sizeof($playerList) > 0) { ?>
-           <select name="pick">
-           <?php 
-           		foreach ($playerList as $playerInfo) { ?>
-					<option value="<?php print($playerInfo['id']); ?>"><?php print(get_pos($playerInfo['pos'])." - ".$playerInfo['last_name'].", ".$playerInfo['first_name']); ?></option>
-				<?php 
-           		} // END foreach
+           	<div id="pickList" class="listPickerBox">
+                <?php
+				if (isset($playerList) && sizeof($playerList) > 0) {
+					$itemCount = sizeof($playerList);
+					$colLimit = (round($itemCount / 3)) + 1;
+					$columnsDrawn = 1;
+					$countDrawn = 0;
+					$countPerColumn = 0;
+					foreach ($playerList as $itemArr) {
+							/*-----------------------------------
+							/
+							/	FREE AGENT LIST VIEW
+							/
+							/-----------------------------------*/
+							if ($countPerColumn == 0) {
+							?>
+							<div id="listColumn<?php echo($columnsDrawn); ?>" class="listcolumn">
+								<ul>
+							<?php } // END if
+							?>
+									<li><a rel="draftPlayer" id="<?php echo($itemArr['id']); ?>" href="#"><img src="<?php echo($config['fantasy_web_root']); ?>images/icons/add.png" width="16" height="16" alt="Draft" title="Draft" /></a>&nbsp;<a href="<?php 
+									echo($config['fantasy_web_root']); ?>players/info/<?php echo($itemArr['id']); ?>" target="_blank"><?php echo($itemArr['last_name'].", ".$itemArr['first_name']); ?></a> - <?php echo(get_pos($itemArr['pos'])); ?></li>
+							<?php 	$countDrawn++;
+						
+								$countPerColumn++;
+								if ($countPerColumn == $colLimit || $countDrawn == $itemCount) { ?>
+								</ul>
+							</div>
+							<?php 	
+								$countPerColumn = 0;
+								$columnsDrawn++;
+							}  // END if
+							if ($countDrawn == 0) { ?>
+                            <div id="listColumn1" class="emptyList">
+                                <ul>
+                                    <li>No draftable players found.</li>
+                                </ul>
+                            </div>
+                            <?php }
+						} // END foreach
+				}
 			?>
-			</select>
-			<?php 
-           } else {
-           		print ("Sorry, Draftable Player List not available.");
-           }// END if
-           ?>
-           </td>
-           <td><input type='submit' class="button" value='Draft Player'></input></td>
+           </td></tr>
+           <tr>
            <td><input type='button' id="btnCancel" class="button" value='Cancel'></input>
           </tr>
          </table>
@@ -162,7 +207,7 @@
 	</div>
 	
 	<div id="autoForm" class="dialog">
-		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>draft/processDraft" name='autopick' id="autopick">
+		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>draft/processDraft" name='frmAuto' id="frmAuto">
         <input type='hidden' id="action" name='action' value='auto'></input>
         <input type='hidden' id="team_id" name='team_id' value=''></input>
         <input type='hidden' id="pick_id" name='pick_id' value=''></input>
@@ -176,28 +221,33 @@
            <i>NOTE: This action will override any user auto draft setting in favor of making the auto picks</i><br />
            <input type="radio" rel="auto_option" name="auto_option" value="current" selected="selected" /> Current Pick Only <br />
            <input type="radio" rel="auto_option" name="auto_option" value="x_picks" /> X Number of Picks <br />
-           <div id="pick_input"><label for='selection'>Enter Count:</label> <input type='text' id="pick_count" name='pick_count' value='' class="numbersOnly" maxlength="2"></input></div>
+           <div id="pick_input"><label for='selection'>Enter Count:</label> <input type='text' id="auto_pick_count" name='auto_pick_count' value='' class="numbersOnly" maxlength="2"></input></div>
            <input type="radio" rel="auto_option" name="auto_option" value="round" /> Complete Round <br />
            <input type="radio" rel="auto_option" name="auto_option" value="all" /> Complete Entire Draft <br />
            </td>
           </tr>
           <tr>
-           <td><input type='submit' class="button" value='Auto Draft'></input></td>
-           <td><input type='button' id="btnCancel" class="button" value='Cancel'></input>
+           <td>
+           <fieldset class="buttonRow">
+           <input type='button' class="button" id="btnAutoSbt" value='Auto Draft'></input>
+           <input type='button' id="btnCancel" class="button" value='Cancel'></input>
+           </fieldset>
            </td>
           </tr>
          </table>
         </div>
         </form>
 	</div>
-	
+	<?php 
+    } // END if 
+    ?>
 	<div id="column-single">
 		<?php 
 		// EDIT 1.0.2
 		// ADMIN MESSAGING FOR DRAFT CONTROLS
 		$message = "";
 		$messageType = "info";
-		if ($accessLevel == ACCESS_ADMINISTRATE || $thisItem['isCommish']) {
+		if ($thisItem['isCommish'] || $thisItem['isAdmin']) {
 			if ($thisItem['draftStatus'] < 2  || time() < strtotime($thisItem['draftDate'])) {
 				$message = "<b>NOTE</b>: Your draft has not started yet. More controls will be available once the draft date and time are reached.";
 			} else if ($thisItem['draftStatus'] == 4) {
@@ -231,7 +281,7 @@
        	<div id="content">
 		<?php $cols = 6; 
 		$width='';
-		if (($accessLevel == ACCESS_ADMINISTRATE || $thisItem['isCommish']) && $thisItem['draftStatus'] < 4) {
+		if (($thisItem['isCommish'] || $thisItem['isAdmin']) && $thisItem['draftStatus'] < 4) {
 			$width=' style="width:800px;"';
 		} ?>
 		<div class='tablebox'<?php echo($width); ?>>
@@ -301,7 +351,7 @@
 						<td><?php echo(get_pos($thisItem['playersInfo'][$pid]['position'])); ?></td>
 						<td class="<?php echo($cls); ?>_l"><?php echo anchor('/players/info/league_id/'.$thisItem['league_id'].'/player_id/'.$pid, $thisItem['playersInfo'][$pid]['first_name']." ".$thisItem['playersInfo'][$pid]['last_name']); ?></a></td>
 					<?php }
-					if ($accessLevel == ACCESS_ADMINISTRATE || $thisItem['isCommish']) { 
+					if ($thisItem['isCommish'] || $thisItem['isAdmin']) {
 					 if ($thisItem['draftStatus'] > 0 && $thisItem['draftStatus'] < 4 && time() > strtotime($thisItem['draftDate'])) {
             		if ($pid=="") {
 							if ($first=="") { ?>

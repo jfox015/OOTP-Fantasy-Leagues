@@ -39,7 +39,7 @@
 		$('div#activeStatusBox').hide();
 		
 		$('select#owners').change(function(){
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>draft/selection/league_id/<?php echo($league_id); ?>/team_id/' + $('select#owners').val();
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>draft/selection/league_id/<?php echo($league_id); ?>/act_as_id/' + $('select#owners').val();
 		});
 		
 		
@@ -234,7 +234,9 @@
 		});	
 	}
 	function loadList(obj) {
-		var url = "<?php echo($config['fantasy_web_root']); ?>draft/getPicks/league_id/"+league_id+cacheBuster();
+		var url = "<?php echo($config['fantasy_web_root']); ?>draft/getPicks/league_id/"+league_id;
+		<?php if ($team_override) { ?> url += '/user_id/<?php print($team_owner_id); ?>';<? } ?>
+		url += cacheBuster();
 		$('div#activeList').html(ajaxWait);
 		$.getJSON(url, function(data){
 			$('div#activeList').empty();
@@ -249,7 +251,9 @@
 		});
 	}
 	function loadUserPicks(obj) {
-		var url = "<?php echo($config['fantasy_web_root']); ?>draft/getResults/league_id/"+league_id+cacheBuster();
+		var url = "<?php echo($config['fantasy_web_root']); ?>draft/getResults/league_id/"+league_id;
+		<?php if ($team_override) { ?> url += '/user_id/<?php print($team_owner_id); ?>';<? } ?>
+		url += cacheBuster();
 		$('div#activeResults').html(ajaxWait);
 		$.getJSON(url, function(data){
 			$('div#activeResults').empty();
@@ -377,7 +381,15 @@
 		/-----------------------------------------------------------------------*/
 		if (isset($ownerList) && sizeof($ownerList) > 0) { ?>
         <div style="width:98%;text-align:right;float:left;">
-        <label for="owners" style="min-width:750px;">Act As Owner:</label> <select id="owners" style="clear:none;">
+		<?php if (isset($team_override) && $team_override === true) { ?>
+        <div class="notice">
+        Currently Viewing Page as: <?php print($ownerList[$user_team_id]." - ".$team_list[$user_team_id]['teamname']." ".$team_list[$user_team_id]['teamnick']); ?>
+        </div><br />
+        <?php 
+        } // END if (isset($team_override)
+        ?>
+        <label for="owners" style="min-width:750px;">Act As Owner:</label> 
+        <select id="owners" style="clear:none;">
         	<option value="X">Select owner</option>
             <?php
 			foreach($ownerList as $id => $ownerName) {

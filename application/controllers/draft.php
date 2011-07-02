@@ -11,7 +11,7 @@ require_once('base_editor.php');
  *	@author			Jeff Fox
  *	@author			Frank Holmes
  *	@dateCreated	03/23/10
- *	@lastModified	07/16/10
+ *	@lastModified	07/01/11
  *
  */
 class draft extends BaseEditor {
@@ -350,7 +350,7 @@ class draft extends BaseEditor {
 	 *	PROCESS DRAFT.
 	 *	The heart of the draft engine. This function runs the draft.
 	 *
-	 *	Adapted from the processDraft.php script written by fhommes for StatsLab.
+	 *	Adapted from the processDraft.php script written by fhommes for StatsLab X.
 	 */
 	public function processDraft() {
 		if ($this->params['loggedIn']) {
@@ -433,7 +433,7 @@ class draft extends BaseEditor {
 								 $dpick = "";
 							 }
 							 // GET DRAFT ELIDGIBLE PLAYERS
-							 $values = $this->dataModel->getPlayerValues($this->params['config']['ootp_league_id']);
+							 $values = $this->dataModel->getPlayerValues();
 							 // DRAFT SETTINGS FROM CONFIG
 							 $draftEnable=0;
 							 $pauseAuto=0;
@@ -519,11 +519,14 @@ class draft extends BaseEditor {
 							}
 							##### Determine Pick if Commish/Timer Auto #####
 							if ($this->uriVars['action']=='auto') {
+								$auto_option = (isset($this->uriVars['auto_option']) && !empty($this->uriVars['auto_option'])) ? $this->uriVars['auto_option'] : 'current';
+								$auto_pick_count = (isset($this->uriVars['auto_pick_count']) && !empty($this->uriVars['auto_pick_count'])) ? $this->uriVars['auto_pick_count'] : 1;
+								
 								if (!isset($this->player_model)) {
 									$this->load->model('player_model');
 								}
 								## Set human team to auto
-							   if ($setToAuto==1 && $teams[$dteam]['auto'] != 1) {
+							   if ($auto_option == "all" && $teams[$dteam]['auto'] != 1) {
 								  $this->team_model->load($dteam);
 								  $this->team_model->setAutoDraft(true);
 								  $teams[$dteam]['auto']=1;
@@ -532,7 +535,6 @@ class draft extends BaseEditor {
 								// GET TEAMS AUTO LIST
 								$pickList = array();
 								if ($teams[$dteam]['autoList']==1) {
-									
 									$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
 									foreach ($pickList as $pid => $val) {
 										if (!isset($drafted[$val['player_id']])) {$dpick=intval($val['player_id']);break;}
@@ -986,8 +988,6 @@ class draft extends BaseEditor {
 			$this->params['subTitle'] = "Draft";
 			
 			if ($this->dataModel->id != -1) {
-				
-				
 				// GET DRAFT STATUS
 				$status = $this->dataModel->getDraftStatus();
 				//-----------------------------------------------------------------------
@@ -1009,19 +1009,20 @@ class draft extends BaseEditor {
 					$pick_id = 0;
 					$pick_team_id = -1;
 					
-					// GET CURRENT DRAFT PICK<br />
+					// GET CURRENT DRAFT PICK
 					$pick = $this->dataModel->getCurrentPick();
 					if ($pick) {
 						$pick_id = $pick['pick_overall'];
 						$pick_team_id = $pick['team_id'];
 					}
-					
-					
 					$this->data['pick_id'] = $pick_id;
+					$this->data['team_override'] = false;
 					$this->data['pick_team_id'] = $pick_team_id;
 					$userTeams = $this->user_meta_model->getUserTeamIds($this->dataModel->league_id,$this->params['currUser']);
 					$this->data['user_team_id'] = $userTeams[0];
+					$this->data['team_owner_id'] = $this->params['currUser'];
 					$this->data['isCommish'] = $this->league_model->userIsCommish($this->params['currUser'],$this->dataModel->league_id); 
+					$this->data['isAdmin'] = $this->params['accessLevel'] == ACCESS_ADMINISTRATE; 
 					
 					if ($this->debug) {
 						echo("Curr user Id = ".$this->params['currUser']."<br />");
@@ -1029,8 +1030,13 @@ class draft extends BaseEditor {
 						echo("Current team pikcing = ".$pick_team_id."<br />");
 					}
 					// GET OWNER INFO FOR "ACT AS..." MENU
-					if ($this->data['isCommish'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+					if ($this->data['isCommish'] || $this->data['isAdmin']) {
 						$this->data['ownerList'] = $this->league_model->getOwnerInfo($this->dataModel->league_id);
+						if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id']) && $this->uriVars['act_as_id'] != $this->params['currUser']) {
+							$this->data['user_team_id'] = $this->uriVars['act_as_id'];
+							$this->data['team_owner_id'] = $this->resolveTeamOwner($this->data['user_team_id']);
+							$this->data['team_override'] = true;
+						}
 					}
 					if (!isset($this->uriVars['player_id']) || empty($this->uriVars['player_id'])) {
 						$this->uriVars['player_id'] = -1;
@@ -1081,9 +1087,9 @@ class draft extends BaseEditor {
 					$this->data['scoring_rules'] = $rules = $this->league_model->getScoringRules(0);
 					if ($league_id != -1) {
 						$this->data['team_list'] = $this->league_model->getTeamDetails($league_id);
-						if ($this->params['loggedIn']) {
-							$this->data['userTeamId'] = $this->user_meta_model->getUserTeamIds($league_id,$this->params['currUser']);
-						}
+						//if ($this->params['loggedIn']) {
+						//	$this->data['userTeamId'] = $this->user_meta_model->getUserTeamIds($league_id,$this->data['team_owner_id']);
+						//}
 						$rules = $this->league_model->getScoringRules($league_id);
 						if (sizeof($rules) == 0) {
 							$rules = $this->league_model->getScoringRules(0);
@@ -1164,6 +1170,10 @@ class draft extends BaseEditor {
 		$status = "";
 		$code =200;
 		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
 		if ($this->dataModel->id != -1) {
 			if (!$this->dataModel->addUserPick($this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
 				$status .= "error:Your pick was not saved.";
@@ -1173,7 +1183,7 @@ class draft extends BaseEditor {
 			} else {
 				$status .= "Player Added Successfully.";
 			}
-			$result = $this->loadPickList($this->dataModel->league_id, true);
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
 		} else {
 			$status .= "error:League Identifier Missing";
 		}
@@ -1187,6 +1197,10 @@ class draft extends BaseEditor {
 		$status = "";
 		$code =200;
 		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
 		if ($this->dataModel->id != -1) {
 			if (!$this->dataModel->movePick($this->uriVars['direction'],$this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
 				$status .= "error:Your pick was not saved.";
@@ -1196,7 +1210,7 @@ class draft extends BaseEditor {
 			} else {
 				$status .= "Player Moved Successfully.";
 			}
-			$result = $this->loadPickList($this->dataModel->league_id, true);
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
 		} else {
 			$status .= "error:League Identifier Missing";
 		}
@@ -1210,6 +1224,10 @@ class draft extends BaseEditor {
 		$status = "";
 		$code =200;
 		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
 		if ($this->dataModel->id != -1) {
 			if (!$this->dataModel->removePick($this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
 				$status .= "error:Your pick was not saved.";
@@ -1219,7 +1237,7 @@ class draft extends BaseEditor {
 			} else {
 				$status .= "Player Removed Successfully.";
 			}
-			$result = $this->loadPickList($this->dataModel->league_id, true);
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
 		} else {
 			$status .= "error:League Identifier Missing";
 		}
@@ -1233,6 +1251,10 @@ class draft extends BaseEditor {
 		$status = "";
 		$code =200;
 		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
 		if ($this->dataModel->id != -1) {
 			if (!$this->dataModel->clearDraftList($this->params['currUser'])) {
 				$status .= "error:Your pick was not saved.";
@@ -1242,7 +1264,7 @@ class draft extends BaseEditor {
 			} else {
 				$status .= "Draft list Successfully Cleared.";
 			}
-			$result = $this->loadPickList($this->dataModel->league_id, true);
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
 		} else {
 			$status .= "error:League Identifier Missing";
 		}
@@ -1258,8 +1280,12 @@ class draft extends BaseEditor {
 		$status = "";
 		$code = 0;
 		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id'])) {
+			$user_id = $this->uriVars['user_id'];
+		}
 		if ($this->dataModel->id != -1) {
-			$result = $this->loadPickList($this->dataModel->league_id, true);
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
 			$status .= "OK";
 			$code = 200;
 			$result =  '{ items: ['.$result.']}';
@@ -1280,8 +1306,12 @@ class draft extends BaseEditor {
 		$status = "";
 		$code = 0;
 		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id'])) {
+			$user_id = $this->uriVars['user_id'];
+		}
 		if ($this->dataModel->id != -1) {
-			$result = $this->loadUserResults($this->dataModel->league_id, true);
+			$result = $this->loadUserResults($this->dataModel->league_id, $user_id, true);
 			$status .= "OK";
 			$code = 200;
 			$result =  '{ items: ['.$result.']}';
@@ -1294,12 +1324,13 @@ class draft extends BaseEditor {
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
-	public function loadUserResults($league_id = false, $return = false) {
+	public function loadUserResults($league_id = false, $user_id = false, $return = false) {
 		
+		if ($user_id === false) { $user_id = $this->params['currUser']; }
 		$status = "";
 		$code = 0;
-		$list = $this->dataModel->getUserResults($this->params['currUser']);
 		$result = '';
+		$list = $this->dataModel->getUserResults($user_id);
 		if (sizeof($list) > 0) {
 			foreach ($list as $round => $data) {
 				if ($result != '') { $result .= ','; }
@@ -1314,12 +1345,16 @@ class draft extends BaseEditor {
 		}
 		return $result;
 	}
-	public function loadPickList($league_id = false, $return = false) {
+	public function loadPickList($league_id = false, $user_id = false, $return = false) {
 		
+		if ($user_id === false) { $user_id = $this->params['currUser']; }
 		$status = "";
 		$code = 0;
-		$list = $this->dataModel->getUserPicks($this->params['currUser']);
+		$list = $this->dataModel->getUserPicks($user_id);
 		$result = '';
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
 		if (sizeof($list) > 0) {
 			foreach ($list as $rank => $data) {
 				if ($result != '') { $result .= ','; }
@@ -1333,6 +1368,13 @@ class draft extends BaseEditor {
 			$code = 201;
 		}
 		return $result;
+	}
+	
+	protected function resolveTeamOwner($team_id) {
+		if (!isset($this->team_model)) {
+			$this->load->model('team_model');
+		}
+		return $this->team_model->getTeamOwnerId($team_id);
 	}
 	protected function loadModel() {
 		
@@ -1408,13 +1450,19 @@ class draft extends BaseEditor {
 		if ($this->input->post('uid')) {
 			$this->uriVars['uid'] = $this->input->post('uid');
 		} // END if
-		if ($this->input->post('autoTime')) {
-			$this->uriVars['autoTime'] = $this->input->post('autoTime');
-		}
 		// EDIT 1.0.5 
 		// NEW QUERY VARS
-		if ($this->input->post('auto_option')) {
+		if ($this->input->post('autoTime')) { // USED BY DRAFT TIME MODULE
+			$this->uriVars['autoTime'] = $this->input->post('autoTime');
+		}
+		if ($this->input->post('auto_option')) { // USED FOR ADMIN/COMMISH AUTO PICK OPTION
 			$this->uriVars['auto_option'] = $this->input->post('auto_option');
+		} // END if
+		if ($this->input->post('auto_pick_count')) { // USED FOR ADMIN/COMMISH AUTO PICK OPTION
+			$this->uriVars['auto_pick_count'] = $this->input->post('auto_pick_count');
+		} // END if
+		if ($this->input->post('act_as_id')) { // USED FOR ADMIN/COMMISH AUTO PICK OPTION
+			$this->uriVars['act_as_id'] = $this->input->post('act_as_id');
 		} // END if
 	}
 	protected function makeForm() {
@@ -1477,7 +1525,7 @@ class draft extends BaseEditor {
 		$form->radiogroup ('emailOwnersForPick',$responses,'Send owners pick alerts:',($this->input->post('emailOwnersForPick') ? $this->input->post('emailOwnersForPick') : $this->dataModel->emailOwnersForPick));
 		$form->space();
 		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('emailDraftSummary',$responses,'Send round summaries:',($this->input->post('emailDraftSummary') ? $this->input->post('emailDraftSummary') : $this->dataModel->emailDraftSummary));
+		$form->radiogroup ('emailDraftSummary',$responses,'Send round summary emails:',($this->input->post('emailDraftSummary') ? $this->input->post('emailDraftSummary') : $this->dataModel->emailDraftSummary));
 		$form->space();
 		$form->br();
 		$form->fieldset('Draft Schedule Settings');
@@ -1563,6 +1611,7 @@ class draft extends BaseEditor {
 	
 	protected function showInfo() {
 		// Setup header Data
+		$this->enqueStyle('list_picker.css');
 		if ((isset($this->uriVars['id']) && !empty($this->uriVars['id'])) && !isset($this->uriVars['league_id'])) {
 			$this->uriVars['league_id'] =  $this->uriVars['id'];
 		}
@@ -1579,6 +1628,7 @@ class draft extends BaseEditor {
 			$isCommish = $this->league_model->commissioner_id == $this->params['currUser'];
 			$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 		}
+		$this->data['thisItem']['isAdmin'] = $isAdmin;
 		$this->data['thisItem']['isCommish'] = $isCommish;
 		$this->data['thisItem']['draftDate'] = $this->dataModel->draftDate;
 		$this->data['thisItem']['draftStatus'] = $this->dataModel->getDraftStatus();
@@ -1598,10 +1648,10 @@ class draft extends BaseEditor {
 		// EDITS 1.0.5
 		// IF ADMIN OR COMMISH, LOAD AVAILABLE PLAYERS FOR MANUAL/EDIT PICK DIALOG
 		if ($isAdmin || $isCommish) {
-			if (!function_exists('getDraftedPlayersByLeague')) {
-				$this->load->helper('roster');
-			}
 			$this->data['playerList'] = $this->dataModel->getPlayerPool(false,$this->params['config']['ootp_league_id'], NULL, NULL,  NULL, NULL, 0, -1, 0, $this->dataModel->league_id,$this->ootp_league_model->current_date,NULL,'all',-1,true);
+		}
+		if (isset($this->uriVars['autoTime']) && $this->uriVars['autoTime'] != -1) {
+			$this->data['thisItem']['autoTime'] = $this->uriVars['autoTime'];
 		}
 		// END 1.0.5 EDITS
 		

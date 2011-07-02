@@ -9,15 +9,15 @@
 *
 */
 
-Creator/Lead Developer:	jfox015 (Jeff Fox)
+Creator/Lead Developer:	Jeff Fox (Github ID: OOTP ID:, OOTP ID: DesertFox07)
 
-Contributions by:      	fhommes (Frank Holmes) SQL Loading, Draft, PLayer Stats, Stats Engine, Template
-                       	getch ( who inspired Frank)
+Contributions by:      	Frank Esselink (OOTP ID:fhommes) SQL Loading, Draft Engine, PLayer Stats, Stats Engine, Template Inspirpation
+                       	getch (who inspired Frank)
 
 -- Copyrights --
 
 CodeIgniter				(C) 2010 Ellis Labs			http://www.codeigniter.com/
-StatsLab:   			(c) fhommes (Frank Holmes)	
+StatsLab:   			(c) Frank Esselink (OOTP ID:fhommes) 	
 
 OOTP Fantasy Leagues contains code from the following authors:
 
@@ -35,6 +35,7 @@ GPL licenced:
 jQuery					(c) 2009 John Resig	http://jquery.com/
 jQuery MD5				(c) Muhammad Hussein Fattahizadeh http://www.semnanweb.com/jquery-plugin/md5.html
 jQuery UI				(c) http://jqueryui.com/about
+jQuery Colorbox			(c) Jack Moore
 
 X11 Licensed:
 Sort Table				(c) Stuart Langridge 	http://www.kryogenix.org/code/browser/sorttable/

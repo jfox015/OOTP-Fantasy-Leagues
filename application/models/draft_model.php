@@ -5,8 +5,9 @@
  *	interacts with and manipulates the fantasy draft and draft list tables.
  *
  *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+ *	@authot 		Frank Esselink	(fhommes) Where noted
  *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
- *	@version		1.0
+ *	@version		1.0.5
  *
 */
 class draft_model extends base_model {
@@ -1040,15 +1041,44 @@ class draft_model extends base_model {
 		return true;
 	}
 
-	//public function getPlayerPool($league_id = false, $ootp_league_id, $playerType = 1, $position = -1, $stats_range = 1, $min_var = 0) {
+	/**
+	 * 	GET PLAYER POOL.
+	 * 
+	 * 	Retrieves the list of draftable players for the specified OOTP and Fantasy League. 
+	 * 
+	 *  This function allows for the return of the full stats table or just a listing of player names
+	 *  @param	$countOnly 			(Boolean)	Deprecated
+	 *  @param	$ootp_league_id		(Interger)	The ID of the OOTP league (usually 100)
+	 *  @param	$player_type		(Interger)	1 = batter, 2 = Pitcher	
+	 *  @param	$position_type		(Interger)	Fantasy Position Type
+	 *  @param	$role_type			(Interger)	Fantasy Role Type
+	 *  @param	$stats_range		(Integrer)	# of years to display stats for
+	 *  @param	$min_var			(Integrer)	Minimum value for limiting stats
+	 *  @param	$limit				(Integrer)	# of records to return
+	 *  @param	$startIndex			(Integrer)	Index of first record (used with $limit)
+	 *  @param	$league_id			(Integrer)	Fantasy League ID
+	 *  @param	$ootp_league_date	(Date/Time)	[1.0.2] OOTP League Date (Used to determine starting point for stats ranges)
+	 *  @param	$rules				(Array)		[1.0.2] Fantasy Rules Object (used by stats processing for positions)
+	 *  @param	$searchType			{String)	[1.0.2] Deprecated
+	 *  @param	$searchParam		(Integrer)	[1.0.2] Deprecated
+	 *  @param	$noStats 			(Boolean)	[1.0.5]	Omits ststas from return array
+	 *  @return						(Array)		List of draftable players
+	 *  @since						1.0
+	 *  @see						Helpers -> roster_helper
+	 *  @see						Helpers -> general_helper
+	 */
 	public function getPlayerPool($countOnly = false, $ootp_league_id, $player_type=1, $position_type = -1,  
-									$role_type = -1, $stats_range = 1, $min_var = 0, $limit = -1, $startIndex = 0, $league_id = false, $ootp_league_date = false, $rules = array(),
+									$role_type = -1, $stats_range = 1, $min_var = 0, $limit = -1, $startIndex = 0, 
+									$league_id = false, $ootp_league_date = false, $rules = array(),
 									$searchType = 'all', $searchParam = -1, $noStats = false) {	
 		$stats = array();
 		$players = array();
 		if ($league_id === false) $league_id = $this->league_id;
-		
+		if (!function_exists('getDraftedPlayersByLeague')) {
+			$this->load->helper('roster');
+		}
 		$alreadyDrafted = getDraftedPlayersByLeague($league_id);
+		$order = "DESC";
 		
 		$this->db->flush_cache();
 		$sql = '';
@@ -1070,7 +1100,7 @@ class draft_model extends base_model {
 						$where.="AND players.position = ".$position_type." ";
 					}
 				}
-				$order = 'ab';
+				$orderBy = 'ab';
 				if ($min_var != 0) {
 					$where .= 'AND '.$tblName.'.ab >= '.$min_var." ";
 				}
@@ -1085,7 +1115,7 @@ class draft_model extends base_model {
 				if (!empty($role_type) && $role_type != -1) {
 					$where.="AND players.role = ".$role_type." ";
 				}
-				$order = 'ip';
+				$orderBy = 'ip';
 				if ($min_var != 0) {
 					$where .= 'AND '.$tblName.'.ip >= '.$min_var." ";
 				}
@@ -1133,14 +1163,15 @@ class draft_model extends base_model {
 			$sql .= " ".$where;
 		} // END if (!empty($where))
 		if ($noStats) {
-			$order = 'players.last_name';
+			$orderBy = 'players.last_name';
+			$order = "ASC";
 		} else {
 			$sql.=' GROUP BY '.$tblName.'.player_id';
 			if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
-				$order = 'fpts';	
+				$orderBy = 'fpts';	
 			}
 		} // END if (!$noStats)
-		$sql.=" ORDER BY ".$order." DESC ";
+		$sql.=" ORDER BY ".$orderBy." ".$order." ";
 		if ($limit != -1 && $startIndex == 0) {
 			$sql.="LIMIT ".$limit;
 		} else if ($limit != -1 && $startIndex > 0) {
@@ -1166,8 +1197,18 @@ class draft_model extends base_model {
 		}
 		return $stats;
 	}
-	
-	public function getPlayerValues($ootp_league_id, $league_id = false) {
+	/**
+	 * 	GET PLAYER VALUES.
+	 * 	Returns a list if player IDs sorted accoring to their ranking against hitt/pitching and fielding ratings categories.
+	 * 	@param	$ootp_league_id		(Integer)	OPTIONAL, usually 100
+	 *  @param 	$league_id			(Integer)	OPTIONAL< Fantasy league ID. $this->league_id is used if ommited
+	 *  @return						(Array)		A multi dimensional array of player IDs and rankings
+	 *  @see						controllers -> draft -> selection()		
+	 *  @since 						1.0
+	 *  @author						fhommes, Adapted from StatsLab X
+	 *  @author 					jfox015
+	 */
+	public function getPlayerValues($ootp_league_id = 100, $league_id = false) {
 		
 		if ($league_id === false) $league_id = $this->league_id;
 		
