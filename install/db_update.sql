@@ -38,6 +38,7 @@ DROP TABLE IF EXISTS `fantasy_teams_trade_protests`;
 DROP TABLE IF EXISTS `fantasy_players_compiled_batting`;
 DROP TABLE IF EXISTS `fantasy_players_compiled_pitching`;
 DROP TABLE IF EXISTS `users_activation_types`;
+ALTER TABLE `fantasy_scoring_periods` ADD `manual_waivers` TINYINT NOT NULL DEFAULT '-1';
 ALTER TABLE `fantasy_invites` ADD `status_id` TINYINT NOT NULL DEFAULT '1';
 ALTER TABLE `fantasy_leagues` ADD `accept_requests` TINYINT NOT NULL DEFAULT '1';
 ALTER TABLE `fantasy_transactions` ADD `trade_team_id` INT NOT NULL AFTER `dropped`;

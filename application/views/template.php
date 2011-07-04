@@ -59,7 +59,8 @@
                 <div style='float:left;width:411px;height:36px;padding:0;margin:0;'><img src='<?php echo($config['ootp_html_report_path']); ?>images/report_header_banner_right.jpg' border=0></div>
             </div>
             <div id='mainmenu' style='float:left;width:821px;height:21px;margin:0;padding:7px 8px 0 0;background-image:url(<?php echo($config['ootp_html_report_path']); ?>images/report_header_menu_bg.jpg); background-repeat:repeat-x;'>
-                <ul style='float:right;'>
+                <?php if ($config['ootp_html_report_links'] == 1) { ?>
+				<ul style='float:right;'>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>index.html' class='menu first' id='first'>BNN Home</a></li>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_home.html' class='menu'><?php echo($config['ootp_league_abbr']); ?></a></li>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_scores.html' class='menu'>Scores</a></li>
@@ -70,7 +71,11 @@
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_players.html' class='menu'>Players</a><li>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_transactions_0_0.html' class='menu'>Transactions</a></li>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>history/league_<?php echo($config['ootp_league_id']); ?>_index.html' class='menu'>History</a></li>
+				<?php if (isset($config['stats_lab_url']) && !empty($config['stats_lab_url'])) { ?>
+				<li><a href='<?php echo($config['stats_lab_url']); ?>' class='menu'>StatsLab</a></li>
+				<?php } ?>
                 </ul>
+				<?php } ?>
             </div>   <!-- END mainmenu DIV -->
             
             <div style='float:left;width:821px;height:59px;background-color:<?php echo($header_bg); ?>;margin:0;padding:7px 0 0 8px;'>

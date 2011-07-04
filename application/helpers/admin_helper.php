@@ -17,15 +17,16 @@ if ( ! function_exists('getCurrentScoringPeriod')) {
 			$period= "error: No league date provided";
 		} else {
 			$ci =& get_instance(); 
-			$ci->db->select("id, date_start, date_end");
+			$ci->db->select("id, date_start, date_end, manual_waivers");
 			$ci->db->where("DATEDIFF('".$league_date."',date_start)>=",0);
 			$ci->db->where("DATEDIFF('".$league_date."',date_end)<=",0);
 			$query = $ci->db->get("fantasy_scoring_periods");
 			if ($query->num_rows() > 0) {
 				$row = $query->row();
-				$period = array('id'=>$row->id, 'date_start'=>$row->date_start, 'date_end'=>$row->date_end);
+				$period = array('id'=>$row->id, 'date_start'=>$row->date_start, 'date_end'=>$row->date_end,
+				'manual_waivers'=>$row->manual_waivers);
 			} else {
-				$period = array('id'=>-1, 'date_start'=>NULL, 'date_end'=>NULL);
+				$period = array('id'=>-1, 'date_start'=>NULL, 'date_end'=>NULL,'manual_waivers'=>-1);
 			}
 			$query->free_result();
 		}
@@ -41,12 +42,13 @@ if ( ! function_exists('getScoringPeriod')) {
 			$period= "error: No id was provided.";
 		} else {
 			$ci =& get_instance(); 
-			$ci->db->select("id, date_start, date_end");
+			$ci->db->select("id, date_start, date_end, manual_waivers");
 			$ci->db->where("id",$scoring_period_id);
 			$query = $ci->db->get("fantasy_scoring_periods");
 			if ($query->num_rows() > 0) {
 				$row = $query->row();
-				$period = array('id'=>$row->id, 'date_start'=>$row->date_start, 'date_end'=>$row->date_end);
+				$period = array('id'=>$row->id, 'date_start'=>$row->date_start, 'date_end'=>$row->date_end,
+				'manual_waivers'=>$row->manual_waivers);
 			}
 			$query->free_result();
 		}
@@ -61,13 +63,14 @@ if ( ! function_exists('getScoringPeriodByDate')) {
 			$period= "Error: No date was provided.";
 		} else {
 			$ci =& get_instance(); 
-			$ci->db->select("id, date_start, date_end");
+			$ci->db->select("id, date_start, date_end, manual_waivers");
 			$ci->db->where("DATEDIFF('".$date."',date_start)>=",0);
 			$ci->db->where("DATEDIFF('".$date."',date_end)<=",0);
 			$query = $ci->db->get("fantasy_scoring_periods");
 			if ($query->num_rows() > 0) {
 				$row = $query->row();
-				$period = array('id'=>$row->id, 'date_start'=>$row->date_start, 'date_end'=>$row->date_end);
+				$period = array('id'=>$row->id, 'date_start'=>$row->date_start, 'date_end'=>$row->date_end,
+				'manual_waivers'=>$row->manual_waivers);
 			}
 			$query->free_result();
 		}
@@ -80,15 +83,33 @@ if ( ! function_exists('getScoringPeriods')) {
 	function getScoringPeriods() { 
 		$periods = array();
 		$ci =& get_instance(); 
-		$ci->db->select("id, date_start, date_end");
+		$ci->db->select("id, date_start, date_end, manual_waivers");
 		$query = $ci->db->get("fantasy_scoring_periods");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
-				array_push($periods,array('id'=>$row->id, 'date_start'=>$row->date_start, 'date_end'=>$row->date_end));
+				array_push($periods,array('id'=>$row->id, 'date_start'=>$row->date_start, 'date_end'=>$row->date_end,
+				'manual_waivers'=>$row->manual_waivers));
 			}
 		}
 		$query->free_result();
 		return $periods;
+	}
+}
+// ------------------------------------------------------------------------
+
+if ( ! function_exists('updateScoringPeriodWaivers')) {
+	function updateScoringPeriodWaivers($scoring_period_id) { 
+		$ci =& get_instance(); 
+		
+		$ci->db->flush_cache();
+		$ci->db->set('manual_waivers',1);
+		$ci->db->where('id',$scoring_period_id);
+		$ci->db->update('fantasy_scoring_periods'); 
+		if ($ci->db->affected_rows() > 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
 // ------------------------------------------------------------------------
@@ -105,7 +126,8 @@ if ( ! function_exists('getAvailableScoringPeriods')) {
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				$period = getScoringPeriod($row->scoring_period_id);
-				array_push($periods,array('id'=>$period['id'], 'date_start'=>$period['date_start'], 'date_end'=>$period['date_end']));
+				array_push($periods,array('id'=>$period['id'], 'date_start'=>$period['date_start'], 'date_end'=>$period['date_end'],
+				'manual_waivers'=>$period['manual_waivers']));
 			}
 		}
 		$query->free_result();

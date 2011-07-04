@@ -836,7 +836,6 @@ class league_model extends base_model {
 		unset($query);
 		return $leagues;
 	}
-	
 	/**
 	 *	GET WAIVER CLAIMS.
 	 *	Returns pending waiver claims for the specified league.
@@ -885,11 +884,12 @@ class league_model extends base_model {
 	 *  @param	$debug - 	 TRUE TO enabled tracing, FALSE to disable
 	 *	@return	schedule array, false on failure
 	 */
-	public function processWaivers($period_id = false, $league_id = false, $debug = false) {
+	public function processWaivers($period_id = false, $league_id = false, $rosterPeriod = 'same', $debug = false) {
 		
 		if ($period_id === false) { return; }
 		if ($league_id === false) { $league_id = $this->id; }
 		
+		$summary = '';
 		// GET LEAGUE TEAM ID LIST
 		if (!function_exists('getPlayersOnWaivers')) {
 			$this->load->helper('roster');	
@@ -898,11 +898,11 @@ class league_model extends base_model {
 		$claims = $this->getWaiverClaims(-1,0,false,$league_id);
 		$waiverOrder = getWaiverOrder($league_id, true);
 		
-		if ($debug) {
-			echo("# of players on waivers = ".sizeof($playersOnWaivers)."<br />");
-			echo("# of claims by teams = ".sizeof($claims)."<br />");
-			echo("waiver order = ".sizeof($waiverOrder)."<br />");
-		}
+		//if ($debug) {
+			$summary .= "# of players on waivers = ".sizeof($playersOnWaivers)."<br />";
+			$summary .= "# of claims by teams = ".sizeof($claims)."<br />";
+			$summary .= "waiver order = ".sizeof($waiverOrder)."<br />";
+		//}
 			
 		foreach($playersOnWaivers as $player) {
 			// SEE IF THERE IS A WAIVER CLAIM FOR THIS PLAYER
@@ -910,26 +910,26 @@ class league_model extends base_model {
 			$claimList = array();
 			$claimCount = 1;
 			foreach($claims as $claim) {
-				if ($debug) {
-					echo("claim ".$claimCount." team = ".$claim['team_id'].", player = ".$claim['player_id']."<br />");
-				}
+				//if ($debug) {
+					$summary .= "claim ".$claimCount." team = ".$claim['team_id'].", player = ".$claim['player_id']."<br />";
+				//}
 				if ($claim['player_id'] == $player['player_id']) {
 					// CLAIMS FOUND
 					$numClaims++;
 					array_push($claimList, $claim['team_id']);
 				}
 			}
-			if ($debug) {
-				echo("current player = ".$player['player_id']."<br />");
-				echo("# of claims for player ".$player['player_id']." = ".$numClaims."<br />");
-			}
+			//if ($debug) {
+				$summary .= "current player = ".$player['player_id']."<br />";
+				$summary .= "# of claims for player ".$player['player_id']." = ".$numClaims."<br />";
+			//}
 			if ($numClaims > 0) {
 				$index = 0;
 				foreach($waiverOrder as $team_id) {
 					if (in_array($team_id, $claimList)) {
-						if ($debug) {
-							echo("claim found for player ".$player['player_id']." by team = ".$team_id."<br />");
-						}
+						//if ($debug) {
+							$summary .= "claim found for player ".$player['player_id']." by team = ".$team_id."<br />";
+						//}
 						
 						// CLAIM THIS PLAYER FOR TEAM
 						$this->db->set('team_id',$team_id);
@@ -939,6 +939,9 @@ class league_model extends base_model {
 						if ($player['role'] == 13) { $player['role'] = 12; }
 						$this->db->set('player_position',$player['position']);
 						$this->db->set('player_role',$player['role']);
+						if ($rosterPeriod != 'same') {
+							$period_id--;
+						}
 						$this->db->set('scoring_period_id',$period_id);
 						$this->db->insert('fantasy_rosters');
 						
@@ -967,9 +970,9 @@ class league_model extends base_model {
 					$this->db->where('league_id',$league_id);
 					$this->db->delete($this->tables['WAIVER_CLAIMS']);
 				}
-				if ($debug) {
-					echo("cleared = ".$this->db->affected_rows()."  of ".$numClaims." waiver claims for this player<br />");
-				}
+				//if ($debug) {
+					$summary .= "cleared = ".$this->db->affected_rows()."  of ".$numClaims." waiver claims for this player<br />";
+				//}
 			}
 			// REMOVE PLAYER FROM WAIVERS
 			if (!$debug) {$this->db->where('player_id',$player['player_id']);
@@ -977,26 +980,57 @@ class league_model extends base_model {
 				$this->db->where('waiver_period',$period_id);
 				$this->db->delete($this->tables['WAIVERS']);
 			}
-			if ($debug) {
-				echo("cleared = ".$this->db->affected_rows()." of ".$numClaims." waiver records for player ".$player['player_id']."<br />");
-			}
+			//if ($debug) {
+				$summary .= "cleared = ".$this->db->affected_rows()." of ".$numClaims." waiver records for player ".$player['player_id']."<br />";
+			//}
 		}
 		// UPDATE THE WAIVER ORDER OF THE TEAMS IN THE LEAGUE
 		$waiverList = array();
 		$rank = 1;
-		if ($debug) {
-			echo("New waiver order:<br />");
-		}
+		//if ($debug) {
+			$summary .= "New waiver order:<br />";
+		//}
 		foreach($waiverOrder as $waiveTeam) {
 			$this->db->set('waiver_rank',$rank);
 			$this->db->where('id',$waiveTeam);
 			$this->db->update($this->tables['TEAMS']);
-			if ($debug) {
-				echo($rank." = ".$waiveTeam."<br />");
-			}
+			//if ($debug) {
+				$summary .= $rank." = ".$waiveTeam.'<br />';
+			//}
 			$rank++;
 		}
+		if (!empty($summary)) { $this->statusMess = $summary; }
 		return true;
+	}
+	/**
+	 *	DENY WAIVER CLAIM.
+	 *	Called when a league commissioner denies a wa9iver claim.
+	 *  @param	$claim_id - (Integer) The waiver claim ID. Function returns false if not passed.
+	 *	@return	claim object, false on failure
+	 *	@since	1.0.5
+	 */
+	public function denyWaiverClaim($claim_id = false) {
+		if ($claim_id === false) { return false; }
+		$claim = false;
+		$this->db->select($this->tables['WAIVER_CLAIMS'].".id, ".$this->tables['WAIVER_CLAIMS'].".team_id, teamname, teamnick, ".$this->tables['WAIVER_CLAIMS'].".player_id, first_name, last_name, waiver_period"); 
+		$this->db->join("fantasy_teams","fantasy_teams.id = ".$this->tables['WAIVER_CLAIMS'].".team_id", "left");
+		$this->db->join("fantasy_players","fantasy_players.id = ".$this->tables['WAIVER_CLAIMS'].".player_id", "left");
+		$this->db->join("fantasy_players_waivers","fantasy_players_waivers.player_id = fantasy_players.id", "right outer");
+		$this->db->join("players","fantasy_players.player_id = players.player_id", "right outer");
+		$this->db->where($this->tables['WAIVER_CLAIMS'].".id",$claim_id);
+		$query = $this->db->get($this->tables['WAIVER_CLAIMS']);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$claim = array('id'=>$row->id,'team_id'=>$row->team_id, 'teamname'=>$row->teamname." ".$row->teamnick, 
+										 'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name, 
+										 'waiver_period'=>$row->waiver_period);
+			$query->free_result();
+			$this->db->where("id",$claim_id);
+			$this->db->delete($this->tables['WAIVER_CLAIMS']);
+		}
+		$query->free_result();
+		unset($query);
+		return $claim;
 	}
 	
 	/**
@@ -1446,7 +1480,7 @@ class league_model extends base_model {
 			
 			// COPY CURRENT ROSTERS TO NEXT SCORING PERIOD
 			$summary .= $this->lang->line('sim_process_copy_rosters');
-			$this->league_model->copyRosters($scoring_period['id'], ($scoring_period['id'] + 1), $league_id);
+			$this->copyRosters($scoring_period['id'], ($scoring_period['id'] + 1), $league_id);
 			
 			// IF ENABLED, PROCESS EXPIRING TRADES
 			if ((isset($this->params['config']['useTrades']) && $this->params['config']['useTrades'] == 1)) {
@@ -1455,7 +1489,7 @@ class league_model extends base_model {
 			}
 			// IF ENABLED, PROCESS WAIVERS
 			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
-				$this->league_model->processWaivers(($scoring_period['id'] + 1), $league_id, $this->debug);
+				$this->processWaivers(($scoring_period['id'] + 1), $league_id, 'same', $this->debug);
 				$summary .= $this->lang->line('sim_process_waivers');
 			}
 		} else {

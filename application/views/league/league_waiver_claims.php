@@ -26,7 +26,7 @@
                     <td align="center"><?php echo($row['waiver_period']); ?></td>
                     <td align="center" class="last" nowrap="nowrap">
 					<?php 
-                     echo( anchor('/league/removeClaim/league_id/'.$league_id.'/id/'.$row['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/hr.gif" width="16" height="16" alt="Delete" title="Delete" />')); ?></td>
+                     echo( anchor('/league/removeClaim/league_id/'.$league_id.'/claim_id/'.$row['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/hr.gif" width="16" height="16" align+absmiddle" alt="Deny Claim" title="Deny Claim" /> Deny Claim')); ?></td>
     			</tr>
 				<?php 
 				$rowCount++;

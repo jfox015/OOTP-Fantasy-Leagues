@@ -1327,11 +1327,60 @@ class league extends BaseEditor {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
 			$this->loadData();
+			if ($this->dataModel->id == -1) {
+				$this->dataModel->load($this->uriVars['league_id']);
+			}
 			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
-				if (isset($this->uriVars['id'])) {
-					$this->db->where('id',$this->uriVars['id']);
-					$this->db->delete('fantasy_teams_waiver_claims');
-					$message = '<span class="success">The claim has been successfully removed.</span>';
+				if (isset($this->uriVars['claim_id'])) {
+					// EDIT 1.0.5 - 
+					// SQL function moved to League Model. Added claim return object to return 
+					// relevant claim details so email can be sent to the user
+					$claim = $this->dataModel->denyWaiverClaim($this->uriVars['claim_id']);
+					
+					// EDIT 1.0.5 - 
+					// Inform the team owner that their claim has been denied by the commisioner
+					$msg = $this->lang->line('league_waiver_claim_denied');
+					$msg .= $this->lang->line('email_footer');
+					$msg = str_replace('[COMMISH]', getUsername($this->dataModel->commissioner_id), $msg);
+					if (!isset($this->team_model)) {
+						$this->load->model('team_model');
+					} // END if
+					$ownerId = $this->team_model->getTeamOwnerId($claim['team_id']);
+					$username = getUsername($ownerId);
+					$msg = str_replace('[USERNAME]', $username, $msg);
+					if (!isset($this->player_model)) {
+						$this->load->model('player_model');
+					} // END if
+					$msg = str_replace('[PLAYER_NAME]', $claim['player_name'], $msg);
+					$msg = str_replace('[PERIOD]', $claim['waiver_period'], $msg);
+					$msg = str_replace('[LEAGUE_NAME]', $this->dataModel->league_name,$msg);
+					$data['messageBody']= $msg;
+					//print("email template path = ".$this->config->item('email_templates')."<br />");
+					$data['leagueName'] = $this->dataModel->league_name;
+					$data['title'] = $this->lang->line('league_waiver_claim_denied_title');
+					$emailMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+					// SEND TO TEAM
+					## Generate Subject Line
+					$subject= str_replace('[LEAGUE_NAME]',$this->dataModel->league_name,$this->lang->line('league_waiver_claim_denied_title'));
+					$mailTo = getEmail($ownerId);
+					
+					if ((!empty($mailTo)) && (!empty($emailMessage))) {
+						$emailSend = sendEmail($mailTo,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+						$this->params['config']['site_name']." Administrator",$subject,$emailMessage,'','league_waiver_denial_');
+					}
+					unset($data['title']);
+					unset($data['messageBody']);
+					unset($subject);
+					unset($emailMessage);
+					/*-----------------------------------------
+					/
+					/	END MESSAGING BLOCK
+					/
+					/-----------------------------------------*/
+					$message = $this->lang->line('league_waiver_claim_denied_response');
+					$message = str_replace('[USERNAME]', $username, $message);
+					$message = str_replace('[PLAYER_NAME]', $claim['player_name'], $message);
+					$message = '<span class="success">'.$message.'</span>';
 				} else {
 					$error = true;
 					$message = '<span class="error">A required claim identifier was not found. Please go back and try the operation again or contact the site adminitrator to report the problem.</span>';
@@ -1341,7 +1390,7 @@ class league extends BaseEditor {
 				$message = '<span class="error">You do not have sufficient privlidges to perform the requested action.</span>';
 			}
 			$this->session->set_flashdata('message', $message);
-			redirect('league/waiverClaims/league_id/'.$this->uriVars['league_id']);
+			redirect('league/waiverClaims/'.$this->dataModel->id);
 		} else {
 	        $this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
@@ -1481,6 +1530,9 @@ class league extends BaseEditor {
 		} // END if
 		if ($this->input->post('request_id')) {
 			$this->uriVars['request_id'] = $this->input->post('request_id');
+		} // END if
+		if ($this->input->post('claim_id')) {
+			$this->uriVars['claim_id'] = $this->input->post('claim_id');
 		} // END if
 		
 	}

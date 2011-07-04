@@ -220,13 +220,15 @@ class admin extends MY_Controller {
 			'ootp_league_id' => 'OOTP League ID',
 			'fantasy_web_root' => 'Fantasy League Root URL',
 			'ootp_html_report_path' => 'HTML Reports URL',
+			'ootp_html_report_links' => 'Show OOTP HTML Reports',
 			'sql_file_path' => 'MySQL File Load Path',
 			'ootp_html_report_root' => 'HTML Report File Path',
 			'max_sql_file_size' => 'Max SQL File Size',
 			'limit_load_all_sql' => 'Limit &quot;Load All Files&quot;?',
 			'google_analytics_enable' => 'Google Analytics Tracking',
 			'google_analytics_tracking_id' => 'Google Analytics Tracking Code',
-			'stats_lab_compatible' => 'Stats Lab Compatibility Mode',
+			'stats_lab_compatible' => 'StatsLab Compatibility Mode',
+			'stats_lab_url' => 'StatsLab URL',
 			'primary_contact' => 'Primary Contact',
 			'user_activation_method' => 'User Activiation Method');
 			foreach($fields as $field => $label) {
@@ -1201,6 +1203,58 @@ class admin extends MY_Controller {
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
+	/**
+	 *	MANUALY PROCCESS WAIVERS
+	 */
+	function manualWaivers() {
+		// DIVIDE THE LEAGUE GAME SCHEDULE STARTING AT THE LEAGUE DATE BY THE SIM/PERIODS
+		$result = '';
+		$status = '';
+		$mess = "OK";
+		$summary = "";
+		// CHECK FOR DUPLICATE
+		$score_period = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+		$summary .= "Processing waivers for period ".$score_period ['id']."<br />";
+		/*------------------------------
+		/	LOAD LEAGUES
+		/---------------------------*/
+		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
+		$summary .= "Leagues Loaded = ".sizeof($this->data['leagues'])."<br />";
+		/*------------------------------
+		/	PROCESS WAIVERS PER LEAGUE
+		/-----------------------------*/
+		$processCount = 0;
+		foreach($this->data['leagues'] as $id => $details) {
+			$summary .= "Processing for League = ".$details['league_name']."<br />";
+			$waiverSuccess = $this->league_model->processWaivers($score_period['id']+1, $id, 'previous');
+			if (!$waiverSuccess && $this->league_model->errorCode != -1) {
+				$mess = $this->league_model->statusMess;
+				$summary .= "Result = <b>failure</b><br />";
+				break;
+			}
+			$summary .= "Result = <b>success</b><br />";
+			$summary .= $this->league_model->statusMess."<br />";
+			$processCount++;
+		}
+		
+		if ($mess != "OK") {
+			$status = "error:".$mess;
+		} else {
+			updateScoringPeriodWaivers($score_period['id']);
+			$status = "OK";
+		}
+		$code = 200;
+		$summary .= "Waivers processing completed<br />";
+		$summary .= $processCount." league processing completed successully<br />";
+		if (!function_exists('write_file')) {
+			$this->load->helper('file');
+		} // END if
+		write_file(PATH_MEDIA_WRITE.'/waiver_summary'.$score_period['id'].'.html',$summary);
+		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_output($result);
+	}
+	
 	/**
 	 *	RESET SEASON DATA.
 	 *  CAUTION: THIS WILL WIPE OUT ALL SEASON WIDE DATA AND REST THE MOD BACK TO 

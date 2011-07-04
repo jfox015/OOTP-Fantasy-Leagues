@@ -92,6 +92,12 @@ $lang['email_league_team_request_accepted_title'] = 'Team Request Accepted';
 $lang['email_league_team_request_denied_title'] = 'Team Request Denied';
 $lang['email_league_team_request_withdrawn_title'] = 'Team Request Withdrawn';
 
+$lang['league_waiver_claim_denied_response'] = 'The waiver claim for <b>[PLAYER_NAME]</b> by <b>[USERNAME]</b> has been successfully denied. An e-mail has been sent to the user to inform them of this denial.';
+$lang['league_waiver_claim_denied_title'] = 'A Waiver claim has been denied.';
+$lang['league_waiver_claim_denied'] = 'To [USERNAME],
+<p>We&#039;re Sorry! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has denied your waiver claim for [PLAYER_NAME] for scoring period [PERIOD].';
+
+
 /*------------------------------------
 /	USER REGISTRATION/ ACCOUNT
 /-----------------------------------*/

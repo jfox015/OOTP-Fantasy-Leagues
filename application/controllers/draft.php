@@ -1295,7 +1295,7 @@ class draft extends BaseEditor {
 			$result = '""';
 		}
 		$result = '{ result: '.$result.',code:"'.$code.'",status: "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json; charset=utf-8'); 
 		$this->output->set_output($result);
 	}
 	
@@ -1321,7 +1321,7 @@ class draft extends BaseEditor {
 			$result = '""';
 		}
 		$result = '{ result: '.$result.',code:"'.$code.'",status: "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json; charset=utf-8'); 
 		$this->output->set_output($result);
 	}
 	public function loadUserResults($league_id = false, $user_id = false, $return = false) {
@@ -1506,20 +1506,20 @@ class draft extends BaseEditor {
 		$form->fieldset('');
 		$form->text('nRounds','Number of Rounds','required|number',($this->input->post('nRounds')) ? $this->input->post('nRounds') : $this->dataModel->nRounds);
 		$form->br();
-		$form->text('dispLimit','Number of Players to Display','required|number',($this->input->post('dispLimit')) ? $this->input->post('dispLimit') : $this->dataModel->dispLimit);
-		$form->space();
+		//$form->text('dispLimit','Number of Players to Display','required|number',($this->input->post('dispLimit')) ? $this->input->post('dispLimit') : $this->dataModel->dispLimit);
+		//$form->space();
 		$responses[] = array('1','Yes');
 		$responses[] = array('-1','No');
 		//$form->fieldset('',array('class'=>'radioGroup'));
 		//$form->radiogroup ('pauseAuto',$responses,'Pause Auto Picks (manual only)',($this->input->post('pauseAuto') ? $this->input->post('pauseAuto') : $this->dataModel->pauseAuto));
         //$form->space();        
 		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('setAuto',$responses,'Auto enabled "Auto Pick"',($this->input->post('setAuto') ? $this->input->post('setAuto') : $this->dataModel->setAuto));
+		$form->radiogroup ('setAuto',$responses,'Force auto pick for teams',($this->input->post('setAuto') ? $this->input->post('setAuto') : $this->dataModel->setAuto));
        	$form->span('WARNING: This will set ALL the leagues team\'s auto draft settings to <strong>true</strong> after the first team with auto pick enabled is encountered.',array('class'=>'field_caption'));
 		$form->space();        
-		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('autoOpen',$responses,'Auto Open Teams (no human owner)',($this->input->post('autoOpen') ? $this->input->post('autoOpen') : $this->dataModel->autoOpen));
-		$form->space();
+		//$form->fieldset('',array('class'=>'radioGroup'));
+		//$form->radiogroup ('autoOpen',$responses,'Auto Open Teams (no human owner)',($this->input->post('autoOpen') ? $this->input->post('autoOpen') : $this->dataModel->autoOpen));
+		//$form->space();
 		$form->fieldset('Email Settings');
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('emailOwnersForPick',$responses,'Send owners pick alerts:',($this->input->post('emailOwnersForPick') ? $this->input->post('emailOwnersForPick') : $this->dataModel->emailOwnersForPick));

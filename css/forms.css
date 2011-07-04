@@ -12,7 +12,7 @@ input, select, .formData { display:inline; float:left; }
 input.login { width: 100px; border: none; font: bold 11px Arial, Helvetica, sans-serif;color:#202b31; 
 background:#eee; padding:1px 3px 1px 3px; }
 input.searchsubmit { margin-top:2px;}
-.field_caption { display:inline; float:left; margin-left:205px; }
+.field_caption { display:inline; float:left; margin-left:220px; }
 .button_bar { width:100%;text-align:center; }
 .button_bar input { display:inline; float:none; }
 textarea, .textAreaForDisplay { font-size:11px; font-family:Verdana, Geneva, sans-serif;display:inline; float:left; }

@@ -583,7 +583,7 @@ class team extends BaseEditor {
 		if ($outType == 1) {
 			if ($error) { $status = "error:".$status; }
 			$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
-			$this->output->set_header('Content-type: application/json'); 
+			$this->output->set_header('Content-type: application/json; charset=utf-8'); 
 			$this->output->set_output($result);
 		} else {
 			
@@ -773,7 +773,7 @@ class team extends BaseEditor {
 				$code = 301;
 			}
 			$result .= 'result:"OK",code:"'.$code.'",status:"'.$status.'"}';
-			$this->output->set_header('Content-type: application/json'); 
+			$this->output->set_header('Content-type: application/json; charset=utf-8'); 
 			$this->output->set_output($result);
 		} else {
 			$this->data['message'] = $message;
@@ -1193,7 +1193,7 @@ class team extends BaseEditor {
 			$result = $this->refreshPlayerList().',';
 		}
 		$result.='code:"'.$code.'",status:"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json; charset=utf-8');
 		$this->output->set_output($result);
 	}
 	public function setLineup() {
@@ -1446,7 +1446,7 @@ class team extends BaseEditor {
 				$result = $this->refreshPlayerList().',code:"'.$code.'",status:"'.$status.'"}';
 			}
 		}
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json; charset=utf-8'); 
 		$this->output->set_output($result);
 	}
 	public function removeAndDisplay() {
@@ -1495,7 +1495,7 @@ class team extends BaseEditor {
 		}
 		
 		$result = $this->refreshPlayerList().',code:"'.$code.'",status:"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json; charset=utf-8'); 
 		$this->output->set_output($result);
 	}
 
@@ -1636,7 +1636,7 @@ class team extends BaseEditor {
 				$code = 201;
 			} // END if
 			$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
-			$this->output->set_header('Content-type: application/json'); 
+			$this->output->set_header('Content-type: application/json; charset=utf-8'); 
 			$this->output->set_output($result);
 		}
 	}
