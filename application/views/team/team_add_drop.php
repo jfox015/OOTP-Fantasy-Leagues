@@ -71,13 +71,13 @@
 			return false;							
 		});
 		$('img[rel=addListRemove]').live('click',function () {
-			if (offAddList(this.id)) {
+			if (offList(addPlayers,this.id)) {
 				updatePageLists();
 			}
 			return false;
 		});	
 		$('img[rel=dropListRemove]').live('click',function () {
-			if (offDropList(this.id)) {
+			if (offList(dropPlayers,this.id)) {
 				updatePageLists();
 			}
 			return false;
@@ -130,10 +130,10 @@
 			}
 		}
 		if (!found) {
-			if (params[3] == "add" && addListLength() >= max_add_drop) {
+			if (params[3] == "add" && listLength(addPlayers) >= max_add_drop) {
 				$('div#listStatus').addClass('error');
 				$('div#listStatus').html("You can only add a maximum of "+max_add_drop+" players at a time.");
-			} else if (params[3] == "remove" && dropListLength() >= max_add_drop) {
+			} else if (params[3] == "remove" && listLength(dropPlayers) >= max_add_drop) {
 				$('div#listStatus').addClass('error');
 				$('div#listStatus').html("You can only drop a maximum of "+max_add_drop+" players at a time.");
 			} else {
@@ -167,11 +167,11 @@
 								player.role = item.role;
 								$('div#listStatus').html("");
 								$('div#listStatusBox').fadeOut("fast");
-								cachePlayer(player);
+								addToList(playerCache,player);
 								if (params[3] == "add") {
-									toAddList(player);
+									addToList(addPlayers,player);
 								} else {
-									toDropList(player);
+									addToList(dropPlayers,player);
 								}
 								updatePageLists();
 							}
@@ -182,9 +182,9 @@
 					});
 				} else {
 					if (params[3] == "add") {
-						toAddList(player);
+						addToList(addPlayers,player);
 					} else {
-						toDropList(player);
+						addToList(dropPlayers,player);
 					}
 					updatePageLists();
 				}
@@ -199,34 +199,23 @@
 		var hash = $.md5(Math.floor(Math.random())+date.toUTCString()).toString();
 		return "/uid/"+hash.substr(0,16);
 	}
-	function cachePlayer(player) {
+	function addToList(list,player) {
 		var added = false;
-		for (var i = 0; i < playerCache.length; i++) {
-			if (playerCache[i] == null) {
-				playerCache[i] = player;
+		for (var i = 0; i < list.length; i++) {
+			if (list[i] == null ||(list[i] != null && list[i].id == -1)) {
+				list[i] = player;
 				added = true;
 				break;
 			}
 		}
 		return added;
 	}
-	function toAddList(player) {
-		var added = false;
-		for (var i = 0; i < addPlayers.length; i++) {
-			if (addPlayers[i] == null ||(addPlayers[i] != null && addPlayers[i].id == -1)) {
-				addPlayers[i] = player;
-				added = true;
-				break;
-			}
-		}
-		return added;
-	}
-	function offAddList(id) {
+	function offList(list,id) {
 		var removed = false;
-		for (var i = 0; i < addPlayers.length; i++) {
-			if (addPlayers[i] != null && addPlayers[i].id != -1) {
-				if (addPlayers[i].id  == id){
-					addPlayers[i] = null;
+		for (var i = 0; i < list.length; i++) {
+			if (list[i] != null && list[i].id != -1) {
+				if (list[i].id  == id){
+					list[i] = null;
 					removed = true;
 					break;
 				}
@@ -234,63 +223,24 @@
 		}
 		return removed;
 	}
-	function clearAddList() {
-		for (var i = 0; i < addPlayers.length; i++) {
-			addPlayers[i] = null;
+	function clearList(list) {
+		for (var i = 0; i < list.length; i++) {
+			list[i] = null;
 		}
 		return true;
 	}
-	function addListLength() {
+	function listLength(list) {
 		count = 0;
-		for (var i = 0; i < addPlayers.length; i++) {
-			if (addPlayers[i] != null && addPlayers[i].id != -1) {
-				count++;
-			}
-		}
-		return count;
-	}
-	function toDropList(player) {
-		var added = false;
-		for (var i = 0; i < dropPlayers.length; i++) {
-			if (dropPlayers[i] == null ||(dropPlayers[i] != null && dropPlayers[i].id == -1)) {
-				dropPlayers[i] = player;
-				added = true;
-				break;
-			}
-		}
-		return added;
-	}
-	function offDropList(id) {
-		var removed = false;
-		for (var i = 0; i < dropPlayers.length; i++) {
-			if (dropPlayers[i] != null && dropPlayers[i].id != -1) {
-				if (dropPlayers[i].id == id){
-					dropPlayers[i] = null;
-					removed = true;
-					break;
-				}
-			}
-		}
-		return removed;
-	}
-	function clearDropList() {
-		for (var i = 0; i < dropPlayers.length; i++) {
-			dropPlayers[i] = null;
-		}
-		return true;
-	}
-	function dropListLength() {
-		count = 0;
-		for (var i = 0; i < dropPlayers.length; i++) {
-			if (dropPlayers[i] != null && dropPlayers[i].id != -1) {
+		for (var i = 0; i < list.length; i++) {
+			if (list[i] != null && list[i].id != -1) {
 				count++;
 			}
 		}
 		return count;
 	}
 	function clearTransaction() {
-		clearAddList();
-		clearDropList();
+		clearList(addPlayers);
+		clearList(dropPlayers);
 		updatePageLists();
 		$('div#listStatus').removeClass('error');
 		$('div#listStatus').removeClass('success');
@@ -625,7 +575,15 @@
 				if (item.fpts != null) {
 					outHTML += '<td>'+item.fpts+'</td>';
 				} else if (item.rating != null) {
-					outHTML += '<td>'+item.rating+'</td>';
+					var ratingColor = '';
+					if (item.rating> 0) {
+						ratingColor = "#080";
+					} else if (item.rating < 0) {
+						ratingColor = "#C00";
+					} else {
+						ratingColor = "#000";
+					}
+					outHTML += '<td><span style="color:'+ratingColor+'">'+item.rating+'</span></td>';
 				}
 				outHTML += '</tr>';
             } // END if

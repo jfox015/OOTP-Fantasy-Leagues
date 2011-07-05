@@ -69,6 +69,16 @@
 							case 'positions':
 								$showCol = false;
 								break;
+							case 'rating':	
+								if ($row[$col] > 0) {
+									$color = "#080";
+								} else if ($row[$col] < 0) {
+									$color = "#C00";
+								} else {
+									$color = "#000";
+								}
+								$row[$col] = '<span style="color:'.$color.';">'.$row[$col].'</span>';
+								break;
 							default:
 								$align='center';
 								break;

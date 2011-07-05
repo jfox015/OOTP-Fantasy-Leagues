@@ -421,12 +421,13 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 					case 'k9':
 					case 'bb9':
 					case 'hr9':
+					case 'rating':
 						$val=sprintf("%.2f",$row[$col]);
 						if (($val<1)&&($col=='whip')) {$val=strstr($val,".");}
 						$newRow[$col] = $val;
 						break;
-					case 'rating':
-						$rating=sprintf("%.2f",$row[$col]);
+					/*case 'rating':
+						$val=sprintf("%.2f",$row[$col]);
 						if ($rating > 0) {
 							$color = "#080";
 						} else if ($rating < 0) {
@@ -436,7 +437,7 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 						}
 						$val = '<span style="color:'.$color.';">'.$rating.'</span>';
 						$newRow[$col] = $val;
-						break;
+						break;*/
 					case 'ip':
 					case 'vorp':
 						$val=sprintf("%.1f",$row[$col]);
