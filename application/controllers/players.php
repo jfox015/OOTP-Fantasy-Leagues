@@ -169,7 +169,7 @@ class players extends MY_Controller {
 			if (!empty($result)) {
 				$status .= "OK";
 				$code = 200;
-				$result =  '{ items: ['.$result.']}';
+				$result =  '{ "items": ['.$result.']}';
 			} else {
 				$status .= "error:No Player information was returned";
 				$code = 201;
@@ -180,7 +180,7 @@ class players extends MY_Controller {
 			$code = 203;
 			$result = '""';
 		}
-		$result = '{ result: '.$result.',code:"'.$code.'",status: "'.$status.'"}';
+		$result = '{ "result": '.$result.',"code":"'.$code.'","status": "'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}

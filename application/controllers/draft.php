@@ -4,14 +4,15 @@ require_once('base_editor.php');
  *	DRAFT.
  *	The primary controller for draft capabilities and functionlaity.
  *
- *	NOTE: This class contains draft functionlaity originally developed by Frank Holmes and 
- *	Published as part of the StasLab Mod for Out of the Park Baseball.
+ *	NOTE: This class contains draft functionlaity originally developed by Frank Esslink and 
+ *	Published as part of the StasLab Mod for Out of the Park Baseball. Thanks to Frank for permission 
+ *	to adpat this code into the Fantasy Draft Class.
  *	(http://www.ootpdevelopments.com/board/ootp-mods-database-tools/185408-statslab-sql-utilities-ootpx.html)
  *
- *	@author			Jeff Fox
- *	@author			Frank Holmes
+ *	@author			Jeff Fox (Github ID: jfox015)
+ *	@author			Frank Esslink (OOTP ID: fhommes)
  *	@dateCreated	03/23/10
- *	@lastModified	07/01/11
+ *	@lastModified	07/05/11
  *
  */
 class draft extends BaseEditor {
@@ -163,7 +164,8 @@ class draft extends BaseEditor {
 					$year = date('Y');
 					if ($this->input->post('action') == 'settings') {
 						if ($debug==1) {echo "In draft settings scheduler<br />\n";}
-						$this->dataModel->sheduleDraft($this->league_model->getTeamDetails());
+						$this->dataModel->createDraftOrder($this->league_model->getTeamDetails(), $this->league_model->id);
+						//$this->dataModel->sheduleDraft($this->league_model->getTeamDetails());
 					} else {
 						$this->dataModel->savedDraftSettings($this->input,false, false, $this->debug);
 					}
@@ -381,6 +383,7 @@ class draft extends BaseEditor {
 								  redirect('/draft/admin/league_id/'.$this->uriVars['league_id']);
 							   case 'clear':
 								  $this->dataModel->resetPick($this->uriVars['pick_id']);
+								  $this->rescheduleDraft();
 								  $this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been reset.</span>');
 								  redirect('/draft/load/'.$this->uriVars['league_id']);
 							   case 'skip':
@@ -390,6 +393,7 @@ class draft extends BaseEditor {
 								  redirect('/draft/load/'.$this->uriVars['league_id']);
 							   case 'edit':
 								  $this->dataModel->resetPick($this->uriVars['pick_id'],$this->uriVars['league_id'],false,$this->uriVars['pick']);
+								  $this->rescheduleDraft();
 								  $this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been sucessfully edited.</span>');
 								  redirect('/draft/load/'.$this->uriVars['league_id']);
 							   case 'rollback':
@@ -426,12 +430,12 @@ class draft extends BaseEditor {
 								$pick_id = intval($this->uriVars['pick_id']);
 							 } else {
 								 $pick_id = "";
-							 }
+							 } // END if
 							 if (isset($this->uriVars['pick'])) {
 								$dpick = intval($this->uriVars['pick']);
 							 } else {
 								 $dpick = "";
-							 }
+							 } // END if
 							 // GET DRAFT ELIDGIBLE PLAYERS
 							 $values = $this->dataModel->getPlayerValues();
 							 // DRAFT SETTINGS FROM CONFIG
@@ -466,15 +470,15 @@ class draft extends BaseEditor {
 									$picks[$pick]['pick']=$rndPick;
 									$picks[$pick]['due']=$row['due_date']." ".$row['due_time'].":00";
 									
-									if ($pick>$lastPick) {$lastPick=$pick;}
-									if (($pick<$firstPick) && ($pid=='')) {$firstPick=$pick;}
-								}
-							}
+									if ($pick>$lastPick) {$lastPick=$pick;} // END if
+									if (($pick<$firstPick) && ($pid=='')) {$firstPick=$pick;} // END if
+								} // END foreach
+							} // END if
 							
 							$teamList = array();
 							if ($this->league_model->hasTeams()) {
 								$teamList = $this->league_model->getTeamIdList();
-							}
+							} // END if
 							if ($this->debug) {
 								echo("-----------DRAFT INIT--------------<br />");
 								echo("Draft Action = ".$this->uriVars['action']."<br />");
@@ -487,10 +491,10 @@ class draft extends BaseEditor {
 								echo("picking team id = ".$dteam."<br />");
 								echo("Size of picks array = ".sizeof($picks)."<br />");
 								echo("Size of teamList array = ".sizeof($teamList)."<br />");
-							}
+							} // END if
 							if (!isset($this->team_model)) {
 								$this->load->model('team_model');
-							}
+							} // END if
 							$teams = array();
 							$teamQuotas = array();
 							if (sizeof($teamList) > 0) {
@@ -500,7 +504,7 @@ class draft extends BaseEditor {
 											$this->team_model->auto_draft = 1;
 											$this->team_model->auto_round_x=$pickRound-1;
 											$this->team_model->save();
-										}
+										} // END if
 										$teams[$id]['auto']=$this->team_model->auto_draft;
 										$teams[$id]['autoList']=$this->team_model->auto_list;
 										$teams[$id]['autoRound']=$this->team_model->auto_round_x;
@@ -508,15 +512,15 @@ class draft extends BaseEditor {
 										$teams[$id]['teamname']=$this->team_model->teamname;
 										$teams[$id]['teamnick']=$this->team_model->teamnick;
 										$teamQuotas[$id] = array();
-									}
-								}
-							}
+									} // END if
+								} // END foreach
+							} // END if
 							$rules = $this->league_model->getRosterRules();
 							$nextPick = 0;
 							if ($this->debug) {
 								echo("Size of teams array = ".sizeof($teams)."<br />");
 								echo("Size of drafted array = ".sizeof($drafted)."<br />");
-							}
+							} // END if
 							##### Determine Pick if Commish/Timer Auto #####
 							if ($this->uriVars['action']=='auto') {
 								$auto_option = (isset($this->uriVars['auto_option']) && !empty($this->uriVars['auto_option'])) ? $this->uriVars['auto_option'] : 'current';
@@ -524,29 +528,29 @@ class draft extends BaseEditor {
 								
 								if (!isset($this->player_model)) {
 									$this->load->model('player_model');
-								}
+								} // END if
 								## Set human team to auto
 							   if ($auto_option == "all" && $teams[$dteam]['auto'] != 1) {
 								  $this->team_model->load($dteam);
 								  $this->team_model->setAutoDraft(true);
 								  $teams[$dteam]['auto']=1;
 								  $teams[$dteam]['autoRound']=$pickRound-1;
-								}
+								} // END if
 								// GET TEAMS AUTO LIST
 								$pickList = array();
 								if ($teams[$dteam]['autoList']==1) {
 									$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
 									foreach ($pickList as $pid => $val) {
-										if (!isset($drafted[$val['player_id']])) {$dpick=intval($val['player_id']);break;}
+										if (!isset($drafted[$val['player_id']])) {$dpick=intval($val['player_id']);break;} // END if
 									}
-								}
+								} // END if
 								## - Determine Auto Pick
 								if ($dpick=="") {
 									$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
 									$dpick = $aPick[0];
 									$teamQuotas = $aPick[1]; 
-								}
-							}
+								} // END if
+							} // END if
 							$error = false;
 							$nextPick = 1;
 							$pickRound = 0;
@@ -562,15 +566,22 @@ class draft extends BaseEditor {
 								echo("---------------------------------------<br />");
 								echo("firstPick = '".$firstPick."'<br />");
 								echo("Current player pick id = '".$dpick."'<br />");
-							}
+							} // END if
 							$this->lang->load('draft');
-							##### Process Selection: Loop from first open slot to final pick of the draft #####
+							
+							/*---------------------------------------------------------
+							/	PROCESS SELECTION
+							/
+							/	Loop from first open slot to final pick of the draft
+							/
+							/--------------------------------------------------------*/
 							for ($i=$firstPick;$i<=$lastPick;$i++) {
 								
-								##### Check that pick is open slot #####
+								// ASSURE CURRENT PICK IS AN OPEN (non-drafted) slot. IF NOT, LOOP BACK
+								// 	TO ADVANCE TO NEXT PICK
 								if (isset($picks[$i]['player'])) {
 									continue;
-								} ## This pick already made, move on to next one
+								} // END if
 								
 								//-----------------------------------------------
 								// ROUND SUMMARY EMAIL
@@ -1071,7 +1082,7 @@ class draft extends BaseEditor {
 					if ($limit != -1) {
 						$startIdx = ($limit * ($pageId - 1))-1;
 					}
-					if ($startIdx < 0) { $startIdx = 0; }
+					if ($startIdx < 0) { $startIdx = 0; } // END if
 					$this->data['startIdx'] = $startIdx;
 					
 					$league_id = -1;
@@ -1081,8 +1092,8 @@ class draft extends BaseEditor {
 						$league_id = $this->session->userdata('league_id');
 						if (!isset($league_id)) {
 							$league_id = -1;
-						}
-					}
+						} // END if
+					} // END if
 					$this->data['team_list'] = array();
 					$this->data['scoring_rules'] = $rules = $this->league_model->getScoringRules(0);
 					if ($league_id != -1) {
@@ -1093,8 +1104,8 @@ class draft extends BaseEditor {
 						$rules = $this->league_model->getScoringRules($league_id);
 						if (sizeof($rules) == 0) {
 							$rules = $this->league_model->getScoringRules(0);
-						}
-					}
+						} // END if
+					} // END if
 					$this->data['league_id'] = $league_id;
 					
 					$this->data['league_date'] = EMPTY_DATE_STR;
@@ -1104,7 +1115,7 @@ class draft extends BaseEditor {
 						$this->data['league_date'] = date('Y-m-d',$currDate - (60*60*24*365));
 					} else {
 						$this->data['league_date'] = date('Y-m-d',$currDate);
-					}
+					} // END if
 					// RAW Record Count total with no limit
 					$this->data['recCount'] = sizeof($this->dataModel->getPlayerPool(true,$this->params['config']['ootp_league_id'], $player_type, $position_type,  $role_type, $this->uriVars['stats_range'], $minVar, -1, 0, $league_id,$this->data['league_date'],$rules));
 					// Actual results with limit applied
@@ -1113,13 +1124,13 @@ class draft extends BaseEditor {
 					$this->data['pageCount'] = 1;
 					if ($limit != -1) {
 						$this->data['pageCount'] = intval($this->data['recCount'] / $limit);
-					}
+					} // END if
 					if ($this->data['pageCount'] < 1) { $this->data['pageCount'] = 1; }
 					if ($player_type == 1) {
 						$this->data['title'] = "Batting";
 					} else {
 						$this->data['title'] = "Pitching";
-					}
+					} // END if
 					$this->data['colnames']=player_stat_column_headers($player_type, QUERY_STANDARD, false, false, true, true, true);
 					$this->data['fields']=player_stat_fields_list($player_type, QUERY_STANDARD, false, false, true, true, true);
 					$this->data['showTeam'] = -1;
@@ -1148,23 +1159,23 @@ class draft extends BaseEditor {
 				$this->data['subTitle'] = 'Draft: An error occured.';
 				$this->data['theContent'] = '<span class="error">A required league identifier could not be found. Your selections could not be processed at this time.</span>';
 				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-			}
+			} // END if
 			$this->makeNav();
 			$this->displayView();
 		} else {
 	        $this->session->set_userdata('loginRedirect',current_url());	
 			redirect('user/login');
-	    }
+	    } // END if
 	}
 	public function rescheduleDraft() {
-		$this->dataModel->sheduleDraft($this->league_model->getTeamDetails(), $this->league_model->id);
+		$this->dataModel->sheduleDraft($this->league_model->id);
 		$this->dataModel->save();
 		return true;
 	}
 	/*-------------------------------------------------
 	/	AJAX/JSON FUNCTIONS
 	/------------------------------------------------*/
-	public function addPlayer() {
+	public function saveDraftList() {
 		$this->getURIData();
 		$this->loadModel();
 		$status = "";
@@ -1173,106 +1184,33 @@ class draft extends BaseEditor {
 		$user_id = false;
 		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
 			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
-		}
+		} // END if
 		if ($this->dataModel->id != -1) {
-			if (!$this->dataModel->addUserPick($this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
-				$status .= "error:Your pick was not saved.";
-				if (!empty($this->dataModel->statusMess)) {
-					$status .=  " ".$this->dataModel->statusMess;
-				}
+			if((isset($this->uriVars['player_id_list']) && !empty($this->uriVars['player_id_list']))) {
+				if (strpos("|",$this->uriVars['player_id_list'] != NULL)) {
+					$player_ids = explode("|",$this->uriVars['player_id_list']);
+				} else {
+					$player_ids = array($this->uriVars['player_id_list']);
+				} // END if
+				if (!$this->dataModel->saveDraftList($player_ids,$user_id)) { 
+					$status .= "error:Your list was not saved.";
+					if (!empty($this->dataModel->statusMess)) {
+						$status .=  " ".$this->dataModel->statusMess;
+					} // END if
+				} else {
+					$status .= "Draft list Successfully Saved.";
+				} // END if
+				$result = "Success";
 			} else {
-				$status .= "Player Added Successfully.";
-			}
-			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
+				$status .= "error: Player ID list missing.";
+			} // END if
 		} else {
 			$status .= "error:League Identifier Missing";
-		}
-		$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		} // END if
+		$result = '{"result": '.$result.',"code":"'.$code.'","status": "'.$status.'"}';
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
-	public function movePlayer() {
-		$this->getURIData();
-		$this->loadModel();
-		$status = "";
-		$code =200;
-		$result = "";
-		$user_id = false;
-		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
-			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
-		}
-		if ($this->dataModel->id != -1) {
-			if (!$this->dataModel->movePick($this->uriVars['direction'],$this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
-				$status .= "error:Your pick was not saved.";
-				if (!empty($this->dataModel->statusMess)) {
-					$status .=  " ".$this->dataModel->statusMess;
-				}
-			} else {
-				$status .= "Player Moved Successfully.";
-			}
-			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
-		} else {
-			$status .= "error:League Identifier Missing";
-		}
-		$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
-		$this->output->set_output($result);
-	}
-	public function removePlayer() {
-		$this->getURIData();
-		$this->loadModel();
-		$status = "";
-		$code =200;
-		$result = "";
-		$user_id = false;
-		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
-			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
-		}
-		if ($this->dataModel->id != -1) {
-			if (!$this->dataModel->removePick($this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
-				$status .= "error:Your pick was not saved.";
-				if (!empty($this->dataModel->statusMess)) {
-					$status .=  " ".$this->dataModel->statusMess;
-				}
-			} else {
-				$status .= "Player Removed Successfully.";
-			}
-			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
-		} else {
-			$status .= "error:League Identifier Missing";
-		}
-		$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
-		$this->output->set_output($result);
-	}
-	public function clearDraftList() {
-		$this->getURIData();
-		$this->loadModel();
-		$status = "";
-		$code =200;
-		$result = "";
-		$user_id = false;
-		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
-			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
-		}
-		if ($this->dataModel->id != -1) {
-			if (!$this->dataModel->clearDraftList($this->params['currUser'])) {
-				$status .= "error:Your pick was not saved.";
-				if (!empty($this->dataModel->statusMess)) {
-					$status .=  " ".$this->dataModel->statusMess;
-				}
-			} else {
-				$status .= "Draft list Successfully Cleared.";
-			}
-			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
-		} else {
-			$status .= "error:League Identifier Missing";
-		}
-		$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
-		$this->output->set_output($result);
-	}
-	
 	public function getPicks() {
 		$this->init();
 		$this->getURIData();
@@ -1288,17 +1226,23 @@ class draft extends BaseEditor {
 			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
 			$status .= "OK";
 			$code = 200;
-			$result =  '{ items: ['.$result.']}';
+			$result =  '{ "items": ['.$result.']}';
 		} else {
 			$status .= "error:League Identifier Missing";
 			$code = 203;
 			$result = '""';
 		}
-		$result = '{ result: '.$result.',code:"'.$code.'",status: "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json; charset=utf-8'); 
+		$result = '{"result": '.$result.',"code":"'.$code.'","status": "'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
-	
+	/**
+	 *	GET DRAFT RESULTS.
+	 *	Returns a JSON encoded string of the specified users draft results. Defaults to current 
+	 *	uaser if none specified.
+	 *
+	 *	@param	uriVars['user_id']	Passed as FALSE to dataModel if not specified
+	 */
 	public function getResults() {
 		$this->init();
 		$this->getURIData();
@@ -1314,17 +1258,27 @@ class draft extends BaseEditor {
 			$result = $this->loadUserResults($this->dataModel->league_id, $user_id, true);
 			$status .= "OK";
 			$code = 200;
-			$result =  '{ items: ['.$result.']}';
+			$result =  '{ "items": ['.$result.']}';
 		} else {
 			$status .= "error:League Identifier Missing";
 			$code = 203;
 			$result = '""';
 		}
-		$result = '{ result: '.$result.',code:"'.$code.'",status: "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json; charset=utf-8'); 
+		$result = '{"result": '.$result.',"code":"'.$code.'","status": "'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
-	public function loadUserResults($league_id = false, $user_id = false, $return = false) {
+	/**
+	 *	LOAD USER RESULTS.
+	 *	Loads draft results for a spefici user id ans returns an array of picks (uif any have been made).
+	 *
+	 *	@access	protected
+	 *	@param	$league_id		(Integer)	Fantasy League ID
+	 *	@param	$user_id		(integer)	User ID (Defaults to currUser if not specified)
+	 *	@param	$return			(Boolean)	(Not cuurrently used)
+	 *	@return					(Array)		Array of pick information	
+	 */
+	protected function loadUserResults($league_id = false, $user_id = false, $return = false) {
 		
 		if ($user_id === false) { $user_id = $this->params['currUser']; }
 		$status = "";
@@ -1378,7 +1332,6 @@ class draft extends BaseEditor {
 	}
 	protected function loadModel() {
 		
-		//echo("League id = ".$this->uriVars['league_id']."<br />");
 		if (isset($this->uriVars['league_id']) && $this->uriVars['league_id'] != -1) {
 			$league_id = $this->uriVars['league_id'];
 		} else if (isset($this->uriVars['id']) && !isset($this->uriVars['league_id']) && $this->uriVars['id'] != -1) {
@@ -1386,7 +1339,6 @@ class draft extends BaseEditor {
 		} else {
 			$league_id = $this->session->userdata('league_id');
 		}
-		//echo("League id = ".$league_id."<br />");
 		$this->dataModel->load($league_id,'league_id',true);	
 	}
 	/**
@@ -1464,6 +1416,9 @@ class draft extends BaseEditor {
 		if ($this->input->post('act_as_id')) { // USED FOR ADMIN/COMMISH AUTO PICK OPTION
 			$this->uriVars['act_as_id'] = $this->input->post('act_as_id');
 		} // END if
+		if ($this->input->post('player_id_list')) { // USED FOR ADMIN/COMMISH AUTO PICK OPTION
+			$this->uriVars['player_id_list'] = $this->input->post('player_id_list');
+		} // END if
 	}
 	protected function makeForm() {
 		$this->enqueStyle('jquery.ui.css');
@@ -1530,27 +1485,31 @@ class draft extends BaseEditor {
 		$form->br();
 		$form->fieldset('Draft Schedule Settings');
 		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('timerEnable',$responses,'Draft Timer Enabled',($this->input->post('timerEnable') ? $this->input->post('timerEnable') : $this->dataModel->timerEnable));
+		$form->radiogroup ('timerEnable',$responses,'Draft Timer',($this->input->post('timerEnable') ? $this->input->post('timerEnable') : $this->dataModel->timerEnable));
 		$form->space();
 		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('flexTimer',$responses,'Adjust Time After Each Pick',($this->input->post('flexTimer') ? $this->input->post('flexTimer') : $this->dataModel->flexTimer));
+		$form->radiogroup ('flexTimer',$responses,'Adjust Schedule After Each Pick',($this->input->post('flexTimer') ? $this->input->post('flexTimer') : $this->dataModel->flexTimer));
 		$form->space();
 		$form->fieldset();
-		$form->label('Current server time',"time");
-		$form->html('<span>'.date("Y-m-d H:i T",time()).'</span>');
-		$form->space();
+		//$form->label('Current server time',"time");
+		//$form->html('<span>'.date("Y-m-d H:i T",time()).'</span>');
+		//$form->space();
 		//$form->text('dStartDt','Start Date','trim',($this->input->post('dStartDt')) ? $this->input->post('dStartDt') : $this->dataModel->dStartDt);
 		//$form->br();
-		$form->text('timePick1','Time Per Pick (min)','trim',($this->input->post('timePick1')) ? $this->input->post('timePick1') : $this->dataModel->timePick1);
+		//$form->text('timePerPick','Time Per Pick (in seconds)','trim',($this->input->post('timePerPick')) ? $this->input->post('timePerPick') : $this->dataModel->timePerPick);
+		//$form->br();
+		$form->text('timePick1','Time Per Pick (in seconds)','trim',($this->input->post('timePick1')) ? $this->input->post('timePick1') : $this->dataModel->timePick1);
 		$form->br();
-		$form->text('rndSwitch','- Through Round','trim',($this->input->post('rndSwitch')) ? $this->input->post('rndSwitch') : $this->dataModel->rndSwitch);
-		$form->br();
-		$form->text('timePick2','Time Per Pick After (min)','trim',($this->input->post('timePick2')) ? $this->input->post('timePick2') : $this->dataModel->timePick2);
-		$form->br();
-		$form->text('timeStart','Time Start','trim',($this->input->post('timeStart')) ? $this->input->post('timeStart') : $this->dataModel->timeStart);
-		$form->br();
-		$form->text('timeStop','Timer Stops At','trim',($this->input->post('timeStop')) ? $this->input->post('timeStop') : $this->dataModel->timeStop);
-		$form->br();
+		//$form->text('timePick1','Time Per Pick (min)','trim',($this->input->post('timePick1')) ? $this->input->post('timePick1') : $this->dataModel->timePick1);
+		//$form->br();
+		//$form->text('rndSwitch','- Through Round','trim',($this->input->post('rndSwitch')) ? $this->input->post('rndSwitch') : $this->dataModel->rndSwitch);
+		//$form->br();
+		//$form->text('timePick2','Time Per Pick After (min)','trim',($this->input->post('timePick2')) ? $this->input->post('timePick2') : $this->dataModel->timePick2);
+		//$form->br();
+		//$form->text('timeStart','Time Start','trim',($this->input->post('timeStart')) ? $this->input->post('timeStart') : $this->dataModel->timeStart);
+		//$form->br();
+		//$form->text('timeStop','Stop Timer At (Date/Time)','trim',($this->input->post('timeStop')) ? $this->input->post('timeStop') : $this->dataModel->timeStop);
+		//$form->br();
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('pauseWkEnd',$responses,'Pause Timer on Weekends',($this->input->post('pauseWkEnd') ? $this->input->post('pauseWkEnd') : $this->dataModel->pauseWkEnd));
 		$form->space();
@@ -1606,7 +1565,6 @@ class draft extends BaseEditor {
 		}
 		array_push($this->params['subNavSection'],league_nav($league_id, $this->league_model->league_name,$admin,true, $this->league_model->getScoringType()));
 		array_push($this->params['subNavSection'],draft_nav($league_id));
-		
 	}
 	
 	protected function showInfo() {
@@ -1659,6 +1617,131 @@ class draft extends BaseEditor {
 		$this->params['subTitle'] = "League Draft";
 		$this->makeNav();
 		parent::showInfo();
+	}
+	/*-----------------------------------
+	/	DEPRECATED FUNCTIONS
+	/	SALTED FOR REMOVAL, BUT STILL 
+	/	INCLUDED FOR REFERENCE, TESTING
+	/------------------------------------*/
+	/**
+	 * @deprecated
+	 */
+	public function addPlayer() {
+		$this->getURIData();
+		$this->loadModel();
+		$status = "";
+		$code =200;
+		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
+		if ($this->dataModel->id != -1) {
+			if (!$this->dataModel->addUserPick($this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
+				$status .= "error:Your pick was not saved.";
+				if (!empty($this->dataModel->statusMess)) {
+					$status .=  " ".$this->dataModel->statusMess;
+				}
+			} else {
+				$status .= "Player Added Successfully.";
+			}
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
+		} else {
+			$status .= "error:League Identifier Missing";
+		}
+		$result = '{ "result": { "items": ['.$result.']},"code":"'.$code.'","status": "'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_output($result);
+	}
+	/**
+	 * @deprecated
+	 */
+	public function movePlayer() {
+		$this->getURIData();
+		$this->loadModel();
+		$status = "";
+		$code =200;
+		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
+		if ($this->dataModel->id != -1) {
+			if (!$this->dataModel->movePick($this->uriVars['direction'],$this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
+				$status .= "error:Your pick was not saved.";
+				if (!empty($this->dataModel->statusMess)) {
+					$status .=  " ".$this->dataModel->statusMess;
+				}
+			} else {
+				$status .= "Player Moved Successfully.";
+			}
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
+		} else {
+			$status .= "error:League Identifier Missing";
+		}
+		$result = '{ "result": { "items": ['.$result.']},"code":"'.$code.'","status": "'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_output($result);
+	}
+	/**
+	 * @deprecated
+	 */
+	public function removePlayer() {
+		$this->getURIData();
+		$this->loadModel();
+		$status = "";
+		$code =200;
+		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
+		if ($this->dataModel->id != -1) {
+			if (!$this->dataModel->removePick($this->uriVars['player_id'],$this->params['currUser'],$this->dataModel->league_id)) {
+				$status .= "error:Your pick was not saved.";
+				if (!empty($this->dataModel->statusMess)) {
+					$status .=  " ".$this->dataModel->statusMess;
+				}
+			} else {
+				$status .= "Player Removed Successfully.";
+			}
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
+		} else {
+			$status .= "error:League Identifier Missing";
+		}
+		$result = '{ "result": { "items": ['.$result.']},"code":"'.$code.'","status": "'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_output($result);
+	}
+	/**
+	 * @deprecated
+	 */
+	public function clearDraftList() {
+		$this->getURIData();
+		$this->loadModel();
+		$status = "";
+		$code =200;
+		$result = "";
+		$user_id = false;
+		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
+			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		}
+		if ($this->dataModel->id != -1) {
+			if (!$this->dataModel->clearDraftList($this->params['currUser'])) {
+				$status .= "error:Your pick was not saved.";
+				if (!empty($this->dataModel->statusMess)) {
+					$status .=  " ".$this->dataModel->statusMess;
+				}
+			} else {
+				$status .= "Draft list Successfully Cleared.";
+			}
+			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
+		} else {
+			$status .= "error:League Identifier Missing";
+		}
+		$result = '{ "result": { "items": ['.$result.']},"code":"'.$code.'","status": "'.$status.'"}';
+		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_output($result);
 	}
 }
 /* End of file draft.php */

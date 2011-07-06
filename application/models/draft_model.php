@@ -32,6 +32,7 @@ class draft_model extends base_model {
 	var $flexTimer = -1;
 	var $dStartDt = EMPTY_DATE_TIME_STR;
 	var $dStartTm = EMPTY_TIME_STR;
+	//var $timePerPick = -1;
 	var $timePick1 = EMPTY_TIME_STR;
 	var $timePick2 = EMPTY_TIME_STR;
 	var $rndSwitch = -1;
@@ -410,6 +411,17 @@ class draft_model extends base_model {
 		}
 		return $pick;
 	}
+	/**
+	 *	SET WAIVER ORDER.
+	 *
+	 *	Sets the initial order of waivers following the draft. This uses the reverse of the team order 
+	 *	of the first round of the draft.
+	 *
+	 *	@param	$waiverOrder	(Array)		The draft order of teams 
+	 *	@param	$league_id		(integer)	League Id param. If not passed, the internal league id is used
+	 *	@return					(Boolean}	TRUE on success, FALSE on failure
+	 *	@since	1.0
+	 */
 	public function setWaiverOrder($waiverOrder = array(), $league_id = false) {
 		
 		if (!isset($waiverOrder) || sizeof($waiverOrder) == 0) { return; }
@@ -433,19 +445,19 @@ class draft_model extends base_model {
 		}
 	}
 	/**
-	 *	SCHEDULE DRAFT.
-	 *
-	 *	This function analyses the number of teams and generates a random draft order. If the 
-	 *	$timerEanbled property of this object is enabled, this function will add pick due dates and 
-	 *	times to each pick entry as well.
+	 * 	CREATE DRAFT ORDER.
+	 * 	This function analyses the number of teams and generates a random draft order. 
+	 * 	
+	 * EDIT 1.0.5: Broke apart draft order and scheduling functions.
 	 *
 	 *	@params	$teams			Array of teams for the current league. Has to be passed since we can't invoke the team_modle class within this model.
 	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
 	 *	@param	$year 			The draft year. If not specified, the current year is used.
 	 *	@param	$debug			TRUE or FALSE
 	 *	@return					Array of drafted player IDs.
+	 *	@since	1.0.5
 	 */
-	public function sheduleDraft($teams = array(),$league_id = false, $year = false, $debug = false) {
+	public function createDraftOrder($teams = array(),$league_id = false, $year = false, $debug = false) {
 		
 		if ($league_id === false) { $league_id = $this->league_id; }
 		if ($year === false) { $year = date('Y'); }		
@@ -501,8 +513,10 @@ class draft_model extends base_model {
 		if ($lastPick>$maxPick) {
 			for ($i=$maxPick+1;$i<=$lastPick;$i++) {
 				$pick=($i+$nTeams-1)%$nTeams + 1;
-				if ($debug==1) {echo("Curr pick = ".$pick."<br />");
-				echo("picks array $pick set? = ".(isset($teamPicks[$pick-1]) ? 'true' : 'false')."<br />"); }
+				if ($debug==1) {
+					echo("Curr pick = ".$pick."<br />");
+					echo("picks array $pick set? = ".(isset($teamPicks[$pick-1]) ? 'true' : 'false')."<br />"); 
+				}
 				$round=($i-$pick)/$nTeams + 1;
 				$updText.="INSERT INTO ".$this->tables['DRAFT']." (league_id,year,pick_overall,round,pick_round,team_id) VALUES (".$league_id.",$year,$i,$round,$pick,".$teamPicks[$pick-1].")\n";
 			}
@@ -518,107 +532,113 @@ class draft_model extends base_model {
 			echo "timerEnable: ".$this->timerEnable."<br />\n";
 		}
 		if (!empty($updText)) {
-			$this->saveDraftOrder($updText);
+			return $this->saveDraftOrder($updText);
+		} else {
+			return false;
 		}
+	}
+	/**
+	 *	SCHEDULE DRAFT PICKS.
+	 *
+	 *	If the $timerEanbled property of the current league is enabled, this function will add pick due dates and 
+	 *	times to each pick entry as well.
+	 *
+	 *	EDIT 1.0.5: Broke apart draft order and scheduling functions.
+	 *
+	 *	@params	$teams			Array of teams for the current league. Has to be passed since we can't invoke the team_modle class within this model.
+	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
+	 *	@param	$year 			The draft year. If not specified, the current year is used.
+	 *	@param	$debug			TRUE or FALSE
+	 *	@return					Array of drafted player IDs.
+	 *	@since	1.0
+	 */
+	public function sheduleDraft($teams = array(),$league_id = false, $year = false, $debug = false) {
 		
-		## Create/Adjust Schedule
+		if ($league_id === false) { $league_id = $this->league_id; } // END if
+		if ($year === false) { $year = date('Y'); }	 // END if	
+		
+		// CREATE SCHEDULE ONLY IF THE TIMER IS ENABLED
 		if ($this->timerEnable == 1) { 
-			## Get Schedule Settings
-			$dStartDt=$this->dStartDt;
-			$dStartTm=$this->dStartTm.":00";
-			$timePick1=$this->timePick1;
-			$timePick2=$this->timePick2;
-			$rndSwitch=$this->rndSwitch;
-			$timeStart=strtotime($this->timeStart.":00");
-			$timeStop=strtotime($this->timeStop.":00");
-			$pauseWkEnd=$this->pauseWkEnd;
-			
-			#echo "Start at: $dStartDt $dStartTm<br/>";
+			// GET CURRENT SETTINGS
+			$timePerPick = ($this->$timePick1 / 60);
 			
 			## Determine and schedule first pick
 			$firstPick=99999;
+			$firstPickRnd = -1;
 			$result = $this->getDraftResults();
-			if ($debug==1) {echo("Size of result = ".sizeof($result)."<br />"); }
+			
 			foreach($result as $row) {
-				$oPick=$row['pick_overall'];
-				$pid=$row['player_id'];
-				$rnd=$row['round'];
-				if (($pid=="") && ($firstPick>$oPick)) {$firstPick=$oPick;$firstPickRnd=$rnd;}
-				$picks[$oPick]=$pid;
-			}
+				$pick_overall = $row['pick_overall'];
+				$player_id = $row['player_id'];
+				$round = $row['round'];
+				if (($player_id=="") && ($firstPick > $pick_overall)) {
+					$firstPick= $pick_overall;
+					$firstPickRnd = $round;
+				} // END if
+				$picks[$pick_overall] = $player_id;
+			} // END foreach
 			if ($firstPick==99999) {
-				$firstPick=1;$firstPickRnd=1;
-			}
+				$firstPick=1;
+				$firstPickRnd=1;
+			} // END if
+			if ($debug === true) {
+				echo "Start at: $dStartDt $dStartTm<br />\n";
+				echo "Size of getDraftResults = ".sizeof($result)."<br />\n"; 
+				echo "firstPick: $firstPick<br />\n";
+				echo "firstPickRnd: $firstPickRnd<br />\n";
+			} // END if
 			
-			if ($firstPickRnd>$rndSwitch) {$min=$timePick2;}
-			else {$min=$timePick1;}
+			$startInst = mktime(date("H",strtotime($this->draftDate)),date("i",strtotime($this->draftDate)),0,date("m",strtotime($this->draftDate)),date("d",strtotime($this->draftDate)),date("Y",strtotime($this->draftDate)));
+			$pickInst = mktime(date("H",strtotime($this->draftDate)),date("i",strtotime($this->draftDate)),0,date("m",strtotime($this->draftDate)),date("d",strtotime($this->draftDate)),date("Y",strtotime($this->draftDate)));
 			
-			if ($debug===true) {echo "firstPick: $firstPick<br />\n";}
-			
-			$now=time();
-			$startInst=mktime(date("H",strtotime($timeStart)),date("i",strtotime($timeStart)),0,date("m",strtotime($dStartDt)),date("d",strtotime($dStartDt)),date("Y",strtotime($dStartDt)));
-			$pickInst=mktime(date("H",strtotime($dStartTm)),date("i",strtotime($dStartTm)),0,date("m",strtotime($dStartDt)),date("d",strtotime($dStartDt)),date("Y",strtotime($dStartDt)));
-			if (($pickInst<$now)||($pickInst<$startInst)) {
+			$now = time();
+			if (($pickInst < $now)||($pickInst < $startInst)) {
 				$nowDate=date("Y-m-d",$now);
-				$nowTime=strtotime(date("H:i:s",$now)." + $min minutes");
-				if ($nowTime>$timeStop) {
+				$nowTime = strtotime(date("H:i:s",$now)." + $timePerPick minutes");
+				if ($nowTime > $timeStop) {
 					$now=date("Y-m-d",strtotime($nowDate." + 1 day"));
-					$now=strtotime($now." ".date("H:i:00",$timeStart));
+					$now=strtotime($now." ".date("H:i:00",strtotime($this->draftDate)));
 					//echo date("Y-m-d H:i:s",$now)."::".$timeStart." - too late<br/>";
-				}
+				} // END if
 			} else if (
-				$nowTime<$timeStart) {
-				$now=strtotime($nowDate." ".date("H:i:00",$timeStart));
+				$nowTime < strtotime($this->draftDate)) {
+				$now=strtotime($nowDate." ".date("H:i:00",strtotime($this->draftDate)));
 				//echo date("Y-m-d H:i:s",$now)."::".$timeStart." - too early<br/>";
-			}
-			$dStartDt=date("Y-m-d",$now);
-			$dStartTm=date("H:i:00",$now);
+			} // END if
+			$dStartDt = date("Y-m-d",$now);
+			$dStartTm = date("H:i:00",$now);
 		
-			$pickDt=strtotime($dStartDt);
-			$pickTm=strtotime($dStartTm." + $min minutes");
+			$pickDt = strtotime($dStartDt);
+			$pickTm = strtotime($dStartTm." + $timePerPick minutes");
 			
 			if ($debug===true) {
 				echo "Pick 1.1.1 Start: ".date("Y-m-d",$pickDt)." ".date("H:i:s",$pickTm)."<br/>";
-			}
-			$updText.="UPDATE ".$this->tables['DRAFT']." SET due_date='".date("Y-m-d",$pickDt)."',due_time='".date("H:i",$pickTm)."' WHERE league_id=$league_id AND year=$year AND pick_overall=$firstPick;\n";
-
+			} // END if
+			$this->draftPlayer(date("Y-m-d",$pickDt),date("H:i",$pickTm), NULL, false, $firstPick, $league_id);
+			
 			## Process Remaining Picks
-			for ($i=$firstPick+1;$i<=$lastPick;$i++) {
+			for ($i = $firstPick + 1;$i <= $lastPick; $i++) {
 				if (isset($picks[$i])) {continue;}
-				$pick=($i+$nTeams-1)%$nTeams+1;
-				$round=($i-$pick)/$nTeams+1;
-				
-				if ($round>$this->rndSwitch) {
-					$min=$timePick2;
+				$pick = ($i+$nTeams-1)%$nTeams+1;
+				$round = ($i-$pick)/$nTeams+1;
+				$adjTm = $pickTm + ($timePerPick * 60);
+				if ($adjTm > $this->timeStop) {
+					$pickTm = $adjTm - $timeStop + $timeStart;
+					$pickDt = strtotime(strftime("%x",$pickDt)." + 1 day");
+					$dow = date("w",$pickDt);
+					if (($dow > 5) && ($this->pauseWkEnd == 1)) {
+						$pickDt = strtotime(strftime("%x",$pickDt)." + ".(8-$dow)." days");
+					} // END if
 				} else {
-					$min=$timePick1;
-				}
-				
-				$adjTm=$pickTm+$min*60;
-				if ($adjTm>$timeStop) {
-					$pickTm=$adjTm-$timeStop+$timeStart;
-					$pickDt=strtotime(strftime("%x",$pickDt)." + 1 day");
-					$dow=date("w",$pickDt);
-					if (($dow>5) && ($pauseWkEnd==1)) {
-						$pickDt=strtotime(strftime("%x",$pickDt)." + ".(8-$dow)." days");
-					}
-				} else {
-					$pickTm=$adjTm;
-				}
+					 // END if$pickTm = $adjTm;
+				} // END if
 				
 				if ($debug===true) {
 					echo "Pick $i.$round.$pick $min ".date("w l Y-m-d",$pickDt)." ".date("H:i:s",$pickTm)."<br/>";
-				}
-				$this->draftPlayer(date("Y-m-d",$pickDt),date("H:i",$pickTm), NULL, false, $i);
-			}
-		}
-		## Get Taken Picks
-		/*$result = $this->getTakenPicks();
-		foreach ($result as $row) {
-			$ovr=$row['pick_overall'];
-			$drafted[$ovr]=1;
-		}
-		return $drafted;*/
+				} // END if
+				$this->draftPlayer(date("Y-m-d",$pickDt),date("H:i",$pickTm), NULL, false, $i, $league_id);
+			} // END for
+		} // END if ($this->timerEnable == 1)
 		return true;
 	}
 	/**
@@ -644,7 +664,7 @@ class draft_model extends base_model {
 		}
 	}
 	/**
-	 *	GET TEAM PICKS.
+	 *	GET TEAM DRAFT PICKS.
 	 *
 	 *	Returns the round ID and the team ID for a particular team.
 	 *
@@ -707,7 +727,7 @@ class draft_model extends base_model {
 	 *	GET DRAFT RESULTS.
 	 *
 	 *	Returns all pick information for a leagues draft. The range can be narrowed by passing in 
-	 *	
+	 *	a round or team ID.
 	 *
 	 *	@param	$round			Optional round parameter
 	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
@@ -746,8 +766,8 @@ class draft_model extends base_model {
 	}
 	/**
 	 *	DRAFT PLAYER.
-	 *
-	 *	Sets the 
+	 *	Submits a player to be drafted. This option can also be used to perform maintenance (such as voiding 
+	 *	picks, or managing pick due date/time) as well. 
 	 *	
 	 *	@param	$due_date		Optional round parameter
 	 *	@param	$due_time		Optional league Id param. If not passed, the internal league id is used
@@ -756,6 +776,7 @@ class draft_model extends base_model {
 	 *	@param	$pick_overall 	Optional team ID parameter.
 	 *	@param	$league_id 		Optional team ID parameter.
 	 *	@return					Array with all draft result data.
+	 *	@since	1.0
 	 */
 	public function draftPlayer($due_date = false, $due_time = false, $player_id = false, $team_id = false, $pick_overall = false, $league_id = false) {
 		
@@ -783,38 +804,6 @@ class draft_model extends base_model {
 		$this->removeFromDraftLists($player_id, $league_id);
 		return true;
 		
-	}
-	public function removeFromDraftLists($player_id = false, $league_id = false) {
-		if ($player_id === false) return;
-		
-		if ($league_id === false) $league_id = $this->league_id;
-		
-		// GET OWNER IDS FOR LEAGUE
-		$ownerIds = array();
-		$this->db->select('owner_id');
-		$this->db->from('fantasy_teams');
-		$this->db->where('league_id',$league_id);
-		$query = $this->db->get();
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				array_push($ownerIds,$row->owner_id);
-			}
-		}
-		$query->free_result();
-		// GET DRAFT LISTS
-		foreach($ownerIds as $id) {
-			$picks = $this->getUserPicks($id);
-			if (is_array($picks) && sizeof($picks) > 0) {
-				foreach($picks as $pickData) {	
-					if ($pickData['player_id'] == $player_id) {
-						$this->removePick($player_id, $id, $league_id);
-						break;
-					}
-				}
-			} else { 
-				continue; 
-			}
-		}
 	}
 	
 	public function rollbackPick($pick_overall = false, $league_id = false, $year = false) {
@@ -871,36 +860,6 @@ class draft_model extends base_model {
 		return true;
 	}
 	
-	public function getUserPicks($userId = false, $league_id = false) {
-		
-		if ($userId === false) return;
-		if ($league_id === false) $league_id = $this->league_id;
-		$picks = array();
-		
-		$this->db->select($this->tables['DRAFT_LIST'].'.rank,'.$this->tables['DRAFT_LIST'].'.player_id, first_name, last_name, position, role');
-		$this->db->where('owner_id',$userId);
-		$this->db->where($this->tables['DRAFT_LIST'].'.league_id',$league_id);
-		$this->db->join('fantasy_players','fantasy_players.id = '.$this->tables['DRAFT_LIST'].'.player_id','left');
-		$this->db->join('players','fantasy_players.player_id = players.player_id','right outer');
-		$this->db->order_by($this->tables['DRAFT_LIST'].'.rank','asc');
-		$query = $this->db->get($this->tables['DRAFT_LIST']);
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				$pos = 0;
-				if ($row->position == 1) {
-					if ($row->role == 13) {
-						$pos = 12;
-					} else {
-						$pos = $row->role;
-					}
-				} else {
-					$pos = $row->position;
-				}
-				$picks = $picks + array($row->rank=>array('player_id'=>$row->player_id,'player_name'=>$row->first_name." ".$row->last_name,'position'=>get_pos($pos)));
-			}
-		}
-		return $picks;
-	}
 	public function getUserResults($userId = false, $league_id = false) {
 		
 		if ($userId === false) return;
@@ -934,113 +893,189 @@ class draft_model extends base_model {
 		}
 		return $picks;
 	}
-	public function playerInUserList($player_id = false, $picks = array()) {
+	/*---------------------------------------------
+	/
+	/	DRAFT LISTS
+	/
+	/--------------------------------------------*/
+	/**
+	 * GET USER PICKS.
+	 * Returns a list of draft list choices by the specified team owner for the specified league.
+	 * 
+	 * EDIT 1.0.5: Added league_id to where clause to prevent list returns from multiple owned leagues.
+	 * 
+	 * @param	$userId				Integrer	Team Owner ID
+	 * @param 	$league_id			Integrer	Fantasy League ID
+	 * @return						Array		Array of player info
+	 * @since	1.0
+	 * 
+	 */
+	public function getUserPicks($userId = false, $league_id = false) {
 		
-		if ($player_id === false || sizeof($picks) == 0) return false;
-
-		$found = false;
-		foreach($picks as $rank => $data) {
-			if ($data['player_id'] == $player_id) {
-				$found = true;
-				break;
+		if ($userId === false) return;
+		if ($league_id === false) $league_id = $this->league_id;
+		$picks = array();
+		
+		$this->db->select($this->tables['DRAFT_LIST'].'.rank,'.$this->tables['DRAFT_LIST'].'.player_id, first_name, last_name, position, role');
+		$this->db->where('owner_id',$userId);
+		$this->db->where($this->tables['DRAFT_LIST'].'.league_id',$league_id);
+		$this->db->join('fantasy_players','fantasy_players.id = '.$this->tables['DRAFT_LIST'].'.player_id','left');
+		$this->db->join('players','fantasy_players.player_id = players.player_id','right outer');
+		$this->db->order_by($this->tables['DRAFT_LIST'].'.rank','asc');
+		$query = $this->db->get($this->tables['DRAFT_LIST']);
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				$pos = 0;
+				if ($row->position == 1) {
+					if ($row->role == 13) {
+						$pos = 12;
+					} else {
+						$pos = $row->role;
+					}
+				} else {
+					$pos = $row->position;
+				}
+				$picks = $picks + array($row->rank=>array('player_id'=>$row->player_id,'player_name'=>htmlentities($row->first_name." ".$row->last_name,ENT_NOQUOTES,"UTF-8"),'position'=>get_pos($pos)));
 			}
 		}
-		return $found;
+		return $picks;
 	}
-	public function addUserPick($player_id = false, $userId = false,$league_id = false) {
+	/**
+	 * SAVE DRAFT LIST.
+	 * Saves a users drasft list selections to the DB. This function replaces the individal add, remove, move
+	 * and clear functions which were all moved to the UI.
+	 * 
+	 * @param 	$player_id_list		Array		Player ID array
+	 * @param	$userId				Integrer	Team Owner ID
+	 * @param 	$league_id			Integrer	Fantasy League ID
+	 * @return						Boolean		TRUE on success, FALSE on error
+	 * @since	1.0.5
+	 * 
+	 */
+	public function saveDraftList($player_id_list = false, $userId = false, $league_id = false) {
 		
 		if ($league_id === false) $league_id = $this->league_id;
-		if ($player_id === false || $userId === false) return;
+		if ($player_id_list === false || $userId === false) return;
 		
-		// GET CURRENT PICKS
-		$picks = $this->getUserPicks($userId);
-		$found = $this->playerInUserList($player_id, $picks);
-		
-		if (!$found) {
-			$data = array('owner_id'=>$userId, 'league_id'=>$league_id, 'rank'=>sizeof($picks)+1,
+		// CLEAR EXISTING LIST
+		$this->clearDraftList($userId,$league_id);
+		$rank = 1;
+		$saved = 0;
+		// SAVE PLAYER IDs PASSED
+		foreach($player_id_list as $player_id) {
+			$data = array('owner_id'=>$userId, 'league_id'=>$league_id, 'rank'=>$rank,
 						  'player_id'=>$player_id);
 			$this->db->insert($this->tables['DRAFT_LIST'],$data);
-			return true;
-		} else {
-			$this->statusMess = "Player is already on draft list.";
-			return false;
+			$rank++;
+			$saved++;
 		}
-		
-	}
-	public function removePick($player_id = false, $userId = false,$league_id = false) {
-		
-		if ($league_id === false) $league_id = $this->league_id;
-		if ($userId === false) return;
-		// GET CURRENT PICKS
-		$picks = $this->getUserPicks($userId);
-		
-		$pickData = array();
-		foreach($picks as $rank => $data) {
-			if ($data['player_id'] != $player_id) {
-				array_push($pickData,$data['player_id']);
-			}
-		}
-		$this->clearDraftList($userId);
-		$rank = 1;
-		if (sizeof($pickData) > 0) {
-			foreach($pickData as $id) {
-				$data = array('owner_id'=>$userId, 'league_id'=>$league_id, 'rank'=>$rank,
-							  'player_id'=>$id);
-				$this->db->insert($this->tables['DRAFT_LIST'],$data);
-				$rank++;
-			}
-			return true;
-		} else {
-			$this->statusMess = "No picks found on users draft list.";
-			return false;
-		}
-		
-	}
-	public function movePick($direction, $player_id = false, $userId = false,$league_id = false) {
-		
-		if ($league_id === false) $league_id = $this->league_id;
-		if ($userId === false) return;
-		// GET CURRENT PICKS
-		$picks = $this->getUserPicks($userId);
-		
-		$oldRank = 0;
-		$newRank = 0;
-		$swapPlayerId = -1;
-		$thisPlayerId = -1;
-		foreach($picks as $rank => $data) {
-			if ($data['player_id'] == $player_id) {
-				$oldRank = $rank;
-				$thisPlayerId = $data['player_id'];
-				if ($direction == 1) {
-					$newRank = $rank - 1;
-					$swapPlayerId = $picks[$rank - 1]['player_id'];
-				} else {
-					$newRank = $rank + 1;
-					$swapPlayerId = $picks[$rank + 1]['player_id'];
-				}
-			}
-		}
-		$this->db->where('owner_id',$userId);
-		$this->db->where('rank',$oldRank);
-		$this->db->set('player_id',$swapPlayerId);
-		$this->db->update($this->tables['DRAFT_LIST']);
-		
-		$this->db->where('owner_id',$userId);
-		$this->db->where('rank',$newRank);
-		$this->db->set('player_id',$thisPlayerId);
-		$this->db->update($this->tables['DRAFT_LIST']);
+		$this->statusMess = $saved . " players saved to draft list.";
 		return true;
-
 	}
-	public function clearDraftList($userId) {
+	/**
+	 * CLEAR DRAFT LIST.
+	 * Removes all IDs from a users draft list.
+	 * EDIT 1.0.5: Added league_id to where clause to prevent list clearing across multiple owned leagues.
+	 * 
+	 * @param	$userId				Integrer	Team Owner ID
+	 * @param 	$league_id			Integrer	Fantasy League ID
+	 * @return						Boolean		TRUE on success, FALSE on error
+	 * @since	1.0
+	 * 
+	 */
+	public function clearDraftList($userId = false, $league_id = false) {
+		
+		if ($league_id === false) $league_id = $this->league_id;
 		if ($userId === false) return;
 		
 		$this->db->where('owner_id',$userId);
+		$this->db->where('league_id',$league_id);
 		$this->db->delete($this->tables['DRAFT_LIST']);
 		
 		return true;
 	}
-
+	/**
+	 * REMOVE FROM DRAFT LISTS.
+	 * Removes a drafted player from all draft lists they appear on.
+	 * 
+	 * @param	$player_id			Integrer	Fantasy Player ID
+	 * @param 	$league_id			Integrer	Fantasy League ID
+	 * @return						Boolean		TRUE on success, FALSE on error
+	 * @since	1.0
+	 * 
+	 */
+	public function removeFromDraftLists($player_id = false, $league_id = false) {
+		if ($player_id === false) return false;
+		
+		if ($league_id === false) $league_id = $this->league_id;
+		
+		// GET OWNER IDS FOR LEAGUE
+		$ownerIds = array();
+		$this->db->select('owner_id');
+		$this->db->from('fantasy_teams');
+		$this->db->where('league_id',$league_id);
+		$query = $this->db->get();
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				array_push($ownerIds,$row->owner_id);
+			}
+		}
+		$query->free_result();
+		// GET DRAFT LISTS
+		foreach($ownerIds as $id) {
+			$picks = $this->getUserPicks($id);
+			if (is_array($picks) && sizeof($picks) > 0) {
+				foreach($picks as $pickData) {	
+					if ($pickData['player_id'] == $player_id) {
+						$this->removePick($player_id, $id, $league_id);
+						break;
+					}
+				}
+			} else { 
+				continue; 
+			}
+		}
+		return true;
+	}
+	/**
+	 * REMOVE DRAFT LIST PICK.
+	 * Removes a player from team owner list (usually when drafted by another team).
+	 * 
+	 * EDIT 1.0.5: Function changed from public to protected.
+	 * 
+	 * @param 	$player_id		Integrer	Fantasy Player ID
+	 * @param	$userId			Integrer	Team Owner ID
+	 * @param 	$league_id		Integrer	Fantasy League ID
+	 * @return					Boolean		TRUE on success, FALSE on error
+	 * @since	1.0
+	 * @access	protected		As of 1.0.5
+	 * 
+	 */
+	protected function removePick($player_id = false, $userId = false, $league_id = false) {
+		
+		if ($userId === false) return false; // END if
+		if ($league_id === false) $league_id = $this->league_id; // END if
+		// GET CURRENT PICKS
+		$picks = $this->getUserPicks($userId,$league_id);
+		$pickData = array();
+		foreach($picks as $rank => $data) {
+			if ($data['player_id'] != $player_id) {
+				array_push($pickData,$data['player_id']);
+			} // END if
+		} // END foreach
+		$this->clearDraftList($userId,$league_id);
+		if ($this->saveDraftList($pickData,$userId,$league_id)) {
+			return true;
+		} else {
+			$this->statusMess = "Draft list update was not saved.";
+			return false;
+		} // END if
+	}
+	/*---------------------------------------------
+	/
+	/	PLAYERS STATS AND LISTS
+	/
+	/--------------------------------------------*/
 	/**
 	 * 	GET PLAYER POOL.
 	 * 
@@ -1394,4 +1429,118 @@ class draft_model extends base_model {
 		
 		return $values;
 	}
+	
+	/*-----------------------------------------
+	 * DEPRECATED FUCNTIONS
+	 * --------------------------------------*/
+	/**
+	 * @deprecated
+	 */
+	public function addUserPick($player_id = false, $userId = false,$league_id = false) {
+		
+		if ($league_id === false) $league_id = $this->league_id;
+		if ($player_id === false || $userId === false) return;
+		
+		// GET CURRENT PICKS
+		$picks = $this->getUserPicks($userId);
+		$found = $this->playerInUserList($player_id, $picks);
+		
+		if (!$found) {
+			$data = array('owner_id'=>$userId, 'league_id'=>$league_id, 'rank'=>sizeof($picks)+1,
+						  'player_id'=>$player_id);
+			$this->db->insert($this->tables['DRAFT_LIST'],$data);
+			return true;
+		} else {
+			$this->statusMess = "Player is already on draft list.";
+			return false;
+		}
+		
+	}
+	/**
+	 * @deprecated
+	 */
+	/*public function removePick($player_id = false, $userId = false,$league_id = false) {
+		
+		if ($league_id === false) $league_id = $this->league_id;
+		if ($userId === false) return;
+		// GET CURRENT PICKS
+		$picks = $this->getUserPicks($userId);
+		
+		$pickData = array();
+		foreach($picks as $rank => $data) {
+			if ($data['player_id'] != $player_id) {
+				array_push($pickData,$data['player_id']);
+			}
+		}
+		$this->clearDraftList($userId);
+		$rank = 1;
+		if (sizeof($pickData) > 0) {
+			foreach($pickData as $id) {
+				$data = array('owner_id'=>$userId, 'league_id'=>$league_id, 'rank'=>$rank,
+							  'player_id'=>$id);
+				$this->db->insert($this->tables['DRAFT_LIST'],$data);
+				$rank++;
+			}
+			return true;
+		} else {
+			$this->statusMess = "No picks found on users draft list.";
+			return false;
+		}
+		
+	}*/
+	/**
+	 * @deprecated
+	 */
+	public function movePick($direction, $player_id = false, $userId = false,$league_id = false) {
+		
+		if ($league_id === false) $league_id = $this->league_id;
+		if ($userId === false) return;
+		// GET CURRENT PICKS
+		$picks = $this->getUserPicks($userId);
+		
+		$oldRank = 0;
+		$newRank = 0;
+		$swapPlayerId = -1;
+		$thisPlayerId = -1;
+		foreach($picks as $rank => $data) {
+			if ($data['player_id'] == $player_id) {
+				$oldRank = $rank;
+				$thisPlayerId = $data['player_id'];
+				if ($direction == 1) {
+					$newRank = $rank - 1;
+					$swapPlayerId = $picks[$rank - 1]['player_id'];
+				} else {
+					$newRank = $rank + 1;
+					$swapPlayerId = $picks[$rank + 1]['player_id'];
+				}
+			}
+		}
+		$this->db->where('owner_id',$userId);
+		$this->db->where('rank',$oldRank);
+		$this->db->set('player_id',$swapPlayerId);
+		$this->db->update($this->tables['DRAFT_LIST']);
+		
+		$this->db->where('owner_id',$userId);
+		$this->db->where('rank',$newRank);
+		$this->db->set('player_id',$thisPlayerId);
+		$this->db->update($this->tables['DRAFT_LIST']);
+		return true;
+	}
+	/**
+	 * @deprecated
+	 */
+	public function playerInUserList($player_id = false, $picks = array()) {
+		
+		if ($player_id === false || sizeof($picks) == 0) return false;
+
+		$found = false;
+		foreach($picks as $rank => $data) {
+			if ($data['player_id'] == $player_id) {
+				$found = true;
+				break;
+			}
+		}
+		return $found;
+	}
+	
 }
