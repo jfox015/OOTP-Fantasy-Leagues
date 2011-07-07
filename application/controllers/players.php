@@ -198,7 +198,91 @@ class players extends MY_Controller {
 		}
 		return $result;
 	}
-	
+
+	/**
+	 *	GET URI DATA.
+	 *	Parses out an id or other parameters from the uri string
+	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
+	 */
+	protected function getURIData() {
+		parent::getURIData();
+		if ($this->input->post('player_id')) {
+			$this->uriVars['player_id'] = $this->input->post('player_id');
+		} // END if
+		if ($this->input->post('year')) {
+			$this->uriVars['year'] = $this->input->post('year');
+		} // END if
+		if ($this->input->post('player_type')) {
+			$this->uriVars['player_type'] = $this->input->post('player_type');
+		} // END if
+		if ($this->input->post('roster_status')) {
+			$this->uriVars['roster_status'] = $this->input->post('roster_status');
+		} // END if
+		if ($this->input->post('position_type')) {
+			$this->uriVars['position_type'] = $this->input->post('position_type');
+		} // END if
+		if ($this->input->post('role_type')) {
+			$this->uriVars['role_type'] = $this->input->post('role_type');
+		} // END if
+		if ($this->input->post('league_id')) {
+			$this->uriVars['league_id'] = $this->input->post('league_id');
+		} // END if
+		if ($this->input->post('limit')) {
+			$this->uriVars['limit'] = $this->input->post('limit');
+		} // END if
+		if ($this->input->post('startIdx')) {
+			$this->uriVars['startIdx'] = $this->input->post('startIdx');
+		} // END if
+		if ($this->input->post('pageId')) {
+			$this->uriVars['pageId'] = $this->input->post('pageId');
+		} // END if
+		if ($this->input->post('uid')) {
+			$this->uriVars['uid'] = $this->input->post('uid');
+		} // END if
+	}
+	/**
+	 *	MAKE NAV.
+	 *	Creates a sub nav menu for the given content category.
+	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
+	 */
+	protected function makeNav() {
+		if (isset($this->uriVars['league_id']) && !empty($this->uriVars['league_id']) && $this->uriVars['league_id'] != -1) {
+			if (!isset($this->league_model)) {
+				$this->load->model('league_model');
+			}
+			$this->league_model->load($this->uriVars['league_id']);
+			
+			$scoring_type = LEAGUE_SCORING_ROTO;
+			if ($this->league_model->id != -1) {
+				$league_name = $this->league_model->league_name;
+				$scoring_type = $this->league_model->getScoringType();
+			} else {
+				$league_name = "Unknown League";
+			}
+			$lg_admin = false;
+			if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->league_model->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
+				$lg_admin = true;
+			}
+			array_push($this->params['subNavSection'], league_nav($this->uriVars['league_id'], $league_name,$lg_admin,true,$scoring_type));
+		}
+		
+		array_push($this->params['subNavSection'],player_nav());
+	}
+	/**
+	 *	SHOW INFO.
+	 *	Creates and passes view data to the view object. Calls the default baseEditor showInfo() to finish the
+	 *	display output.
+	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
+	 */
 	public function info() {
 		$this->getURIData();
 		$this->load->model('player_model','dataModel');
@@ -319,70 +403,6 @@ class players extends MY_Controller {
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;
 		$this->displayView();
-	}
-	/**
-	 *	GET URI DATA.
-	 *	Parses out an id or other parameters from the uri string
-	 *
-	 */
-	protected function getURIData() {
-		parent::getURIData();
-		if ($this->input->post('player_id')) {
-			$this->uriVars['player_id'] = $this->input->post('player_id');
-		} // END if
-		if ($this->input->post('year')) {
-			$this->uriVars['year'] = $this->input->post('year');
-		} // END if
-		if ($this->input->post('player_type')) {
-			$this->uriVars['player_type'] = $this->input->post('player_type');
-		} // END if
-		if ($this->input->post('roster_status')) {
-			$this->uriVars['roster_status'] = $this->input->post('roster_status');
-		} // END if
-		if ($this->input->post('position_type')) {
-			$this->uriVars['position_type'] = $this->input->post('position_type');
-		} // END if
-		if ($this->input->post('role_type')) {
-			$this->uriVars['role_type'] = $this->input->post('role_type');
-		} // END if
-		if ($this->input->post('league_id')) {
-			$this->uriVars['league_id'] = $this->input->post('league_id');
-		} // END if
-		if ($this->input->post('limit')) {
-			$this->uriVars['limit'] = $this->input->post('limit');
-		} // END if
-		if ($this->input->post('startIdx')) {
-			$this->uriVars['startIdx'] = $this->input->post('startIdx');
-		} // END if
-		if ($this->input->post('pageId')) {
-			$this->uriVars['pageId'] = $this->input->post('pageId');
-		} // END if
-		if ($this->input->post('uid')) {
-			$this->uriVars['uid'] = $this->input->post('uid');
-		} // END if
-	}
-	protected function makeNav() {
-		if (isset($this->uriVars['league_id']) && !empty($this->uriVars['league_id']) && $this->uriVars['league_id'] != -1) {
-			if (!isset($this->league_model)) {
-				$this->load->model('league_model');
-			}
-			$this->league_model->load($this->uriVars['league_id']);
-			
-			$scoring_type = LEAGUE_SCORING_ROTO;
-			if ($this->league_model->id != -1) {
-				$league_name = $this->league_model->league_name;
-				$scoring_type = $this->league_model->getScoringType();
-			} else {
-				$league_name = "Unknown League";
-			}
-			$lg_admin = false;
-			if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->league_model->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
-				$lg_admin = true;
-			}
-			array_push($this->params['subNavSection'], league_nav($this->uriVars['league_id'], $league_name,$lg_admin,true,$scoring_type));
-		}
-		
-		array_push($this->params['subNavSection'],player_nav());
 	}
 }
 /* End of file players.php */

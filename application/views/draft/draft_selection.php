@@ -49,16 +49,18 @@
 		$('a[rel=draft]').live('click',function (e) {
 			e.preventDefault();
 			var obj = new Object();
+			console.debug(this.id);
 			obj.id = this.id;
 			selectPlayer(obj);
 		});
 		// SUBMIT OFFICIAL DRAFT CHOICE
-		$('#draft').click(function(e){
+		// Not currently used
+		/*$('#draft').click(function(e){
 			e.preventDefault();
 			addPick(this.id);
 			getPicks();
 			getPlayers();
-		});
+		});*/
 		$('div#activeStatusBox').hide();
 
 		/*----------------------------------------------
@@ -69,94 +71,82 @@
 		
 		// ADD TO LIST
 		$('a[rel=itemPick]').live('click',function (e) {
-			e.preventDefault();
 			updatePlayerLists(this.id);
-			if (!pageChanged) pageChanged = true;
-			buttonDisplay('optSave',true);
+			draftListButtonClick(e, false);
 		});	
 		// REMOVE FROM LIST
-		$('img[rel=remove]').live('click',function (e) {
-			e.preventDefault();
+		$('a[rel=remove]').live('click',function (e) {
 			offList(draftList,this.id);
-			if (!pageChanged) pageChanged = true;
-			buttonDisplay('optSave',true);
-			drawPicks(draftList);
+			draftListButtonClick(e, true);
 		});
 		// CLEAR LIST
 		$('a[rel=clearAll]').live('click',function (e) {
-			e.preventDefault();
 			clearList(draftList);
-			if (!pageChanged) pageChanged = true;
-			buttonDisplay('optSave',true);
-			drawPicks();			
+			draftListButtonClick(e, true);	
 		});
 		// CHANGE LIST ORDER
 		$('a[rel=movePick]').live('click',function (e) {
-			e.preventDefault();
 			var params = this.id.split("|");
 			moveItemInList(draftList,params[0],params[1]);
-			if (!pageChanged) pageChanged = true;
-			buttonDisplay('optSave',true);
-			drawPicks();				
+			draftListButtonClick(e, true);				
 		});
 		// SAVE LIST
 		$('a[rel=saveList]').live('click',function (e) {
 			e.preventDefault();
 			var draftListStr = '';
 			for (var i = 0; i < draftList.length; i++) {
-				if (draftList.length[i] != null && draftList.length[i].id != -1) {
-					if (draftListStr != '') { draftListStr += "|"; }
+				if (draftList[i] != null && draftList[i].id != -1) {
+					if (draftListStr != '') { draftListStr += "_"; }
 					draftListStr += draftList[i].id;
 				}
 			}
-			if (draftListStr != '') {
-				var url = "<?php echo($config['fantasy_web_root']); ?>draft/saveDraftList/league_id/"+league_id+"/player_id_list/"+draftListStr;
-				<?php if ($team_override) { ?> url += '/user_id/<?php print($team_owner_id); ?>';<? } ?>
-				url += cacheBuster();
-				$('div#activeList').html(ajaxWait);
-				$.ajax({
-				  type: GET,
-				  url: url,
-				  dataType: 'json',
-				  data: {},
-				  success: function(json) {
-					  alert("HELLO");
-					  $('div#activeList').empty();
-						if (data.code.indexOf("200") != -1) {
-							$('div#activeStatus').removeClass('error');
-							$('div#activeStatus').removeClass('success');
-							if (data.status.indexOf(":") != -1) {
-								var status = data.status.split(":");
-								$('div#activeStatus').addClass(status[0].toLowerCase());
-								$('div#activeStatus').html(status[1]);
-							} else {
-								$('div#activeStatus').addClass('success');
-								$('div#activeStatus').html('Draft List Saved Successfully.');
-								if (pageChanged) pageChanged = false;
-								buttonDisplay('optSave',false);
-							}
-							$('div#activeStatusBox').fadeIn("slow",function() { setTimeout('fadeStatus("active")',15000); });
-						}
-				 	 },
-					error: function(x,y,z) {
-						console.debug("JSON error = "+ x.responseText);
+			if (draftListStr == '') {
+				draftListStr = 'empty';
+			}
+			var url = "<?php echo($config['fantasy_web_root']); ?>draft/saveDraftList/league_id/"+league_id+"/player_id_list/"+draftListStr;
+			<?php if ($team_override) { ?> url += '/user_id/<?php print($team_owner_id); ?>';<? } ?>
+			url += cacheBuster();
+			$('div#activeList').html(ajaxWait);
+			$.getJSON(url, function(data){
+				if (data.code.indexOf("200") != -1) {
+					var statusOut = '';
+					var cssOut = '';
+					if (data.status.indexOf(":") != -1) {
+						var status = data.status.split(":");
+						cssOut = status[0].toLowerCase();
+						statusOut = status[1];
+					} else {
+						cssOut = 'success';
+						statusOut = 'Draft List Saved Successfully.';
+						if (pageChanged) pageChanged = false;
+						buttonDisplay('optSave',false);
+						$('div#activeList').empty();
+						$('div#activeList').append(drawPicks(draftList));
 					}
-				});		
-			} else {
-				$('div#activeStatus').addClass('error');
-				$('div#activeStatus').html('Save Error: Draft List is empty.');
-				$('div#activeStatusBox').fadeIn("slow",function() { setTimeout('fadeStatus("active")',15000); });
-			}				
+					updateStatus('listStatus','listStatusBox',statusOut, cssOut);
+				} else {
+					updateStatus('listStatus','listStatusBox','Save Error: Draft List was not saved.', 'error');
+				}
+			});
+			//} else {
+			//	updateStatus('listStatus','listStatusBox','Save Error: Draft List is empty.', 'error');
+			//}				
 		}); // END a[rel=saveList]').live('click')
 		
-		// STOP PAGE UNLOAD IF DRAFT LIST IS NOT SAVED
-		/*$(window).bind('beforeunload', function(){ 
+		// RELOAD USER DRAFT PICK LIST
+		$('a[rel=reloadDraftList]').live('click',function (e) {
+			e.preventDefault();
+			loadUserPicks();
+		});
+		
+		// ALERT USER ON PAGE UNLOAD THAT DRAFT LIST MAY NOT BE SAVED
+		$(window).bind('beforeunload', function(){ 
 			if (pageChanged) {
-				return confirm("There are unsaved draft list changes on this page. if you exit without saving, your changes will be lost. \n\nPress 'OK' to continue leaving this page or 'Cancel' to stop and save your changes first.");
+				return "WARNING: There are unsaved draft list changes on this page. If you exit without saving, your changes will be lost. \n\nPress 'OK' to continue leaving this page or 'Cancel' to stop and save your changes first.";
 			} else {
-				return true;
+				return "There may be unsaved changes on this page. Are you sure you want to exit? Click 'Cancel' to stop unload and save your changes first.";
 			}
-		}); */
+		}); 
 		/*---------------------------
 		// DEAFULT PAGE ACTIONS
 		/--------------------------*/
@@ -168,18 +158,48 @@
 		selectPlayer(obj);
 		<?php } ?>
 	});
-	function saveListResponse(data) {
-		alert("Here");
-		
-	}
 	/*-----------------------------------------------
 	/	PUBLIC JS FUNCTIONS
 	/----------------------------------------------*/
+	function draftListButtonClick(e, updateList) {
+		e.preventDefault();
+		if (!pageChanged) pageChanged = true;
+		buttonDisplay('optSave',true);
+		if (updateList) {
+			$('div#activeList').empty();
+			$('div#activeList').append(drawPicks(draftList));
+		}
+	}
+	function updateStatus(contentDiv, boxDiv, status, cssClass) {
+		removeStatusCSSClasses(contentDiv);
+		$('div#'+contentDiv).addClass(cssClass);
+		$('div#'+contentDiv).html(status);
+		$('div#'+boxDiv).fadeIn("slow",function() { setTimeout('fadeStatus('+boxDiv+')',15000); });
+	}
+	function removeStatusCSSClasses(divId) {
+		var classes = ['success','notice','warn','error','info'];
+		for (var i = 0; i < classes.length; i++) {
+			$('div#'+divId).removeClass(classes[i]);
+		}
+		return true;
+	}
+	function fadeStatus(type) {
+		///alert("Fade out");
+		$('div#'+type).fadeOut("normal",function() { clearTimeout(fader); $('div#'+type).hide(); });
+	}
 	function Player() {
 		this.id = -1;
 		this.player_name = '';
 		this.position = '';
 		this.role = '';
+	}
+	function copyToPlayer(object) {
+		var player = new Player();
+		player.id = object.id;
+		player.player_name = object.player_name;
+		if (object.position) player.position = object.position;
+		if (object.role) player.role = object.role;
+		return player;
 	}
 	/**
 	 *	CACHE BUSTER.
@@ -235,28 +255,31 @@
 	}
 	function moveItemInList(list, id, direction) {
 		// First, lots of error handling
-		console.debug("list= " + list);
 		if ((list != null && listLength(list) > 0) && (id != null && id != '') && (direction != null && direction != '')) {
 			var tmpItem = null;
 			for (var i = 0; i < list.length; i++) {
-				if (list[i] != null && list[i].id != -1 && list[i].id  == id) {
-					var tmpItem = list[i];
-					switch(direction) {
-						case 1: // UP
-							if (list[i-1] != null) {
-								list[i] = list[i-1];
-								list[i-1] = list[i];
-							}
-							break;
-						case 2:
-							if (list[i+1] != null) {
-								list[i] = list[i+1];
-								list[i+1] = list[i];
-							}
-							break;
-						default:
-							break;
-					} // End switch
+				if (list[i] != null && list[i].id != null && list[i].id != -1) {
+					if (list[i].id == id) {
+						tmpItem = copyToPlayer(list[i]);
+						switch(parseInt(direction)) {
+							case 1: // UP
+								if (list[i-1] != null) {
+									var tmp2 = copyToPlayer(list[i-1]);
+									list[i] = tmp2;
+									list[i-1] = tmpItem;
+								} // END if
+								break;
+							case 2:
+								if (list[i+1] != null) {
+									var tmp2 = copyToPlayer(list[i+1]);
+									list[i] = tmp2;
+									list[i+1] = tmpItem;
+								} // END if
+								break;
+							default:
+								break;
+						} // End switch
+					} // END if
 				} // END if
 			} // END for
 			return true;
@@ -270,7 +293,6 @@
 		if (!status) displayType = "none";
 		$('div#'+divId).css('display',displayType);
 	}
-	
 	function updatePlayerLists(params) {
 		var found = false;
 		var errorListName = "";
@@ -286,15 +308,14 @@
 		}
 		if (!found) {
 			if (params[3] == "add" && listLength(draftList) >= players_max) {
-				$('div#listStatus').addClass('error');
-				$('div#listStatus').html("You can only add a maximum of "+players_max+" players at a time.");
+				updateStatus('listStatus','listStatusBox',"You can only add a maximum of "+players_max+" players at a time.", 'error');
 			} else {
 				// SEE if player info is cached (added and removed form a list already)
 				var player = new Player();
 				for (var i = 0; i < playerCache.length; i++) {
 					if (playerCache[i] != null && playerCache[i].id != -1) {
 						if (params[0] == playerCache[i].id) {
-							player = playerCache[i];
+							player = copyToPlayer(playerCache[i]);
 							break;
 						}
 					}
@@ -312,34 +333,30 @@
 								$('div#listStatus').addClass(status[0].toLowerCase());
 								$('div#listStatus').html(status[1]);
 							} else {
-								var item = data.result.items[0];
-								player.id = item.id;
-								player.player_name = item.player_name;
-								player.position = item.position;
-								player.role = item.role;
-								$('div#listStatus').html("");
-								$('div#listStatusBox').fadeOut("fast");
+								player = copyToPlayer(data.result.items[0]);
 								addToList(playerCache,player);
 								addToList(draftList,player);
-								drawPicks(draftList);
+								updateStatus('listStatus','listStatusBox',player.player_name + " added to list.", 'success');
 							}
 						} else {
 							$('div#listStatus').addClass('error');
 							$('div#listStatus').append('No information was returned for the selected player.');
 						}
+						$('div#activeList').empty();
+						$('div#activeList').append(drawPicks(draftList));
 					});
 				} else {
 					addToList(draftList,player);
-					drawPicks(draftList);
+					$('div#activeList').empty();
+					$('div#activeList').append(drawPicks(draftList));
+					updateStatus('listStatus','listStatusBox',player.player_name + " added to list.", 'success');
 				}
 			}
 		} else {
-			$('div#listStatus').addClass('error');
-			$('div#listStatus').html("This player already appears on your "+errorListName+" list.");
+			updateStatus('listStatus','listStatusBox',"This player already appears on your "+errorListName+" list.", 'error');
 		}
 	}
 	function selectPlayer(obj) {
-		//alert (obj.id);
 		var url = "<?php echo($config['fantasy_web_root']); ?>players/getInfo/player_id/"+obj.id+cacheBuster();
 		$('div#playerSelected').html(ajaxWait);
 		$.getJSON(url, function(data){
@@ -372,15 +389,11 @@
 			$('div#activeList').empty();
 			if (data.code.indexOf("200") != -1) {
 				$.each(data.result.items, function(i,item){
-					var player = new Player();
-					player.id = item.id;
-					player.player_name = item.player_name;
-					if (item.position) player.position = item.position;
-					if (item.role)player.role = item.role;
+					var player = copyToPlayer(item);
 					addToList(playerCache,player);
 					addToList(draftList,player);
 				});
-				drawPicks(draftList);
+				$('div#activeList').append(drawPicks(draftList));
 			} else {
 				var outHTML = '<tr align="left" valign="top">';
 				outHTML += '<td colspan="3">No players have been added yet.</td>';
@@ -406,22 +419,16 @@
 			}
 		});
 	}
-	function fadeStatus(type) {
-		///alert("Fade out");
-		$('div#'+type+'StatusBox').fadeOut("normal",function() { clearTimeout(fader); $('div#'+type+'StatusBox').hide(); });
-	}
 	function drawPlayerInfo(data) {
 		var outHTML = '<table cellspacing=0 cellpadding=3 width="375px">';
 		outHTML += '<tr align="left" valign="top">';
 		outHTML += '<td width="35%">';
 		var count = 0;
 		var item = data.result.items[0];
-		//alert(item);
-		//$.each(data.result.items, function(i,item){	
-			if (item.id != '' && item.player_name != '') {
-				outHTML += '<img src="<?php echo($config['ootp_html_report_path']); ?>images/player_'+item.player_id+'.png" border="0" align="left" /></td>';
-				outHTML += '<td width="65%"><b><a href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/<?php echo($league_id); ?>/player_id/'+item.id+'" style="font-weight:bold;font-size:larger;">'+item.player_name+'</a></b><br />';
-				outHTML += item.team_name+'<br />';
+		if (item.id != '' && item.player_name != '') {
+			outHTML += '<img src="<?php echo($config['ootp_html_report_path']); ?>images/player_'+item.player_id+'.png" border="0" align="left" /></td>';
+			outHTML += '<td width="65%"><b><a href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/<?php echo($league_id); ?>/player_id/'+item.id+'" style="font-weight:bold;font-size:larger;">'+item.player_name+'</a></b><br />';
+			outHTML += item.team_name+'<br />';
 				if (item.pos == 1) {
 					outHTML += item.role+'<br />';
 				} else {
@@ -430,8 +437,7 @@
 				outHTML += '</td>';
                 outHTML += '</tr>';
 				count++;
-			}
-		//});
+		}
 		if (count == 0) {
 			outHTML += '<tr align="left" valign="top">';
             outHTML += '<td colspan="3">No players have been picked yet</td>';
@@ -475,9 +481,10 @@
 		var count = 0;
 		var itemCount = 0;
 		var itemArr = data;
+		console.debug("Data = " + data);
 		if (data) {
-			
-			if (data.result != null && data.result.items != null) {
+			// JSON DATA OBJECT
+			if (data.result && data.result != null && data.result.items && data.result.items != null) {
 				for (k in data.result.items) if (data.result.items.hasOwnProperty(k)) itemCount++;
 				itemArr = data.result.items;
 				console.debug("itemCount = " + itemCount);
@@ -502,13 +509,15 @@
 					}
 				});
 			} else {
-				itemCount = data.length;
+			// PLAYER OBJECT ARRAY
+				itemCount = listLength(data);
 				for (var i= 0; i < itemCount; i++) {	
-					if (data[i] != null) {
+					if (data[i] && data[i] != null && data[i].id != null) {
+						console.debug("Data object " + i + ".id = " + data[i].id + ", name = " + data[i].player_name);
 						var player = data[i];
 						outHTML += '<tr align="left" valign="top" class="s'+((count%2)+1)+'_l">';
 						if (player.id != '' && player.player_name != '') {
-							outHTML += '<td>'+player.rank+'</td>';
+							outHTML += '<td>'+(count+1)+'</td>';
 							outHTML += '<td><a href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/<?php echo($league_id); ?>/player_id/'+player.id+'">'+player.player_name+'</a>, '+player.position+'</td>';
 							outHTML += '<td align="right">';
 							if ((count == 0 && itemCount > 1) || (count > 0 && count != (itemCount-1))) {
@@ -527,30 +536,19 @@
 					}
 				}
 			}
-			
 		}
 		if (count == 0) {
 			outHTML += '<tr align="left" valign="top">';
             outHTML += '<td colspan="3">No players have been added yet</td>';
             outHTML += '</tr>';
-			buttonDisplay('optSave',false);
-			buttonDisplay('optClear',false);
-		} else {
-			buttonDisplay('optSave',true);
-			buttonDisplay('optClear',true);
 		}
+		buttonDisplay('optSave',pageChanged);
 		outHTML += '</table>';
-		return outHTML;
-	}
-	function makeListHTML(item, count, itemCount) {
-		//var count = 0;
-		
 		return outHTML;
 	}
     </script>
      <div id="single-column">
     	<div class="top-bar"><h1><?php echo($subTitle); ?></h1></div>
-        
         <?php 
 		/*------------------------------------------------------------------------
 		/	ACT AS OWNER
@@ -674,7 +672,8 @@
             </tr>
             </table>
             <br />
-            <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" align="absmiddle" width="15" height="15" border="0" /><?php echo anchor('/draft/load/league_id/'.$league_id,'View complete draft results'); ?>
+            <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" align="absmiddle" width="15" height="15" border="0" /> <?php echo anchor('/draft/load/league_id/'.$league_id,'View complete draft results'); ?>
+            <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/repeat.pngf" align="absmiddle" width="15" height="15" border="0" /> <?php echo anchor('#','Refresh List',array('rel'=>'reloadDraftList')); ?>
             </div>
 			<br clear="all" />
     </div>

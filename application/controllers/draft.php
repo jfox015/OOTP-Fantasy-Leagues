@@ -12,7 +12,7 @@ require_once('base_editor.php');
  *	@author			Jeff Fox (Github ID: jfox015)
  *	@author			Frank Esslink (OOTP ID: fhommes)
  *	@dateCreated	03/23/10
- *	@lastModified	07/05/11
+ *	@lastModified	07/06/11
  *
  */
 class draft extends BaseEditor {
@@ -91,7 +91,7 @@ class draft extends BaseEditor {
 		$this->restrictAccess = true;
 		$this->minAccessLevel = ACCESS_WRITE;
 		
-		$this->debug = false; 
+		$this->debug = true; 
 	}
 	/*--------------------------------
 	/	PRIVATE FUNCTIONS
@@ -521,36 +521,76 @@ class draft extends BaseEditor {
 								echo("Size of teams array = ".sizeof($teams)."<br />");
 								echo("Size of drafted array = ".sizeof($drafted)."<br />");
 							} // END if
-							##### Determine Pick if Commish/Timer Auto #####
+							if (!isset($this->player_model)) {
+								$this->load->model('player_model');
+							} // END if
+							
+							$continueDrafting = true;
+							$auto_pick_count = 0;
+							$limitToRound = false;
+							$picksMade = 0;
+							/*----------------------------------------------
+							/	AUTO PICK HANDLING
+							/---------------------------------------------*/
 							if ($this->uriVars['action']=='auto') {
 								$auto_option = (isset($this->uriVars['auto_option']) && !empty($this->uriVars['auto_option'])) ? $this->uriVars['auto_option'] : 'current';
-								$auto_pick_count = (isset($this->uriVars['auto_pick_count']) && !empty($this->uriVars['auto_pick_count'])) ? $this->uriVars['auto_pick_count'] : 1;
+								// DETERMINE EXTENT OF AUTO PICK
+								$breakAuto = true;
+								switch($auto_option) {
+									case "all":
+										$breakAuto = false;
+										break;
+									case "round":
+										$limitToRound = true;
+										break;
+									case "x_picks":
+										$auto_pick_count = (isset($this->uriVars['auto_pick_count']) && !empty($this->uriVars['auto_pick_count'])) ? $this->uriVars['auto_pick_count'] : 1;
+										break;
+									case "current":
+										$continueDrafting = false;
+										break;
+								}
+								for ($i=$firstPick;$i<=$lastPick;$i++) {
 								
-								if (!isset($this->player_model)) {
-									$this->load->model('player_model');
-								} // END if
-								## Set human team to auto
-							   if ($auto_option == "all" && $teams[$dteam]['auto'] != 1) {
-								  $this->team_model->load($dteam);
-								  $this->team_model->setAutoDraft(true);
-								  $teams[$dteam]['auto']=1;
-								  $teams[$dteam]['autoRound']=$pickRound-1;
-								} // END if
-								// GET TEAMS AUTO LIST
-								$pickList = array();
-								if ($teams[$dteam]['autoList']==1) {
-									$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
-									foreach ($pickList as $pid => $val) {
-										if (!isset($drafted[$val['player_id']])) {$dpick=intval($val['player_id']);break;} // END if
-									}
-								} // END if
-								## - Determine Auto Pick
-								if ($dpick=="") {
-									$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
-									$dpick = $aPick[0];
-									$teamQuotas = $aPick[1]; 
-								} // END if
+									// ASSURE CURRENT PICK IS AN OPEN (non-drafted) slot. IF NOT, LOOP BACK
+									// 	TO ADVANCE TO NEXT PICK
+									if (isset($picks[$i]['player'])) {
+										continue;
+									} // END if
+									// GET TEAMS AUTO LIST
+									$pickList = array();
+									if ($teams[$dteam]['autoList']==1) {
+										$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
+										foreach ($pickList as $pid => $val) {
+											if (!isset($drafted[$val['player_id']])) {$dpick=intval($val['player_id']);break;} // END if
+										}
+									} // END if
+									
+									// NO PICK SPECIFIED BY THE AUTO LIST, SO MAKE THE PICK AUTOMATICALLY
+									if ($dpick=="") {
+										$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
+										$dpick = $aPick[0];
+										$teamQuotas = $aPick[1]; 
+									} // END if
+								
+									$picksMade++;
+
+									if ($breakAuto == true) {
+										break;
+									} else {
+										for ($j=$i+1;$j<=$lastPick;$j++) {
+											if (!isset($picks[$j]['player'])) {
+												$dteam=$picks[$j]['team'];
+												break;
+											} // END if
+										} // END for
+									} // END if
+								} // END for
 							} // END if
+							/*----------------------------------------------
+							/	END AUTO PICK HANDLING
+							/---------------------------------------------*/
+							
 							$error = false;
 							$nextPick = 1;
 							$pickRound = 0;
@@ -575,6 +615,7 @@ class draft extends BaseEditor {
 							/	Loop from first open slot to final pick of the draft
 							/
 							/--------------------------------------------------------*/
+								
 							for ($i=$firstPick;$i<=$lastPick;$i++) {
 								
 								// ASSURE CURRENT PICK IS AN OPEN (non-drafted) slot. IF NOT, LOOP BACK
@@ -660,10 +701,31 @@ class draft extends BaseEditor {
 											} // END if
 										} // END foreach
 									}  // END if
+									
+									//	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
+									// LIMIT TO ROUND CHECK
+									if ($limitToRound && $picksMade > 0) {
+										$continueDrafting = false;
+									} // END if
+									
 								} // END if ($rndPick == $nTeams)
 								// ----------------------------------
 								//	END ROUND SUMMARY EMAIL
 								// ----------------------------------
+								
+								/*-----------------------------------------------
+								/	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
+								/--------------------------------------------- */
+								// CHECK IF WE'VE REACHED A PICK LIMIT
+								if ($auto_pick_count > 0 && $picksMade == $auto_pick_count) {
+									if ($this->debug) {
+										echo("Max auto pick count of ".$auto_pick_count." reached.<br />");
+									}
+									$continueDrafting = false;
+								} // END if
+								// IF WE SHOULD BREAK OUT OF THE LOOP, DO SO
+								if (!$continueDrafting) break;
+								// END 1.0.5 EDITS
 								
 								if ($this->debug) {
 									echo("------------NEW PICK---------------<br />");
@@ -673,6 +735,9 @@ class draft extends BaseEditor {
 										echo("Team for pick = ".$picks[$i]['team']."<br />");
 									}
 								}
+								/*------------------------------------------------
+								/	DRAFT PICK VALIDATION
+								/-----------------------------------------------*/
 								##### Check that team matches active pick #####
 								if (isset($picks[$i]) && $dteam!=$picks[$i]['team']) {
 									$error = true;
@@ -693,19 +758,22 @@ class draft extends BaseEditor {
 								if ($this->debug) {
 									echo("error = ".($error ? 'true' : 'false')."<br />");
 								}
-								// STOP LOOPING IF WE HAVE HIT AN ERROR OR THE LAST PICK
+								// IF WE PASSED VALIDATION, MAKE A PICK
+								// OTHERWISE< SHOW THE ERROR
 								if (!$error) {
 									##### Make Pick #####
 									$this->dataModel->draftPlayer(date("Y-m-d",time()), date("H:i",time()),$dpick,$dteam,$i);
 									$drafted[$dpick]=$i;
 									$picks[$i]['player']=$dpick;
 									$picks[$i]['team']=$dteam;
+									$picksMade++;
 								} else {
 									$this->data['theContent'] = '<span class="error">'.$this->params['outMess'].'</span>';
 									//continue;
 								}
 								
-								if ($error || $i==$lastPick) {
+								// STOP LOOPING IF WE HAVE HIT AN ERROR OR THE LAST PICK
+								if ($error || $i>$lastPick) {
 									break;
 								}
 								
@@ -764,6 +832,7 @@ class draft extends BaseEditor {
 										if ($this->debug) {
 											echo("No human owner team pick = '".$dpick."'<br />");
 										}
+										$picksMade++;
 										continue;
 									}
 								}
@@ -783,6 +852,7 @@ class draft extends BaseEditor {
 									$dpick = $aPick[0];
 									$teamQuotas = $aPick[1];
 									if ($dpick != '') {
+										$picksMade++;
 										continue;
 									}
 								}
@@ -799,15 +869,18 @@ class draft extends BaseEditor {
 									$dpick = $aPick[0];
 									$teamQuotas = $aPick[1];
 									if ($dpick != '') {
+										$picksMade++;
 										continue;
-									}
-								}
+									} // END if
+								} // END if
+							
 								if ($this->debug) {
 									echo("next player pick = ".$dpick."<br />");
-								}
+								} // END if
 								##### If we make it here, time for another manual pick #####
 								break;
-							}
+							} // END for (draft pick loop)
+							
 							$pickingTeam = $dteam;
 							if (isset($picks[$nextPick]['team'])) {
 								$nextTeam = $picks[$nextPick]['team'];
@@ -1168,29 +1241,46 @@ class draft extends BaseEditor {
 	    } // END if
 	}
 	public function rescheduleDraft() {
-		$this->dataModel->sheduleDraft($this->league_model->id);
+		$this->dataModel->sheduleDraft($this->league_model->getTeamDetails(), $this->league_model->id);
 		$this->dataModel->save();
 		return true;
 	}
 	/*-------------------------------------------------
 	/	AJAX/JSON FUNCTIONS
 	/------------------------------------------------*/
+	/**
+	 * 	SAVE DRAFT LIST
+	 * 	AJAX/JSON function that accepts a string of player ids and saved them to the DB.
+	 * 	@param 		$this->uriVars['player_id_list']	{String} 	List of player ids
+	 *  @param 		$this->uriVars['user_id']			(Integer) 	Optional Fantasy user ID
+	 *  @return											{JSON}		JSON Object response
+	 *  @since		1.0.5
+	 *  @access		public
+	 */
 	public function saveDraftList() {
 		$this->getURIData();
 		$this->loadModel();
 		$status = "";
 		$code =200;
 		$result = "";
-		$user_id = false;
-		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
-			$user_id = $this->resolveTeamOwner($this->uriVars['act_as_id']);
+		$user_id = $this->params['currUser'];
+		if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id'])) {
+			$user_id = $this->uriVars['user_id'];
 		} // END if
 		if ($this->dataModel->id != -1) {
 			if((isset($this->uriVars['player_id_list']) && !empty($this->uriVars['player_id_list']))) {
-				if (strpos("|",$this->uriVars['player_id_list'] != NULL)) {
-					$player_ids = explode("|",$this->uriVars['player_id_list']);
+				$player_ids = array();
+				// PARSE THE LIST OF PLAYER IDs
+				// THERE are three possible combinations:
+				//  - Multiple players seperate by an underscoe "_"
+				//	- Single player id, no underscores
+				//	- 'empty' command which will clear the list
+				if (strpos($this->uriVars['player_id_list'],"_") != false) {
+					$player_ids = explode("_",$this->uriVars['player_id_list']);
 				} else {
-					$player_ids = array($this->uriVars['player_id_list']);
+					if ($this->uriVars['player_id_list'] != 'empty') {
+						array_push($player_ids,$this->uriVars['player_id_list']);
+					}
 				} // END if
 				if (!$this->dataModel->saveDraftList($player_ids,$user_id)) { 
 					$status .= "error:Your list was not saved.";
@@ -1207,10 +1297,18 @@ class draft extends BaseEditor {
 		} else {
 			$status .= "error:League Identifier Missing";
 		} // END if
-		$result = '{"result": '.$result.',"code":"'.$code.'","status": "'.$status.'"}';
+		$result = '{"result": "'.$result.'","code":"'.$code.'","status": "'.$status.'"}';
 		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
+	/**
+	 * 	GET DRAFT PICKS
+	 * 	AJAX/JSON function that returns an array object of draft list picks.
+	 * 	@param 		$this->uriVars['user_id']			(Integer) 	Optional Fantasy user ID
+	 *  @return											{JSON}		JSON Object response
+	 *  @since		1.0
+	 *  @access		public
+	 */
 	public function getPicks() {
 		$this->init();
 		$this->getURIData();
@@ -1218,10 +1316,10 @@ class draft extends BaseEditor {
 		$status = "";
 		$code = 0;
 		$result = "";
-		$user_id = false;
+		$user_id = $this->params['currUser'];
 		if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id'])) {
 			$user_id = $this->uriVars['user_id'];
-		}
+		} // END if
 		if ($this->dataModel->id != -1) {
 			$result = $this->loadPickList($this->dataModel->league_id, $user_id, true);
 			$status .= "OK";
@@ -1237,11 +1335,13 @@ class draft extends BaseEditor {
 		$this->output->set_output($result);
 	}
 	/**
-	 *	GET DRAFT RESULTS.
+	 * 	GET DRAFT RESULTS.
 	 *	Returns a JSON encoded string of the specified users draft results. Defaults to current 
 	 *	uaser if none specified.
-	 *
-	 *	@param	uriVars['user_id']	Passed as FALSE to dataModel if not specified
+	 * 	@param 		$this->uriVars['user_id']			(Integer) 	Optional Fantasy user ID
+	 *  @return											{JSON}		JSON Object response
+	 *  @since		1.0
+	 *  @access		public
 	 */
 	public function getResults() {
 		$this->init();
@@ -1250,10 +1350,10 @@ class draft extends BaseEditor {
 		$status = "";
 		$code = 0;
 		$result = "";
-		$user_id = false;
+		$user_id = $this->params['currUser'];
 		if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id'])) {
 			$user_id = $this->uriVars['user_id'];
-		}
+		} // END if
 		if ($this->dataModel->id != -1) {
 			$result = $this->loadUserResults($this->dataModel->league_id, $user_id, true);
 			$status .= "OK";
@@ -1276,7 +1376,8 @@ class draft extends BaseEditor {
 	 *	@param	$league_id		(Integer)	Fantasy League ID
 	 *	@param	$user_id		(integer)	User ID (Defaults to currUser if not specified)
 	 *	@param	$return			(Boolean)	(Not cuurrently used)
-	 *	@return					(Array)		Array of pick information	
+	 *	@return					(Array)		Array of pick information		
+	 *	@since 	1.0
 	 */
 	protected function loadUserResults($league_id = false, $user_id = false, $return = false) {
 		
@@ -1284,6 +1385,9 @@ class draft extends BaseEditor {
 		$status = "";
 		$code = 0;
 		$result = '';
+		if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id'])) {
+			$user_id = $this->uriVars['user_id'];
+		} // END if
 		$list = $this->dataModel->getUserResults($user_id);
 		if (sizeof($list) > 0) {
 			foreach ($list as $round => $data) {
@@ -1299,11 +1403,25 @@ class draft extends BaseEditor {
 		}
 		return $result;
 	}
-	public function loadPickList($league_id = false, $user_id = false, $return = false) {
+	/**
+	 *	LOAD DRAFT PICK LIST.
+	 *	Loads draft list pick for a spefici user id ans returns an array of picks (if any have been made).
+	 *
+	 *	@access	protected
+	 *	@param	$league_id		(Integer)	Fantasy League ID
+	 *	@param	$user_id		(integer)	User ID (Defaults to currUser if not specified)
+	 *	@param	$return			(Boolean)	(Not cuurrently used)
+	 *	@return					(Array)		Array of pick information	
+	 *	@since 	1.0
+	 */
+	protected function loadPickList($league_id = false, $user_id = false, $return = false) {
 		
 		if ($user_id === false) { $user_id = $this->params['currUser']; }
 		$status = "";
 		$code = 0;
+		if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id'])) {
+			$user_id = $this->uriVars['user_id'];
+		} // END if
 		$list = $this->dataModel->getUserPicks($user_id);
 		$result = '';
 		if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id'])) {
@@ -1323,13 +1441,29 @@ class draft extends BaseEditor {
 		}
 		return $result;
 	}
-	
+	/**
+	 *	RESOLVE TEAM OWNER.
+	 *	Internal utility function that returns the owner ID for a given team.
+	 *
+	 *	@access	protected
+	 *	@param	$team_id		(Integer)	Fantasy Team ID
+	 *	@return					(Integer)	Fantasy Owner (user) ID	
+	 *	@since 	1.0.5
+	 */
 	protected function resolveTeamOwner($team_id) {
 		if (!isset($this->team_model)) {
 			$this->load->model('team_model');
 		}
 		return $this->team_model->getTeamOwnerId($team_id);
 	}
+	/**
+	 *	LOAD MODEL.
+	 *	Internal utility function that loads the draft_model object using approriate uriVars data.
+	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
+	 */
 	protected function loadModel() {
 		
 		if (isset($this->uriVars['league_id']) && $this->uriVars['league_id'] != -1) {
@@ -1345,6 +1479,9 @@ class draft extends BaseEditor {
 	 *	GET URI DATA.
 	 *	Parses out an id or other parameters from the uri string
 	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
 	 */
 	protected function getURIData() {
 		parent::getURIData();
@@ -1420,6 +1557,14 @@ class draft extends BaseEditor {
 			$this->uriVars['player_id_list'] = $this->input->post('player_id_list');
 		} // END if
 	}
+	/**
+	 *	MAKE EDITOR FORM.
+	 *	Overrides the default makeForm function with custom form object code.
+	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
+	 */
 	protected function makeForm() {
 		$this->enqueStyle('jquery.ui.css');
 		$form = new Form();
@@ -1508,8 +1653,22 @@ class draft extends BaseEditor {
 		//$form->br();
 		//$form->text('timeStart','Time Start','trim',($this->input->post('timeStart')) ? $this->input->post('timeStart') : $this->dataModel->timeStart);
 		//$form->br();
-		//$form->text('timeStop','Stop Timer At (Date/Time)','trim',($this->input->post('timeStop')) ? $this->input->post('timeStop') : $this->dataModel->timeStop);
+		//$form->text('timeStop','Stop Timer At (Time)','trim',($this->input->post('timeStop')) ? $this->input->post('timeStop') : $this->dataModel->timeStop);
 		//$form->br();
+		//$form->br();
+		$form->fieldset('',array('class'=>'dateLists'));
+		$form->label('Stop Timer At (Time)','',array('class'=>'required','style'=>'width:225px;text-align:right;'));
+		$timeStop = ($this->dataModel->timeStop != EMPTY_DATE_TIME_STR) ? $this->dataModel->timeStop : time('H:m:s A');
+		$sTime = strtotime($timeStop);
+		$timeStopHour = date('h',$sTime);
+		$timeStopMins = date('i',$sTime);
+		$timeStopA = date('A',$sTime);
+		$form->select('stopTimeH|startTimeH',getHours(),'&nbsp;',($this->input->post('stopTimeH')) ? $this->input->post('stopTimeH') : (string)$timeStopHour);
+		$form->nobr();
+		$form->select('stopTimeM|stopTimeM',getMinutes(true),'&nbsp;',($this->input->post('stopTimeM')) ? $this->input->post('stopTimeM') : (string)$timeStopMins);
+		$form->nobr();
+		$form->select('stopTimeA|stopTimeA',getAMPM(),'&nbsp;',($this->input->post('stopTimeAM')) ? $this->input->post('stopTimeAM') : $timeStopA);
+		$form->space();
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('pauseWkEnd',$responses,'Pause Timer on Weekends',($this->input->post('pauseWkEnd') ? $this->input->post('pauseWkEnd') : $this->dataModel->pauseWkEnd));
 		$form->space();
@@ -1541,7 +1700,14 @@ class draft extends BaseEditor {
 		
 		$this->makeNav();
 	}
-	
+	/**
+	 *	MAKE NAV.
+	 *	Creates a sub nav menu for the given content category.
+	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
+	 */
 	protected function makeNav() {
 		$admin = false;
 		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->league_model->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)){
@@ -1566,7 +1732,15 @@ class draft extends BaseEditor {
 		array_push($this->params['subNavSection'],league_nav($league_id, $this->league_model->league_name,$admin,true, $this->league_model->getScoringType()));
 		array_push($this->params['subNavSection'],draft_nav($league_id));
 	}
-	
+	/**
+	 *	SHOW INFO.
+	 *	Creates and passes view data to the view object. Calls the default baseEditor showInfo() to finish the
+	 *	display output.
+	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
+	 */
 	protected function showInfo() {
 		// Setup header Data
 		$this->enqueStyle('list_picker.css');

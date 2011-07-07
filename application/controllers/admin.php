@@ -949,7 +949,7 @@ class admin extends MY_Controller {
 			$status .= "notice:No summary data was found";
 			$code = 201;
 		}
-		$result = '{ result: { items: ['.$result.']},code:"'.$code.'",status: "'.$status.'"}';
+		$result = '{ "result": { "items": ['.$result.']},"code":"'.$code.'","status": "'.$status.'"}';
 		
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
@@ -1046,7 +1046,7 @@ class admin extends MY_Controller {
 		$code = 200;
 		$result = "success";
 		$status = "OK";
-		$result = '{result:"'.$result.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$result.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1077,7 +1077,7 @@ class admin extends MY_Controller {
 			$code = 200;
 			$result = "success";
 		}
-		$result = '{result:"'.$result.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$result.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1100,7 +1100,7 @@ class admin extends MY_Controller {
 		}
 		$code = 200;
 
-		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1123,7 +1123,7 @@ class admin extends MY_Controller {
 		$code = 200;
 		//$this->data['message'] = $status;
 		//$this->dashboard();
-		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1145,7 +1145,7 @@ class admin extends MY_Controller {
 		}
 		$code = 200;
 
-		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1178,7 +1178,7 @@ class admin extends MY_Controller {
 		}
 		$code = 200;
 
-		$result = '{result:"'.$outMess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$outMess.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1199,7 +1199,7 @@ class admin extends MY_Controller {
 		}
 		$code = 200;
 
-		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1250,7 +1250,7 @@ class admin extends MY_Controller {
 			$this->load->helper('file');
 		} // END if
 		write_file(PATH_MEDIA_WRITE.'/waiver_summary'.$score_period['id'].'.html',$summary);
-		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1280,7 +1280,7 @@ class admin extends MY_Controller {
 			$status = "OK";
 		}
 		$code = 200;
-		$result = '{result:"Complete",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1301,7 +1301,7 @@ class admin extends MY_Controller {
 			$status = "OK";
 		}
 		$code = 200;
-		$result = '{result:"Complete",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1332,7 +1332,7 @@ class admin extends MY_Controller {
 			$status = "OK";
 		}
 		$code = 200;
-		$result = '{result:"Complete",code:"'.$code.'",status:"'.$status.'"}';
+		$$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1376,7 +1376,7 @@ class admin extends MY_Controller {
 			}
 		} else {
 			$code = 200;
-			$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+			$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
 			$this->output->set_header('Content-type: application/json'); 
 			$this->output->set_output($result);
 		}
@@ -1396,7 +1396,7 @@ class admin extends MY_Controller {
 			$status = "OK";
 		}
 		$code = 200;
-		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
@@ -1475,7 +1475,7 @@ class admin extends MY_Controller {
 		/	LOG THIS SIMS SUMMARY
 		/-----------------------------*/
 		save_sim_summary($score_period['id'],$simResult,$sim_time,$summary,$comments);
-		$result = '{result:"'.$mess.'",code:"'.$code.'",status:"'.$status.'"}';
+		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	
