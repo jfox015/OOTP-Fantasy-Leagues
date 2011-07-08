@@ -91,7 +91,7 @@ class draft extends BaseEditor {
 		$this->restrictAccess = true;
 		$this->minAccessLevel = ACCESS_WRITE;
 		
-		$this->debug = true; 
+		$this->debug = false; 
 	}
 	/*--------------------------------
 	/	PRIVATE FUNCTIONS
@@ -439,12 +439,12 @@ class draft extends BaseEditor {
 							 // GET DRAFT ELIDGIBLE PLAYERS
 							 $values = $this->dataModel->getPlayerValues();
 							 // DRAFT SETTINGS FROM CONFIG
-							 $draftEnable=0;
-							 $pauseAuto=0;
-							 $setToAuto=0;
-							 $autoOpen=0;
-							 $flexTimer=0;
-							 $pauseTimer=0;
+							 $draftEnable=-1;
+							 $pauseAuto=-1;
+							 $setToAuto=-1;
+							 $autoOpen=-1;
+							 $flexTimer=-1;
+							 $pauseTimer=-1;
 							 
 							 // DRAFT VARS
 							 $drafted = array();
@@ -520,12 +520,16 @@ class draft extends BaseEditor {
 							if ($this->debug) {
 								echo("Size of teams array = ".sizeof($teams)."<br />");
 								echo("Size of drafted array = ".sizeof($drafted)."<br />");
+								if ($this->uriVars['action']=='auto') {
+									echo("auto option = ".$this->uriVars['auto_option']."<br />");
+								}
 							} // END if
 							if (!isset($this->player_model)) {
 								$this->load->model('player_model');
 							} // END if
 							
-							$continueDrafting = true;
+							$breakBeforePick = false;
+							$breakAfterPick = false;
 							$auto_pick_count = 0;
 							$limitToRound = false;
 							$picksMade = 0;
@@ -533,12 +537,14 @@ class draft extends BaseEditor {
 							/	AUTO PICK HANDLING
 							/---------------------------------------------*/
 							if ($this->uriVars['action']=='auto') {
+								
 								$auto_option = (isset($this->uriVars['auto_option']) && !empty($this->uriVars['auto_option'])) ? $this->uriVars['auto_option'] : 'current';
 								// DETERMINE EXTENT OF AUTO PICK
-								$breakAuto = true;
 								switch($auto_option) {
 									case "all":
-										$breakAuto = false;
+										$pauseAuto=-1;
+										$setToAuto=1;
+										$autoOpen=1;
 										break;
 									case "round":
 										$limitToRound = true;
@@ -547,45 +553,25 @@ class draft extends BaseEditor {
 										$auto_pick_count = (isset($this->uriVars['auto_pick_count']) && !empty($this->uriVars['auto_pick_count'])) ? $this->uriVars['auto_pick_count'] : 1;
 										break;
 									case "current":
-										$continueDrafting = false;
+										$breakAfterPick = true;
 										break;
 								}
-								for ($i=$firstPick;$i<=$lastPick;$i++) {
+								// GET TEAMS AUTO LIST
+								$pickList = array();
+								if ($teams[$dteam]['autoList']==1) {
+									$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
+									foreach ($pickList as $pid => $val) {
+										if (!isset($drafted[$val['player_id']])) {$dpick=intval($val['player_id']);break;} // END if
+									}
+								} // END if
 								
-									// ASSURE CURRENT PICK IS AN OPEN (non-drafted) slot. IF NOT, LOOP BACK
-									// 	TO ADVANCE TO NEXT PICK
-									if (isset($picks[$i]['player'])) {
-										continue;
-									} // END if
-									// GET TEAMS AUTO LIST
-									$pickList = array();
-									if ($teams[$dteam]['autoList']==1) {
-										$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
-										foreach ($pickList as $pid => $val) {
-											if (!isset($drafted[$val['player_id']])) {$dpick=intval($val['player_id']);break;} // END if
-										}
-									} // END if
+								// NO PICK SPECIFIED BY THE AUTO LIST, SO MAKE THE PICK AUTOMATICALLY
+								if ($dpick=="") {
+									$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
+									$dpick = $aPick[0];
+									$teamQuotas = $aPick[1]; 
+								} // END if
 									
-									// NO PICK SPECIFIED BY THE AUTO LIST, SO MAKE THE PICK AUTOMATICALLY
-									if ($dpick=="") {
-										$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
-										$dpick = $aPick[0];
-										$teamQuotas = $aPick[1]; 
-									} // END if
-								
-									$picksMade++;
-
-									if ($breakAuto == true) {
-										break;
-									} else {
-										for ($j=$i+1;$j<=$lastPick;$j++) {
-											if (!isset($picks[$j]['player'])) {
-												$dteam=$picks[$j]['team'];
-												break;
-											} // END if
-										} // END for
-									} // END if
-								} // END for
 							} // END if
 							/*----------------------------------------------
 							/	END AUTO PICK HANDLING
@@ -606,6 +592,9 @@ class draft extends BaseEditor {
 								echo("---------------------------------------<br />");
 								echo("firstPick = '".$firstPick."'<br />");
 								echo("Current player pick id = '".$dpick."'<br />");
+								echo("breakBeforePick = '".$breakBeforePick."'<br />");
+								echo("breakAfterPick = '".$breakAfterPick."'<br />");
+								echo("auto picks made = '".$picksMade."'<br />");
 							} // END if
 							$this->lang->load('draft');
 							
@@ -629,7 +618,7 @@ class draft extends BaseEditor {
 								//-----------------------------------------------
 								$round = $picks[$i]['round'];
 								//print('round pick = '.$picks[$i]['pick']."<br />");
-								if ($i > 1 && $picks[$i]['pick'] == 1) {
+								if ($i > 1 && $picks[$i]['pick'] == 1 && $this->dataModel->emailDraftSummary == 1) {
 									$teamInfo = $this->league_model->getTeamDetails($this->dataModel->league_id);
 									
 									$prevRound = $picks[$i-1]['round'];
@@ -705,7 +694,7 @@ class draft extends BaseEditor {
 									//	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
 									// LIMIT TO ROUND CHECK
 									if ($limitToRound && $picksMade > 0) {
-										$continueDrafting = false;
+										$breakBeforePick = true;
 									} // END if
 									
 								} // END if ($rndPick == $nTeams)
@@ -717,22 +706,28 @@ class draft extends BaseEditor {
 								/	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
 								/--------------------------------------------- */
 								// CHECK IF WE'VE REACHED A PICK LIMIT
-								if ($auto_pick_count > 0 && $picksMade == $auto_pick_count) {
+								if ($auto_pick_count > 0 && $picksMade> 0 && $picksMade == $auto_pick_count) {
 									if ($this->debug) {
-										echo("Max auto pick count of ".$auto_pick_count." reached.<br />");
+										echo("Max auto pick count of ".$auto_pick_count." reached, ".$picksMade." picks made.<br />");
 									}
-									$continueDrafting = false;
+									$breakBeforePick = true;
 								} // END if
 								// IF WE SHOULD BREAK OUT OF THE LOOP, DO SO
-								if (!$continueDrafting) break;
+								if ($this->debug) {
+									print("Continue drafting? ".(($continueDrafting) ? "true" : "false")."<BR />");
+								}
+								
+								if ($breakBeforePick === true) break;
 								// END 1.0.5 EDITS
 								
 								if ($this->debug) {
-									echo("------------NEW PICK---------------<br />");
+									echo("------------BEGIN NEW PICK---------------<br />");
 									echo("Current Pick = ".$i."<br />");
+									echo("picks made = '".$picksMade."'<br />");
 									if (isset($picks[$i])) {
 										echo("Current picking team = ".$dteam."<br />");
 										echo("Team for pick = ".$picks[$i]['team']."<br />");
+		
 									}
 								}
 								/*------------------------------------------------
@@ -776,6 +771,9 @@ class draft extends BaseEditor {
 								if ($error || $i>$lastPick) {
 									break;
 								}
+								// EDIT 1.0.5
+								// SOMETIME WE WANT TO BREAK AFTER THE PICK IS MADE (AVOID LOOPING)
+								if ($breakAfterPick === true) break;
 								
 								$dpick = '';
 								##### Get next team in draft order #####
@@ -820,7 +818,7 @@ class draft extends BaseEditor {
 									echo("teams[".$dteam."]['autoRound'] =  ".$teams[$dteam]['autoRound']."<br />");
 									echo("teams[".$dteam."]['auto'] =  ".$teams[$dteam]['auto']."<br />");
 								}
-								if (($pauseAuto==0) && (((!isset($teams[$dteam]['owner_id'])) && ($autoOpen==1)) || (($teams[$dteam]['auto']==1) && ($pickRound>=$teams[$dteam]['autoRound'])))) {
+								if (($this->uriVars['action']=='auto' && $auto_option == 'all') || ($pauseAuto==-1 && $this->uriVars['action']!='manualpick') && (((!isset($teams[$dteam]['owner_id'])) && ($autoOpen==1)) || (($teams[$dteam]['auto']==1) && ($pickRound>=$teams[$dteam]['autoRound'])))) {
 									if ($this->debug) {
 										echo("Non human team pick<br />");
 									}
@@ -832,14 +830,13 @@ class draft extends BaseEditor {
 										if ($this->debug) {
 											echo("No human owner team pick = '".$dpick."'<br />");
 										}
-										$picksMade++;
 										continue;
 									}
 								}
 								##### Check if next team is past due #####
 								$curTime=time();
 								$pickInst=strtotime($picks[$j]['due']);
-								if (($this->dataModel->timerEnable==1) && ($pickInst<=$curTime) && ($this->uriVars['action']!='manualpick') && ($pauseTimer==0)) {
+								if (($this->dataModel->timerEnable==1) && ($pickInst<=$curTime) && ($this->uriVars['action']!='manualpick') && ($pauseTimer==-1)) {
 									## Set human team to auto - if here, already know team is not using list or on auto already
 									if ( ($setToAuto==1) && (isset($teams[$dteam]['owner_id'])) && ($teams[$dteam]['auto']!=1) ) {
 										$this->team_model->load($dteam);
@@ -852,7 +849,6 @@ class draft extends BaseEditor {
 									$dpick = $aPick[0];
 									$teamQuotas = $aPick[1];
 									if ($dpick != '') {
-										$picksMade++;
 										continue;
 									}
 								}
@@ -860,7 +856,7 @@ class draft extends BaseEditor {
 									echo("Last resort auto pick<br />");
 								} 
 								##### Check if team is not human controlled #####
-								if ($dpick == '' && ($pauseAuto==0 && $autoOpen==1)) {
+								if ($dpick == '' && ($this->uriVars['action']!='manualpick'&&$pauseAuto==-1 && $autoOpen==1)) {
 									if ($this->debug) {
 										echo("In the last resort auto pick for team ".$dteam."<br />");
 									} 
@@ -869,7 +865,6 @@ class draft extends BaseEditor {
 									$dpick = $aPick[0];
 									$teamQuotas = $aPick[1];
 									if ($dpick != '') {
-										$picksMade++;
 										continue;
 									} // END if
 								} // END if
@@ -895,15 +890,15 @@ class draft extends BaseEditor {
 								/
 								/-----------------------------------------*/
 								// EDIT 7/7/10
-								// CHANGE FROM MASS MAIL FOR EVERY PICK TO SINGLE USER EMAIL AND ROUND SUMMARY
+								// CHANGE FROM MASS MAIL FOR EVERY PICK TO SINGLE USER EMAIL
 								
-								##### Email next team with manual pick #####
 								//-----------------------------------------------
 								// INDIVIDUAL EMAIL
 								//-----------------------------------------------
 								// GET NEXT PICKING OWNER INFO
 								$nextOwnerEmail = '';
-								if (isset($teams[$dteam]['owner_id']) && !empty($teams[$dteam]['owner_id']) && $teams[$dteam]['owner_id'] != -1) {
+								if (isset($teams[$dteam]['owner_id']) && !empty($teams[$dteam]['owner_id']) && $teams[$dteam]['owner_id'] != -1 &&
+								$this->dataModel->emailOwnersForPick == 1) {
 									$nextOwnerDetails = $this->user_auth_model->accountDetails($teams[$dteam]['owner_id']);
 									if (isset($nextOwnerDetails)) {
 										$nextOwnerEmail = $nextOwnerDetails->email;
@@ -925,11 +920,10 @@ class draft extends BaseEditor {
 									$data['leagueName'] = $this->league_model->league_name;
 									$data['title'] = $this->lang->line('draft_email_title_pick_due');
 									$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-									// SEND TO TEAM
-									## Generate Subject Line
+									// Generate Subject Line
 									$subject= str_replace('[LEAGUE_NAME]',$leagueName,$this->lang->line('draft_user_subject_pick_next'));
 									$mailTo = $nextOwnerName.' <'.$nextOwnerEmail.'>';
-									
+									// SEND TO OWNER
 									if ((!empty($mailTo)) && (!empty($message)) && ($this->uriVars['action'] !='manualpick')) {
 										$emailSend = sendEmail($mailTo,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
 										$this->params['config']['site_name']." Administrator",$subject,$message,'','email_draft_next_pick_');
@@ -939,19 +933,21 @@ class draft extends BaseEditor {
 									unset($subject);
 									unset($message);
 								}
-								
 								/*-----------------------------------------
 								/
 								/	END MESSAGING BLOCK
 								/
 								/-----------------------------------------*/
 								
-								##### Return User to Draft List #
+								/*-------------------------------------------
+								/	WRAP UP
+								/------------------------------------------*/
 								if ($pickingTeam==$nextTeam && $nextTeam!="" && $this->uriVars['action']!='manualpick') {
 									redirect('draft/selection/league_id/'.$this->uriVars['league_id']);
 								} else {
 									redirect('draft/load/'.$this->uriVars['league_id']);
 								} // END if ($pickingTeam==$nextTeam)
+								
 							} // END if (!$error)
 						} else {
 							$error = true;
@@ -1115,7 +1111,7 @@ class draft extends BaseEditor {
 					}
 					// GET OWNER INFO FOR "ACT AS..." MENU
 					if ($this->data['isCommish'] || $this->data['isAdmin']) {
-						$this->data['ownerList'] = $this->league_model->getOwnerInfo($this->dataModel->league_id);
+						$this->data['ownerList'] = $this->league_model->getOwnerInfo($this->dataModel->league_id,true);
 						if (isset($this->uriVars['act_as_id']) && !empty($this->uriVars['act_as_id']) && $this->uriVars['act_as_id'] != $this->params['currUser']) {
 							$this->data['user_team_id'] = $this->uriVars['act_as_id'];
 							$this->data['team_owner_id'] = $this->resolveTeamOwner($this->data['user_team_id']);
@@ -1610,16 +1606,19 @@ class draft extends BaseEditor {
 		//$form->space();
 		$responses[] = array('1','Yes');
 		$responses[] = array('-1','No');
-		//$form->fieldset('',array('class'=>'radioGroup'));
-		//$form->radiogroup ('pauseAuto',$responses,'Pause Auto Picks (manual only)',($this->input->post('pauseAuto') ? $this->input->post('pauseAuto') : $this->dataModel->pauseAuto));
-        //$form->space();        
 		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('setAuto',$responses,'Force auto pick for teams',($this->input->post('setAuto') ? $this->input->post('setAuto') : $this->dataModel->setAuto));
-       	$form->span('WARNING: This will set ALL the leagues team\'s auto draft settings to <strong>true</strong> after the first team with auto pick enabled is encountered.',array('class'=>'field_caption'));
+		$form->fieldset('Auto Draft Settings',array('class'=>'radioGroup'));
+		$form->radiogroup ('setAuto',$responses,'Force auto pick for all teams',($this->input->post('setAuto') ? $this->input->post('setAuto') : $this->dataModel->setAuto));
+       	$form->span('WARNING: This will set ALL the leagues team\'s auto draft settings to <strong>true</strong> after the first team with auto pick enabled is encountered. Use with caution.',array('class'=>'field_caption'));
 		$form->space();        
-		//$form->fieldset('',array('class'=>'radioGroup'));
-		//$form->radiogroup ('autoOpen',$responses,'Auto Open Teams (no human owner)',($this->input->post('autoOpen') ? $this->input->post('autoOpen') : $this->dataModel->autoOpen));
-		//$form->space();
+		$form->radiogroup ('pauseAuto',$responses,'Pause auto draft for manual picks',($this->input->post('pauseAuto') ? $this->input->post('pauseAuto') : $this->dataModel->pauseAuto));
+        $form->span('This option suspends all auto draft options when making a single manual pick. Disabling this option allows auto draft to continue uninterupted once begun.',array('class'=>'field_caption'));
+		$form->space();        
+		$form->fieldset('',array('class'=>'radioGroup'));
+		$form->radiogroup ('autoOpen',$responses,'Auto Draft for Teams without owners',($this->input->post('autoOpen') ? $this->input->post('autoOpen') : $this->dataModel->autoOpen));
+		$form->span('If disabled, commissioner will need to manually initate picks for all non-owned teams..',array('class'=>'field_caption'));
+		$form->space();
+		
 		$form->fieldset('Email Settings');
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('emailOwnersForPick',$responses,'Send owners pick alerts:',($this->input->post('emailOwnersForPick') ? $this->input->post('emailOwnersForPick') : $this->dataModel->emailOwnersForPick));
@@ -1630,10 +1629,10 @@ class draft extends BaseEditor {
 		$form->br();
 		$form->fieldset('Draft Schedule Settings');
 		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('timerEnable',$responses,'Draft Timer',($this->input->post('timerEnable') ? $this->input->post('timerEnable') : $this->dataModel->timerEnable));
+		$form->radiogroup ('timerEnable',$responses,'Created Draft Schedule',($this->input->post('timerEnable') ? $this->input->post('timerEnable') : $this->dataModel->timerEnable));
 		$form->space();
 		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('flexTimer',$responses,'Adjust Schedule After Each Pick',($this->input->post('flexTimer') ? $this->input->post('flexTimer') : $this->dataModel->flexTimer));
+		$form->radiogroup ('flexTimer',$responses,'Update Schedule After Each Pick',($this->input->post('flexTimer') ? $this->input->post('flexTimer') : $this->dataModel->flexTimer));
 		$form->space();
 		$form->fieldset();
 		//$form->label('Current server time',"time");
@@ -1656,7 +1655,7 @@ class draft extends BaseEditor {
 		//$form->text('timeStop','Stop Timer At (Time)','trim',($this->input->post('timeStop')) ? $this->input->post('timeStop') : $this->dataModel->timeStop);
 		//$form->br();
 		//$form->br();
-		$form->fieldset('',array('class'=>'dateLists'));
+		/*$form->fieldset('',array('class'=>'dateLists'));
 		$form->label('Stop Timer At (Time)','',array('class'=>'required','style'=>'width:225px;text-align:right;'));
 		$timeStop = ($this->dataModel->timeStop != EMPTY_DATE_TIME_STR) ? $this->dataModel->timeStop : time('H:m:s A');
 		$sTime = strtotime($timeStop);
@@ -1671,11 +1670,7 @@ class draft extends BaseEditor {
 		$form->space();
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('pauseWkEnd',$responses,'Pause Timer on Weekends',($this->input->post('pauseWkEnd') ? $this->input->post('pauseWkEnd') : $this->dataModel->pauseWkEnd));
-		$form->space();
-		//$form->text('emailList','Email List','trim',($this->input->post('emailList')) ? $this->input->post('emailList') : $this->dataModel->emailList);
-		//$form->br();
-		//$form->text('replyList','Reply-to List','trim',($this->input->post('replyList')) ? $this->input->post('replyList') : $this->dataModel->replyList);
-		$form->br();
+		$form->space();*/
 		$form->fieldset('',array('class'=>'button_bar'));
 		$form->span(' ','style="margin-right:8px;display:inline;"');
 		$form->button('Cancel','cancel','button',array('class'=>'button'));	

@@ -240,18 +240,22 @@ class league_model extends base_model {
 		$query->free_result();
 		return $owners;
 	}
-	public function getOwnerInfo($league_id = false) {
+	public function getOwnerInfo($league_id = false, $showTeam = false) {
 		
 		$owners = array();
 		if ($league_id === false) { $league_id = $this->id; }
-		$this->db->select('fantasy_teams.id, firstName, lastName');
+		$this->db->select('fantasy_teams.id, teamname, teamnick, firstName, lastName');
 		$this->db->from($this->tables['TEAMS']);
 		$this->db->join('users_meta','users_meta.userId = fantasy_teams.owner_id');
 		$this->db->where("league_id",$league_id);
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
-				$owners = $owners + array($row->id=>$row->firstName." ".$row->lastName);
+				$ownerName = $row->firstName." ".$row->lastName;
+				if ($showTeam) {
+					$ownerName .= " - ".$row->teamname." ".$row->teamnick;
+				}
+				$owners = $owners + array($row->id=>$ownerName);
 			}
 		}
 		$query->free_result();

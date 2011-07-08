@@ -24,23 +24,23 @@ class draft_model extends base_model {
 	var $draftEnable = -1;
 	var $draftDate = EMPTY_DATE_TIME_STR;
 	var $nRounds = -1;
-	var $dispLimit = -1;
-	var $pauseAuto = -1;
-	var $setAuto = -1;
-	var $autoOpen = -1;
 	var $timerEnable = -1;
 	var $flexTimer = -1;
 	var $dStartDt = EMPTY_DATE_TIME_STR;
 	var $dStartTm = EMPTY_TIME_STR;
-	//var $timePerPick = -1;
 	var $timePick1 = EMPTY_TIME_STR;
 	var $timePick2 = EMPTY_TIME_STR;
 	var $rndSwitch = -1;
 	var $timeStart = EMPTY_TIME_STR;
 	var $timeStop = EMPTY_TIME_STR;
 	var $pauseWkEnd = -1;
-	var $emailList = '';
-	var $replyList = '';
+	
+	var $dispLimit = -1; 	//deprecated
+	var $pauseAuto = -1; 	//deprecated
+	var $setAuto = -1;   	//deprecated
+	var $autoOpen = -1;  	//deprecated
+	var $emailList = '';	//deprecated
+	var $replyList = '';	//deprecated
 	
 	var $emailDraftSummary = -1;
 	var $emailOwnersForPick = -1;
@@ -567,8 +567,7 @@ class draft_model extends base_model {
 		if ($this->timerEnable == 1) { 
 			// GET CURRENT SETTINGS
 			$timePerPick = ($this->timePick1 / 60);
-			
-			
+
 			## Determine and schedule first pick
 			$firstPick=99999;
 			$nTeams = sizeof($teams);
@@ -596,12 +595,11 @@ class draft_model extends base_model {
 				echo "firstPick: $firstPick<br />\n";
 				echo "firstPickRnd: $firstPickRnd<br />\n";
 			} // END if
-			
-			
-			
+
 			$startInst = mktime(date("H",strtotime($this->draftDate)),date("i",strtotime($this->draftDate)),0,date("m",strtotime($this->draftDate)),date("d",strtotime($this->draftDate)),date("Y",strtotime($this->draftDate)));
-			$pickInst = mktime(date("H",strtotime($this->draftDate)),date("i",strtotime($this->draftDate)),0,date("m",strtotime($this->draftDate)),date("d",strtotime($this->draftDate)),date("Y",strtotime($this->draftDate)));
+			$pickInst =  mktime(date("H",strtotime($this->draftDate)),date("i",strtotime($this->draftDate)),0,date("m",strtotime($this->draftDate)),date("d",strtotime($this->draftDate)),date("Y",strtotime($this->draftDate)));
 			
+			$timeStart = $startInst;
 			$now = time();
 			
 			$timeStop = strtotime($this->timeStop);
@@ -612,12 +610,12 @@ class draft_model extends base_model {
 				if ($nowTime > $timeStop) {
 					$now=date("Y-m-d",strtotime($nowDate." + 1 day"));
 					$now=strtotime($now." ".date("H:i:00",strtotime($this->draftDate)));
-					echo date("Y-m-d H:i:s",$now)."::".date("H:i:00",strtotime($this->draftDate))." - too late<br/>";
+					//echo date("Y-m-d H:i:s",$now)."::".date("H:i:00",strtotime($this->draftDate))." - too late<br/>";
 				} // END if
 			} else if (
 				$nowTime < strtotime($this->draftDate)) {
 				$now=strtotime($nowDate." ".date("H:i:00",strtotime($this->draftDate)));
-				echo date("Y-m-d H:i:s",$now)."::".date("H:i:00",strtotime($this->draftDate))." - too early<br/>";
+				//echo date("Y-m-d H:i:s",$now)."::".date("H:i:00",strtotime($this->draftDate))." - too early<br/>";
 			} // END if
 			$dStartDt = date("Y-m-d",$now);
 			$dStartTm = date("H:i:00",$now);

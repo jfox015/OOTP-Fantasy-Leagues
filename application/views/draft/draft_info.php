@@ -64,11 +64,7 @@
 		});
 		
 		$('input[rel=auto_option]').live('click',function (e) {					   
-			var display = 'none';
-			if ($("input[@name=auto_option]:checked").val() == 'x_picks') {
-				display = 'block';
-			}	
-			$('#pick_input').css('display',display);
+			checkAutoPickField();
 		});
 		
 		$('#btnReset').css('display','none');
@@ -100,10 +96,18 @@
 			$('#autorefresh').attr('checked', true);
 		}
 		refreshTimer();
+		checkAutoPickField();
 		jQuery('.numbersOnly').keyup(function () { 
 		    this.value = this.value.replace(/[^0-9\.]/g,'');
 		});
 	});
+	function checkAutoPickField() {
+		var display = 'none';
+		if ($("input[@name=auto_option]:checked").val() == 'x_picks') {
+			display = 'block';
+		}	
+		$('#pick_input').css('display',display);
+	}
 	function refreshTimer() {
 		setTimer();
 		$('#autorefresh').change();
@@ -219,7 +223,7 @@
            <td>&nbsp;</td>
            <td>
            <i>NOTE: This action will override any user auto draft setting in favor of making the auto picks</i><br />
-           <input type="radio" rel="auto_option" name="auto_option" value="current" selected="selected" /> Current Pick Only <br />
+           <input type="radio" rel="auto_option" name="auto_option" value="current" checked="checked" /> Current Pick Only <br />
            <input type="radio" rel="auto_option" name="auto_option" value="x_picks" /> X Number of Picks <br />
            <div id="pick_input"><label for='selection'>Enter Count:</label> <input type='text' id="auto_pick_count" name='auto_pick_count' value='' class="numbersOnly" maxlength="2"></input></div>
            <input type="radio" rel="auto_option" name="auto_option" value="round" /> Complete Round <br />

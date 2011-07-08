@@ -31,7 +31,7 @@
 		$.extend(config, options);
 
 		diffSecs = this.setCountDown(config);
-	
+		
 		if (config.onComplete)
 		{
 			$.data($(this)[0], 'callback', config.onComplete);
@@ -57,6 +57,10 @@
 	};
 
 	$.fn.setCountDown = function (options) {
+		
+		if (options.onComplete)
+			$.data(this[0], 'callback', options.onComplete);
+		
 		var targetTime = new Date();
 
 		if (options.targetDate)
@@ -78,7 +82,7 @@
 		diffSecs = Math.floor((targetTime.valueOf()-nowTime.valueOf())/1000);
 
 		$.data(this[0], 'diffSecs', diffSecs);
-
+		
 		return diffSecs;
 	};
 
@@ -119,11 +123,12 @@
 			t = setTimeout(function() { e.doCountDown(id, diffSecs-1) } , 1000);
 			$.data(e[0], 'timer', t);
 		} 
-		else if (cb = $.data($this[0], 'callback')) 
+		else {
+			if (cb = $.data($this[0], 'callback')) 
 		{
 			$.data($this[0], 'callback')();
 		}
-
+		}
 	};
 
 	$.fn.dashChangeTo = function(id, dash, n, duration) {

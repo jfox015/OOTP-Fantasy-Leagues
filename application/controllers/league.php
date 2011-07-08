@@ -268,6 +268,7 @@ class league extends BaseEditor {
 				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
 				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 			}
+			$this->params['pageType'] = PAGE_FORM;
 			$this->displayView();
 		} else {
 	        $this->session->set_userdata('loginRedirect',current_url());	
@@ -313,6 +314,7 @@ class league extends BaseEditor {
 			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
 				$this->data['subTitle'] = "Initialize Draft";
 				$this->draft_model->load($this->uriVars['id'], 'league_id');
+				$this->draft_model->createDraftOrder($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug);
 				$this->draft_model->sheduleDraft($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug);
 				$this->draft_model->save();
 				$this->admin();

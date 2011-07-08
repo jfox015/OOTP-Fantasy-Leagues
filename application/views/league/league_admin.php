@@ -63,11 +63,11 @@
 	                <?php }
 					if ($draftStatus >= 1 && $draftStatus <= 2) { ?>
 	                    <li><?php echo anchor('/draft/draftOrder/league_id/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/windows.png" width="48" height="48" border="0" />'); ?><br />
-	                    Set Draft Order</li>
+	                    Edit Draft Order</li>
 	                <?php } // END if
 						if ($draftStatus >= 1 && $draftStatus < 4) { ?>
 	                        <li><?php echo anchor('/draft/teamSettings/league_id/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/application_edit.png" width="48" height="48" border="0" />'); ?><br />
-	                        Team Settings</li>
+	                        Edit Team Settings</li>
 	                        <li><?php echo anchor('/draft/load/league_id/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" border="0" />',array('rel'=>'sim')); ?><br />
 	                        Manage Draft</li>
 	                <?php 	} // END if

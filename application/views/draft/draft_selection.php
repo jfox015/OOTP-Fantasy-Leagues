@@ -44,12 +44,15 @@
 			$('#filterform').submit();
 			return false;
 		});	
+		$('select#owners').change(function(){
+		 	document.location.href = '<?php echo($config['fantasy_web_root']); ?>draft/selection/league_id/<?php echo($league_id); ?>/act_as_id/' + $('select#owners').val();
+		});
 		// DRAFT PLAYER BUTTONS
 		// PICK PLAYER FOR CONFIRMATION
 		$('a[rel=draft]').live('click',function (e) {
 			e.preventDefault();
-			var obj = new Object();
 			console.debug(this.id);
+			var obj = new Object();
 			obj.id = this.id;
 			selectPlayer(obj);
 		});
@@ -123,13 +126,13 @@
 						$('div#activeList').empty();
 						$('div#activeList').append(drawPicks(draftList));
 					}
-					updateStatus('listStatus','listStatusBox',statusOut, cssOut);
+					updateStatus('activeStatus','activeStatusBox',statusOut, cssOut);
 				} else {
-					updateStatus('listStatus','listStatusBox','Save Error: Draft List was not saved.', 'error');
+					updateStatus('activeStatus','activeStatusBox','Save Error: Draft List was not saved.', 'error');
 				}
 			});
 			//} else {
-			//	updateStatus('listStatus','listStatusBox','Save Error: Draft List is empty.', 'error');
+			//	updateStatus('activeStatus','activeStatusBox','Save Error: Draft List is empty.', 'error');
 			//}				
 		}); // END a[rel=saveList]').live('click')
 		
@@ -174,7 +177,7 @@
 		removeStatusCSSClasses(contentDiv);
 		$('div#'+contentDiv).addClass(cssClass);
 		$('div#'+contentDiv).html(status);
-		$('div#'+boxDiv).fadeIn("slow",function() { setTimeout('fadeStatus('+boxDiv+')',15000); });
+		$('div#'+boxDiv).fadeIn("slow",function() { setTimeout('fadeStatus("'+boxDiv+'")',15000); });
 	}
 	function removeStatusCSSClasses(divId) {
 		var classes = ['success','notice','warn','error','info'];
@@ -293,13 +296,13 @@
 		if (!status) displayType = "none";
 		$('div#'+divId).css('display',displayType);
 	}
-	function updatePlayerLists(params) {
+	function updatePlayerLists(player_id) {
 		var found = false;
 		var errorListName = "";
-		console.debug("Draft Listlength = "+ draftList.length);
+		//console.debug("Draft Listlength = "+ listLength(draftList));
 		if (draftList.length > 0) {
 			for (var i = 0; i < draftList.length; i++) {
-				if (draftList[i] != null && params[0] == draftList[i].id) {
+				if (draftList[i] != null && draftList[i].id != -1 && player_id == draftList[i].id) {
 					found = true;
 					errorListName = "draft";
 					break;
@@ -307,40 +310,40 @@
 			}
 		}
 		if (!found) {
-			if (params[3] == "add" && listLength(draftList) >= players_max) {
-				updateStatus('listStatus','listStatusBox',"You can only add a maximum of "+players_max+" players at a time.", 'error');
+			if (listLength(draftList) >= players_max) {
+				updateStatus('activeStatus','activeStatusBox',"You can only add a maximum of "+players_max+" players at a time.", 'error');
 			} else {
 				// SEE if player info is cached (added and removed form a list already)
 				var player = new Player();
 				for (var i = 0; i < playerCache.length; i++) {
 					if (playerCache[i] != null && playerCache[i].id != -1) {
-						if (params[0] == playerCache[i].id) {
+						if (player_id == playerCache[i].id) {
 							player = copyToPlayer(playerCache[i]);
 							break;
 						}
 					}
 				}
 				if (player.id == -1) {
-					var url = "<?php echo($config['fantasy_web_root']); ?>players/getInfo/player_id/"+params[0]+cacheBuster();
-					$('div#listStatus').removeClass('error');
-					$('div#listStatus').removeClass('success');
-					$('div#listStatus').html(ajaxWait);
-					$('div#listStatusBox').fadeIn("fast");
+					var url = "<?php echo($config['fantasy_web_root']); ?>players/getInfo/player_id/"+player_id+cacheBuster();
+					$('div#activeStatus').removeClass('error');
+					$('div#activeStatus').removeClass('success');
+					$('div#activeStatus').html(ajaxWait);
+					$('div#activeStatusBox').fadeIn("fast");
 					$.getJSON(url, function(data){
 						if (data.code.indexOf("200") != -1) {
 							if (data.status.indexOf(":") != -1) {
 								var status = data.status.split(":");
-								$('div#listStatus').addClass(status[0].toLowerCase());
-								$('div#listStatus').html(status[1]);
+								$('div#activeStatus').addClass(status[0].toLowerCase());
+								$('div#activeStatus').html(status[1]);
 							} else {
 								player = copyToPlayer(data.result.items[0]);
 								addToList(playerCache,player);
 								addToList(draftList,player);
-								updateStatus('listStatus','listStatusBox',player.player_name + " added to list.", 'success');
+								updateStatus('activeStatus','activeStatusBox',player.player_name + " added to list.", 'success');
 							}
 						} else {
-							$('div#listStatus').addClass('error');
-							$('div#listStatus').append('No information was returned for the selected player.');
+							$('div#activeStatus').addClass('error');
+							$('div#activeStatus').append('No information was returned for the selected player.');
 						}
 						$('div#activeList').empty();
 						$('div#activeList').append(drawPicks(draftList));
@@ -349,11 +352,11 @@
 					addToList(draftList,player);
 					$('div#activeList').empty();
 					$('div#activeList').append(drawPicks(draftList));
-					updateStatus('listStatus','listStatusBox',player.player_name + " added to list.", 'success');
+					updateStatus('activeStatus','activeStatusBox',player.player_name + " added to list.", 'success');
 				}
 			}
 		} else {
-			updateStatus('listStatus','listStatusBox',"This player already appears on your "+errorListName+" list.", 'error');
+			updateStatus('activeStatus','activeStatusBox',"This player already appears on your "+errorListName+" list.", 'error');
 		}
 	}
 	function selectPlayer(obj) {
@@ -481,13 +484,13 @@
 		var count = 0;
 		var itemCount = 0;
 		var itemArr = data;
-		console.debug("Data = " + data);
+		//console.debug("Data = " + data);
 		if (data) {
 			// JSON DATA OBJECT
 			if (data.result && data.result != null && data.result.items && data.result.items != null) {
 				for (k in data.result.items) if (data.result.items.hasOwnProperty(k)) itemCount++;
 				itemArr = data.result.items;
-				console.debug("itemCount = " + itemCount);
+				//console.debug("itemCount = " + itemCount);
 				$.each(itemArr, function(i, item) {
 					outHTML += '<tr align="left" valign="top" class="s'+((count%2)+1)+'_l">';
 					if (item.id != '' && item.player_name != '') {
@@ -563,7 +566,7 @@
         <?php 
         } // END if (isset($team_override)
         ?>
-        <label for="owners" style="min-width:750px;">Act As Owner:</label> 
+        <label for="owners" style="min-width:610px;">Act As Owner:</label> 
         <select id="owners" style="clear:none;">
         	<option value="X">Select owner</option>
             <?php
@@ -633,7 +636,13 @@
         </div>
         <input type='hidden' name='action' value='selection'></input>
         <input type='hidden' name='pick' id='pick'></input>
-        <input type='hidden' name='team_id' value="<?php echo($pick_team_id); ?>"></input>
+		<?php if (isset($team_override) && $team_override === true) {
+        	$draft_team_id = $user_team_id;
+		} else {
+			$draft_team_id = $pick_team_id;
+		}
+		?>
+        <input type='hidden' name='team_id' value="<?php echo($draft_team_id); ?>"></input>
         <input type='hidden' name='league_id' value="<?php echo($league_id); ?>"></input>
         <input type='hidden' name='pick_id' value="<?php echo($pick_id); ?>"></input>
         <div class="button_bar">
@@ -673,7 +682,7 @@
             </table>
             <br />
             <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" align="absmiddle" width="15" height="15" border="0" /> <?php echo anchor('/draft/load/league_id/'.$league_id,'View complete draft results'); ?>
-            <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/repeat.pngf" align="absmiddle" width="15" height="15" border="0" /> <?php echo anchor('#','Refresh List',array('rel'=>'reloadDraftList')); ?>
+            <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/repeat.png" align="absmiddle" width="15" height="15" border="0" /> <?php echo anchor('#','Refresh List',array('rel'=>'reloadDraftList')); ?>
             </div>
 			<br clear="all" />
     </div>
