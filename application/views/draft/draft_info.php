@@ -210,28 +210,34 @@
         </form>
 	</div>
 	
-	<div id="autoForm" class="dialog">
+	<div id="autoForm" class="dialog" style="width="650px; min-height:450px;">
 		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>draft/processDraft" name='frmAuto' id="frmAuto">
         <input type='hidden' id="action" name='action' value='auto'></input>
         <input type='hidden' id="team_id" name='team_id' value=''></input>
         <input type='hidden' id="pick_id" name='pick_id' value=''></input>
         <input type='hidden' id="league_id" name='league_id' value=''></input>
         <div class='textbox'>
-         <table cellpadding=2 cellspacing=0 cellborder=0>
-          <tr class='title'><td colspan=3>Options</td></tr>
+         <table cellpadding=2 cellspacing=0 cellborder=0 style="width="600px;">
+          <tr class='title'><td colspan="3">Auto Pick Options</td></tr>
           <tr>
-           <td>&nbsp;</td>
+           <td width="15">&nbsp;</td>
            <td>
-           <i>NOTE: This action will override any user auto draft setting in favor of making the auto picks</i><br />
+		   <h3>Make an Auto Pick Selection</h3>
            <input type="radio" rel="auto_option" name="auto_option" value="current" checked="checked" /> Current Pick Only <br />
            <input type="radio" rel="auto_option" name="auto_option" value="x_picks" /> X Number of Picks <br />
            <div id="pick_input"><label for='selection'>Enter Count:</label> <input type='text' id="auto_pick_count" name='auto_pick_count' value='' class="numbersOnly" maxlength="2"></input></div>
            <input type="radio" rel="auto_option" name="auto_option" value="round" /> Complete Round <br />
            <input type="radio" rel="auto_option" name="auto_option" value="all" /> Complete Entire Draft <br />
-           </td>
+           
+		   <br />
+		   <i><b>NOTE:</b> Any action selected will override any user auto draft settings in favor of making the number of auto picks selected.<br />
+		   <br />
+		   <i>NOTE:</i> In the case of CURRENT PICK, any teams auto pick setting following the selected pick will be honored and may result in additonal pick being made.</i><br />
+		   </td>
+		   <td width="15">&nbsp;</td>
           </tr>
           <tr>
-           <td>
+           <td colspan="3">
            <fieldset class="buttonRow">
            <input type='button' class="button" id="btnAutoSbt" value='Auto Draft'></input>
            <input type='button' id="btnCancel" class="button" value='Cancel'></input>

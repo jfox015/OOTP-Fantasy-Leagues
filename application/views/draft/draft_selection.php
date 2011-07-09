@@ -51,7 +51,6 @@
 		// PICK PLAYER FOR CONFIRMATION
 		$('a[rel=draft]').live('click',function (e) {
 			e.preventDefault();
-			console.debug(this.id);
 			var obj = new Object();
 			obj.id = this.id;
 			selectPlayer(obj);
@@ -299,7 +298,6 @@
 	function updatePlayerLists(player_id) {
 		var found = false;
 		var errorListName = "";
-		//console.debug("Draft Listlength = "+ listLength(draftList));
 		if (draftList.length > 0) {
 			for (var i = 0; i < draftList.length; i++) {
 				if (draftList[i] != null && draftList[i].id != -1 && player_id == draftList[i].id) {
@@ -484,13 +482,11 @@
 		var count = 0;
 		var itemCount = 0;
 		var itemArr = data;
-		//console.debug("Data = " + data);
 		if (data) {
 			// JSON DATA OBJECT
 			if (data.result && data.result != null && data.result.items && data.result.items != null) {
 				for (k in data.result.items) if (data.result.items.hasOwnProperty(k)) itemCount++;
 				itemArr = data.result.items;
-				//console.debug("itemCount = " + itemCount);
 				$.each(itemArr, function(i, item) {
 					outHTML += '<tr align="left" valign="top" class="s'+((count%2)+1)+'_l">';
 					if (item.id != '' && item.player_name != '') {
@@ -516,7 +512,6 @@
 				itemCount = listLength(data);
 				for (var i= 0; i < itemCount; i++) {	
 					if (data[i] && data[i] != null && data[i].id != null) {
-						console.debug("Data object " + i + ".id = " + data[i].id + ", name = " + data[i].player_name);
 						var player = data[i];
 						outHTML += '<tr align="left" valign="top" class="s'+((count%2)+1)+'_l">';
 						if (player.id != '' && player.player_name != '') {

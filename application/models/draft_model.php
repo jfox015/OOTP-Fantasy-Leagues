@@ -24,28 +24,29 @@ class draft_model extends base_model {
 	var $draftEnable = -1;
 	var $draftDate = EMPTY_DATE_TIME_STR;
 	var $nRounds = -1;
+	var $pauseAuto = -1;
+	var $setAuto = -1;
+	var $autoOpen = -1;
 	var $timerEnable = -1;
 	var $flexTimer = -1;
-	var $dStartDt = EMPTY_DATE_TIME_STR;
-	var $dStartTm = EMPTY_TIME_STR;
 	var $timePick1 = EMPTY_TIME_STR;
-	var $timePick2 = EMPTY_TIME_STR;
-	var $rndSwitch = -1;
-	var $timeStart = EMPTY_TIME_STR;
 	var $timeStop = EMPTY_TIME_STR;
 	var $pauseWkEnd = -1;
+	var $enforceTimer = -1;
+	var $emailDraftSummary = -1;
+	var $emailOwnersForPick = -1;
+	var $completed = -1;
 	
+	/* DEPRECATED */
+	var $dStartDt = EMPTY_DATE_TIME_STR; 	//deprecated, use draftDate
+	var $dStartTm = EMPTY_TIME_STR; 	//deprecated, use draftDate
+	var $rndSwitch = -1; 	//deprecated
+	var $timePick2 = EMPTY_TIME_STR; 	//deprecated
+	var $timeStart = EMPTY_TIME_STR; 	//deprecated, use draftDate
 	var $dispLimit = -1; 	//deprecated
-	var $pauseAuto = -1; 	//deprecated
-	var $setAuto = -1;   	//deprecated
-	var $autoOpen = -1;  	//deprecated
 	var $emailList = '';	//deprecated
 	var $replyList = '';	//deprecated
 	
-	var $emailDraftSummary = -1;
-	var $emailOwnersForPick = -1;
-	
-	var $completed = -1;
 	/*---------------------------------------------
 	/
 	/	C'TOR
@@ -60,7 +61,7 @@ class draft_model extends base_model {
 		$this->tables['DRAFT'] = 'fantasy_draft';
 		$this->tables['TEAMS'] = 'fantasy_teams';
 		
-		$this->fieldList = array('league_id','draftEnable','nRounds','dispLimit','pauseAuto','setAuto','autoOpen','timerEnable','flexTimer','dStartDt','timePick1','timePick2','rndSwitch','timeStart','timeStop','pauseWkEnd','emailDraftSummary','emailOwnersForPick');
+		$this->fieldList = array('league_id','draftEnable','nRounds','dispLimit','pauseAuto','setAuto','autoOpen','timerEnable','flexTimer','enforceTimer','dStartDt','timePick1','timePick2','rndSwitch','timeStart','timeStop','pauseWkEnd','emailDraftSummary','emailOwnersForPick');
 		$this->conditionList = array('whenDraft');
 		$this->readOnlyList = array('draftDate','completed','dStartTm');  
 		
