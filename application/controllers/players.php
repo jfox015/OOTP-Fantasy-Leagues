@@ -252,12 +252,14 @@ class players extends MY_Controller {
 	 *	@since 	1.0
 	 */
 	protected function makeNav() {
+		$league_id = -1;
 		if (isset($this->uriVars['league_id']) && !empty($this->uriVars['league_id']) && $this->uriVars['league_id'] != -1) {
 			if (!isset($this->league_model)) {
 				$this->load->model('league_model');
 			}
 			$this->league_model->load($this->uriVars['league_id']);
 			
+			$league_id = $this->uriVars['league_id'];
 			$scoring_type = LEAGUE_SCORING_ROTO;
 			if ($this->league_model->id != -1) {
 				$league_name = $this->league_model->league_name;
@@ -272,7 +274,7 @@ class players extends MY_Controller {
 			array_push($this->params['subNavSection'], league_nav($this->uriVars['league_id'], $league_name,$lg_admin,true,$scoring_type));
 		}
 		
-		array_push($this->params['subNavSection'],player_nav());
+		array_push($this->params['subNavSection'],player_nav($league_id));
 	}
 	/**
 	 *	SHOW INFO.

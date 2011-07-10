@@ -315,7 +315,7 @@ class league extends BaseEditor {
 				$this->data['subTitle'] = "Initialize Draft";
 				$this->draft_model->load($this->uriVars['id'], 'league_id');
 				$this->draft_model->createDraftOrder($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug);
-				$this->draft_model->sheduleDraft($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug);
+				$this->draft_model->draftSchedule($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug);
 				$this->draft_model->save();
 				$this->admin();
 			} else {
@@ -346,6 +346,38 @@ class league extends BaseEditor {
 				$this->data['subTitle'] = "League Admin";
 				$this->draft_model->deleteCurrentDraft($this->dataModel->id);
 				$this->admin();
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->displayView();
+			}
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());	
+			redirect('user/login');
+	    }
+	}
+	/**
+	 *	UPDATE DRAFT SCHEDULE.
+	 *	Resets a draft entry to it's intial var values for a league draft
+	 *
+	 */
+	public function updateDraftSchedule() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			
+			$this->load->model($this->modelName,'dataModel');
+			$this->load->model('draft_model');
+			$this->dataModel->load($this->uriVars['id']);
+			
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+				$this->data['subTitle'] = "League Admin";
+				if($this->draft_model->draftSchedule($this->dataModel->getTeamDetails(), $this->dataModel->id, false, $this->debug)) {
+					$this->session->set_flashdata('message', '<span class="success">Draft schedule has been successfully updated.</span>');
+				} else {
+					$this->session->set_flashdata('message', '<span class="error">Draft schedule could not be updated at this time..</span>');
+				}
+				redirect('league/admin/'.$this->dataModel->id);
 			} else {
 				$this->data['subTitle'] = "Unauthorized Access";
 				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';

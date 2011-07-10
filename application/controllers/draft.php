@@ -1269,7 +1269,7 @@ class draft extends BaseEditor {
 	    } // END if
 	}
 	public function rescheduleDraft() {
-		$this->dataModel->sheduleDraft($this->league_model->getTeamDetails(), $this->league_model->id);
+		$this->dataModel->draftSchedule($this->league_model->getTeamDetails(), $this->league_model->id);
 		$this->dataModel->save();
 		return true;
 	}

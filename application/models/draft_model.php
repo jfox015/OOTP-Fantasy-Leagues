@@ -559,7 +559,7 @@ class draft_model extends base_model {
 	 *	@return					Array of drafted player IDs.
 	 *	@since	1.0
 	 */
-	public function sheduleDraft($teams = array(),$league_id = false, $year = false, $debug = false) {
+	public function draftSchedule($teams = array(),$league_id = false, $year = false, $debug = false) {
 		
 		if ($league_id === false) { $league_id = $this->league_id; } // END if
 		if ($year === false) { $year = date('Y'); }	 // END if	
@@ -567,7 +567,7 @@ class draft_model extends base_model {
 		// CREATE SCHEDULE ONLY IF THE TIMER IS ENABLED
 		if ($this->timerEnable == 1) { 
 			// GET CURRENT SETTINGS
-			$timePerPick = ($this->timePick1 / 60);
+			$timePerPick = $this->timePick1;
 
 			## Determine and schedule first pick
 			$firstPick=99999;
@@ -597,7 +597,17 @@ class draft_model extends base_model {
 				echo "firstPickRnd: $firstPickRnd<br />\n";
 			} // END if
 
-			$startInst = mktime(date("H",strtotime($this->draftDate)),date("i",strtotime($this->draftDate)),0,date("m",strtotime($this->draftDate)),date("d",strtotime($this->draftDate)),date("Y",strtotime($this->draftDate)));
+			$startTime = strtotime($this->draftDate);
+			$now = time();
+			
+			if ($startTime > $now) {
+				$pickTime = $startTime + $timePerPick;
+			} else {
+				$pickTime = $now + $timePerPick;
+			}
+			
+			
+			/*$startInst = mktime(date("H",strtotime($this->draftDate)),date("i",strtotime($this->draftDate)),0,date("m",strtotime($this->draftDate)),date("d",strtotime($this->draftDate)),date("Y",strtotime($this->draftDate)));
 			$pickInst =  mktime(date("H",strtotime($this->draftDate)),date("i",strtotime($this->draftDate)),0,date("m",strtotime($this->draftDate)),date("d",strtotime($this->draftDate)),date("Y",strtotime($this->draftDate)));
 			
 			$timeStart = $startInst;
@@ -622,22 +632,22 @@ class draft_model extends base_model {
 			$dStartTm = date("H:i:00",$now);
 		
 			$pickDt = strtotime($dStartDt);
-			$pickTm = strtotime($dStartTm." + $timePerPick minutes");
+			$pickTm = strtotime($dStartTm." + $timePerPick minutes");*/
 			
 			if ($debug===true) {
-				echo "Pick 1.1.1 Start: ".date("Y-m-d",$pickDt)." ".date("H:i:s",$pickTm)."<br/>";
+				echo "Pick 1.1.1 Start: ".date("Y-m-d",$pickTime)." ".date("H:i:s",$pickTime)."<br/>";
 			} // END if
-			$this->draftPlayer(date("Y-m-d",$pickDt),date("H:i",$pickTm), NULL, false, $firstPick, $league_id);
+			$this->draftPlayer(date("Y-m-d",$pickTime),date("H:i",$pickTime), NULL, false, $firstPick, $league_id);
 			
 			## Process Remaining Picks
 			for ($i = $firstPick + 1;$i <= $lastPick; $i++) {
 				if (isset($picks[$i])) {continue;}
 				$pick = ($i+$nTeams-1)%$nTeams+1;
 				$round = ($i-$pick)/$nTeams+1;
-				$pickDt = strtotime(strftime("%x",$pickDt)." + 1 day");
-				$adjTm = strtotime($pickTm." + $timePerPick minutes");
+				//$pickDt = strtotime(strftime("%x",$pickDt)." + 1 day");
+				$pickTime = $pickTime + $timePerPick;
 				
-				if ($adjTm > $this->timeStop) {
+				/*if ($adjTm > $this->timeStop) {
 					$pickTm = $adjTm - $timeStop + $timeStart;
 					$pickDt = strtotime(strftime("%x",$pickDt)." + 1 day");
 					 $dow = date("w",$pickDt);
@@ -646,12 +656,12 @@ class draft_model extends base_model {
 					} // END if
 				} else {
 					 $pickTm = $adjTm;
-				} // END if
+				} // END if*/
 				
 				if ($debug===true) {
-					echo "Pick $i.$round.$pick ".date("w l M d, Y",$pickDt)." ".date("H:i:s",$pickTm)."<br/>";
+					echo "Pick $i.$round.$pick ".date("w l M d, Y",$pickTime)." ".date("H:i:s",$pickTime)."<br/>";
 				} // END if
-				$this->draftPlayer(date("Y-m-d",$pickDt),date("H:i",$pickTm), NULL, false, $i, $league_id);
+				$this->draftPlayer(date("Y-m-d",$pickTime),date("H:i",$pickTime), NULL, false, $i, $league_id);
 			} // END for
 		} // END if ($this->timerEnable == 1)
 		return true;

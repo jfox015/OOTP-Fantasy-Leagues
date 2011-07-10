@@ -104,10 +104,15 @@ function team_nav($team_id = false, $teamName = false, $show_admin = false, $sho
 	array_push($nav,array('url'=>'/team/transactions/team_id/'.$team_id,'label'=>'Transactions'));
 	return $nav;
 }
-function player_nav() {
+function player_nav($league_id = false) {
     
-	$nav = array(array('url'=>'','label'=>"Players"));
-	array_push($nav,array('url'=>'/players/stats','label'=>"Stats"));
+	$nav = array();
+	$url = '/players/stats/';
+	if ($league_id !== false && $league_id != -1) { 
+		$url = '/players/stats/league_id/'.$league_id;
+	}
+	array_push($nav,array('url'=>$url,'label'=>"Players"));
+	array_push($nav,array('url'=>$url,'label'=>"View Stats"));
 	return $nav;
 }
 function draft_nav($league_id = false) {
