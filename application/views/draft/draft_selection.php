@@ -1,6 +1,7 @@
 <script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.md5.js"></script>
 <style>
 #listRow div { display: inline; padding-right:3px; } 
+.noShow { display:none; }
 </style>
 <script type="text/javascript" charset="UTF-8">
 	var ajaxWait = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
@@ -703,25 +704,51 @@
                 } ?>
 		      </select>
 		     </td>
-		
-		<?php
-		if ($player_type == 1) {
-			$pos = array(-1,2,3,4,5,6,7,8,9,10,20); ?>
-			<td class="formLabel">Position:</td>
-			     <td>
-			      <select name='position_type' id='position_type'>
+		<script type="text/javascript">
+		function changePosOptions(val){
+			posData = "";
+			minData = "";
+			posLabel = "";
+			minLabel = "";
+			if (val == 1) {
+				posData = $('#formBatters').html();
+				minData = $('#formMinBatting').html();
+				posLabel = "Position:";
+				minLabel = "AB:";
+			} else {
+				posData = $('#formPitchers').html();
+				minData = $('#formMinPitchers').html();
+				posLabel = "Role:";
+				minLabel = "IP:";
+			}
+			$('td#posForm').html(posData);
+			$('td#minField').html(minData);
+			$('td#posLbl').html(posLabel);
+			$('td#minLbl').html("Min "+minLabel);
+		}
+		$('#player_type').click(function() {
+			changePosOptions($('#player_type').val());
+		});
+		$(document).ready(function(){	
+			changePosOptions(<?php echo($player_type); ?>);	   
+		});
+		</script>
+        <!-- ----------------------EDIT 1.0.5 --------------------- -->
+        <!-- Begin Hidden data fields for borh pitchers and batters -->
+        <div id="formBatters" class="noShow">
+        <select name='position_type' id='position_type'>
 			<?php
+			$pos = array(-1,2,3,4,5,6,7,8,9,10,20);
 			foreach ($pos as $pos_id) {
 				echo("<option value='$pos_id'");
 				if ($pos_id==$position_type) {echo(" selected");}
 				echo(">".get_pos($pos_id)."</option>");
 			}
 			?>
-			      </select>
-			</td>
-            <td class="formLabel">Min. AB:</td>
-			     <td>
-			      <select name='min_plate' id='min_plate'>
+			</select>
+        </div>
+        <div id="formMinBatting" class="noShow">
+        <select name='min_plate' id='min_plate'>
 			<?php
 			$max = 0;
 			while ($max < 650) {
@@ -731,27 +758,23 @@
 				$max += 50;
 			}
 			?>
-			      </select>
-			</td>  
-            
-		<?php 
-		} else {
-			$roles = array(-1,11,12,13); ?>
-			    <td class="formLabel">Role:</td>
-			     <td>
-			      <select name='role_type' id='role_type'>
+			</select>
+        </div>
+        
+        <div id="formPitchers" class="noShow">
+			<select name='role_type' id='role_type'>
 			<?php 
+			$roles = array(-1,11,12,13);
 			foreach ($roles as $role) {
 				echo("<option value='$role'");
 				if ($role==$role_type) { echo(" selected");}
 				echo(">".get_pos($role)."</option>");
 			}
 			?>
-			      </select>
-			     </td>
-                 <td class="formLabel">Min. IP:</td>
-			     <td width="10%">
-			      <select name='min_inning' id='min_inning'>
+		</select>
+        </div>
+        <div id="formMinPitchers" class="noShow">
+			<select name='min_inning' id='min_inning'>
 			<?php
 			$max = 0;
 			while ($max < 201) {
@@ -761,9 +784,15 @@
 				$max += 25;
 			}
 			?>
-			      </select>
-			</td> 
-		<?php } ?>
+			</select>
+        </div>
+	
+        <td class="formLabel" id="posLbl">Position:</td>
+        <td id="posForm">&nbsp;</td>
+        <td class="formLabel" id="minLbl">Min. AB</td>
+        <td id="minField">&nbsp;</td>
+			      
+
         	<td class="formLabel">Stats Range:</td>
 		     <td>
 		      <select name='stats_range' id='stats_range'>
