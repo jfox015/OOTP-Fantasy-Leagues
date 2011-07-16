@@ -585,8 +585,9 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($team_id === false || $user_id === false) { return false; }
 		
+		$this->lang->load('league');
 		$this->db->select('id, status_id');
-		$this->db->where('team_id',$team_id);
+		//$this->db->where('team_id',$team_id);
 		$this->db->where('user_id',$user_id);
 		$this->db->where('league_id',$league_id);
 		$this->db->where('(status_id = '.REQUEST_STATUS_PENDING.' OR status_id = '.REQUEST_STATUS_ACCEPTED.' OR status_id = '.REQUEST_STATUS_DENIED.')');
@@ -596,13 +597,13 @@ class league_model extends base_model {
 			$this->errorCode = 2;
 			switch($row->status_id) {
 				case REQUEST_STATUS_PENDING:
-					$mess = 'A request has already been submitted for this team. Please wait for a response to your request.';
+					$mess = $this->lang->line('league_request_status_pending');
 					break;
 				case REQUEST_STATUS_ACCEPTED:
-					$mess = 'You already manage a team in this league. Only one team is allowed per owner per league.';
+					$mess = $this->lang->line('league_request_status_accepted');
 					break;
 				case REQUEST_STATUS_DENIED:
-					$mess = 'A previous request for this team was already denied by the league commissioner, sorry.';
+					$mess = $this->lang->line('league_request_status_denied');
 					break;
 			}
 			$this->statusMess = $mess;

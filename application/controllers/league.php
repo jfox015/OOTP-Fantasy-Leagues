@@ -39,7 +39,7 @@ class league extends BaseEditor {
 		// IF WE HAVE A LEAGUE ID AND THE LEAGUE TURNS OUT TO BE PRIVATE, CHECK IF THE CURRENT USER 
 		// HAS ACCESS AND IF NOT, ROUTE TO A PRIVATE LEAGUE VIEW
 		$this->getURIData();
-		if (($this->uri->segment(2) != 'requestTeam' && $this->uri->segment(2) != 'privateLeague') && isset($this->uriVars['id'])) {
+		if (($this->uri->segment(2) != 'requestTeam' && $this->uri->segment(2) != 'requestResponse' && $this->uri->segment(2) != 'privateLeague') && isset($this->uriVars['id'])) {
 			
 			$this->load->model($this->modelName,'dataModel');
 			$this->dataModel->load($this->uriVars['id']);

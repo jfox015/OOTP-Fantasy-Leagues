@@ -57,7 +57,14 @@
                     <tr>
                     	<td style="padding:12px; line-height:1.5;">
 						<?php 
+						$first = true;
 						foreach($requests as $request) { 
+							if (!$first) { ?>
+							<br clear="all" />
+							<div class="rule"></div>
+							<?php
+							}
+							$first = false;
 							if (isset($request['avatar']) && !empty($request['avatar'])) { 
 								$avatar = $request['avatar'];
 							} else {
@@ -69,7 +76,6 @@
                             of the <?php echo(anchor('/league/info/'.$request['league_id'],$request['league_name'])); ?> league.<br />
                             Requested On: <?php echo(date('m/d/Y h:m A',strtotime($request['date_requested']))); ?><br />
                         	<input type='button' rel="requestRespond" id="<?php echo($request['id']); ?>|2|<?php print($request['league_id']); ?>" class="button" value='Withdraw' style="float:left;margin-right:8px;" />
-							<div class="rule"></div>
                         <?php
 						} // END if
 						?></td>

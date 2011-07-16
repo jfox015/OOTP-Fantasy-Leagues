@@ -17,23 +17,28 @@ with <a href="http://www.ootpdevelopments.com/ootp11/" target="_blank">Out of th
 	<br />
 	<b>A huge thanks to the following for their contributions to this mod:</b>
 	<ul>
-		<li><b>Frank Holmes:</b> Developer of the <a
+		<li><b>Frank Esselink:</b> Developer of the <a
 		href="http://www.ootpdevelopments.com/board/ootp-mods-database-tools/185408-statslab-sql-utilities-ootpx.html"
-		target="_blank">StatsLab Online Utilities</a> mod for OOTP. Code contributions from
-		StatsLab are utilized for OOTP database loading, the player profile template and draft functionality. Thank you
-		Frank for allowing me to use your work as a basis for my own in these areas.</li>
+		target="_blank">StatsLab Online Utilities</a> mod for OOTP. Author of StatsLab SQL Utilities for OOTP and 
+		concurrently Getch&#039;s Online Utilities which inspired him. Frank’s work formed the basis for the 
+		overall HTML template, the stats display engine, draft functionality, MySQL data loading and player profile 
+		features. My thanks to Frank for graciously allowing me to borrow from his work</li>
 		<li><b>Dave Williams:</b> OOTP mod artist, OOTP Fantasy league Logo</li>
-		<li><b>1.0.x Beta Testers</b>: ((OTP Forums ID in parens)<br />
+		<li><b>1.0.x Beta Testers</b>: (OOTP Forums ID in parens)<br />
 		<ul>
 			<li>William Thomas (Kagnew)</li>
 		</ul>
 		<br />
 		<b style="color:#c00;">Special thanks to the members of the <a href="http://pebabaseball.com/" target="_blank">Planetary Extreme Baseball Alliance</a> who helped test this utility.</b>
 		<ul>
-			<li>John Rodriguez (Corsairs) - Commissioner of the <a href="http://pebabaseball.com/" target="_blank">PEBA</a></li>
+			<li><b>John Rodriguez (Corsairs)</b> - Commissioner of the <a href="http://pebabaseball.com/" target="_blank">PEBA</a></li>
 			<li>Pete Grassi (peteg9699) - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_79.html" target="_blank">London Underground</a> of the PEBA</li>
-			<li>Kevin L. - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_85.html" target="_blank">Florida Featherheads</a> of the PEBA</li>
+			<li>Kevin Lewis - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_85.html" target="_blank">Florida Featherheads</a> of the PEBA</li>
 			<li>Tyler Babcock - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_87.html" target="_blank">West Virginia Coal Sox</a> of the PEBA</li>
+			<li>Michael Topham - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_85.html" target="_blank">Aurora Borealis</a> of the PEBA</li>
+			<li>Jim Lupin - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_3846.html" target="_blank">Lupin Cliff Hangers</a> of the PEBA</li>
+			<li>Bill McKenzie (tribefaninnc) - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_91.html" target="_blank">Duluth Warriors</a> of the PEBA</li>
+			<li>Paul Tanner - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_84.html" target="_blank">New Orleans Trendsetters</a> of the PEBA</li>
 			<li>Michael Czosnyka - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_81.html" target="_blank">New Jersey Hitmen</a> of the PEBA</li>
 			<li>Daniel DiVincenzo - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_77.html" target="_blank">Arlington Bureaucrats</a> of the PEBA</li>
 		</ul>
@@ -49,12 +54,17 @@ target="_blank">'.BUG_URL.'</a></b></li>
 </ul>
 
 <h2>Discuss the mod and keep up on changes and updates</h2>
-visit the official OOTP forums thread at:
+Visit us at the official thread on the OOTP Forums at:
 <ul>
 	<li><a
-href="http://www.ootpdevelopments.com/board/ootp-mods/198634-out-park-baseball-online-fantasy-leagues.html"
-target="_blank">http://www.ootpdevelopments.com/board/ootp-mods/198634-out-park-baseball-online-fantasy-leagues.html</a></li>
+href="http://www.ootpdevelopments.com/board/ootp-mods/202180-ootp-fantasy-league-official-thread.html"
+target="_blank">http://www.ootpdevelopments.com/board/ootp-mods/202180-ootp-fantasy-league-official-thread.html</a></li>
 </ul>
+
+<h2>Want to contribute?</h2>
+ 
+OOTP Fantasy Leagues is 100% free and open source and the source is publicly available on <a href="http://www.github.com/" target="_blank">GitHub</a>. To contribute, head over to the <a href="https://github.com/jfox015/OOTP-Fantasy-Leagues" target="_blank">official Github page</a>, fork the project and send pull requests with your updates.
+
 <p />
 Thanks for using this mod and enjoy playing your fantasy leagues.';
 
