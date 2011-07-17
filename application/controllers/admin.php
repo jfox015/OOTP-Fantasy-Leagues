@@ -213,7 +213,7 @@ class admin extends MY_Controller {
 			$this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
 		} else {
-			$exceptions = array('google_analytics_tracking_id');
+			$exceptions = array('google_analytics_tracking_id','stats_lab_url');
 			$fields = array('site_name' =>  'Site Name',
 			'ootp_league_name' => 'OOTP League Name',
 			'ootp_league_abbr' => 'OOTP League Abbreviation',

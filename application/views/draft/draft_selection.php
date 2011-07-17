@@ -733,7 +733,7 @@
 			changePosOptions(<?php echo($player_type); ?>);	   
 		});
 		</script>
-        <!-- ----------------------EDIT 1.0.5 --------------------- -->
+        <!-- EDIT 1.0.5 -->
         <!-- Begin Hidden data fields for borh pitchers and batters -->
         <div id="formBatters" class="noShow">
         <select name='position_type' id='position_type'>

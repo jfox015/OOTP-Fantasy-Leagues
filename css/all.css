@@ -143,6 +143,12 @@ img.league_news_tall {
 	list-style:none;
 	margin-left:0px;
 }
+div.rule {
+    background-color: #A2A2A2;
+    height: 1px;
+    overflow: hidden;
+	margin: 6px 0 6px 0;
+}
 #league_list li { }
 #league_list li a { font-weight:bold; font-size: 12px; }
 

@@ -130,7 +130,7 @@ function display_setup_form( $error = null ) {
 	<p class="step"><div id="waitDiv" style="display:none;"><img src="../images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...</div>
     <div id="buttonDiv"><input type="button" name="btnFinished" id="btnFinished" value="Complete Installtion" class="button" /></div></p>
 </form>
-<script type="text/javascript" src="../js/jquery-1.3.2.min.js"></script>
+<script src="../js/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
 $(document).ready(function(){		   
 	$('#btnFinished').click(function(){
