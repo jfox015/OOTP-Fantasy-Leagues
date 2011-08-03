@@ -485,8 +485,10 @@ class league extends BaseEditor {
 			$this->init();
 			$this->getURIData();	
 			$this->loadData();
+			$userMessage = '';
 			if ($this->dataModel->id != -1) {
 				$this->form_validation->set_rules('team_id', 'Team Selection', 'required|trim');
+				$this->form_validation->set_rules('message', 'Message to Commissioner', 'trim|max_length[1000]');
 				$this->form_validation->set_error_delimiters('<p class="error">', '</p>');
 				if ($this->form_validation->run() == true) {
 					$success = $this->dataModel->teamRequest($this->input->post('team_id'),$this->params['currUser']);
@@ -498,6 +500,9 @@ class league extends BaseEditor {
 						$msg = str_replace('[REQUESTED_TEAM_NAME]', $this->team_model->getTeamName($this->input->post('team_id')), $msg);
 						$msg = str_replace('[COMMISH]', getUsername($this->dataModel->commissioner_id), $msg);
 						$msg = str_replace('[USERNAME]', getUsername($this->params['currUser']), $msg);
+						$userMessage = $this->input->post('message');
+						$userMessage = (!empty($userMessage)) ? str_replace('[MESSAGE]', $userMessage, $this->lang->line('general_message_template') : "");
+						$msg = str_replace('[MESSAGE]', $userMessage, $msg);
 						$msg = str_replace('[REQUEST_ADMIN_URL]', anchor('/league/leagueInvites/'.$this->dataModel->id,'League Invitiation/Request Admin Page'), $msg);
 						$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
 						$data['messageBody']= $msg;
@@ -547,22 +552,56 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/**
+	 *	TEAM REQUEST RESPONSE.
+	 *	Handles the commissioners response to the team request. Response types 1 and -1 require the user to 
+	 *	be a commisioner or admin.<br />
+	 *	<br />
+	 *	<i>Edit 1.0.6</i> - Added ability to post to this method via GET or POST and commissioner to add a ressponse when
+	 *	denying a reuqest. 
+	 *
+	 *	REQUIRED URI VAR PARAMS:
+	 *	@param	$request_id			The team request ID
+	 *	@param	#$request_type		The reponse type.
+	 *	<ul>
+	 *		<li><b>1</b> 	- Accepted
+	 *		<li><b>-1</b> 	- Denied
+	 *		<li><b>2</b>	- Withdrawn by user
+	 *	</ul>
+	 *	@param	$request_reponse	Commissioners message to the requerster (Optional)
+	 *
+	 *	@since	1.0.5
+	 *	
+	 */
 	public function requestResponse() {
 		if ($this->params['loggedIn']) {
 			$this->init();
 			$this->getURIData();
 			$this->loadData();
+			$request_id = -1;
+			$request_type = false;
+			$request_reponse = '';
+			// GET REQUEST INFORMATION FROM THE APPROPRIATE INPUT SOURCE
 			if (isset($this->uriVars['request_id']) && !empty($this->uriVars['request_id']) && $this->uriVars['request_id'] != -1 && 
 						  $this->uriVars['type'] && !empty($this->uriVars['type'])) {
-						
-				if (($this->uriVars['type'] == 2) || ($this->uriVars['type'] != 2 && $this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
+				$request_id = $this->uriVars['request_id'];
+				$request_type = $this->uriVars['type'];
+			} else if ($this->input->post('request_id') && $this->input->post('type')) {
+				$request_id = $this->input->post('request_id');
+				$request_type = $this->input->post('type');
+				$request_reponse = $this->input->post('message');
+			}
+			// CONTINUE ONLY IF WE HAVE A VALID REQUEST ID AND RESPONSE TYPE
+			if ($request_id != -1 && $request_type !== false) {
+				
+				if (($request_type == 2) || ($request_type != 2 && $this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 					if ($this->dataModel->id != -1) {
 						$targetUri = 'league/leagueInvites/'.$this->dataModel->id;
-						$requestArr = $this->dataModel->getLeagueRequests(false, false, $this->uriVars['request_id']);
+						$requestArr = $this->dataModel->getLeagueRequests(false, false, $request_id);
 						if (is_array($requestArr) && sizeof($requestArr) > 0) {
 							$request = $requestArr[0];
 						}
-						$success = $this->dataModel->updateRequest($this->uriVars['request_id'], $this->uriVars['type']);
+						$success = $this->dataModel->updateRequest($request_id, $request_type);
 						if ($success) {
 							// MESSAGE THE USER
 							if (!isset($this->team_model)) {
@@ -570,7 +609,7 @@ class league extends BaseEditor {
 							}
 							$outMess = "";
 							$to = $this->user_auth_model->getEmail($request['user_id']);
-							switch ($this->uriVars['type']) {
+							switch ($request_type) {
 								case 1:
 									$msg = $this->lang->line('email_league_team_request_accepted');
 									$data['title'] = $this->lang->line('email_league_team_request_accepted_title');
@@ -594,6 +633,8 @@ class league extends BaseEditor {
 							$msg = str_replace('[TEAM_HOME_URL]', anchor('/team/info/'.$request['team_id'],'managing your team'),$msg);
 							$msg = str_replace('[USERNAME]', getUsername($request['user_id']), $msg);
 							$msg = str_replace('[TEAM_NAME]', $this->team_model->getTeamName($request['team_id']),$msg);
+							$reponseMessage = (!empty($request_reponse)) ? str_replace('[MESSAGE]', $request_reponse, $this->lang->line('league_team_response_template') : $this->lang->line('no_message_provided')));
+							$msg = str_replace('[MESSAGE]', $reponseMessage, $msg);
 							$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
 							$data['messageBody']= $msg;
 							//print("email template path = ".$this->config->item('email_templates')."<br />");
@@ -605,7 +646,7 @@ class league extends BaseEditor {
 											 $subject, $message,'','email_team_request_resp');
 							
 							if($emailSent) {
-								switch ($this->uriVars['type']) {
+								switch ($request_type) {
 									case 1:
 										$outMess .= "An email notifying them of their acceptance has been sent.";
 										break;
@@ -625,7 +666,6 @@ class league extends BaseEditor {
 								$this->session->set_flashdata('message', '<span class="error">An error occured submitting your response: '.$this->dataModel->statusMess.'</span>');
 							}
 						}
-						
 						redirect($targetUri);
 					} else {
 						$this->data['subTitle'] = "An error has occured.";
@@ -640,8 +680,8 @@ class league extends BaseEditor {
 					$this->displayView();
 				}
 			} else {
-				$this->data['subTitle'] = "Unauthorized Access";
-				$this->data['theContent'] = '<span class="error">Required parameters were missing.</span>';
+				$this->data['subTitle'] = "An error has occured";
+				$this->data['theContent'] = '<span class="error">Required parameters were missing. The request cannot be completed at this time.</span>';
 				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 				$this->displayView();
 			}
@@ -654,7 +694,7 @@ class league extends BaseEditor {
 	 *	TEAM ADMIN.
 	 *	Draws and accepts changes to the team structure from the team admin screen.
 	 *	
-	 *	@version 1.1 - Edit 1.0.4, changed array feeding the list based on scoring type
+	 *	@version 1.0 - Edit 1.0.5, changed array feeding the list based on scoring type
 	 *
 	 */
 	public function teamAdmin() {
@@ -840,7 +880,7 @@ class league extends BaseEditor {
 	    $this->displayView();	
 	}
 	/**
-	 *	LEAGUE STANDINGS
+	 *	LEAGUE RESULTS
 	 *	Draws head to head games results for the league
 	 */
 	public function results() {
@@ -901,6 +941,10 @@ class league extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['RESULTS'], $this->data, true);
 	    $this->displayView();
 	}
+	/**
+	 *	LEAGUE SCHEDULE
+	 *	Draws the current schedule for the selected head-to-head league
+	 */
 	public function schedule() {
 		$this->getURIData();
 		$this->data['subTitle'] = "League Schedule";
@@ -1333,6 +1377,7 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }	
 	}
+	
 	public function waiverClaims() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();

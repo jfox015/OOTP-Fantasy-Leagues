@@ -1,6 +1,6 @@
     <?php if ($accessAllowed) { ?>
     <script type="text/javascript">
-	var order = "<?php echo($sortOrder); ?>";
+	var order = "<?php echo($sortOrder); ?>", formDirty = false;
 	$(document).ready( function() {
 		$('#itemsPerPage').change(function() {
 			$('#input_itemsPerPage').val($('#itemsPerPage').val());
@@ -124,12 +124,13 @@
 			<?php } ?>
        	<br class="clear" />
         <?php if (!empty($itemsPerPage)) { echo('<input type="hidden" name="itemsPerPage" id="input_itemsPerPage" value="'.$itemsPerPage.'" />'); } ?>
-		<?php if (!empty($pageNumber)) { echo('<input type="hidden" name="pageNumber" id="pageNumber" value="'.$pageNumber.'" />'); } ?>
+		<?php //if (!empty($pageNumber)) { echo('<input type="hidden" name="pageNumber" id="pageNumber" value="'.$pageNumber.'" />'); } ?>
+        <input type="hidden" id="pageNumber" name="pageNumber" value="1" />
         <input type="hidden" id="input_sortBy" name="sortBy" value="<?php echo $sortBy; ?>" />
         <input type="hidden" id="input_sortOrder" name="sortOrder" value="<?php echo $sortOrder; ?>" />
         <input type="hidden" id="resultCount" value="<?php echo $resultCount; ?>" />
-        <input type="hidden" name="filterAction" id="filterAction" value="" />
-        <input type="hidden" name="filter" id="filter" value="1" />
+        <input type="hidden" id="filterAction" name="filterAction" value="" />
+        <input type="hidden" id="filter" name="filter" value="1" />
         <?php if (isset($debug)) { echo('<input type="hidden" name="debug" id="debug" value="1" />'); } ?>
         </div>
         </form>

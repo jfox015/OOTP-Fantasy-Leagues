@@ -19,6 +19,10 @@ request and/or suggestions for new features and enhancents.<br /><br />Please be
 include all steps that led up to the issue as well as any results that occured afterward.";
 
 $lang['players_stats_no_players_error'] = '<b>Error</b><br>No players were found in the system. Assure that players have been imported into the fantasy database.';
+
+$lang['general_message_template'] = '<p>The following message was provided:</p><p>&quot;[MESSAGE]&quot;.</p>';
+$lang['no_message_provided'] = "No Message Provided";
+
 /*--------------------
 /	ADMIN STRINGS
 /-------------------*/
@@ -76,13 +80,13 @@ $lang['league_finder_request_no_id'] = 'The request could not be completed becau
 $lang['league_finder_request_success'] = 'Your request to join the [LEAGUE_NAME] league has been sent.';
 
 $lang['email_league_team_request'] = 'To [COMMISH],
-<p>[USERNAME] has submitted a request to own the [REQUESTED_TEAM_NAME]. You can accept or reject this request on the [REQUEST_ADMIN_URL].</p>
+<p>[USERNAME] has submitted a request to own the [REQUESTED_TEAM_NAME].</P>[MESSAGE]<p>You can accept or reject this request on the [REQUEST_ADMIN_URL].</p>
 <p>';
 $lang['email_league_team_request_accepted'] = 'To [USERNAME],
 <p>Congratulations! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has approved your request to own the [TEAM_NAME]. You can login to the site and begin [TEAM_HOME_URL] anytime.</p>
 <p>';
 $lang['email_league_team_request_denied'] = 'To [USERNAME],
-<p>We&#039;re Sorry! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has denied your request to own the [TEAM_NAME].</p>
+<p>We&#039;re Sorry! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has denied your request to own the [TEAM_NAME].</p>[MESSAGE]
 <p>';
 $lang['email_league_team_request_withdrawn'] = 'To [COMMISH],
 <p>The user, [USERNAME], has withdrawn the ur request to own the [TEAM_NAME]. This request is no longer active in the system</p>
@@ -96,7 +100,6 @@ $lang['league_waiver_claim_denied_response'] = 'The waiver claim for <b>[PLAYER_
 $lang['league_waiver_claim_denied_title'] = 'A Waiver claim has been denied.';
 $lang['league_waiver_claim_denied'] = 'To [USERNAME],
 <p>We&#039;re Sorry! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has denied your waiver claim for [PLAYER_NAME] for scoring period [PERIOD].';
-
 
 /*------------------------------------
 /	USER REGISTRATION/ ACCOUNT

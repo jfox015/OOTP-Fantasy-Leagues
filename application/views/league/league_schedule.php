@@ -69,7 +69,7 @@
                 <?php } // END foreach
 				//echo("curr_period = ".$curr_period."<br />");
 				//echo("max_reg_period = ".$max_reg_period."<br />");
-				if ($curr_period > $max_reg_period && $lastId < $curr_period) { ?>
+				if (isset($curr_period) && $curr_period > $max_reg_period && $lastId < $curr_period) { ?>
 				 <tr class='headline'>
 					<?php
 					$divWidth = '100%';

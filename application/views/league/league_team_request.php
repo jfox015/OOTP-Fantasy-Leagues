@@ -122,6 +122,24 @@
 				if ($drawn) {
 				echo(form_fieldset_close());
 				?>
+				<tr>
+					<td class="hsc2_l" colspan="4">
+					<label for="message">Message to the ommissioner </label> (Optional)<br />
+					Include a note to the league commissioner as to why you want to own this team.
+					<br /><br />		
+					<?php 
+					$data = array(
+		              'name'        => 'message',
+		              'id'          => 'message',
+		              'value'       => '',
+		              'maxlength'   => '1000',
+		              'rows'        => '5',
+		              'cols'		=> '30'
+					);
+					echo(form_textarea($data;);
+					?>
+					</td>
+				</tr>
                 <tr>
                     <td class="hsc2_l" colspan="4">
 				<?php 	

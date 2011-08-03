@@ -70,6 +70,9 @@ class user_auth_model extends base_model {
 		$this->readOnlyList = array('password','dateCreated','dateModified','lastModifiedBy',
 									'locked','loginAttempts','loggedIn','active');  
 		
+		$this->columns_select = array('id','username','email','typeId','levelId','accessId','dateCreated','dateModified','lastModifiedBy',
+									'locked','loginAttempts','loggedIn','active');
+		
 		$this->uniqueField = $this->config->item('unique_field');
 		$this->joinCode = "A";
 		parent::_init();

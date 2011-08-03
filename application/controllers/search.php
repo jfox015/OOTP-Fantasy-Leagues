@@ -20,6 +20,8 @@ class search extends MY_Controller {
 	/*--------------------------------
 	/	VARIABLES
 	/-------------------------------*/
+	var $_TARGET_WEB = 0;
+	var $_TARGET_DATA_OUT = 1;
 	/**
 	 *	SLUG.
 	 *	@var $_NAME:Text
@@ -66,6 +68,12 @@ class search extends MY_Controller {
 	 *	@var $filterVars:Array
 	 */
 	var $filterVars = array();
+	/**
+	*	OUTPUT TARGET.
+	*	Determines to display results in search results page or export format.
+	*	@var $outTarget:String
+	*/
+	var $outTarget = -1;
 	/*---------------------------------------
 	/
 	/	SITE SPECIFIC METHODS
@@ -84,6 +92,7 @@ class search extends MY_Controller {
 		$this->views['RESULTS_LEAGUES'] = DIR_VIEWS_LEAGUES.'search_results_leagues';
 		$this->views['RESULTS_USERS'] = DIR_VIEWS_USERS.'search_results_users';
 		$this->views['RESULTS_NEWS'] = DIR_VIEWS_NEWS.'search_results_news';
+		$this->views['RESULTS_MEMBERS'] = DIR_VIEWS_MEMBERS.'search_results_member';
 	}
 	/**
 	 *	QUERY DATA BUILDER
@@ -137,6 +146,37 @@ class search extends MY_Controller {
 				$this->textSearch = true;
 				$this->alphaSearch = true;
 				break;
+			// MEMBERS
+				case 'member':
+				case 'members':
+				   	$this->load->model('user_auth_model','dataModel');
+					$this->data['subTitle'] = 'Members';
+					$this->data['searchType'] = 'members';
+					if (isset($this->uriVars['filterAction']) && $this->uriVars['filterAction'] == 'search') {
+						if ($this->input->post('accessId'))
+							$this->uriVars['accessId'] = $this->input->post('accessId'); // END if
+						if (isset($this->uriVars['accessId']) && !empty($this->uriVars['accessId'])) 
+							$filterVars = $filterVars + array('accessId'=>$this->uriVars['accessId']); // END if
+						if ($this->input->post('levelId'))
+							$this->uriVars['levelId'] = $this->input->post('levelId'); // END if
+						if (isset($this->uriVars['levelId']) && !empty($this->uriVars['levelId'])) 
+							$filterVars = $filterVars + array('levelId'=>$this->uriVars['levelId']); // END if
+						if ($this->input->post('typeId'))
+							$this->uriVars['typeId'] = $this->input->post('typeId'); // END if
+						if (isset($this->uriVars['typeId']) && !empty($this->uriVars['typeId'])) 
+							$filterVars = $filterVars + array('typeId'=>$this->uriVars['typeId']); // END if
+					} // END if
+					$defaultSort = 'dateCreated';
+					$defaultSortOrder = "asc";
+					$this->data['sortFields'] = array('dateCreated'=>'Sign-Up Date',	
+								  'username'=>'Username',	
+								  'email'=>'E-Mail Address',	
+								   'typeId'=>'Type Id',	
+								   'levelId'=>'Level Id',
+								   'accessId'=>'Access Level');
+					$this->alphaSearch = true;
+					$this->textSearch = true;
+					break;
 			// NEWS
 			case 'news':
 				$this->load->model('news_model','dataModel');
@@ -225,6 +265,9 @@ class search extends MY_Controller {
 	function project() { redirect('search/doSearch/projects'); }
 	function projects() { redirect('search/doSearch/projects'); }
 	
+	function member() { redirect('search/doSearch/members'); }
+	function members() { redirect('search/doSearch/members'); }
+	
 	function league() { redirect('search/doSearch/leaguea'); }
 	function leagues() { redirect('search/doSearch/leagues'); }
 	
@@ -250,7 +293,19 @@ class search extends MY_Controller {
 	 */
 	function search() {
 		parent::MY_Controller();
+		$this->outTarget = $this->_TARGET_WEB;
 		$this->defineSearchResultsViews();
+	}
+	/**
+	 *	INDEX.
+	 *	The default handler when the controller is called.
+	 *	Checks for an existing auth session, and if found,
+	 *	redirects to the dashboard. Otherwise, it redirects 
+	 *	to the login.
+	 */
+	function export() {
+		$this->$outTarget = $this->TARGET_DATA_OUT;
+		redirect('search/doSearch');
 	}
 	/**
 	 *	INDEX.
@@ -262,6 +317,7 @@ class search extends MY_Controller {
 	function index() {
 		redirect('search/doSearch');
 	}
+	
 	/**
 	 *	MENU.
 	 *	The default handler that is called when no search id type has been passed. This displays a 
@@ -326,9 +382,58 @@ class search extends MY_Controller {
 					$this->dataModel->search();
 				} // END if
 			} // END if
-			$this->displayView();
+			if ($this->outTarget == $this->_TARGET_DATA_OUT) {
+				$this->exportResults();
+			} else {
+				$this->displayView();
+			}
 		} // END if
 	}
+	/**
+	* 	EXPORT SEARCH RESULTS.
+	* 	Output a list of search data in one of four types of formats.
+	*
+	* 	Required URI Vars Properties
+	* 	@param	$type		(int)	Export type (0 => SQL, 1 =>  HTML, 2 => JSON, 3 => CSV)
+	*
+	* 	@since	1.0.6 Beta
+	*
+	*/
+	public function exportResults() {
+		
+		$dataOut = "";
+		if (isset($this->dataModel)) {
+			$results = $this->dataModel->seachResults;
+			$resultCount = $this->dataModel->resultCount;
+			$this->form_validation->set_rules('type', 'Export Type', 'required');
+			$outputType = $this->input->post('type');
+			switch(intval($outputType)) {
+				// SQL
+				case 0:
+					$this->output->set_header('Content-type: text/sql');
+
+					break;
+				// HTML
+				case 1:
+					$this->output->set_header('Content-type: text/html');
+						
+					break;
+				// JSON
+				case 2:
+					$this->output->set_header('Content-type: application/json');
+					
+					break;
+				// CSV
+				case 3:
+				default:
+					$this->output->set_header('Content-type: application/csv');
+					
+					break;
+			}
+		}
+		$this->output->set_output($dataOut);
+		
+	} // END function
 	/*--------------------------------
 	/	PROTECTED FUNCTIONS
 	/-------------------------------*/

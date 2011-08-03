@@ -635,6 +635,9 @@ class draft_model extends base_model {
 			$pickTm = strtotime($dStartTm." + $timePerPick minutes");*/
 			
 			if ($debug===true) {
+				echo("-------------------------------------------------<br />");
+				echo("Draft Schcule for league id = ".$league_id."<br />");
+				echo("-------------------------------------------------<br />");
 				echo "Pick 1.1.1 Start: ".date("Y-m-d",$pickTime)." ".date("H:i:s",$pickTime)."<br/>";
 			} // END if
 			$this->draftPlayer(date("Y-m-d",$pickTime),date("H:i",$pickTime), NULL, false, $firstPick, $league_id);
@@ -657,11 +660,11 @@ class draft_model extends base_model {
 				} else {
 					 $pickTm = $adjTm;
 				} // END if*/
-				
+				$this->draftPlayer(date("Y-m-d",$pickTime),date("H:i",$pickTime), NULL, false, $i, $league_id);
 				if ($debug===true) {
 					echo "Pick $i.$round.$pick ".date("w l M d, Y",$pickTime)." ".date("H:i:s",$pickTime)."<br/>";
+					echo($this->db->last_query()."<br />");
 				} // END if
-				$this->draftPlayer(date("Y-m-d",$pickTime),date("H:i",$pickTime), NULL, false, $i, $league_id);
 			} // END for
 		} // END if ($this->timerEnable == 1)
 		return true;
@@ -803,7 +806,8 @@ class draft_model extends base_model {
 	 *	@return					Array with all draft result data.
 	 *	@since	1.0
 	 */
-	public function draftPlayer($due_date = false, $due_time = false, $player_id = false, $team_id = false, $pick_overall = false, $league_id = false) {
+	public function draftPlayer($due_date = false, $due_time = false, $player_id = false, $team_id = false, $pick_overall = false, $league_id = false
+								) {
 		
 		if ($league_id === false) $league_id = $this->league_id;
 		if ($due_date === false && $due_time === false && $player_id === false && $team_id === false && $pick_overall === false) { return; }
@@ -826,7 +830,9 @@ class draft_model extends base_model {
 		$this->db->set('league_id',$league_id);
 		$this->db->update($this->tables['DRAFT']);
 		
-		$this->removeFromDraftLists($player_id, $league_id);
+		if ($player_id !== false && $player_id !== NULL) {
+			$this->removeFromDraftLists($player_id, $league_id);
+		}
 		return true;
 		
 	}
