@@ -49,6 +49,7 @@ define("MESSAGE_FAIL",'error');
 define("MESSAGE_SUCCESS",'success');
 
 define("TEMPLATE_DEFAULT",'template');
+define("TIMEZONE_DEFAULT",'Americas/New_York');
 
 define('EMPTY_DATE_STR','0000-00-00');
 define('EMPTY_DATE_TIME_STR','0000-00-00 00:00:00');

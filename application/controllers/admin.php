@@ -230,6 +230,7 @@ class admin extends MY_Controller {
 			'stats_lab_compatible' => 'StatsLab Compatibility Mode',
 			'stats_lab_url' => 'StatsLab URL',
 			'primary_contact' => 'Primary Contact',
+			'timezone' => 'Timezone',
 			'user_activation_method' => 'User Activiation Method');
 			foreach($fields as $field => $label) {
 				if (!in_array($field,$exceptions)) {
@@ -717,7 +718,43 @@ class admin extends MY_Controller {
 			} else {
 				$this->session->set_flashdata('message', '<span class="error">No User ID was recieved.</span>');
 			}
-			redirect('admin/userActivations');
+			$url = 'admin/userActivations';
+			if (isset($this->uriVars['returnPage']) && !empty($this->uriVars['returnPage'])) {
+				$url = str_replace("_","/",$this->uriVars['returnPage']);
+			}
+			redirect($url);
+		}
+	}
+	/**
+	 *	ACTIVATE USER
+	 *	Converts a user waiting for admin activation to active
+	 *
+	 *	@param	$this->uriVars['user_id']	User ID
+	 *
+	 *	Redirects to userActivations()  on success
+	 *
+	 *	@since	1.0.5
+	 */
+	public function deactivateUser() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			$this->getURIData();
+			if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id']) && $this->uriVars['user_id'] != -1) {
+				if ($this->auth->adminDeactivate($this->uriVars['user_id'],$this->params['currUser'])) {
+					$this->session->set_flashdata('message', '<span class="success">The user has been deactivated.</span>');
+				} else {
+					$this->session->set_flashdata('error', '<span class="error">The user was not deactivated. Error: '.$this->user_auth_model->statusMess.'</span>');
+				} //NED if
+			} else {
+				$this->session->set_flashdata('message', '<span class="error">No User ID was recieved.</span>');
+			}
+			$url = 'admin/userActivations';
+			if (isset($this->uriVars['returnPage']) && !empty($this->uriVars['returnPage'])) {
+				$url = str_replace("_","/",$this->uriVars['returnPage']);
+			}
+			redirect($url);
 		}
 	}
 	/**
@@ -1332,7 +1369,7 @@ class admin extends MY_Controller {
 			$status = "OK";
 		}
 		$code = 200;
-		$$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
+		$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}

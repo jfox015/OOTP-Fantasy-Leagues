@@ -171,6 +171,7 @@ class base_model extends Model implements Serializable {
 	
 	var $filters = array();
 	var $metaFilters = array();
+	var $tableJoins = array();
 	var $filterVars = array();
 	var $filterStr = '';
 	/**
@@ -453,6 +454,11 @@ class base_model extends Model implements Serializable {
 		}
 		$this->db->select($selectStr);
 		$this->db->from($this->tblName);
+		if (is_array($this->tableJoins) && sizeof($this->tableJoins) > 0) {
+			foreach($this->tableJoins as $join) {
+				$this->db->join($join['table'], $join['table'].'.'.$join['field']." = ".$this->tblName.".".$join['joinField']);
+			}
+		}
 		/* APPLY FILTERS */
 		if (is_array($this->filterVars) && sizeof($this->filterVars) > 0) {
 			foreach($this->filterVars as $filterId => $filterValue) {
@@ -573,6 +579,9 @@ class base_model extends Model implements Serializable {
 	}
 	public function setMetaFilters($filters) {
 		$this->metaFilters = $filters;
+	}
+	public function setTableJoins($joins) {
+		$this->tableJoins = $joins;
 	}
 	public function setSearchResults($results = false) {
 		if ($results === false) {

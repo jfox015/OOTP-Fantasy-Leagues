@@ -32,6 +32,8 @@
             $form->space();
             $form->text('ootp_league_id','OOTP League ID','required',($input->post('ootp_league_id') ? $input->post('ootp_league_id') : $config['ootp_league_id']));
             $form->br();
+			$form->select('timezone|timezone',loadTimezones(),'Timezone',($this->input->post('timezone') ? $this->input->post('timezone') : $config['timezone']));
+			$form->space();
 			$responses[] = array('1','Enabled');
 			$responses[] = array('-1','Disabled');       
 			$form->fieldset('User Management');

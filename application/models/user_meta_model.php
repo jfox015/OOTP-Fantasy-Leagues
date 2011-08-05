@@ -34,6 +34,14 @@ class user_meta_model extends base_model {
 	var $gender = '';
 	var $avatar = '';
 	var $custom = '';
+	/**
+	* 	Timezone
+	*
+	*  @var timezone:Int
+	*  @since	1.0.6
+	*
+	*/
+	var $timezone = '';
 	
 	/*--------------------------------------
 	/	C'TOR
@@ -50,14 +58,14 @@ class user_meta_model extends base_model {
 		$this->tables['REQUESTS'] = 'fantasy_leagues_requests';
 		
 
-		$this->fieldList = array('firstName', 'lastName', 'nickName', 'city', 'state', 'country', 'zipCode', 'title', 'bio', 'gender');
+		$this->fieldList = array('firstName', 'lastName', 'nickName', 'city', 'state', 'country', 'zipCode', 'title', 'bio', 'gender','timezone');
 		$this->conditionList = array('birthDay','birthMonth','birthYear','avatarFile');
 		$this->readOnlyList = array('userId','dateOfBirth', 'avatar', 'custom');  
 		$this->uniqueField = 'userId';
 		$this->joinCode = "M";
 		$this->textList = array('nickName');
 		
-		$this->columns_select = array('id','userId','firstName','lastName','nickName','dateOfBirth','gender','country');
+		$this->columns_select = array($this->tblName.'.id','userId','firstName','lastName','nickName','dateOfBirth','gender','country');
 		$this->columns_text_search = array('firstName','lastName','nickName','bio','title');
 		$this->columns_alpha_search = array('lastName');
 		
@@ -92,6 +100,23 @@ class user_meta_model extends base_model {
 			}
 		}
 		return $success;
+	}
+	public function getTimezone($userId = false) {
+		
+		if ($userId === false) { $userId = $this->userId; }
+		$query = $this->db->select('timezone')
+                   	   ->where('userId', $userId)
+                       ->limit(1)
+                   	   ->get($this->tblName);
+		$result = $query->row();
+
+        if ($query->num_rows() > 0) {
+			return $result->timezone;
+		} else {
+			$this->errorCode = 1;
+			$this->statusMess = "No user matching id pass was found in the system.";
+			return false;
+		}
 	}
 	public function getUserLeagueCount($userId = false) {
 		

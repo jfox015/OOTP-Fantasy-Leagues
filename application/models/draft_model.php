@@ -812,12 +812,6 @@ class draft_model extends base_model {
 		if ($league_id === false) $league_id = $this->league_id;
 		if ($due_date === false && $due_time === false && $player_id === false && $team_id === false && $pick_overall === false) { return; }
 		
-		if ($team_id !== false) {
-			$this->db->where('team_id',$team_id);
-		}
-		if ($pick_overall !== false) {
-			$this->db->where('pick_overall',$pick_overall);
-		}
 		if ($player_id !== false) {
 			$this->db->set('player_id',$player_id);
 		}
@@ -827,7 +821,15 @@ class draft_model extends base_model {
 		if ($due_time !== false) {
 			$this->db->set('due_time',$due_time);
 		}
-		$this->db->set('league_id',$league_id);
+		if ($team_id !== false) {
+			$this->db->where('team_id',$team_id);
+		}
+		if ($pick_overall !== false) {
+			$this->db->where('pick_overall',$pick_overall);
+		}
+		if ($league_id !== false) {
+			$this->db->where('league_id',$league_id);
+		}
 		$this->db->update($this->tables['DRAFT']);
 		
 		if ($player_id !== false && $player_id !== NULL) {

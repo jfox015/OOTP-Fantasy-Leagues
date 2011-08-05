@@ -74,6 +74,12 @@ class search extends MY_Controller {
 	*	@var $outTarget:String
 	*/
 	var $outTarget = -1;
+	/**
+	 *	TABLE JOINS.
+	 *	Array of table to join into the current result set.
+	 *	@var $tableJoins:Array
+	 */
+	var $tableJoins = array();
 	/*---------------------------------------
 	/
 	/	SITE SPECIFIC METHODS
@@ -134,6 +140,8 @@ class search extends MY_Controller {
 				$this->data['subTitle'] = 'Users';
 				$this->data['searchType'] = 'users';
 				$this->defaultSort = 'lastName';
+				array_push($this->tableJoins,array('table'=>USER_CORE_TABLE,'field'=>'id','joinField'=>'userId'));
+				$this->metaFilters = $this->metaFilters + array('users_core.active'=>1); // END if
 				if (isset($this->uriVars['filterAction']) && $this->uriVars['filterAction'] == 'search') {
 					if ($this->input->post('country'))
 						$this->uriVars['country'] = $this->input->post('country'); // END if
@@ -372,6 +380,7 @@ class search extends MY_Controller {
 					
 					$this->dataModel->setMetaFilters($this->metaFilters);
 					$this->dataModel->setSearchFilterVars($this->filterVars);
+					$this->dataModel->setTableJoins($this->tableJoins);
 					if (isset($this->uriVars['itemsPerPage'])) {
 						$this->dataModel->limit = $this->uriVars['itemsPerPage'];
 					} // END if

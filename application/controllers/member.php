@@ -89,9 +89,9 @@ class member extends BaseEditor {
 			$form->span($this->dataModel->id);
 			$form->space();
 		}
-		$form->text('username','UserName','required|trim',($this->input->post('username')) ? $this->input->post('username') : $this->dataModel->username,array('class','last'));
+		$form->text('username','Username','required|trim',($this->input->post('username')) ? $this->input->post('username') : $this->dataModel->username,array('class','last'));
 		$form->br();
-		$form->text('newEmail','E-mail','required|email|trim',($this->input->post('newEmail')) ? $this->input->post('newEmail') : $this->dataModel->email);
+		$form->text('newEmail','E-mail','required|valid_email|trim',($this->input->post('newEmail')) ? $this->input->post('newEmail') : $this->dataModel->email);
 		$form->br();
 
 		$form->fieldset('Membership Details');
@@ -105,24 +105,24 @@ class member extends BaseEditor {
 		$responses[] = array('1','Yes');
 		$responses[] = array('-1','No');
 		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('lockStatus',$responses,'Account Locked:',($this->input->post('lockStatus') ? $this->input->post('lockStatus') : $this->dataModel->lockStatus));
+		$form->radiogroup ('lockStatus',$responses,'Account Locked:',($this->input->post('lockStatus') ? $this->input->post('lockStatus') : $this->dataModel->locked));
 		$form->space();
-        $form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('active',$responses,'User is Active:',($this->input->post('active') ? $this->input->post('active') : $this->dataModel->active));
-		$form->space();
+        //$form->fieldset('',array('class'=>'radioGroup'));
+		//$form->radiogroup ('active',$responses,'User is Active:',($this->input->post('active') ? $this->input->post('active') : $this->dataModel->active));
+		//$form->space();
 
-		if (isset($this->recordId) && $this->recordId != -1) {
+		if ($this->dataModel->id != -1) {
 			$form->fieldset('Password Reset');
 			$form->span("Enter a password below to change the users password. Leave blank to leave unchanged.<br />");
 			$form->br();
-			$form->text('newPassword','New Password');
+			$form->text('newPassword','New Password','trim|matches[confirmPassword]');
 			$form->br();
-			$form->text('confirmPassword','Confirm Password');
+			$form->text('confirmPassword','Confirm Password','trim');
 			$form->br();
 		} else {
-			$form->span("Enter a password belowd.<br />");
+			$form->span("Enter a password.<br />");
 			$form->br();
-			$form->text('password','Password');
+			$form->text('password','Password','required|trim');
 		}
 
 		$form->fieldset('',array('class'=>'button_bar'));
@@ -147,11 +147,17 @@ class member extends BaseEditor {
 
 	protected function showInfo() {
 		// Setup header Data
+		
 		if ($this->dataModel->dateCreated != EMPTY_DATE_TIME_STR) {
 			$dateCreated = date('m/j/Y h:m A',strtotime($this->dataModel->dateCreated));
 		}
 		$this->data['thisItem']['dateCreated'] = $dateCreated;
-
+		if ($this->dataModel->dateModified != EMPTY_DATE_TIME_STR) {
+			$dateModified = date('m/j/Y h:m A',strtotime($this->dataModel->dateModified));
+		}
+		$this->data['thisItem']['dateModified'] = $dateModified;
+		
+		$this->data['thisItem']['user_id'] = $this->dataModel->id;
 		$this->data['thisItem']['username'] = $this->dataModel->username;
 		$this->data['thisItem']['email'] = $this->dataModel->email;
 
@@ -165,13 +171,40 @@ class member extends BaseEditor {
 				}
 			}
 		}
-
 		$this->data['thisItem']['accessStr'] = $accessStr;
-
-		$this->data['thisItem']['locked'] = '<p style="display:inline;color:'.(($this->dataModel->locked == 1) ? '#040;">Avialable':'#f60;">Locked').'</p>';
-
+		
+		$typeStr = '<b style="color:#c00;">Unknown!</b>';
+		if ($this->dataModel->typeId != -1 && $this->dataModel->typeId != 0) {
+			$typeList = loadSimpleDataList('userType');
+			foreach($typeList as $key => $value) {
+				if ($this->dataModel->typeId == $key) {
+					$typeStr = $value;
+					break;
+				}
+			}
+		}
+		$this->data['thisItem']['typeStr'] = $typeStr;
+		
+		$levelStr = '<b style="color:#c00;">Unknown!</b>';
+		if ($this->dataModel->levelId != -1 && $this->dataModel->levelId != 0) {
+			$levelList = loadSimpleDataList('userLevel');
+			foreach($levelList as $key => $value) {
+				if ($this->dataModel->levelId == $key) {
+					$levelStr = $value;
+					break;
+				}
+			}
+		}
+		$this->data['thisItem']['levelStr'] = $levelStr;
+		
+		$this->user_meta_model->load($this->dataModel->id,'userId');
+		$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$this->dataModel->id);
+		
+		$this->data['thisItem']['locked'] = '<p style="display:inline;color:'.(($this->dataModel->locked == 1) ? '#040;">Not Locked':'#f60;">Locked').'</p>';
+		$this->data['thisItem']['active_id'] = $this->dataModel->active;
+		
 		$this->data['thisItem']['active'] = '<p style="display:inline;color:'.(($this->dataModel->active == 1) ? '#040;">Active':'#f60;">Inactive').'</p>';
-
+		$this->data['subTitle'] = "Member Profile";
 		parent::showInfo();
 	}
 }

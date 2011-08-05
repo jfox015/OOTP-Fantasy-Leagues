@@ -677,6 +677,7 @@ class user extends MY_Controller {
 				$this->data['invites'] = $this->user_meta_model->getTeamInvites();
 				$this->data['requests'] = $this->user_meta_model->getTeamRequests();
 				$this->data['profile'] = $this->user_meta_model->profile();
+				$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$session_auth);
 				$this->data['dateCreated'] = $this->user_auth_model->dateCreated;
 				$this->data['dateModified'] = $this->user_auth_model->dateModified;
 				$this->data['myProfile'] = true;
@@ -712,8 +713,6 @@ class user extends MY_Controller {
 					$userDrafts[$data['league_id']]['draftDate'] = $this->draft_model->getDraftDate($data['league_id']);
 				}
 				$this->data['userDrafts'] = $userDrafts;
-				
-				
 			}
 			$this->params['content'] = $this->load->view($view, $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
@@ -774,11 +773,13 @@ class user extends MY_Controller {
 			if ($this->user_meta_model->load($userId,'userId')) {
 				$this->data['profile'] = $this->user_meta_model->profile();
 				$dates = $this->user_auth_model->getDateDetails($userId);
+				$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$userId);
+		
 				$this->data['dateCreated'] = $dates['dateCreated'];
 				$this->data['dateModified'] = $dates['dateModified'];
 				$this->data['subTitle'] = 'User Profile';
 			} else {
-				$this->session->set_flashdata('message', '<span class="error">No user profile was be found. It\'s possible the record has been renamed, moved or deleted.</span>');
+				$this->session->set_flashdata('message', '<span class="error">No user profile was found. It\'s possible the record has been renamed, moved or deleted.</span>');
 				$this->data['subTitle'] = 'User Profiles';
 				$this->data['users'] = loadSimpleDataList('username');
 				$this->params['pageType'] = PAGE_FORM;

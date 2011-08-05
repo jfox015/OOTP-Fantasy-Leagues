@@ -341,7 +341,7 @@ class players extends MY_Controller {
 			$this->data['current_team'] = array('id'=>-1);
 			if (isset($league_id) && !empty($league_id) && $league_id != -1) {
 				// GET PLAYERS CURRENT TEAM
-				$this->data['current_team'] = $this->dataModel->getFantasyTeam($pid, $this->data['currentScoringPeriod']['id']);
+				$this->data['current_team'] = $this->dataModel->getFantasyTeam($pid, $this->data['currentScoringPeriod']['id'],$league_id);
 				$this->data['league_name'] = $this->league_model->getLeagueName($league_id);
 				if ($this->params['loggedIn']) {
 					$this->data['userTeamId'] = $this->user_meta_model->getUserTeamIds($league_id,$this->params['currUser']);
@@ -381,7 +381,7 @@ class players extends MY_Controller {
 				}
 				$this->data['pick_id'] = $pick_id;
 				$this->data['pick_team_id'] = $pick_team_id;
-				$this->data['current_team'] = $this->dataModel->getFantasyTeam($pid, $this->data['currentScoringPeriod']['id']);
+				//$this->data['current_team'] = $this->dataModel->getFantasyTeam($pid, $this->data['currentScoringPeriod']['id']);
 				$this->data['scoring_type'] = $this->league_model->getScoringType($league_id);
 				
 				

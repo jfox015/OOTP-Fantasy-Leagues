@@ -130,12 +130,15 @@ class MY_Controller extends Controller {
 		$this->params['currUser'] = -1;
 		$this->params['accessLevel'] = 1;
 		$this->params['userTeams'] = array();
+		$this->params['userTimezone'] = '';
 		if ($this->params['loggedIn']) {
 			if ($this->auth->load_user()) {
 				$this->params['name'] = $this->user_auth_model->username;
 				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
 				$this->params['accessLevel'] = $this->user_auth_model->accessId;
 				$this->params['userTeams'] = $this->user_meta_model->getUserTeams(false, $this->params['currUser']);
+				// EDIT 1.0.6, track and use member timezone preferences
+				$this->params['userTimezone'] = $this->user_meta_model->getTimezone($this->params['currUser']);
 			} // END if
 		} // END if
 		// APPLY GLOBAL USER VARS TO VIEW DATA VARS
@@ -144,6 +147,7 @@ class MY_Controller extends Controller {
 		$this->data['loggedIn'] = $this->params['loggedIn'];
 		$this->data['currUser'] = $this->params['currUser'];
 		$this->data['userTeams'] = $this->params['userTeams'];
+		$this->data['userTimezone'] = $this->params['userTimezone'];
 		
 		// LOAD theme support
 		$this->themes = $this->config->item('themes');

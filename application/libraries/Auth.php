@@ -87,7 +87,18 @@ class Auth
 	public function deactivate($code) {
 	    return $this->ci->user_auth_model->deactivate($code);
 	}
-	
+	/**
+	 * Administrator Activate user.
+	 *
+	 * @return TRUE on sucess, FALSE on error
+	 **/
+	public function adminDeactivate($user_id, $approverId) {
+		if ($this->ci->user_auth_model->adminDeactivation($user_id, $approverId) !== false) {
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
 	
 	/**
 	 * forgotten password feature

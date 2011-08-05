@@ -698,6 +698,41 @@ if ( ! function_exists('loadCountries')) {
 	}
 }
 
+// ------------------------------------------------------------------------
+/**
+ * 	LOAD TIMEZONES.
+ * 	Loads a list of timezone identifers for selection by the user.
+ * 	
+ * 	@param	$selectBox	(Boolean)	TRUE if the list will populate a select box, FALSE otherwise
+ * 	@return				array		Array of timezones
+ * 	@since				1.0.6
+ */
+if ( ! function_exists('loadTimezones')) {
+	function loadTimezones($selectBox = true) {
+		
+		if ($selectBox) {
+			$result = array(' '=>'Select Timezone');
+		} else {
+			$result = array();
+		}
+		$continent = '';
+	    $timezone_identifiers = DateTimeZone::listIdentifiers();
+	    foreach( $timezone_identifiers as $value ){
+	        if ( preg_match( '/^(America|Antartica|Arctic|Asia|Atlantic|Europe|Indian|Pacific)\//', $value ) ){
+	            $ex=explode("/",$value);//obtain continent,city   
+	            //if ($continent!=$ex[0]){
+	            //    $result = $result + array('X'=>$ex[0]);
+	           // }
+	            $city=$ex[1];
+	            $continent=$ex[0];
+	            $result = $result + array($value=>$continent."/".$city);             
+	        }
+	    }
+		return $result;		
+	}
+}
+
+// ------------------------------------------------------------------------
 if ( ! function_exists('loadProjectsBugs')) {
 	function loadProjectsBugs($projectId,$selectBox = true) {
 		if ($selectBox)

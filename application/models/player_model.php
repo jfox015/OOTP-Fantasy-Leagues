@@ -310,7 +310,7 @@ class player_model extends base_model {
 		
 	}
 	
-	public function getFantasyTeam($player_id = false, $scoring_period_id = false) {
+	public function getFantasyTeam($player_id = false, $scoring_period_id = false, $league_id = false) {
 		
 		if ($player_id === false) { return; }
 		
@@ -322,6 +322,9 @@ class player_model extends base_model {
 		$this->db->where($this->tables['ROSTERS'].'.player_id',intval($player_id));
 		if ($scoring_period_id !== false) {
 			$this->db->where($this->tables['ROSTERS'].'.scoring_period_id',intval($scoring_period_id));
+		}
+		if ($league_id !== false) {
+			$this->db->where($this->tables['ROSTERS'].'.league_id',intval($league_id));
 		}
 		$query = $this->db->get();
 		//echo("Last Query = ".$this->db->last_query()."<br />");

@@ -54,7 +54,6 @@ class user_auth_model extends base_model {
 	 * @var tblAccess
 	 **/
 	var $tblAccess = '';
-	
 	/*--------------------------------------
 	/	C'TOR
 	/	Creates a new instance of user_meta_model
@@ -65,12 +64,12 @@ class user_auth_model extends base_model {
 		$this->tblName = $this->tables['users_core'];
 		$this->tblAccess = $this->tables['access_log'];
 
-		$this->fieldList = array('username','email','typeId','levelId','accessId');
-		$this->conditionList = array('newPassword','lockStatus','loginAttemptCount');
-		$this->readOnlyList = array('password','dateCreated','dateModified','lastModifiedBy',
+		$this->fieldList = array('username','typeId','levelId','accessId');
+		$this->conditionList = array('newPassword','lockStatus','loginAttemptCount','newEmail');
+		$this->readOnlyList = array('password','email','dateCreated','dateModified','lastModifiedBy',
 									'locked','loginAttempts','loggedIn','active');  
 		
-		$this->columns_select = array('id','username','email','typeId','levelId','accessId','dateCreated','dateModified','lastModifiedBy',
+		$this->columns_select = array($this->tblName.'.id','username','email','levelId','accessId','dateCreated','dateModified','lastModifiedBy',
 									'locked','loginAttempts','loggedIn','active');
 		
 		$this->uniqueField = $this->config->item('unique_field');
@@ -186,6 +185,8 @@ class user_auth_model extends base_model {
 					$this->password = $this->hashPassword($input->post('newPassword'));
 				} // END if
 			} // END if
+			if ($input->post('newEmail') && $this->testEmail($input->post('newEmail')))
+				$this->email = $input->post('newEmail');  // END if
 			if ($input->post('lockStatus')) {
 				$this->accountLockStatus = $input->post('lockStatus');
 			} // END if
@@ -299,6 +300,42 @@ class user_auth_model extends base_model {
 		$this->db->update($this->tblName, $data, array('username' => $username));
 		
 		return ($this->db->affected_rows() == 1) ? true : false;
+	}
+	/**
+	 * admin deactivate
+	 *
+	 * @return TRUE on success, FALSE on error
+	 *
+	 */
+	public function adminDeactivation($userId = false, $approvedBy = false) {
+		
+		if ($userId === false) {
+			$this->errorCode = 1;
+			$this->statusMess = "A user ID is required but none was recieved.";
+	        return false;
+	    }
+		if ($approvedBy === false) {
+			$this->errorCode = 1;
+			$this->statusMess = "An approver ID is required but none was recieved.";
+	        return false;
+	    }
+		$query = $this->db->select('id, '.$this->uniqueField)
+               	      ->where('id', $userId)
+               	      ->limit(1)
+               	      ->get($this->tblName);
+               	      
+		$result = $query->row();
+		if ($query->num_rows() !== 1) {
+		    $this->errorCode = 3;
+			$this->statusMess = "No matching user id was found in the system.";
+	        return false;
+		}
+		$identity = $result->{$this->uniqueField};
+		$data = array('active' => -1, 'dateModified' => date('Y-m-d h:m:s'), 'lastModifiedBy' => $approvedBy);
+		$this->db->update($this->tblName, $data, array('id' => $userId));
+		if ($this->db->affected_rows() > 0) {
+			return $result->id;
+		}
 	}
 	public function forgotten_activation($email = false) {
 	 	

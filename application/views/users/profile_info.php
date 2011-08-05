@@ -143,10 +143,10 @@
                     <br />                
                   	<h3>Fantasy Teams</h3>
                    	<div class='textbox'>
-                   	<?php  if (isset($userTeams) && sizeof($userTeams) > 0) {
+                   	<?php  if (isset($thisItem['userTeams']) && sizeof($thisItem['userTeams']) > 0) {
 					$teamList = array('rot'=>array(),'h2h'=>array());
-					if (sizeof($userTeams) > 0) { 
-						foreach($userTeams as $data) { 
+					if (sizeof($thisItem['userTeams']) > 0) { 
+						foreach($thisItem['userTeams'] as $data) {
 							$type = "";
 							if ($data['league_type'] == LEAGUE_SCORING_HEADTOHEAD) {
 								$type = "h2h";

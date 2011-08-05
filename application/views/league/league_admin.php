@@ -57,7 +57,7 @@
 				<?php 
 				} 
 				if ($draftEnabled) {
-					if ($draftStatus >= 1 && $draftStatus < 4) { ?>
+					if ($draftTimer && ($draftStatus >= 1 && $draftStatus < 4)) { ?>
 						<li><?php echo anchor('/league/updateDraftSchedule/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/page_process.png" width="48" height="48" border="0" />'); ?><br />
 						Update Draft Schedule</li>
 	                <?php 

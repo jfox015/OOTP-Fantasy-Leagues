@@ -8,7 +8,6 @@
  * @author		Jeff Fox
  * @description	Various helpers for handling data lists
  */
-
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('isLeap')) {
@@ -64,5 +63,32 @@ if ( ! function_exists('testValidBirthDate')) {
 		return true;		
 	}
 }
-/* End of file dataList_helper.php */
-/* Location: ./system/helpers/dataList_helper.php */
+// ------------------------------------------------------------------------
+if ( ! function_exists('adjustToUserTimezone')) {
+	function adjustToUserTimezone($userTz = false, $serverTz = false, $time = false, $format = 'Y-m-d H:i:s') {
+		
+		if ($userTz === false || $serverTz === false) return;
+		
+		$user_timezone = $userTz;
+		$server_time = (($time !== false) ? $time : time());
+		
+		date_default_timezone_set($userTz);
+		$timestamp = strtotime($server_time);
+		$local_timestamp = $timestamp + date('Z');
+		$local_date = date($format, $local_timestamp);
+		
+		return $local_date;
+	}
+}
+// ------------------------------------------------------------------------
+// CREDIT: Jim Rubenstein, http://stackoverflow.com/questions/1445087/adjusting-time-zone-in-php-with-datetime-datetimezone/2454822#2454822
+if ( ! function_exists('time_translate')) {
+	function time_translate($tz_from, $tz_to, $time_str = 'now', $format = 'Y-m-d H:i:s') {
+	    $dt = new DateTime($time_str, new DateTimezone($tz_from));
+	    $dt->setTimezone(new DateTimezone($tz_to));
+	    return $dt->format($format);
+	}
+}
+
+/* End of file date_helper.php */
+/* Location: ./helpers/date_helper.php */

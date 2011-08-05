@@ -61,6 +61,30 @@ function display_setup_form( $error = null ) {
 			value="<?php if (isset($_POST['ootp_league_id'])) { echo($_POST['ootp_league_id']); } else { echo("100"); } ?>" /></td>
             <td>Usually 100<br /></td>
 		</tr>
+		<tr>
+			<th scope="row"><label for="timezone">Default Timezone</label></th>
+			<td>
+			<select id="timezone" name="timezone">
+			    <?php
+			    $timezone_identifiers = DateTimeZone::listIdentifiers();
+			    foreach( $timezone_identifiers as $value ){
+			        if ( preg_match( '/^(America|Antartica|Arctic|Asia|Atlantic|Europe|Indian|Pacific)\//', $value ) ){
+			            $ex=explode("/",$value);//obtain continent,city   
+			            if ($continent!=$ex[0]){
+			                if ($continent!="") echo '</optgroup>';
+			                echo '<optgroup label="'.$ex[0].'">';
+			            }
+			   
+			            $city=$ex[1];
+			            $continent=$ex[0];
+			            echo '<option value="'.$value.'">'.$city.'</option>';               
+			        }
+			    }
+			    ?>
+		        </optgroup>
+		    </select></td>
+            <td>Choose default timezone for site<br /></td>
+		</tr>
         <tr>
 			<td colspan="3"><h2>Paths</h2></td>
 		</tr>
@@ -188,6 +212,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 		$ootp_league_name = isset($_POST['ootp_league_name']) ? stripslashes($_POST['ootp_league_name']) : '';
 		$ootp_league_abbr = isset($_POST['ootp_league_abbr']) ? stripslashes($_POST['ootp_league_abbr']) : '';
 		$ootp_league_id = isset($_POST['ootp_league_id']) ? $_POST['ootp_league_id'] : '';
+		$timezone = isset($_POST['timezone']) ? $_POST['timezone'] : '';
 		
 		$ootp_html_report_path = isset($_POST['ootp_html_report_path']) ? stripslashes($_POST['ootp_html_report_path']) : '';
 		$html_root = isset($_POST['html_root']) ? $_POST['html_root'] : '';
@@ -218,6 +243,11 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 		
 		if (empty($ootp_league_id)) {
 			$errors .= '<li>you must provide the ID number of your league, though it is usually 100.</li>';
+			$error = true;
+		} // END if
+		
+		if (empty($timezone)) {
+			$errors .= '<li>You select a default timezone for your league.</li>';
 			$error = true;
 		} // END if
 		
@@ -329,12 +359,12 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 				$options = array('site_name'=>$site_name,
 											'ootp_league_name'=>$ootp_league_name,
 											'ootp_league_id'=>$ootp_league_id,
+											'timezone'=>$timezone,
 											'ootp_league_abbr'=>$ootp_league_abbr,
 											'ootp_html_report_path'=>$ootp_html_report_path,
 											'sql_file_path'=>$sql_file_path,
 											'fantasy_web_root'=>$fantasy_web_root,
 											'ootp_html_report_root'=>$ootp_html_report_root);
-											
 				$insert = "";					
 				foreach ( $options as $option => $value ) {
 					//echo($option." = ".$value."<br />");

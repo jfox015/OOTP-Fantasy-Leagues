@@ -1,4 +1,38 @@
-    
+    <script type="text/javascript" charset="UTF-8">
+	var charLimit = 1000;
+	$(document).ready(function(){
+		/* Character Counter for inputs and text areas 
+		 */  
+		$('.word_count').each(function(){  
+		    // get current number of characters  
+		    var length = $(this).val().length;  
+		    // get current number of words  
+		    //var length = $(this).val().split(/\b[\s,\.-:;]*/).length;  
+		    // update characters  
+		    $(this).parent().find('.counter').html('<span style="color:#'+getColor(length)+';">' + length + ' characters</span>');  
+		    // bind on key up event  
+		    $(this).keyup(function(){  
+				 // get new length of characters  
+		        var new_length = $(this).val().length;  
+		        // get new length of words  
+		        //var new_length = $(this).val().split(/\b[\s,\.-:;]*/).length;  
+		        // update  
+		        $(this).parent().find('.counter').html('<span style="color:#'+getColor(new_length)+';">' + new_length + ' characters</span>');  
+		    });  
+		});  
+	});
+	function getColor(new_length) {
+		var color = "060";
+	    var critLen = (charLimit - parseInt(charLimit * .05)),
+        warnLen = (charLimit - parseInt(charLimit * .15));
+        if (new_length >= warnLen && new_length < critLen) {
+			color = "f60";
+        } else if (new_length >= critLen) {
+	        color = "c00";
+        }
+        return color;
+	}
+	</script>
     <div id="column-single">
    	<h1><?php echo($subTitle); ?></h1>
             <?php 
@@ -115,17 +149,11 @@
                 </tr>
                 <?php 
 				}  // END if
-                	
-				} // END if isset($divisions) 
-				
-				
-				if ($drawn) {
-				echo(form_fieldset_close());
 				?>
 				<tr>
 					<td class="hsc2_l" colspan="4">
-					<label for="message">Message to the ommissioner </label> (Optional)<br />
-					Include a note to the league commissioner as to why you want to own this team.
+					<label for="message">Message to the commissioner:</label> (Optional)<br clear="all" />
+					Include a short note to the league commissioner as to why you want to own this team.
 					<br /><br />		
 					<?php 
 					$data = array(
@@ -133,13 +161,20 @@
 		              'id'          => 'message',
 		              'value'       => '',
 		              'maxlength'   => '1000',
+		              'class'		=> 'word_count',
 		              'rows'        => '5',
-		              'cols'		=> '30'
+		              'cols'		=> '45'
 					);
-					echo(form_textarea($data;);
-					?>
+					echo(form_textarea($data));
+					?><br clear="all" />
+					<span class="counter"></span>, Limit 1000.
 					</td>
 				</tr>
+				<?php 
+				if ($drawn) {
+				echo(form_fieldset_close());
+				} // END if isset($divisions)
+				?>
                 <tr>
                     <td class="hsc2_l" colspan="4">
 				<?php 	

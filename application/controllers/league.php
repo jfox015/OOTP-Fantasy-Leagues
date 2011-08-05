@@ -259,6 +259,7 @@ class league extends BaseEditor {
 				$this->data['league_id'] = $this->uriVars['id'];
 				$this->data['draftStatus'] = $this->draft_model->getDraftStatus($this->dataModel->id);
 				$this->data['draftEnabled'] = $this->draft_model->getDraftEnabled($this->dataModel->id);
+				$this->data['draftTimer'] = $this->draft_model->timerEnable;
 				$this->data['debug'] = $this->debug;
 				$this->data['scoring_type'] = $this->dataModel->getScoringType();
 				$this->makeNav();
@@ -501,7 +502,8 @@ class league extends BaseEditor {
 						$msg = str_replace('[COMMISH]', getUsername($this->dataModel->commissioner_id), $msg);
 						$msg = str_replace('[USERNAME]', getUsername($this->params['currUser']), $msg);
 						$userMessage = $this->input->post('message');
-						$userMessage = (!empty($userMessage)) ? str_replace('[MESSAGE]', $userMessage, $this->lang->line('general_message_template') : "");
+						$userMessage = ((!empty($userMessage)) ? str_replace('\n', "<br>",$userMessage):"");
+						$userMessage = ((!empty($userMessage)) ? str_replace('[MESSAGE]', $userMessage, $this->lang->line('general_message_template')) : "");
 						$msg = str_replace('[MESSAGE]', $userMessage, $msg);
 						$msg = str_replace('[REQUEST_ADMIN_URL]', anchor('/league/leagueInvites/'.$this->dataModel->id,'League Invitiation/Request Admin Page'), $msg);
 						$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
@@ -633,7 +635,8 @@ class league extends BaseEditor {
 							$msg = str_replace('[TEAM_HOME_URL]', anchor('/team/info/'.$request['team_id'],'managing your team'),$msg);
 							$msg = str_replace('[USERNAME]', getUsername($request['user_id']), $msg);
 							$msg = str_replace('[TEAM_NAME]', $this->team_model->getTeamName($request['team_id']),$msg);
-							$reponseMessage = (!empty($request_reponse)) ? str_replace('[MESSAGE]', $request_reponse, $this->lang->line('league_team_response_template') : $this->lang->line('no_message_provided')));
+							$request_reponse = ((!empty($request_reponse)) ? str_replace('\n', "<br>",$request_reponse):"");
+							$reponseMessage = ((!empty($request_reponse)) ? str_replace('[MESSAGE]', $request_reponse, $this->lang->line('league_team_response_template')) : $this->lang->line('no_message_provided'));
 							$msg = str_replace('[MESSAGE]', $reponseMessage, $msg);
 							$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
 							$data['messageBody']= $msg;
@@ -1361,6 +1364,7 @@ class league extends BaseEditor {
 				$this->data['league_id'] = $this->dataModel->id;
 				$this->data['subTitle'] = 'Pending Invitiations';
 				$this->params['content'] = $this->load->view($this->views['INVITES'], $this->data, true);
+				$this->params['pageType'] = PAGE_FORM;
 				$this->makeNav();
 				$this->displayView();
 			} else {

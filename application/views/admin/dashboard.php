@@ -191,6 +191,8 @@
 			?>
 			<li><?php echo anchor('admin/configSocial','<img src="'.$config['fantasy_web_root'].'images/icons/facebook-64x64.png" width="48" height="48" border="0" />'); ?><br />
             Social Media Settings</li>
+            <li><?php echo anchor('member','<img src="'.$config['fantasy_web_root'].'images/icons/user.png" width="48" height="48" border="0" />'); ?><br />
+            Manage Members</li>
             <li><?php echo anchor('admin/userActivations','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
             Users requiring activation</li>
             <?php

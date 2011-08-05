@@ -258,7 +258,18 @@
 		$message = "";
 		$messageType = "info";
 		if ($thisItem['isCommish'] || $thisItem['isAdmin']) {
-			if ($thisItem['draftStatus'] < 2  || time() < strtotime($thisItem['draftDate'])) {
+			if (!function_exists('adjustToUserTimezone')) {
+				$this->load->helper('date');
+			}
+			$adjustedTime = time();
+			if (!isset($config['timezone']) || empty($config['timezone'])) {
+				$config['timezone'] =  TIMEZONE_DEFAULT;
+			}
+			if (empty($userTimezone)) { $userTimezone = $config['timezone']; }
+			if ($userTimezone != $config['timezone']) {
+				$adjustedTime = adjustToUserTimezone($userTimezone,$config['timezone']);
+			}
+			if ($thisItem['draftStatus'] < 2  || $adjustedTime < strtotime($thisItem['draftDate'])) {
 				$message = "<b>NOTE</b>: Your draft has not started yet. More controls will be available once the draft date and time are reached.";
 			} else if ($thisItem['draftStatus'] == 4) {
 				$message = "Your draft is complete! Return to the ".anchor('/league/admin/'.$thisItem['league_id'],'legaue admin screen')." to finalize your draft and set your league rosters in place!.";

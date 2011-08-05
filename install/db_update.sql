@@ -112,3 +112,9 @@ CREATE TABLE IF NOT EXISTS `users_activation_types` (`id` tinyint(4) NOT NULL au
 INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(-1, 'None');
 INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(1, 'Email');
 INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(2, 'Administrator');
+
+#	UPDATE SQL QUERY
+#	Version 1.0.5 to 1.0.6
+#	REMOVE ALL COMMENTS FOR DIST
+ALTER TABLE `users_meta` ADD `timezone` TEXT NOT NULL DEFAULT '';
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('timezone', '');
