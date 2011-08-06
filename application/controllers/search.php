@@ -72,12 +72,21 @@ class search extends MY_Controller {
 	*	OUTPUT TARGET.
 	*	Determines to display results in search results page or export format.
 	*	@var $outTarget:String
+	*	@since 1.0.6
 	*/
 	var $outTarget = -1;
+	/**
+	*	OUTPUT TEMPLATE.
+	*	Accepts a template for output the data from search results.
+	*	@var $outTemplate:String
+	*	@since 1.0.6
+	*/
+	var $outTemplate = '';
 	/**
 	 *	TABLE JOINS.
 	 *	Array of table to join into the current result set.
 	 *	@var $tableJoins:Array
+	 *	@since 1.0.6
 	 */
 	var $tableJoins = array();
 	/*---------------------------------------
@@ -313,7 +322,7 @@ class search extends MY_Controller {
 	 */
 	function export() {
 		$this->$outTarget = $this->TARGET_DATA_OUT;
-		redirect('search/doSearch');
+		$this->doSearch();
 	}
 	/**
 	 *	INDEX.
@@ -403,7 +412,7 @@ class search extends MY_Controller {
 	* 	Output a list of search data in one of four types of formats.
 	*
 	* 	Required URI Vars Properties
-	* 	@param	$type		(int)	Export type (0 => SQL, 1 =>  HTML, 2 => JSON, 3 => CSV)
+	* 	@param	$type		(int)	Export type (1 => SQL, 2 =>  HTML, 3 => JSON, 4 => XML, 5 => CSV)
 	*
 	* 	@since	1.0.6 Beta
 	*
@@ -418,22 +427,27 @@ class search extends MY_Controller {
 			$outputType = $this->input->post('type');
 			switch(intval($outputType)) {
 				// SQL
-				case 0:
+				case 1:
 					$this->output->set_header('Content-type: text/sql');
-
+					
 					break;
 				// HTML
-				case 1:
+				case 2:
 					$this->output->set_header('Content-type: text/html');
-						
+					
 					break;
 				// JSON
-				case 2:
+				case 3:
 					$this->output->set_header('Content-type: application/json');
 					
 					break;
+				// XML
+				case 4:
+					$this->output->set_header('Content-type: text/xml');
+					
+					break;
 				// CSV
-				case 3:
+				case 5:
 				default:
 					$this->output->set_header('Content-type: application/csv');
 					

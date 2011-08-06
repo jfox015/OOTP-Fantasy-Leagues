@@ -578,24 +578,25 @@ class league extends BaseEditor {
 	public function requestResponse() {
 		if ($this->params['loggedIn']) {
 			$this->init();
-			$this->getURIData();
-			$this->loadData();
 			$request_id = -1;
 			$request_type = false;
 			$request_reponse = '';
 			// GET REQUEST INFORMATION FROM THE APPROPRIATE INPUT SOURCE
-			if (isset($this->uriVars['request_id']) && !empty($this->uriVars['request_id']) && $this->uriVars['request_id'] != -1 && 
-						  $this->uriVars['type'] && !empty($this->uriVars['type'])) {
-				$request_id = $this->uriVars['request_id'];
-				$request_type = $this->uriVars['type'];
-			} else if ($this->input->post('request_id') && $this->input->post('type')) {
-				$request_id = $this->input->post('request_id');
-				$request_type = $this->input->post('type');
-				$request_reponse = $this->input->post('message');
+			// CONVERT INPUT DATA TO DATA VARS
+			if ($this->input->post('submitted')) {
+				$request_id = $this->input->post('request_id') ? $this->input->post('request_id') : -1;
+				$request_type = $this->input->post('type') ? $this->input->post('type') : false;
+				$request_reponse = $this->input->post('message') ? $this->input->post('message') : "";
+				$league_id = $this->uriVars['league_id'] = $this->input->post('id');
+			} else {
+				$this->getURIData();
+				$request_id = ((isset($this->uriVars['request_id'])) ? $this->uriVars['request_id'] : -1);
+				$request_type = ((isset($this->uriVars['type'])) ? $this->uriVars['type'] : false);
+				$request_reponse = "";
 			}
+			$this->loadData();
 			// CONTINUE ONLY IF WE HAVE A VALID REQUEST ID AND RESPONSE TYPE
 			if ($request_id != -1 && $request_type !== false) {
-				
 				if (($request_type == 2) || ($request_type != 2 && $this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 					if ($this->dataModel->id != -1) {
 						$targetUri = 'league/leagueInvites/'.$this->dataModel->id;
@@ -692,6 +693,38 @@ class league extends BaseEditor {
 	        $this->session->set_userdata('loginRedirect',current_url());	
 			redirect('user/login');
 	    }
+	}
+	/**
+	 * 	CLEAR TEAM REQUEST QUEUE.
+	 * 	This function clears the team request queue for the given league.
+	 * 
+	 * 	@since	1.0.6
+	 * 	@see	models->league_model->purgeTeamRequests()
+	 */
+	public function clearRequestQueue() {
+		if ($this->params['loggedIn']) {
+			$this->init();
+			$this->loadData();
+			if ($this->dataModel->id != -1) {
+				if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+					$this->session->set_flashdata('message', '<p class="success">Team Request operation completed successfully. '.$this->dataModel->purgeTeamRequests().' records were removed.</p>');
+					redirect('league/leagueInvites/'.$this->dataModel->id);
+				} else {
+					$this->data['subTitle'] = "Unauthorized Access";
+					$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+					$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+					$this->displayView();
+				}
+			} else {
+				$this->data['subTitle'] = "An error has occured.";
+				$this->data['theContent'] = '<span class="error">'.$this->lang->line('league_finder_request_no_id').'</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->displayView();
+			}
+		} else {
+			$this->session->set_userdata('loginRedirect',current_url());
+			redirect('user/login');
+		}
 	}
 	/**
 	 *	TEAM ADMIN.
@@ -1487,9 +1520,16 @@ class league extends BaseEditor {
 				if (isset($this->uriVars['team_id'])) {
 					$this->load->model('team_model');
 					$this->team_model->load($this->uriVars['team_id']);
+					// EDIT 1.0.6 - GET OWNER ID FOR TEAM
+					$owner_id = $this->team_model->getTeamOwnerId();
+					// REMOVE OWNER
 					$this->team_model->owner_id = -1;
 					$this->team_model->save();
 					$message = '<span class="success">The owner has been successfully removed from the selected team.</span>';
+					
+					// EDIT 1.0.6 - REMOVE ANY INVITES FOR THIS OWNER
+					$this->dataModel->purgeTeamRequests(false, $owner_id);
+					
 				} else {
 					$error = true;
 					$message = '<span class="error">A required team identifier was not found. Please go back and try the operation again or contact the site adminitrator to report the problem.</span>';

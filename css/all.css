@@ -101,6 +101,35 @@ img { border: 0; }
 	color:#ff0;
 	z-index:110;
 }
+/* 1.0.6 */
+#bug_bar {
+	float:left;
+	clear:both;
+	width:959px;
+	margin:0;
+	padding:.3em 0 .1em 0;
+	color:#c00;
+	background-color:#ffc;
+	text-align:right;
+	padding:7px 8 0 0;
+}
+#bug_bar ul {
+   style:none;
+   margin:0 2px 2px 2px;
+   padding:0;
+}
+#bug_bar li {
+   display:inline;
+   margin:0;
+   padding:0;
+}
+#bug_bar li a, #bug_bar li.label {
+   padding:0 .3em 0 .5em;
+   font-size:13px;
+   font-weight: bold;
+   color:#c00;
+}
+
 img.splash {
 	border: 1px solid #666;
 	padding:3px;

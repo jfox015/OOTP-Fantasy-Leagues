@@ -35,12 +35,17 @@ input.error {
 	width:auto;
 	height:auto;
 }
+
 .nicEdit-panel {
 		width:329px;
 		float:left;
 		clear:right;
 }
-
+.nicEdit-panel-wide {
+		width:725px;
+		float:left;
+		clear:right;
+}
 .formLabel {
 	text-align:right;
 	font-weight:bold;

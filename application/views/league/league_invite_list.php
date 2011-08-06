@@ -63,9 +63,10 @@
 	</script>
 	<div id="responseDialog" class="dialog" style="position:absolute;visibility:hidden;top:-5000px;left:-5000px">
 		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>league/requestResponse" name='responseForm' id="responseForm">
+        <input type='hidden' id="submitted" name='submitted' value='1'></input>
         <input type='hidden' id="request_id" name='request_id' value='-1'></input>
         <input type='hidden' id="type" name='type' value='-1'></input>
-        <input type='hidden' id="league_id" name='league_id' value='<?php print($league_id); ?>'></input>
+        <input type='hidden' id="id" name='id' value='<?php print($league_id); ?>'></input>
         <div class='textbox'>
          <table cellpadding="2" cellspacing="0" cellborder="0">
           <tr class='title'><td>Message to User</td></tr>
@@ -139,9 +140,10 @@
             
             <br clear="all" />
             <p/>
+         </div>
             
-            <h1>Pending Requests</h1>
-            
+        <h1>Pending Requests</h1>
+        <div class="content-form">
             <div class='tablebox'>
             <table cellspacing="0" cellpadding="3" width="625">
             <tr class='title'><td colspan="4">Pending Team Requests</td></tr>
@@ -176,6 +178,9 @@
             </table> 
             </div> 
         </div>
+		<br clear="all" />
+		<?php print(anchor('league/clearRequestQueue/'.$league_id,'<img src="'.PATH_IMAGES.'/icons/icon_fail.png" width="16" height="16" border="0" alt="Reject" align="absmiddle" /> Clear Team Request Queue'))?>
+
         <p /><br />
     </div>
     <p /><br />

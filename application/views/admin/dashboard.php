@@ -164,7 +164,7 @@
         </ul>
         <?php } ?>
         <br clear="all" /><br />
-        <h3>Site Management</h3>
+        <h3>Site/Fantasy Management</h3>
         <?php if (isset($settingsError) && !empty($settingsError)) { ?>
         <span class="error"><?php echo($settingsError); ?></span><br />
         <?php } ?>
@@ -191,10 +191,6 @@
 			?>
 			<li><?php echo anchor('admin/configSocial','<img src="'.$config['fantasy_web_root'].'images/icons/facebook-64x64.png" width="48" height="48" border="0" />'); ?><br />
             Social Media Settings</li>
-            <li><?php echo anchor('member','<img src="'.$config['fantasy_web_root'].'images/icons/user.png" width="48" height="48" border="0" />'); ?><br />
-            Manage Members</li>
-            <li><?php echo anchor('admin/userActivations','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
-            Users requiring activation</li>
             <?php
 			if (defined('ENVIRONMENT') && ENVIRONMENT != "production") { ?>
 			<li><?php echo anchor('admin/configOOTP','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
@@ -202,6 +198,20 @@
 			<?php
 			} // END if
 			?>
+        </ul>
+        <br clear="all" /><br />
+        <h3>Tools and Utilities</h3>
+        <ul class="iconmenu">
+        	<li><?php echo anchor('member','<img src="'.$config['fantasy_web_root'].'images/icons/user.png" width="48" height="48" border="0" />'); ?><br />
+            Manage Members</li>
+            <li><?php echo anchor('admin/userActivations','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
+            Users requiring activation</li>
+            <li><?php echo anchor('admin/configAbout','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
+            Edit &quot;About&quot; Page</li>
+            <!-- PLACEHOLDER - DB BACKUP -->
+            <!-- PLACEHOLDER - MEMBER MESSAGING -->
+            <!-- PLACEHOLDER - PERMISSIONS -->
+            <!-- PLACEHOLDER - SECURITY -->
         </ul>
         <br clear="all" /><br />
         <?php if (isset($league_info) && $league_info->current_date <= $league_info->start_date) { ?>

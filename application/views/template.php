@@ -126,7 +126,14 @@
     </div>   <!-- END subnav DIV -->
     <?php } // END foreach
 	} // END if 
+	// EDIT 1.0.6, IF the site version contains the "beta" tag, show the bug report toolbar
+	if (strpos(SITE_VERSION,"Beta") !== false) {
 	?>
+	<div id="bug_bar">
+		<ul>
+			<li><?php  print(anchor(BUG_URL,'<img src="'.PATH_IMAGES.'/bug.gif" width="32" height="32" alt="Help Squash Me!" title="Help Squash Me!" align="absmiddle" /> Found a bug? Report it here!')); ?></li>
+		</ul>
+	</div><?php } ?>
  	</div>   <!-- END topbar DIV -->
  <div id='contentpane'>
 	<?php echo "<p>".$this->session->flashdata('message')."<p />"; ?>

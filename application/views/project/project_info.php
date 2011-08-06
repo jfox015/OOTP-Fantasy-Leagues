@@ -43,6 +43,26 @@
                     <?php echo((!empty($thisItem['description']) ? $thisItem['description'] : 'Not Provided')); ?>
                     
                     <br clear="all" class="clear" /><br />
+					<script type="text/javascript">
+					$(document).ready(function(){		   
+	               		$('#selType').change(function() {
+							if (this.val() != -1) {
+								document.location.href = '/search/export/id/bugs/filterAction/search/projectId/<?php print($thisItem['id']); ?>/type/'+this.val();
+							}
+	               		});
+               		});
+                   </script>
+                    <div style="width:100%; text-align:right;">
+                    <label for="type">Export Bugs as:</label>
+                    <select name="type" id="selType">
+                    	<option value="-1">Choose Format</option>
+                    	<option value="2">HTML</option>
+                    	<option value="3">JSON</option>
+                    	<option value="4">XML</option>
+                    	<option value="5">CSV</option>
+                    </select>
+					</div>
+					
                     <h2>Bugs (<?php echo(sizeof($thisItem['projectBugs'])); ?>)</h2>
                     <div class="textbox" style="width:100%; min-height:100px; max-height:350px; overflow:scroll;">
                     <table class="listing" cellpadding="5" cellspacing="2" style="width:100%;">

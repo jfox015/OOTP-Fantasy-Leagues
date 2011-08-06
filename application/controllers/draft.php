@@ -629,6 +629,9 @@ class draft extends BaseEditor {
 								//print('round pick = '.$picks[$i]['pick']."<br />");
 								if ($i > 1 && $picks[$i]['pick'] == 1) {
 									if ($this->dataModel->emailDraftSummary == 1) {
+										
+										$message = '';
+										$msg = '';
 										$teamInfo = $this->league_model->getTeamDetails($this->dataModel->league_id);
 										
 										$prevRound = $picks[$i-1]['round'];
@@ -636,7 +639,8 @@ class draft extends BaseEditor {
 										if (!isset($this->player_model)) {
 											$this->load->model('player_model');
 										} // END if
-										$startPick = ($i - ($nTeams*$prevRound));
+										$startPick = ($i - $nTeams);
+										//print('i = '.$i.", prevRound = ".$prevRound.", nTeams*prevRound = ".$nTeams*$prevRound."<br />");
 										//print('startPick = '.$startPick."<br />");
 										$roundSummary = "";
 										$stopAt= ($startPick+$nTeams);
@@ -700,6 +704,12 @@ class draft extends BaseEditor {
 												} // END if
 											} // END foreach
 										}  // END if
+										//	EDIT 1.0.6 - CLEAR EMAIL VARS AFTER SEND
+										unset($roundSummary);
+										unset($nextSummary);
+										unset($message);
+										unset($msg);
+										unset($data['messageBody']);
 									}  // END if
 									
 									//	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION

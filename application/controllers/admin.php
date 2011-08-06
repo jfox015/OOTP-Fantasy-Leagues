@@ -35,6 +35,7 @@ class admin extends MY_Controller {
 		$this->views['CONFIG_SCORING_PERIODS'] = 'admin/config_scoring_periods';
 		$this->views['CONFIG_SCORING_PERIODS_EDIT'] = 'admin/config_scoring_periods_edit';
 		$this->views['CONFIG_OOTP'] = 'admin/config_ootp';
+		$this->views['CONFIG_ABOUT'] = 'admin/config_about';
 		$this->views['SIM_SUMMARY'] = 'admin/sim_summary';
 		$this->views['FILE_UPLOADS'] = 'admin/config_uploads';
 		$this->views['ACTIVATE_USERS'] = 'admin/activate_user_list';
@@ -392,6 +393,65 @@ class admin extends MY_Controller {
 		} // END if
 	} // END function
 	/**
+	 *	ABOUT CONFIG.
+	 *	Allows admin to edit the site's custom about page content.
+	 */
+	function configAbout() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			
+			$fields = array('aboutHTML' =>  'About HTML Content');
+			foreach($fields as $field => $label) {
+				$this->form_validation->set_rules($field, $label, 'required');
+			} // END foreach
+			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
+			
+			if (!function_exists('read_file')) {
+				$this->load->helper('file');
+			}
+			$message = "";
+			$error = "";
+			$aboutHTML = "";
+			try {
+				$aboutHTML = read_file(DIR_WRITE_PATH.URL_PATH_SEPERATOR."application".URL_PATH_SEPERATOR."views".URL_PATH_SEPERATOR.ABOUT_HTML_FILE);
+			}
+			catch (Exception $error) { }		
+			if (!$error && $this->form_validation->run() == false) {
+				
+				$this->data['outMess'] = '';
+				$this->data['input'] = $this->input;
+				$this->data['aboutHTML'] = $aboutHTML;
+				$this->data['subTitle'] = "Edit About Site Content";
+				$this->params['content'] = $this->load->view($this->views['CONFIG_ABOUT'], $this->data, true);
+				$this->params['subTitle'] = "OOTP Config Options";
+				$this->params['pageType'] = PAGE_FORM;
+				$this->displayView();
+			} else {
+				$change = write_file(DIR_WRITE_PATH.URL_PATH_SEPERATOR."application".URL_PATH_SEPERATOR."views".URL_PATH_SEPERATOR.ABOUT_HTML_FILE,$this->input->post('aboutHTML'));
+				if ($change) {
+					$this->session->set_flashdata('message', '<span class="success">About page content successfully updated.</span>');
+					redirect('admin/dashboard');
+				} else {
+					if (empty($message)) { 
+						$message = '<span class="error">About content update failed.</span>';
+					} else {
+						$message .= "<br />".$this->ootp_league_model->statusMess;
+					}
+					$this->data['outMess'] = $message;
+					$this->data['input'] = $this->input;
+					$this->data['aboutHTML'] = $aboutHTML;
+					$this->data['subTitle'] = "OOTP Config Options";
+					$this->params['content'] = $this->load->view($this->views['CONFIG_ABOUT'], $this->data, true);
+					$this->params['subTitle'] = "Edit About Site Content";
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				}
+			} // END if
+		} // END if
+	} // END function
+	/**
 	 *	FANTASY CONFIG.
 	 *	Sets the game start date and drafting period dates.
 	 */
@@ -592,6 +652,8 @@ class admin extends MY_Controller {
 			}
 		}
 	}
+	
+	
 	/**	
 	 *	SCORING PERIODS CONFIG.
 	 *	List the games scoring periods.

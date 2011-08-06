@@ -203,6 +203,7 @@ class project extends BaseEditor {
 		// Setup header Data 
 		$this->params['subTitle'] = "Project Details";
 			
+		$this->data['thisItem']['id'] = $this->dataModel->id;
 		$this->data['thisItem']['name'] = $this->dataModel->name;
 		$this->data['thisItem']['jobCode'] = $this->dataModel->jobCode;
 		$this->data['thisItem']['summary'] = $this->dataModel->summary;

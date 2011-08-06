@@ -152,6 +152,8 @@ define("DIR_WRITE_PATH","[HTML_ROOT]");
 define("SITE_URL_SHORT",SITE_URL);
 define("DIR_WEB_ROOT",SITE_URL);
 
+define("ABOUT_HTML_FILE","about.php");
+
 define("DIR_VIEWS_USERS","users".URL_PATH_SEPERATOR);
 define("DIR_VIEWS_INCLUDES","includes".URL_PATH_SEPERATOR);
 define("DIR_VIEWS_SEARCH","search".URL_PATH_SEPERATOR);
@@ -203,7 +205,7 @@ define("ACCESS_ADMINISTRATE",6);
 |--------------------------------------------------------------------------
 */
 define('SITE_NAME','OOTP Fantasy Leagues');
-define('SITE_VERSION','1.0.5 Beta');
+define('SITE_VERSION','1.0.6 Beta');
 define('MOD_SITE_URL','http://www.ootpfantasyleagues.com/');
 define("BUG_URL",'http://www.ootpfantasyleagues.com/fantasyabout/bug_report');
 define("UPDATE_URL",'http://www.ootpfantasyleagues.com/version/curr_version.txt');

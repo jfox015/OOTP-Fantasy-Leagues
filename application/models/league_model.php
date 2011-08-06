@@ -99,6 +99,7 @@ class league_model extends base_model {
 		$this->tables['ROSTER_RULES'] = 'fantasy_roster_rules';
 		$this->tables['SCORING_RULES_BATTING'] = 'fantasy_leagues_scoring_batting';
 		$this->tables['SCORING_RULES_PITCHING'] = 'fantasy_leagues_scoring_pitching';
+		$this->tables['TEAM_REQUESTS'] = 'fantasy_leagues_requests';
 		
 		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests');
 		$this->conditionList = array('avatarFile','new_commisioner');
@@ -672,7 +673,32 @@ class league_model extends base_model {
 		} // END if
 		return true;
 	}
-
+	/**
+	 * 	PURGE TEAM REQUESTS.
+	 * 	This function clear the team request queue for a given league. It can be filtered down to an individual team or 
+	 * 	user as well.
+	 * 
+	 * 	@param	$league_id		(int)	The league identifier
+	 * 	@param	$user_id		(int)	OPTIONAL user identifier
+	 * 	@param	$team_id		(int)	OPTIONAL Team identifier
+	 * 	@return					(int)	Affected Row count
+	 * 
+	 * 	@since	1.0.6
+	 * 	@see	controllers->league->clearRequestQueue()
+	 */
+	public function purgeTeamRequests($league_id = false, $user_id = false, $team_id = false) {
+		if ($league_id === false) { $league_id = $this->id; }
+		
+		$this->db->where("league_id",$league_id);
+		if ($user_id !== false) {
+			$this->db->where("user_id",$user_id);
+		}
+		if ($team_id !== false) {
+			$this->db->where("team_id",$team_id);
+		}
+		$this->db->delete($this->tables['TEAM_REQUESTS']);
+		return $this->db->affected_rows();
+	}
 	protected function loadLeagueTeams($league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$teamNames = array();

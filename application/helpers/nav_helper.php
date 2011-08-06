@@ -43,15 +43,15 @@ function top_nav($logged_in = false, $show_admin = false, $userTeams = array()) 
 	return $nav;
 }
 function about_nav($bug_link = "") {
-	$nav = array(array('url'=>'/about','label'=>'About'));
-	//$nav = array(array('url'=>'/about','label'=>'About This Site'));
-	//array_push($nav,array('url'=>'/about/mod','label'=>'About OOTP Fantasy Leagues'));
+	//$nav = array(array('url'=>'/about','label'=>'About'));
+	$nav = array(array('url'=>'/about','label'=>'About This Site'));
+	array_push($nav,array('url'=>'/about/about_mod','label'=>'About OOTP Fantasy Leagues'));
+	array_push($nav,array('url'=>'/about/contact','label'=>'Contact'));
 	if ($bug_link == "") {
 		$bug_url = BUG_URL;
 	} else {
 		$bug_url = '/about/bug_report';
 	}
-	array_push($nav,array('url'=>'/about/contact','label'=>'Contact'));
 	array_push($nav,array('url'=>$bug_url,'label'=>'Report a Bug'));
 	return $nav;
 }

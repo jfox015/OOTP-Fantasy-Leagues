@@ -27,6 +27,7 @@ class about extends MY_Controller {
 		parent::MY_Controller();	
 		$this->lang->load('about');
 		$this->views['GENERAL'] = 'about/about_general';
+		$this->views['SITE'] = 'about';
 		$this->views['MOD'] = 'about/about_mod';
 		$this->views['PENDING'] = 'content_pending';
 		$this->views['CONTACT_FORM'] = 'about/contact';
@@ -47,15 +48,17 @@ class about extends MY_Controller {
 	 */
 	public function index() {
 		
-		$this->mod();
-		/*$this->makeNav();
-		//$this->data['subTitle'] = $this->lang->line('about_title');
-		//$this->data['theContent'] = $this->lang->line('about_body');
+		$this->makeNav();
+		$this->data['subTitle'] = $this->lang->line('about_title');
+		$this->data['theContent'] = $this->load->view($this->views['SITE'], false, true);
 		$this->params['content'] = $this->load->view($this->views['GENERAL'], $this->data, true);
-	    $this->displayView();*/
+	    $this->displayView();
+	}
+	public function about_mod() {
+		$this->mod();
 	}
 	/**
-	 * MOD DETAILS
+	 * 	GENERAL CONTACT FORM
 	 *
 	 * 	@return void
 	 *	@since	1.0.3
