@@ -1,6 +1,6 @@
 <?php
 $lang['about_contact_title'] = 'Contact';
-$lang['about_contact_body'] = 'Use the following form to contact the site owner with questions, comments or other type sof feedback.';
+$lang['about_contact_body'] = 'Use the following form to contact the site owner with questions, comments or other types of feedback.';
 
 $lang['about_mod_title'] = 'About OOTP Fantasy Leagues';
 $lang['about_mod_body'] = 'OOTP Fantasy Leagues is a custom online mod designed to work

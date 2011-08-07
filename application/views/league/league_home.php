@@ -65,6 +65,10 @@
 	</div>
     <div id="right-column">
     	<?php 
+		print(anchor('/league/leagueContact/'.$league_id,'Contact the commissioner'));
+		print('<br /><br /> ');
+		?>
+		<?php 
 		/*------------------------------------------------
 		/	DRAFT MODULE
 		/-----------------------------------------------*/

@@ -1192,7 +1192,7 @@ class team extends BaseEditor {
 		if (!$error) {
 			$result = $this->refreshPlayerList().',';
 		}
-		$result.='"code":"'.$code.'","status":"'.$status.'"}';
+		$result.='"code":"'.$code.'","status":"'.$status.'","testing":"this"}';
 		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
@@ -1811,7 +1811,7 @@ class team extends BaseEditor {
 				$result .= '{"id":"'.$player['id'].'","player_name":"'.$pos." ".$player['player_name'].'"}';
 			}
 		}
-		$result = '{ result: { items: ['.$result.']}';
+		$result = '{ "result": { "items": ['.$result.']}';
 		return $result;
 	}
 	/**

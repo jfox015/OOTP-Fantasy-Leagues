@@ -77,6 +77,9 @@ class league extends BaseEditor {
 		$this->views['REVIEW_SETTINGS'] = 'league/league_config_review';
 		$this->views['LEAGUE_LIST'] = 'league/league_listing';
 		$this->views['TEAM_REQUEST'] = 'league/league_team_request';
+		$this->views['CONTACT_FORM'] = 'league/league_contact';
+		
+		$this->lang->load('league');
 		
 		$this->debug = false;
 	}
@@ -298,6 +301,73 @@ class league extends BaseEditor {
 	        $this->session->set_userdata('loginRedirect',current_url());	
 			redirect('user/login');
 	    }
+	}
+	/**
+	 *  CONTACT COMMISSIONER FORM
+	 *
+	 * 	@return void
+	 *	@since	1.0.6
+	 **/
+	function leagueContact() {
+		$this->makeNav();
+		$this->getURIData();
+		$this->load->model($this->modelName,'dataModel');
+		if ($this->input->post('submitted')) {
+			$league_id = $this->input->post('id');
+		} else if (isset($this->uriVars['id'])) {
+			$league_id = $this->uriVars['id'];			   
+		}
+		$this->dataModel->load($league_id);
+		
+		$this->params['subTitle'] = $this->data['subTitle'] = $this->lang->line('league_contact_title');
+		$this->data['theContent'] = str_replace('[LEAGUE_NAME]',$this->dataModel->league_name,$this->lang->line('league_contact_body'));
+		
+		$this->form_validation->set_rules('name', 'Name', 'required|trim');
+		$this->form_validation->set_rules('email', 'E-Mail Address (optional)', 'trim|valid_email');
+		$this->form_validation->set_rules('subject', 'Subject', 'required|trim');
+		$this->form_validation->set_rules('details', 'Message Body', 'required|trim');
+		$this->data['league_id'] = $this->dataModel->id;
+		if ($this->form_validation->run() == false) {
+			
+			$this->data['input'] = $this->input;
+			$this->data['config'] = $this->params['config'];	
+			$this->params['content'] = $this->load->view($this->views['CONTACT_FORM'], $this->data, true);
+			$this->params['pageType'] = PAGE_FORM;
+			$this->displayView();
+		} else {
+			// GET COMMISH EMAIL
+			$outMess = "";
+			$data = array('leagueName'=>$this->dataModel->league_name,'name'=>$this->input->post('name'),'email'=>$this->input->post('email'),
+						  'details'=>$this->input->post('details'));
+			
+			$message = $this->load->view('email_templates/league_contact', $data, true);
+			
+			$toMail = $this->user_auth_model->getEmail($this->dataModel->commissioner_id);
+			if (isset($toMail) && !empty($toMail)) {
+			
+				$sent = sendEmail($toMail, $this->input->post('email'), $this->input->post('name'),
+									$this->input->post('subject'), $message, "Site Admin", 'email_contact_');									   
+				
+				if ($sent) {
+					$outMess = "Thank you. Your submission has been sent successfully.<p />
+					<b>Hera re the details of your submission:</b><p />
+					<b>From:</b> ".$this->input->post('name')."<br />
+					<b>Subject:</b> ".$this->input->post('subject')."<p />
+					<b>Details:</b> ".$this->input->post('details');
+					if ($this->debug) {
+						$outMess .= "<h3>Technical Details</h3>
+						<b>To:</b> ".$toMail;
+					} // END if
+				} else {
+					$outMess  = "There was a problem with your submission. The email could not be sent at this time. Please try again later.";
+				} // END if
+			} else {
+				$outMess  = "There was a problem with your submission. A propper recipient email address could not be found.";
+			} // END if
+			$this->data['theContent'] = $outMess;
+			$this->params['content'] = $this->load->view($this->views['SUCCESS'], $this->data, true);
+	   		$this->displayView();
+		} // END if
 	}
 	/**
 	 *	INITALIZE DRAFT.
