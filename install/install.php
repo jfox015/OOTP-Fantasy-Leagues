@@ -12,26 +12,6 @@ define('OFL_INSTALLING', true);
 include_once('./common.php');
 include_once('./constants_install.php');
 include_once('../application/helpers/auth_helper.php');
-/* DEPRECATED 
-function get_config_defaults() {
-	return array('sim_length'=>7,
-				 'min_game_current'=>5,
-				 'draft_period'=>'0000-00-00',
-				 'season_start'=>'0000-00-00',
-				 'min_game_last'=>20,
-				 'current_period'=>1,
-				 'last_sql_load_time'=>'0000-00-00',
-				 'active_max'=>15,
-				 'reserve_max'=>2,
-				 'injured_max'=>1,
-				 'draft_rounds_max'=>16,
-				 'default_scoring_periods'=>24,
-				 'last_process_time'=>'0000-00-00',
-				 'max_sql_file_size'=>10,
-				 'draft_rounds_min'=>16,
-				 'useWaivers'=>1);
-		
-} // END function*/
 
 function display_setup_form( $error = null ) {
 ?>
@@ -402,7 +382,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					$error = true;
 					$errors .= "Error adding admin user. Error: ".$err."<br />SQL = ".$sql."<br />";
 				} // END if
-				$sql = "INSERT INTO `users_meta` VALUES(1, 1, 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '0000-00-00', '', '', '')";
+				$sql = "INSERT INTO `users_meta` VALUES(1, 1, 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '0000-00-00', '', '', '','')";
 				mysql_query($sql);
 				$err=mysql_error($db);
 				if ($err) {

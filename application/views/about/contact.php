@@ -26,9 +26,22 @@
 			$form->text('subject','Subject','required|trim',$this->input->post('subject'),array('class'=>'longtext'));
             $form->space();
 			$form->textarea('details','Contact Details','required',$this->input->post('details'));
-            $form->space();
+			$form->space();
+			if ($security_enabled == 1) {
+				 $form->fieldset('Verification');
+				if ($security_type == SECURITY_RECAPTHCA) {
+					$form->html('<div width="100%" id="focus_response_field" style="margin-left:125px;">');
+					$form->html('<div id="captcha_resp" class="clearfix"></div>');
+					$form->html('<div id="recaptcha_div" class="clearfix"></div>');
+					$form->html('</div>');
+				}
+           	}
+			$form->space();
             $form->fieldset('',array('class'=>'button_bar'));
-            $form->submit();
+            $form->html('<p class="step"><div id="waitDiv" style="display:none;"><img src="'.$config['fantasy_web_root'].'images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...</div>');
+    		$form->html('<div id="buttonDiv">');
+            $form->button('Submit Form','btnSubmit','button',array('class'=>'button'));
+    		$form->html('</div>');
             echo($form->get());
             ?>
             </td>
@@ -36,4 +49,18 @@
         </table>
         </div>
     </div>
+    <?php 
+    // IF SECURITY IS ENABLED, DRAW THE SUPPORTING JAVASCRIPT TO THE PAGE
+    if (isset($securityJS) && !empty($securityJS)) { print($securityJS); ?>
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $("#btnSubmit").click(function() {
+    		testCaptcha(document.detailsForm.recaptcha_challenge_field.value,document.detailsForm.recaptcha_response_field.value,'detailsForm');
+		});
+		showRecaptcha('recaptcha_div');
+    });
+	</script>
+	<?php  
+    } // END if
+    ?>
     <p /><br />

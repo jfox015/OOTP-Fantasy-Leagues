@@ -123,6 +123,7 @@ class MY_Controller extends Controller {
 		$this->views['PENDING'] = 'content_pending';
 		$this->views['STATS_TABLE'] = 'stats_table';
 		$this->views['TRANSACTION_SUMMARY'] = 'transaction_summary';
+		$this->views['RECAPTCHA_JS'] = 'recaptcha';
 		
 		// GET USER DATA IF LOGGED IN
 		$this->params['loggedIn'] = $this->auth->logged_in();

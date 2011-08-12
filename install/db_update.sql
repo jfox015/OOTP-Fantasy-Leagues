@@ -1,3 +1,4 @@
+
 #----------------------------------------------------
 #	UPDATE SQL QUERY
 #	Version 1.0 and 1.0.1 TO 1.0.2
@@ -118,3 +119,11 @@ INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(2, 'Adminis
 #	REMOVE ALL COMMENTS FOR DIST
 ALTER TABLE `users_meta` ADD `timezone` TEXT NOT NULL DEFAULT '';
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('timezone', '');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('security_enabled', '-1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('security_type', '');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('security_class', '1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_key_public', '');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_key_private', '');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_theme', '');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_lang', '');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_compliant', '');

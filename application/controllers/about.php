@@ -74,6 +74,12 @@ class about extends MY_Controller {
 		$this->form_validation->set_rules('details', 'Message Body', 'required|trim');
 		
 		if ($this->form_validation->run() == false) {
+			
+			// EDIT 1.0.6 - SECURITY
+			if ($this->params['config']['security_enabled'] != -1 && $this->params['config']['security_class'] >= 1) {
+				$this->data = $this->data + getSecurityCode($this->views['RECAPTCHA_JS']);
+			} // END if
+			
 			$this->data['input'] = $this->input;
 			$this->data['config'] = $this->params['config'];	
 			$this->params['content'] = $this->load->view($this->views['CONTACT_FORM'], $this->data, true);

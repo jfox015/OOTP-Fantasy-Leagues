@@ -2,9 +2,12 @@
 /**
  *	USER.
  *	The primary controller for user profiles and perosnal user account management and functionality.
+ *
+ *	Based on the Redux Authentication 2 library by Mathews Davies.
+ *	 
  *	@author			Jeff Fox
  *	@dateCreated	04/04/10
- *	@lastModified	01/10/11
+ *	@lastModified	08/10/11
  *
  */
 class user extends MY_Controller {
@@ -50,6 +53,13 @@ class user extends MY_Controller {
 		if ($this->input->post('ct')) {
 			$this->uriVars['ct'] = $this->input->post('ct');
 		} // END if
+		if ($this->input->post('chlg')) {
+			$this->uriVars['chlg'] = $this->input->post('chlg');
+		} // END if
+		if ($this->input->post('resp')) {
+			$this->uriVars['resp'] = $this->input->post('resp');
+		} // END if
+		
 	}
 	/**
 	 *	MAKE NAV BAR
@@ -451,7 +461,7 @@ class user extends MY_Controller {
 	    }
 	}
 	/**
-	 * activation
+	 * 	ACTIVATION
 	 *
 	 * @return void
 	 **/
@@ -489,10 +499,10 @@ class user extends MY_Controller {
 		}
 	}
 	/**
-	 * forgotten password
+	 * 	RESEND ACTIVATION CODE BY EMAIL.
+	 * 	Allows a user to have their activation code emailed to them again.
 	 *
-	 * @return void
-	 * @author Mathew
+	 *	
 	 **/
 	function resend_activation() {
 	    $this->makeNav();
@@ -528,7 +538,6 @@ class user extends MY_Controller {
 	 * forgotten password
 	 *
 	 * @return void
-	 * @author Mathew
 	 **/
 	function forgotten_password() {
 	    $this->makeNav();
@@ -597,7 +606,6 @@ class user extends MY_Controller {
 	 * login
 	 *
 	 * @return void
-	 * @author Mathew
 	 **/
 	function login() {
 	   
@@ -646,19 +654,18 @@ class user extends MY_Controller {
 		}
 	}
 	/**
-	 * logout
+	 * 	USER LOGOUT
 	 *
-	 * @return void
-	 * @author Mathew
+	 *	
 	 **/
 	function logout($endSession = true) {
 		$this->auth->logout($endSession);
 		redirect('user');
 	}
 	/**
-	 * Profile
+	 * 	USER PROFILE
 	 *
-	 * @return void
+	 *	
 	 **/
 	public function profile() {
 		$this->getURIData();
@@ -757,18 +764,28 @@ class user extends MY_Controller {
 	   		}
 		}
 	}
+	/**
+	 * 	PUBLIC PROFILES.
+	 * 	Lets users browse public user profiles.
+	 *
+	 *	@since			1.0
+	 * 	@access			public
+	 *
+	 * 
+	 **/
 	public function profiles() {
 		$this->getURIData();
 		$view = $this->views['PROFILE'];
 		$this->data['profile'] = NULL;
 		if (isset($this->uriVars['id'])) {
 			$userId = -1;
-			if (preg_match('/^[0-9]$/',$this->uriVars['id'])) {
+			if (preg_match('/^[0-9]*$/',trim(intval($this->uriVars['id'])))) {
 				$userId = $this->uriVars['id'];
 			} else if (preg_match('/[A-z0-9]$/',$this->uriVars['id'])) {
 				//echo("String id");
 				// LOOK UP USER ID
 				$userId = $this->user_auth_model->getUserId($this->uriVars['id']);
+				//if ($userId === false) $userId = $this->uriVars['id'];
 			}
 			if ($this->user_meta_model->load($userId,'userId')) {
 				$this->data['profile'] = $this->user_meta_model->profile();
@@ -779,7 +796,7 @@ class user extends MY_Controller {
 				$this->data['dateModified'] = $dates['dateModified'];
 				$this->data['subTitle'] = 'User Profile';
 			} else {
-				$this->session->set_flashdata('message', '<span class="error">No user profile was found. It\'s possible the record has been renamed, moved or deleted.</span>');
+				$this->session->set_flashdata('message', '<span class="error">No matching user profile was found. It\'s possible the record has been renamed, moved or deleted.</span>');
 				$this->data['subTitle'] = 'User Profiles';
 				$this->data['users'] = loadSimpleDataList('username');
 				$this->params['pageType'] = PAGE_FORM;
@@ -797,10 +814,15 @@ class user extends MY_Controller {
 		
 	}
 	/**
-	 * register
+	 * 	REGISTER.
+	 * 	Registers a new user account on the site.
 	 *
-	 * @return void
-	 * @author Mathew
+	 *	@since			1.0
+	 *	@updated		1.0.6
+	 * 	@access			public
+	 *
+	 *	@changeLog		1.0.6 - Added Anti-Spam Security countermeasure support
+	 * 
 	 **/
 	function register() {
 	    if (!$this->params['loggedIn']) {
@@ -811,6 +833,14 @@ class user extends MY_Controller {
 			if ($this->form_validation->run() == false) {
 				$this->data['subTitle'] = $this->lang->line('user_register_title');
 				$this->data['theContent'] = $this->lang->line('user_register_instruct');
+				
+				// EDIT 1.0.6 - SECURITY
+				if ($this->params['config']['security_enabled'] != -1 && $this->params['config']['security_class'] >= 1) {
+					$this->data = $this->data + getSecurityCode($this->views['RECAPTCHA_JS']);
+				} // END if
+				
+				// END 1.0.6 EDIT
+				// ACTIVATION
 				if ($this->params['config']['user_activation_method'] != -1) {
 					switch ($this->params['config']['user_activation_method']) {
 						case 1:
@@ -820,6 +850,8 @@ class user extends MY_Controller {
 							break;
 						case 2:
 							$this->data['activation'] = $this->lang->line('user_register_activation_admin');
+							break;
+						default:
 							break;
 					} // END switch
 				} // END if
@@ -863,5 +895,54 @@ class user extends MY_Controller {
 			$this->session->set_flashdata('message', $this->lang->line('user_register_existing'));
 			redirect('home');
 		}
+	}
+	/*------------------------------------------------------
+	/
+	/	AJAX FUNCTIONS
+	/
+	/-----------------------------------------------------*/
+	/**
+	* 	RECAPTCHA TEST
+	* 	TEST UPER RECAPPTCHA DATA AGAINST THE EXPECTED VALUE.
+	* 	This function is used sitewide by all reCAPTCHA submissions.
+	*
+	* 	URI VARS DATA PARAMS
+	* 	@param	$chlg	{String}	Challenge String
+	* 	@param	#resp	{String}	Response String
+	* 	@return			{JSON}		JSON Response String
+	*
+	* 	@since			1.0.6
+	* 	@access			public
+	*/
+	public function captchaTest() {
+		$this->getURIData();
+		$code = 200;
+		$status = $answer = 'OK';
+		$priv_key = (isset($this->params['config']['recaptcha_key_private'])) ? $this->params['config']['recaptcha_key_private'] : '';
+		if (!empty($priv_key)) {
+			if (isset($this->uriVars['chlg']) && !empty($this->uriVars['chlg']) &&
+			isset($this->uriVars['resp']) && !empty($this->uriVars['resp'])) {
+				$this->load->helper('recaptcha');
+				$resp = recaptcha_check_answer($priv_key, $_SERVER['REMOTE_ADDR'],
+				$this->uriVars['chlg'],
+				$this->uriVars['resp']);
+				if (!$resp->is_valid) {
+					$code = 301;
+					$status = "fail";
+					$answer = "reCAPTCHA verification failed. please try again.";
+				}
+			} else {
+				$code = 301;
+				$status = "fail";
+				$answer = "Required reCAPTCHA parameters were missing.";
+			} // END if
+		} else {
+			$code = 301;
+			$status = "fail";
+			$answer = "Required reCAPTCHA credentials for this site are missing.";
+		} // END if
+		$result = '{"result":"'.$answer.'","code":"'.$code.'","status":"'.$status.'"}';
+		$this->output->set_header('Content-type: application/json');
+		$this->output->set_output($result);
 	}
 }

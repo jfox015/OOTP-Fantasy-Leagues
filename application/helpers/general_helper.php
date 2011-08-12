@@ -100,6 +100,39 @@ function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$fi
 	} // END if
 }
 /**
+ * 	GET SECURITY CODE
+ * 	Builds the code and vars needed by controllers to assign to their child views
+ * 
+ * 	@author	Jeff Fox
+ * 	@since	1.0.6.
+ */
+function getSecurityCode($viewJS = false) {
+	
+	$ci =& get_instance();
+	
+	$returnData = array();
+	$localData = array();
+	
+	$returnData['securityJS'] = '';
+	$returnData['security_enabled'] = $ci->params['config']['security_enabled'];
+	$returnData['security_type'] = $ci->params['config']['security_type'];
+	
+	switch ($ci->params['config']['security_type']) {
+		case SECURITY_RECAPTHCA:
+			$localData['recapthca_publickey'] = $ci->params['config']['recaptcha_key_public'];
+			$localData['recaptcha_theme'] = $ci->params['config']['recaptcha_theme'];
+			$localData['fantasy_web_root'] = $ci->params['config']['fantasy_web_root'];
+			if ($viewJS !== false) {
+				$returnData['securityJS'] = $ci->load->view($viewJS, $localData, true);
+			}
+			break;
+		default:
+			break;
+	} // END switch
+	
+	return $returnData;
+}
+/**
  *	PLAYERS STAT QUERY BUILDER
  *
  *	Builds the standard SELECT statements for stat queries sitewide.

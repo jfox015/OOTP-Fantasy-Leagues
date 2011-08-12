@@ -568,7 +568,7 @@ class user_auth_model extends base_model {
 		$success = false;
 		// Check the supplied email and password against database to see 
 		// if the user exists.
-		$this->db->select('id, password, active');
+		$this->db->select('id, password, active, locked');
 		$this->db->where($this->uniqueField,$login);
 		$rsLogin = $this->db->get($this->tblName);
 		if ($rsLogin->num_rows() > 0) {
@@ -580,21 +580,25 @@ class user_auth_model extends base_model {
 			if ($row->password === $hashPass) {
 				//echo("Password OK"."<br />");
 				if ($row->active == 1) {
-					$success = $this->load($row->id);
-					if (!$success) {
+					if ($row->locked != 1) {
+						$success = $this->load($row->id);
+						if (!$success) {
+							$this->errorCode = 4;
+							$err = "Load of user infomation failed.";
+							$this->statusMess = $err." ".$this->statusMess;
+						} else {					
+							$this->statusMess = "Login Successful.";
+							$session = $this->config->item('session_auth');
+							$this->session->set_userdata($session,$row->$session);
+							$this->setLoginStatus(1);
+						} // END if
+					} else {
 						$this->errorCode = 4;
-						$err = "Load of user infomation failed.";
-						$this->statusMess = $err." ".$this->statusMess;
-					} else {					
-						$this->statusMess = "Login Successful.";
-						$session = $this->config->item('session_auth');
-						$this->session->set_userdata($session,$row->$session);
-						$this->setLoginStatus(1);
-					} // END if
+						$this->statusMess = "User account is currently locked. Contact Site Administrator for help.";
+					}
 				} else {
 					$this->errorCode = 3;
 					$this->statusMess = "User account is not active.";
-					$this->logFailedAccess($login);	
 				}
 			} else {
 				//echo("Password failed"."<br />");
@@ -687,14 +691,19 @@ class user_auth_model extends base_model {
 	}
 	public function setLoginStatus($status) {
 		$this->db->set('loggedIn',$status);
+		$this->db->set('loginAttempts', 0);
 		$this->db->where('id',$this->id);
 		$this->db->update($this->tblName);
 		$this->loggedIn = $status;
 	}
 	
-	public function setLockStatus($username,$status=0,$attempts=0) {		
+	public function setLockStatus($username,$status=0,$attempts=false) {		
 		$this->db->set('locked',$status);
-		$this->db->set('loginAttempts',$attempts+1);
+		if ($status != 1) {
+			$this->db->set('loginAttempts',0);
+		} else if ($attempts !== false) {
+			$this->db->set('loginAttempts',$attempts+1);
+		}
 		$this->db->where('username',$username);
 		$this->db->update($this->tblName);
 		$this->accountLockStatus = $status;

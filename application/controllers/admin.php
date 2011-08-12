@@ -36,6 +36,7 @@ class admin extends MY_Controller {
 		$this->views['CONFIG_SCORING_PERIODS_EDIT'] = 'admin/config_scoring_periods_edit';
 		$this->views['CONFIG_OOTP'] = 'admin/config_ootp';
 		$this->views['CONFIG_ABOUT'] = 'admin/config_about';
+		$this->views['CONFIG_SECURITY'] = 'admin/config_security';
 		$this->views['SIM_SUMMARY'] = 'admin/sim_summary';
 		$this->views['FILE_UPLOADS'] = 'admin/config_uploads';
 		$this->views['ACTIVATE_USERS'] = 'admin/activate_user_list';
@@ -536,6 +537,68 @@ class admin extends MY_Controller {
 	}
 	
 	/**
+	 *	SECURITY CONFIG.
+	 *	Updates the sites security and spam protection settings.
+	 *
+	 *	@since 1.0.6
+	 *
+	 */
+	function configSecurity() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());
+			redirect('user/login');
+		} else {
+			$this->form_validation->set_rules('security_enabled', 'Security Enabled', 'required');
+			$this->form_validation->set_rules('security_type', 'Anti Spam Countermeasure Type', 'required');
+			$fields = array('recaptcha_key_public' => 'reCAPTCHA public key',
+				'recaptcha_key_private' => 'reCAPTCHA private key',
+				'recaptcha_theme' => 'reCAPTCHA Theme',
+				'recaptcha_lang' => 'reCAPTCHA Language',
+				'recaptcha_compliant' => 'reCAPTCHA Standards Compliance Mode',
+				'security_class' => 'Security Class');
+			foreach($fields as $field => $label) {
+				$this->form_validation->set_rules($field, $label, 'trim');
+			}
+			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
+				
+			if ($this->form_validation->run() == false) {
+					$this->data['outMess'] = '';
+				$this->data['input'] = $this->input;
+				$this->data['subTitle'] = "Site Security Settings";
+				$this->params['content'] = $this->load->view($this->views['CONFIG_SECURITY'], $this->data, true);
+				$this->params['subTitle'] = "OOTP Config Options";
+				$this->params['pageType'] = PAGE_FORM;
+				$this->displayView();
+			} else {
+				$change = false;
+				$configArr = array();
+				$change = update_config('security_enabled',$this->input->post('security_enabled'));
+				$change = update_config('security_type',$this->input->post('security_type'));
+				foreach($fields as $field => $label) {
+					$value= ($this->input->post($field)) ? $this->input->post($field) : '';
+					$configArr = $configArr + array($field=>$value);
+					//echo($field." = ".$value."<br />");
+				}
+				$change = update_config_by_array($configArr);
+				if ($change) {
+					$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
+					redirect('admin/dashboard');
+				} else {
+					$message = '<span class="error">Settings update failed.</span>';
+					$this->data['outMess'] = $message;
+					$this->data['outMess'] = '';
+					$this->data['input'] = $this->input;
+					$this->data['subTitle'] = "Site Security Settings";
+					$this->params['content'] = $this->load->view($this->views['CONFIG_SECURITY'], $this->data, true);
+					$this->params['subTitle'] = "OOTP Config Options";
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				}
+			}
+		}
+	}
+	
+	/**
 	 *	ROSTER CONFIG.
 	 *	Sets the game start date and drafting period dates.
 	 */
@@ -788,8 +851,8 @@ class admin extends MY_Controller {
 		}
 	}
 	/**
-	 *	ACTIVATE USER
-	 *	Converts a user waiting for admin activation to active
+	 *	DEACTIVATE USER
+	 *	Converts an active user to deactive status.
 	 *
 	 *	@param	$this->uriVars['user_id']	User ID
 	 *
@@ -813,6 +876,40 @@ class admin extends MY_Controller {
 				$this->session->set_flashdata('message', '<span class="error">No User ID was recieved.</span>');
 			}
 			$url = 'admin/userActivations';
+			if (isset($this->uriVars['returnPage']) && !empty($this->uriVars['returnPage'])) {
+				$url = str_replace("_","/",$this->uriVars['returnPage']);
+			}
+			redirect($url);
+		}
+	}
+	/**
+	 *	SET USER LOCK STATUS
+	 *	CUpdates a users locked accoutn status.
+	 *
+	 *	@param	$this->uriVars['user_id']	User ID
+	 *	@param	$this->uriVars['status']	Updated lock status
+	 *
+	 *	Redirects to dashboard()  on success
+	 *
+	 *	@since	1.0.6
+	 */
+	public function setUserLockStatus() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());	
+			redirect('user/login');
+		} else {
+			$this->getURIData();
+			if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id']) && $this->uriVars['user_id'] != -1 &&
+			isset($this->uriVars['status']) && !empty($this->uriVars['status'])) {
+				if ($this->auth->setLockStatus(getUsername($this->uriVars['user_id']),$this->uriVars['status'])) {
+					$this->session->set_flashdata('message', '<span class="success">The users locked status has been successfully updated.</span>');
+				} else {
+					$this->session->set_flashdata('error', '<span class="error">The users lock status was not updated. Error: '.$this->user_auth_model->statusMess.'</span>');
+				} //NED if
+			} else {
+				$this->session->set_flashdata('message', '<span class="error">No User ID was recieved.</span>');
+			}
+			$url = 'admin/dashboard';
 			if (isset($this->uriVars['returnPage']) && !empty($this->uriVars['returnPage'])) {
 				$url = str_replace("_","/",$this->uriVars['returnPage']);
 			}
@@ -1612,6 +1709,9 @@ class admin extends MY_Controller {
 		} // END if
 		if ($this->input->post('user_id')) {
 			$this->uriVars['user_id'] = $this->input->post('user_id');
+		} // END if
+		if ($this->input->post('status')) {
+			$this->uriVars['status'] = $this->input->post('status');
 		} // END if
 	}
 }

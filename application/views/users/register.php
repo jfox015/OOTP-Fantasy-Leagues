@@ -1,3 +1,4 @@
+
 		<!-- BEGIN LOGIN FORM -->
     <div id="center-column">
         <h1><?php echo($subTitle); ?></h1>
@@ -24,7 +25,7 @@
                 echo '<span class="error">The following errors were found with your submission:<br/ ><b>'.$errors.'</b><br clear="all" /></span><br /><br />';
             }
             $form = new Form();
-            $form->open('user/register','register');
+            $form->open('user/register','registerForm|registerForm');
             $form->fieldset('Required Fields');
             $form->text('email','E-Mail Address','required|trim|valid_email',($input->post('email') ? $input->post('email') : ''));
             $form->space();
@@ -34,8 +35,8 @@
             $form->br();
             $form->password('passwordConfirm','Confirm Password','required|min_length[8]');
             $form->space();
-            $form->label('Terms Agreement');
-            $form->nobr();
+            // $form->label('Terms Agreement');
+            //$form->nobr();
             //$form->checkbox('termsAgree',1,'Terms Agreement',$input->post('termsAgree'),'required');
             //$form->nobr();
             // $form->span('I have read and accept the <a href="/about/terms">Terms and Conditions</a> and <a href="/about/privacy">Privacy Policy</a> of this Web site.',array('class'=>'field_caption'));
@@ -51,8 +52,21 @@
 			$gender[] = array('m','Male');
 			$gender[] = array('f','Female');
 			$form->radiogroup ('gender',$gender,'Gender',($input->post('gender') ? $input->post('gender') : ''));
+			$form->space();
+			if (isset($security_enabled) && $security_enabled == 1) {
+				 $form->fieldset('Verification');
+				if ($security_type == SECURITY_RECAPTHCA) {
+					$form->html('<div width="100%" id="focus_response_field" style="margin-left:125px;">');
+					$form->html('<div id="captcha_resp" class="clearfix"></div>');
+					$form->html('<div id="recaptcha_div" class="clearfix"></div>');
+					$form->html('</div>');
+				}
+           	}
 			$form->fieldset('',array('class'=>'button_bar'));
-            $form->submit('Register');
+			$form->html('<p class="step"><div id="waitDiv" style="display:none;"><img src="'.$config['fantasy_web_root'].'images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...</div>');
+    		$form->html('<div id="buttonDiv">');
+            $form->button('Register','btnSubmit','button',array('class'=>'button'));
+    		$form->html('</div>');
             echo($form->get());
             ?>
             </td>
@@ -60,4 +74,18 @@
         </table>
         </div>
     </div>
+    <?php 
+    // IF SECURITY IS ENABLED, DRAW THE SUPPORTING JAVASCRIPT TO THE PAGE
+    if (isset($securityJS) && !empty($securityJS)) { print($securityJS); ?>
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $("#btnSubmit").click(function() {
+    		testCaptcha(document.registerForm.recaptcha_challenge_field.value,document.registerForm.recaptcha_response_field.value,'registerForm');
+		});
+		showRecaptcha('recaptcha_div');
+    });
+	</script>
+	<?php  
+    } // END if
+    ?>
     <p /><br />

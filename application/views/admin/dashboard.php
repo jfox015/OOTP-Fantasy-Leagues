@@ -211,7 +211,8 @@
             <!-- PLACEHOLDER - DB BACKUP -->
             <!-- PLACEHOLDER - MEMBER MESSAGING -->
             <!-- PLACEHOLDER - PERMISSIONS -->
-            <!-- PLACEHOLDER - SECURITY -->
+            <li><?php echo anchor('admin/configSecurity','<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
+            Security Settings</li>
         </ul>
         <br clear="all" /><br />
         <?php if (isset($league_info) && $league_info->current_date <= $league_info->start_date) { ?>

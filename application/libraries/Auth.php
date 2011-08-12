@@ -181,8 +181,28 @@ class Auth
 			return $this->ci->user_meta_model->statusMess;
 		}
 	}
+	
 	/**
-	 * register
+	 * 	SET LOCK STATUS.
+	 * 	Change users lock status.
+	 *
+	 *	@param	$username	{String}	The members username
+	 *	@param	$status		(Int}		1= Locked, 0 or -1 unlocked
+	 *	@param	$attempts	{Int}		(OPTIONAL) Spoecify a count of attempts
+	 *
+	 *	@return TRUE on sucess, FALSE on error
+	 *
+	 *	@since 1.0.6
+	 *	@see	Application -> Models -> user_auth_model -> setLockStatus
+	 * 
+	 **/
+	public function setLockStatus($username = false, $status = 0, $attempts = false) {
+	    if ($username === false) return false;
+		return $this->ci->user_auth_model->setLockStatus($username, $status, $attempts);
+	}
+	
+	/**
+	 * 	REGISTER.
 	 *
 	 * @return TRUE on sucess, FALSE on error
 	 **/

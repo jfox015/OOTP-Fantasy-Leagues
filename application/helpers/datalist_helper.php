@@ -769,6 +769,40 @@ if ( ! function_exists('loadProjectsBugs')) {
 		return $result;	
 	}
 }
+// ------------------------------------------------------------------------
+if ( ! function_exists('loadSecurityClasses')) {
+	function loadSecurityClasses($selectBox = true) {
 
+		return array("=1"=>"None",
+					 "1"=>"Critical (Registration, Contact Pages Only)",
+					 "2"=>"Public (All Public Forms)",
+					 "3"=>"Complete (All Public Forms, Login, Team Requests)");
+	}
+}
+// ------------------------------------------------------------------------
+if ( ! function_exists('loadRecaptchaThemes')) {
+	function loadRecaptchaThemes($selectBox = true) {
+		
+		return array("red"=>"Red",
+					 "white"=>"White",
+					 "blackglass"=>"Black Glass",
+					 "clean"=>"Clean");
+	}
+}
+
+// ------------------------------------------------------------------------
+if ( ! function_exists('loadRecaptchaLangs')) {
+	function loadRecaptchaLangs($selectBox = true) {
+		
+		return array("en"=>"English", 
+					 "nl"=>"Dutch", 
+					 "fr"=>"French", 
+					 "de"=>"German", 
+					 "pt"=>"Portuguese", 
+					 "ru"=>"Russian", 
+					 "es"=>"Spanish", 
+					 "tr"=>"Turkish");
+	}
+}
 /* End of file dataList_helper.php */
 /* Location: ./system/helpers/dataList_helper.php */
