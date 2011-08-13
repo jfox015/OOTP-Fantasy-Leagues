@@ -90,7 +90,7 @@ class league extends BaseEditor {
 		$this->makeNav(true);
 		$this->data['subTitle'] = "Private League";
 		$mess = str_replace('[LOGIN_URL]',anchor('/user/login','log in'),$this->lang->line('private_league_access'));
-		$this->data['theContent'] = str_replace('[CONTACT_URL]',anchor('/about/contact','site administrator'),$mess);
+		$this->data['theContent'] = str_replace('[CONTACT_URL]',anchor('/league/leagueContact/'.$this->uriVars['id'],'league commissioner'),$mess);
 		$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 	    $this->displayView();
 	}

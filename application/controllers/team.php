@@ -1201,7 +1201,7 @@ class team extends BaseEditor {
 		$this->data['subTitle'] = "Set lineup";
 		$this->load->model($this->modelName,'dataModel');
 		$this->dataModel->load($this->uriVars['id']);
-		$this->data['league_id'] = $this->uriVars['id'];
+		$this->data['league_id'] = $this->dataModel->league_id;
 		
 		$error = false;
 		$rosterError = false;
@@ -1393,12 +1393,12 @@ class team extends BaseEditor {
 					$this->db->set('league_id',$this->uriVars['league_id']);
 					$this->db->set('owner_id',$this->params['currUser']);
 					$this->db->insert('fantasy_teams_waiver_claims');
-					$status = "notice:The player is currently on waivers. A claim has been submitted for your team. It will be processed in waiver period ".$onWaivers;
+					$status = 'notice:The player is currently on waivers. A claim has been submitted for your team. It will be processed in waiver period '.$onWaivers;
 				} else {
-					$status = "notice:You have already placed a waiver claim for this player. It will be processed in waiver period ".$onWaivers;
+					$status = 'notice:You have already placed a waiver claim for this player. It will be processed in waiver period '.$onWaivers;
 				}
 				$code = 200;
-				$result = '{code:"'.$code.'",status:"'.$status.'"}';
+				$result = '{"code":"'.$code.'","status":"'.$status.'"}';
 			} else {
 				// CHECK FOR DUPLICATE
 				$this->db->select('id');

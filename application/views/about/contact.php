@@ -27,7 +27,7 @@
             $form->space();
 			$form->textarea('details','Contact Details','required',$this->input->post('details'));
 			$form->space();
-			if ($security_enabled == 1) {
+			if ($security_enabled == 1 && $security_class >= 1) {
 				 $form->fieldset('Verification');
 				if ($security_type == SECURITY_RECAPTHCA) {
 					$form->html('<div width="100%" id="focus_response_field" style="margin-left:125px;">');
@@ -51,16 +51,22 @@
     </div>
     <?php 
     // IF SECURITY IS ENABLED, DRAW THE SUPPORTING JAVASCRIPT TO THE PAGE
-    if (isset($securityJS) && !empty($securityJS)) { print($securityJS); ?>
+    if (isset($securityJS) && !empty($securityJS)) { print($securityJS); } ?>
     <script type="text/javascript">
     $(document).ready(function(){
-        $("#btnSubmit").click(function() {
+    	 <?php 
+    	 if ($security_enabled == 1 && $security_class >= 1) { ?>
+    	 $("#btnSubmit").click(function() {
     		testCaptcha(document.detailsForm.recaptcha_challenge_field.value,document.detailsForm.recaptcha_response_field.value,'detailsForm');
 		});
 		showRecaptcha('recaptcha_div');
+		<?php  
+    	}  else {// END if
+    	?>
+    	$("#btnSubmit").click(function() { $("#detailsForm").submit(); });
+    	<?php  
+        } // END if
+        ?>
     });
 	</script>
-	<?php  
-    } // END if
-    ?>
     <p /><br />

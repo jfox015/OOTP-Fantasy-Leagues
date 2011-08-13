@@ -116,6 +116,7 @@ function getSecurityCode($viewJS = false) {
 	$returnData['securityJS'] = '';
 	$returnData['security_enabled'] = $ci->params['config']['security_enabled'];
 	$returnData['security_type'] = $ci->params['config']['security_type'];
+	$returnData['security_class'] = $ci->params['config']['security_class'];
 	
 	switch ($ci->params['config']['security_type']) {
 		case SECURITY_RECAPTHCA:

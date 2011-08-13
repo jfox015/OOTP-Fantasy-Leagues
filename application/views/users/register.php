@@ -76,16 +76,22 @@
     </div>
     <?php 
     // IF SECURITY IS ENABLED, DRAW THE SUPPORTING JAVASCRIPT TO THE PAGE
-    if (isset($securityJS) && !empty($securityJS)) { print($securityJS); ?>
+    if (isset($securityJS) && !empty($securityJS)) { print($securityJS); } ?>
     <script type="text/javascript">
     $(document).ready(function(){
-        $("#btnSubmit").click(function() {
+    	 <?php 
+    	 if ($security_enabled == 1 && $security_class >= 1) { ?>
+    	 $("#btnSubmit").click(function() {
     		testCaptcha(document.registerForm.recaptcha_challenge_field.value,document.registerForm.recaptcha_response_field.value,'registerForm');
 		});
 		showRecaptcha('recaptcha_div');
+		<?php  
+    	} else {// END if
+    	?>
+    	$("#btnSubmit").click(function() { $("#registerForm").submit(); });
+    	<?php  
+        } // END if
+        ?>
     });
 	</script>
-	<?php  
-    } // END if
-    ?>
     <p /><br />

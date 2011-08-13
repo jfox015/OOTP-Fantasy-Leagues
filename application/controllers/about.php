@@ -147,7 +147,13 @@ class about extends MY_Controller {
 	    $this->form_validation->set_error_delimiters('<p class="error">', '</p>');
 	    
 	    if ($this->form_validation->run() == false) {
-	       	$this->data['subTitle'] = $this->lang->line('about_report_bug_title');
+	       	
+	    	// EDIT 1.0.6 - SECURITY
+	    	if ($this->params['config']['security_enabled'] != -1 && $this->params['config']['security_class'] >= 2) {
+	    		$this->data = $this->data + getSecurityCode($this->views['RECAPTCHA_JS']);
+	    	} // END if
+	    			
+	    	$this->data['subTitle'] = $this->lang->line('about_report_bug_title');
 			$this->data['theContent'] = $this->lang->line('about_report_bug_body');
 		   	$this->makeNav();
 			$this->params['content'] = $this->load->view($this->views['BUG_REPORT_FORM'], $this->data, true);

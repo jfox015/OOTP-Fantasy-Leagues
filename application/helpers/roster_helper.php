@@ -184,7 +184,7 @@ if (!function_exists('getFreeAgentList')) {
 		$ci->load->model('player_model');
 		
 		if (intval($list_type) == 1) {
-			$query = $ci->player_model->getActiveOOTPPayers($league_id, $searchType, $searchParam, $current_scoring_period, getNonFreeAgentsByLeague($league_id,$current_scoring_period));
+			$query = $ci->player_model->getActiveOOTPPlayers($league_id, $searchType, $searchParam, $current_scoring_period, getNonFreeAgentsByLeague($league_id,$current_scoring_period));
 		} else {
 			$player_type = -1;
 			$position_type = -1;

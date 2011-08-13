@@ -1870,7 +1870,7 @@ class league_model extends base_model {
 				$point_max = $query->num_rows();
 				$query->free_result();
 				//compile batting stats
-				print("Compiling team standings for league ".$league_id."<br />");
+				//print("Compiling team standings for league ".$league_id."<br />");
 				$i = 0;
 				$types = array('batting','pitching');
 				foreach($types as $type) {
@@ -1899,7 +1899,7 @@ class league_model extends base_model {
 						$this->db->where("value_".$i." <> -1");
 						$this->db->order_by("value_".$i, $order);
 						$query = $this->db->get($this->tables['TEAMS_SCORING']);
-						print($this->db->last_query()."<br />");
+						//print($this->db->last_query()."<br />");
 						//print("num results = ".$query->num_rows()."<br />");
 						if ($query->num_rows() > 0) {
 							foreach ($query->result() as $row) {
@@ -1929,7 +1929,7 @@ class league_model extends base_model {
 					$this->db->where("league_id",$league_id);
 					$this->db->where("scoring_period_id",$scoring_period['id']);
 					$this->db->update($this->tables['TEAMS_SCORING']);
-					print($this->db->last_query()."<br />");
+					//print($this->db->last_query()."<br />");
 				} // END foreach
 				break;
 			case LEAGUE_SCORING_HEADTOHEAD:
