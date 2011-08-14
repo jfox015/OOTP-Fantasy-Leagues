@@ -65,7 +65,7 @@
 	</div>
     <div id="right-column">
     	<?php 
-		print(anchor('/league/leagueContact/'.$league_id,'Contact the commissioner'));
+		print(anchor('/league/leagueContact/'.$league_id,'<img src="'.PATH_IMAGES.'/btn_contact_commish.png" width="220" height="57" border="0" alt="Contact the commissioner" title="Contact the commissioner" />'));
 		print('<br /><br /> ');
 		?>
 		<?php 

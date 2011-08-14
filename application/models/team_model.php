@@ -1003,7 +1003,7 @@ class team_model extends base_model {
 		foreach ($query->result() as $row) {
 			array_push($playerIds,$row->player_id);
 		}
-		//echo("last SQL = ".$this->db->last_query()."<br />");
+		//echo("getBasicRoster last SQL pre ids = ".$this->db->last_query()."<br />");
 		$query->free_result();
 		//echo("Player ids = ".sizeof($playerIds)."<br />");
 		if (sizeof($playerIds) > 0) {
@@ -1017,7 +1017,7 @@ class team_model extends base_model {
 			}
 			$this->db->order_by('player_position, player_role');
 			$query = $this->db->get('fantasy_players');
-			//echo("last SQL = ".$this->db->last_query()."<br />");
+			//echo("last SQL positions = ".$this->db->last_query()."<br />");
 			if ($query->num_rows() > 0) {
 				foreach ($query->result() as $row) {
 					array_push($roster,array('player_name'=>$row->first_name." ".$row->last_name,'id'=>$row->player_id,'player_position'=>$row->player_position,'player_role'=>$row->player_role,

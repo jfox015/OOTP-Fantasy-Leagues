@@ -253,7 +253,7 @@ class team extends BaseEditor {
 					$use_trade_id = $this->uriVars['prev_trade_id'];
 					$trade_type = 2;
 				} // END if
-				print("trade id = ".$use_trade_id."<br />");
+				//print("trade id = ".$use_trade_id."<br />");
 				if ($use_trade_id != -1) {
 					// PULL PLAYER LISTS FROM DATABASE	
 					$trade = $this->dataModel->getTrade($use_trade_id);
@@ -1948,12 +1948,10 @@ class team extends BaseEditor {
 		if (!function_exists('getScoringPeriod')) {
 			$this->load->helper('admin');
 		}
-		if (isset($this->uriVars['period_id'])) {
-			$curr_period_id = 	$this->uriVars['period_id'];
-		} else {
-			$curr_period_id = $this->params['config']['current_period'];
-		}
-		$curr_period = getScoringPeriod($curr_period_id);
+		$curr_period = $this->getScoringPeriod();
+		
+		$curr_period_id = $curr_period['id'];
+		
 		$this->data['curr_period'] = $curr_period_id;
 		
 		if (!isset($this->league_model)) {
@@ -1974,7 +1972,7 @@ class team extends BaseEditor {
 			$this->data['message'] = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b>".$this->league_model->statusMess;
 			$this->data['messageType'] = 'error';
 		}
-		
+		//echo("Scoring period param 2 = ".$curr_period_id."<br />");
 		if ($this->params['loggedIn']) {
 			$this->data['thisItem']['userTeamId'] = $this->user_meta_model->getUserTeamIds($this->dataModel->league_id,$this->params['currUser']);
 		}

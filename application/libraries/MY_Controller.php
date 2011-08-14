@@ -11,10 +11,10 @@
  *	@version		1.0.2
  *	@dateCreated	10/4/09
  *	@lastModified	10/11/09
- *  @copyright   	(c)2009-10 Jeff Fox/Aeolian Digital Studios
+ *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
  */
 /*
-Copyright (c) 2010-11 Jeff Fox.
+Copyright (c) 2009-11 Jeff Fox.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -217,7 +217,10 @@ class MY_Controller extends Controller {
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
 		} // END if
-		if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
+		
+		if (isset($this->uriVars['period_id']) && !empty($this->uriVars['period_id'])) {
+			$scoring_period = getScoringPeriod($this->uriVars['period_id']);
+		} else if (isset($this->uriVars['scoring_period_id']) && !empty($this->uriVars['scoring_period_id'])) {
 			$scoring_period = getScoringPeriod($this->uriVars['scoring_period_id']);
 		} else {
 			$scoring_period = getCurrentScoringPeriod($this->ootp_league_model->current_date);
@@ -282,5 +285,5 @@ class MY_Controller extends Controller {
    		return (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=="XMLHttpRequest");
 	} 
 }
-/* End of file BaseController.php */
-/* Location: ./application/controllers/BaseController.php */
+/* End of file MY_Controller.php */
+/* Location: ./application/libraries/MY_Controller.php */

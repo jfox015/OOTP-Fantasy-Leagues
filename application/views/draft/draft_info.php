@@ -267,9 +267,9 @@
 			}
 			if (empty($userTimezone)) { $userTimezone = $config['timezone']; }
 			if ($userTimezone != $config['timezone']) {
-				$adjustedTime = adjustToUserTimezone($userTimezone,$config['timezone']);
+				$adjustedTime = time_translate($config['timezone'],$userTimezone);
 			}
-			if ($thisItem['draftStatus'] < 2  || $adjustedTime < strtotime($thisItem['draftDate'])) {
+			if ($thisItem['draftStatus'] < 2  || strtotime($adjustedTime) < strtotime($thisItem['draftDate'])) {
 				$message = "<b>NOTE</b>: Your draft has not started yet. More controls will be available once the draft date and time are reached.";
 			} else if ($thisItem['draftStatus'] == 4) {
 				$message = "Your draft is complete! Return to the ".anchor('/league/admin/'.$thisItem['league_id'],'legaue admin screen')." to finalize your draft and set your league rosters in place!.";
@@ -373,7 +373,7 @@
 						<td class="<?php echo($cls); ?>_l"><?php echo anchor('/players/info/league_id/'.$thisItem['league_id'].'/player_id/'.$pid, $thisItem['playersInfo'][$pid]['first_name']." ".$thisItem['playersInfo'][$pid]['last_name']); ?></a></td>
 					<?php }
 					if ($thisItem['isCommish'] || $thisItem['isAdmin']) {
-					 if ($thisItem['draftStatus'] > 0 && $thisItem['draftStatus'] < 4 && time() > strtotime($thisItem['draftDate'])) {
+					 if ($thisItem['draftStatus'] > 0 && $thisItem['draftStatus'] < 4 && strtotime($adjustedTime) > strtotime($thisItem['draftDate'])) {
             		if ($pid=="") {
 							if ($first=="") { ?>
 						<td><?php echo anchor('#','Auto Pick',array('rel'=>'autoPick','id'=>$thisItem['league_id'].'|'.$pick.'|'.$tid)); ?>
