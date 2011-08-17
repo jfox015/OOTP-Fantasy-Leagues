@@ -90,16 +90,20 @@ class league_model extends base_model {
 		parent::__construct();
 		
 		$this->tblName = 'fantasy_leagues';
+		$this->tables['GAMES'] = 'fantasy_leagues_games';
 		$this->tables['TRANSACTIONS'] = 'fantasy_transactions';
 		$this->tables['WAIVERS'] = 'fantasy_players_waivers';
 		$this->tables['WAIVER_CLAIMS'] = 'fantasy_teams_waiver_claims';
 		$this->tables['TEAMS'] = 'fantasy_teams';
+		$this->tables['ROSTERS'] = 'fantasy_rosters';
 		$this->tables['TEAMS_RECORD'] = 'fantasy_teams_record';
 		$this->tables['TEAMS_SCORING'] = 'fantasy_teams_scoring';
 		$this->tables['ROSTER_RULES'] = 'fantasy_roster_rules';
 		$this->tables['SCORING_RULES_BATTING'] = 'fantasy_leagues_scoring_batting';
 		$this->tables['SCORING_RULES_PITCHING'] = 'fantasy_leagues_scoring_pitching';
+		$this->tables['TEAM_INVITES'] = 'fantasy_invites';
 		$this->tables['TEAM_REQUESTS'] = 'fantasy_leagues_requests';
+		$this->tables['TEAM_TRADES'] = 'fantasy_teams_trades';
 		
 		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests');
 		$this->conditionList = array('avatarFile','new_commisioner');
@@ -140,7 +144,169 @@ class league_model extends base_model {
 		}
 		return $success;
 	}
+	/**
+	* 	DELETE ROSTERS.
+	* 	<p>
+	* 	Deletes all rosters for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete rosters for a given team, use the team_model->deleteRosters function instead.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> team_model -> deleteRosters
+	*/
+	public function deleteRosters($league_id = false, $scoring_period_id = false) {
 	
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where('league_id',$league_id);
+		if ($scoring_period_id !== false) { 
+			$this->db->where('scoring_period_id',$scoring_period_id);
+		}
+		$this->db->delete($this->tables['ROSTERS']);
+	
+		return true;
+	}
+	/**
+	* 	DELETE TEAM RECORDS.
+	* 	<p>
+	* 	Deletes all records for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To records trades for a given team, use the team_model->deleteRecords function instead.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> team_model -> deleteRecords
+	*/
+	public function deleteRecords($league_id = false) {
+	
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tables['TEAMS_RECORD']);
+	
+		return true;
+	}
+	/**
+	* 	DELETE SCHEDULE.
+	* 	<p>
+	* 	Deletes all schedules for the specified league_id. If no id is passed, the current league id of the loaded object is used.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*/
+	public function deleteSchedule($league_id = false) {
+	
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tables['GAMES']);
+	
+		return true;
+	}
+	/**
+	* 	DELETE TEAM SCORING.
+	* 	<p>
+	* 	Deletes all scoring for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete scoring for a given team, use the team_model->deleteScoring function instead.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> team_model -> deleteRecords
+	*/
+	public function deleteScoring($league_id = false) {
+	
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tables['TEAMS_SCORING']);
+	
+		return true;
+	}
+	
+	/**
+	* 	DELETE TRADES.
+	* 	<p>
+	* 	Deletes all trades for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete trades for a given team, use the team_model->deleteTrades function instead.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> team_model -> deleteTrades
+	*/
+	public function deleteTrades($league_id = false) {
+	
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tables['TEAM_TRADES']);
+	
+		return true;
+	}
+	
+	/**
+	* 	DELETE TRANSACTIONS.
+	* 	<p>
+	* 	Deletes all transactions for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete transactions for a given team, use the team_model->deleteTransactions function instead.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> team_model -> deleteTransactions
+	*/
+	public function deleteTransactions($league_id = false) {
+	
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tables['TRANSACTIONS']);
+	
+		return true;
+	}
+	/**
+	* 	DELETE WAIVER CLAIMS.
+	* 	<p>
+	* 	Deletes all waiver claims for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete waiver claims for a given team, use the team_model->deleteWaiverClaims function instead.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> team_model -> deleteWaiverClaims
+	*/
+	public function deleteWaiverClaims($league_id = false) {
+	
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tables['WAIVER_CLAIMS']);
+	
+		return true;
+	}
 	
 	// SPECIAL QUERIES
 	public function getLeagueName($league_id = false) {
@@ -275,13 +441,21 @@ class league_model extends base_model {
 		return $access;
 	
 	}
+	
+	/*----------------------------------------------------------------------
+	/
+	/	INVITES AND REQUESTS
+	/
+	/----------------------------------------------------------------------*/
+	
+	
 	public function getLeagueInvites($onlyPending = false, $league_id = false) {
 		
 		$invites = array();
 		if ($league_id === false) { $league_id = $this->id; }
 		
 		$this->db->select('to_email, send_date, team_id, teamname, teamnick, requestStatus');
-		$this->db->from('fantasy_invites');
+		$this->db->from($this->tables['TEAM_INVITES']);
 		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_invites.team_id','right outer');
 		$this->db->join('fantasy_leagues_requests_status','fantasy_leagues_requests_status.id = fantasy_invites.status_id','right outer');
 		$this->db->where("fantasy_invites.league_id",$league_id);
@@ -303,14 +477,14 @@ class league_model extends base_model {
 		$requests = array();
 		if ($league_id === false) { $league_id = $this->id; }
 		
-		$this->db->select('fantasy_leagues_requests.id, user_id, username, date_requested, team_id, teamname, teamnick, requestStatus');
-		$this->db->from('fantasy_leagues_requests');
+		$this->db->select($this->tables['TEAM_REQUESTS'].'.id, user_id, username, date_requested, team_id, teamname, teamnick, requestStatus');
+		$this->db->from($this->tables['TEAM_REQUESTS']);
 		$this->db->join('users_core','users_core.id = fantasy_leagues_requests.user_id','right outer');
 		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_leagues_requests.team_id','right outer');
 		$this->db->join('fantasy_leagues_requests_status','fantasy_leagues_requests_status.id = fantasy_leagues_requests.status_id','right outer');
-		$this->db->where("fantasy_leagues_requests.league_id",$league_id);
+		$this->db->where($this->tables['TEAM_REQUESTS'].'.league_id',$league_id);
 		if ($request_id !== false) {
-			$this->db->where("fantasy_leagues_requests.id",$request_id);
+			$this->db->where($this->tables['TEAM_REQUESTS'].'.id',$request_id);
 		}
 		if ($onlyPending !== false) {
 			$this->db->where('status_id', REQUEST_STATUS_PENDING);
@@ -325,7 +499,158 @@ class league_model extends base_model {
 		$query->free_result();
 		return $requests;
 	}
+	public function teamRequest($team_id = false, $user_id = false, $league_id = false) {
+		if ($league_id === false) {
+			$league_id = $this->id;
+		}
+		if ($team_id === false || $user_id === false) {
+			return false;
+		}
 	
+		$this->lang->load('league');
+		$this->db->select('id, status_id');
+		//$this->db->where('team_id',$team_id);
+		$this->db->where('user_id',$user_id);
+		$this->db->where('league_id',$league_id);
+		$this->db->where('(status_id = '.REQUEST_STATUS_PENDING.' OR status_id = '.REQUEST_STATUS_ACCEPTED.' OR status_id = '.REQUEST_STATUS_DENIED.')');
+		$query = $this->db->get($this->tables['TEAM_REQUESTS']);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$this->errorCode = 2;
+			switch($row->status_id) {
+				case REQUEST_STATUS_PENDING:
+					$mess = $this->lang->line('league_request_status_pending');
+					break;
+				case REQUEST_STATUS_ACCEPTED:
+					$mess = $this->lang->line('league_request_status_accepted');
+					break;
+				case REQUEST_STATUS_DENIED:
+					$mess = $this->lang->line('league_request_status_denied');
+					break;
+			}
+			$this->statusMess = $mess;
+			return false;
+		}
+		$requestData = array('team_id'=>$team_id,'user_id'=>$user_id,'league_id'=>$league_id);
+		$this->db->insert('fantasy_leagues_requests',$requestData);
+		if ($this->db->affected_rows() == 0) {
+			$this->errorCode = 1;
+			$this->statusMess = 'The request data was not saved to the database.';
+			return false;
+		}
+		return true;
+	}
+	
+	public function updateRequest($request_id = false, $response = false, $league_id = false) {
+	
+		if ($league_id === false) {
+			$league_id = $this->id;
+		}
+		if ($request_id === false || $response === false) {
+		return false;
+		}
+	
+		$this->db->select('*');
+		$this->db->where('id',$request_id);
+		$query = $this->db->get($this->tables['TEAM_REQUESTS']);
+	
+		if ($query->num_rows() == 0) {
+			$this->errorCode = 1;
+			$this->statusMess = 'No request matching the passed ID was found in the system.';
+			return false;
+		} else {
+			$row = $query->row();
+			$cleanDb = true;
+			$newStatus = 0;;
+			switch($response) {
+				case 1:
+					$data = array('owner_id'=>$row->user_id);
+					$this->db->where('id',$row->team_id);
+					$this->db->update($this->tables['TEAMS'],$data);
+					if ($this->db->affected_rows() == 0) {
+						$this->errorCode = 2;
+						$this->statusMess = 'The team owner update could not be saved to the database.';
+						return false;
+					}
+					$newStatus = REQUEST_STATUS_ACCEPTED;
+					break;
+				case 2:
+					$newStatus = REQUEST_STATUS_WITHDRAWN;
+					break;
+				case -1:
+					$newStatus = REQUEST_STATUS_DENIED;
+					break;
+				case 3:
+					$newStatus = REQUEST_STATUS_REMOVED;
+					break;
+				default:
+					$newStatus = REQUEST_STATUS_UNKNOWN;
+				break;
+			} // END switch
+			$this->db->flush_cache();
+			$this->db->where('id',$request_id);
+			$this->db->update('fantasy_leagues_requests',array('status_id'=>$newStatus));
+			if ($this->db->affected_rows() == 0) {
+				$this->errorCode = 3;
+				$this->statusMess = 'The update could not be saved at this time.';
+				return false;
+			} // END if
+		} // END if
+		return true;
+	}
+	/**
+	 * 	DELETE TEAM REQUESTS.
+	 * 	This function clear the team request queue for a given league. It can be filtered down to an individual team or
+	 * 	user as well.
+	 *
+	 * 	@param	$league_id		(int)	The league identifier
+	 * 	@param	$user_id		(int)	OPTIONAL user identifier
+	 * 	@param	$team_id		(int)	OPTIONAL Team identifier
+	 * 	@return					(int)	Affected Row count
+	 *
+	 * 	@since	1.0.6
+	 * 	@see	controllers->league->clearRequestQueue()
+	 */
+	public function deleteTeamRequests($league_id = false, $user_id = false, $team_id = false) {
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where("league_id",$league_id);
+		if ($user_id !== false) {
+			$this->db->where("user_id",$user_id);
+		}
+		if ($team_id !== false) {
+			$this->db->where("team_id",$team_id);
+		}
+		$this->db->delete($this->tables['TEAM_REQUESTS']);
+		return $this->db->affected_rows();
+	}
+	/**
+	* 	DELETE TEAM INVITES.
+	* 	This function clear the team invitiations for a given league. It can be filtered down to an individual team or
+	* 	user as well.
+	*
+	* 	@param	$league_id		(int)	The league identifier
+	* 	@param	$user_id		(int)	OPTIONAL user identifier
+	* 	@param	$team_id		(int)	OPTIONAL Team identifier
+	* 	@return					(int)	Affected Row count
+	*
+	* 	@since	1.0.6
+	* 	@see	controllers->league->clearRequestQueue()
+	*/
+	public function deleteTeamInvites($league_id = false, $user_id = false, $team_id = false) {
+		if ($league_id === false) { $league_id = $this->id; }
+	
+		$this->db->where("league_id",$league_id);
+		if ($user_id !== false) {
+			$this->db->where("user_id",$user_id);
+		}
+		if ($team_id !== false) {
+			$this->db->where("team_id",$team_id);
+		}
+		$this->db->delete($this->tables['TEAM_INVITES']);
+		return true;
+	}
+
 	/**
 	 *	GET LEAGUES.
 	 *	Returns a list of public leagues.
@@ -339,7 +664,7 @@ class league_model extends base_model {
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		if ($type != -1) $this->db->where('access_type',1);
 		$query = $this->db->get($this->tblName);
-		//echo("query->num_rows = ".$query->num_rows()."<br />");
+		//echo("getLeagues, query->num_rows = ".$query->num_rows()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				$commish = resolveUsername($row->commissioner_id);
@@ -353,6 +678,21 @@ class league_model extends base_model {
 		//echo($this->db->last_query()."<br />");
 		return $leagues;
 	}
+	protected function loadLeagueTeams($league_id = false) {
+		if ($league_id === false) { $league_id = $this->id; }
+		$teamNames = array();
+		$this->db->select("id, teamname, teamnick"); 
+		$this->db->where("league_id",$league_id);
+		$query = $this->db->get($this->tables['TEAMS']);
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				$teamNames[$row->id] = $row->teamname." ".$row->teamnick;
+			}
+		}
+		$query->free_result();
+		return $teamNames;
+	}
+	
 	
 	/**
 	 *	CREATE LEAGUE SCHEDULE.
@@ -576,143 +916,12 @@ class league_model extends base_model {
 			} // END if
 			foreach($data as $query) {
 				$this->db->flush_cache();
-				$this->db->insert('fantasy_leagues_games',$query);
+				$this->db->insert($this->tables['GAMES'],$query);
 			} // END foreach
 		} // END for
 		return "OK";
 	} // END function
 	
-	public function teamRequest($team_id = false, $user_id = false, $league_id = false) {
-		if ($league_id === false) { $league_id = $this->id; }
-		if ($team_id === false || $user_id === false) { return false; }
-		
-		$this->lang->load('league');
-		$this->db->select('id, status_id');
-		//$this->db->where('team_id',$team_id);
-		$this->db->where('user_id',$user_id);
-		$this->db->where('league_id',$league_id);
-		$this->db->where('(status_id = '.REQUEST_STATUS_PENDING.' OR status_id = '.REQUEST_STATUS_ACCEPTED.' OR status_id = '.REQUEST_STATUS_DENIED.')');
-		$query = $this->db->get('fantasy_leagues_requests');
-		if ($query->num_rows() > 0) {
-			$row = $query->row();
-			$this->errorCode = 2;
-			switch($row->status_id) {
-				case REQUEST_STATUS_PENDING:
-					$mess = $this->lang->line('league_request_status_pending');
-					break;
-				case REQUEST_STATUS_ACCEPTED:
-					$mess = $this->lang->line('league_request_status_accepted');
-					break;
-				case REQUEST_STATUS_DENIED:
-					$mess = $this->lang->line('league_request_status_denied');
-					break;
-			}
-			$this->statusMess = $mess;
-			return false;
-		}
-		$requestData = array('team_id'=>$team_id,'user_id'=>$user_id,'league_id'=>$league_id);
-		$this->db->insert('fantasy_leagues_requests',$requestData);
-		if ($this->db->affected_rows() == 0) {
-			$this->errorCode = 1;
-			$this->statusMess = 'The request data was not saved to the database.';
-			return false;
-		}
-		return true;
-	}
-	
-	public function updateRequest($request_id = false, $response = false, $league_id = false) {
-		
-		if ($league_id === false) { $league_id = $this->id; }
-		if ($request_id === false || $response === false) { return false; }
-		
-		$this->db->select('*');
-		$this->db->where('id',$request_id);
-		$query = $this->db->get('fantasy_leagues_requests');
-		
-		if ($query->num_rows() == 0) {
-			$this->errorCode = 1;
-			$this->statusMess = 'No request matching the passed ID was found in the system.';
-			return false;
-		} else {
-			$row = $query->row();
-			$cleanDb = true;
-			$newStatus = 0;;
-			switch($response) {
-				case 1:
-					$data = array('owner_id'=>$row->user_id);
-					$this->db->where('id',$row->team_id);
-					$this->db->update($this->tables['TEAMS'],$data);
-					if ($this->db->affected_rows() == 0) {
-						$this->errorCode = 2;
-						$this->statusMess = 'The team owner update could not be saved to the database.';
-						return false;
-					}
-					$newStatus = REQUEST_STATUS_ACCEPTED;
-					break;
-				case 2:
-					$newStatus = REQUEST_STATUS_WITHDRAWN;
-					break;
-				case -1:
-					$newStatus = REQUEST_STATUS_DENIED;
-					break;
-				case 3:
-					$newStatus = REQUEST_STATUS_REMOVED;
-					break;
-				default:
-					$newStatus = REQUEST_STATUS_UNKNOWN;
-					break;
-			} // END switch
-			$this->db->flush_cache();
-			$this->db->where('id',$request_id);
-			$this->db->update('fantasy_leagues_requests',array('status_id'=>$newStatus));
-			if ($this->db->affected_rows() == 0) {
-				$this->errorCode = 3;
-				$this->statusMess = 'The update could not be saved at this time.';
-				return false;
-			} // END if
-		} // END if
-		return true;
-	}
-	/**
-	 * 	PURGE TEAM REQUESTS.
-	 * 	This function clear the team request queue for a given league. It can be filtered down to an individual team or 
-	 * 	user as well.
-	 * 
-	 * 	@param	$league_id		(int)	The league identifier
-	 * 	@param	$user_id		(int)	OPTIONAL user identifier
-	 * 	@param	$team_id		(int)	OPTIONAL Team identifier
-	 * 	@return					(int)	Affected Row count
-	 * 
-	 * 	@since	1.0.6
-	 * 	@see	controllers->league->clearRequestQueue()
-	 */
-	public function purgeTeamRequests($league_id = false, $user_id = false, $team_id = false) {
-		if ($league_id === false) { $league_id = $this->id; }
-		
-		$this->db->where("league_id",$league_id);
-		if ($user_id !== false) {
-			$this->db->where("user_id",$user_id);
-		}
-		if ($team_id !== false) {
-			$this->db->where("team_id",$team_id);
-		}
-		$this->db->delete($this->tables['TEAM_REQUESTS']);
-		return $this->db->affected_rows();
-	}
-	protected function loadLeagueTeams($league_id = false) {
-		if ($league_id === false) { $league_id = $this->id; }
-		$teamNames = array();
-		$this->db->select("id, teamname, teamnick"); 
-		$this->db->where("league_id",$league_id);
-		$query = $this->db->get($this->tables['TEAMS']);
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				$teamNames[$row->id] = $row->teamname." ".$row->teamnick;
-			}
-		}
-		$query->free_result();
-		return $teamNames;
-	}
 	/**
 	 *	GET LEAGUE SCHEDULE.
 	 *	Returns either the entire schdule for the specified league OR only games for a 
@@ -737,7 +946,7 @@ class league_model extends base_model {
 			$this->db->where('(home_team_id = '.$team_id.' OR away_team_id = '.$team_id.')');
 		}
 		$this->db->order_by('scoring_period_id','asc');
-		$query = $this->db->get('fantasy_leagues_games');
+		$query = $this->db->get($this->tables['GAMES']);
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				if ($score_period_id != $row->scoring_period_id) {
@@ -756,6 +965,7 @@ class league_model extends base_model {
 		$query->free_result();
 		return $schedule;
 	}
+	
 	/**
 	 *	GET LEAGUE TRANSACTIONS.
 	 *	Returns either the entire schdule for the specified league OR only games for a 
@@ -1481,7 +1691,7 @@ class league_model extends base_model {
 		unset($noteam);
 		
 		$summary = str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_league_processing'));
-		
+		//print ("updateLeagueScoring, summary = ".$summary."<br />");
 		if ($this->hasTeams($league_id)) {
 			
 			$teams = $this->getTeamDetails($league_id);
@@ -1867,10 +2077,11 @@ class league_model extends base_model {
 				if ($query->num_rows() > 0) {
 					$fields  = $query->list_fields();
 				} // END if
-				$point_max = $query->num_rows();
+				$point_max = $query->num_rows() - sizeof($excludeList);
 				$query->free_result();
 				//compile batting stats
 				//print("Compiling team standings for league ".$league_id."<br />");
+				//print("point_max = ".$point_max."<br />");
 				$i = 0;
 				$types = array('batting','pitching');
 				foreach($types as $type) {
@@ -1897,6 +2108,7 @@ class league_model extends base_model {
 						$point_count = $point_max;
 						$this->db->select('team_id');
 						$this->db->where("value_".$i." <> -1");
+						$this->db->where("league_id",$league_id);
 						$this->db->order_by("value_".$i, $order);
 						$query = $this->db->get($this->tables['TEAMS_SCORING']);
 						//print($this->db->last_query()."<br />");
@@ -1908,7 +2120,9 @@ class league_model extends base_model {
 								} else {
 									$teams[$row->team_id] = $point_count;
 								} // END if
-								$point_count--;
+								// No negative numbers
+								if ($point_count > 0)
+									$point_count--;
 							} // END foreach
 						} // END if
 						$query->free_result();
@@ -1919,7 +2133,6 @@ class league_model extends base_model {
 				//foreach ($fields as $field) {
 					//if (strpos($field,'value_') !== false) {
 						// BUILD QUERY TO RANK TEAM IDS BY THIS FIELD
-				
 					//} // END if
 				//} // END switch
 				foreach ($teams as $id => $total) {

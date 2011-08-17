@@ -769,7 +769,7 @@ class league extends BaseEditor {
 	 * 	This function clears the team request queue for the given league.
 	 * 
 	 * 	@since	1.0.6
-	 * 	@see	models->league_model->purgeTeamRequests()
+	 * 	@see	models->league_model->deleteTeamRequests()
 	 */
 	public function clearRequestQueue() {
 		if ($this->params['loggedIn']) {
@@ -777,7 +777,7 @@ class league extends BaseEditor {
 			$this->loadData();
 			if ($this->dataModel->id != -1) {
 				if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
-					$this->session->set_flashdata('message', '<p class="success">Team Request operation completed successfully. '.$this->dataModel->purgeTeamRequests().' records were removed.</p>');
+					$this->session->set_flashdata('message', '<p class="success">Team Request operation completed successfully. '.$this->dataModel->deleteTeamRequests().' records were removed.</p>');
 					redirect('league/leagueInvites/'.$this->dataModel->id);
 				} else {
 					$this->data['subTitle'] = "Unauthorized Access";
@@ -1281,34 +1281,51 @@ class league extends BaseEditor {
 	/ 	PAGES AND RESOLVE BACK TO OTHER 
 	/	HANDLERS.
 	/--------------------------------------*/
+	/**
+	 * 	AFTER ADD.
+	 * 	Executes after the new record has been successfuly added.
+	 * 
+	 */
 	public function afterAdd() {
+		
+		if (!isset($this->division_model)) {
+			$this->load->model('division_model');
+		}	
 		// ASSURE THERE ARE NO OTHER DIVISIONS FOR THIS LEAGUE PRIOR TO CREATING NEW ONES
-		$this->db->where('league_id',$this->dataModel->id);
-		$this->db->delete("fantasy_divisions");
+		$this->division_model->clearDivisions($this->dataModel->id);
 		
-		// CREATE TWO DIVISIONS FOR THIS LEAGUE
-		$data = array(array("league_id"=>$this->dataModel->id,"division_name"=>"Division A"),
-						array("league_id"=>$this->dataModel->id,"division_name"=>"Division B"));
+		// CREATE TWO DIVISIONS FOR THIS LEAGU
+		// EDIT 1.0.6, ONLY DO THIS IF IT IS A HEAD-TO-HEAD LEAGUE
+		$div1Id = -1;
+		$div2Id = -1;
+		if ($this->dataModel->$league_type == LEAGUE_SCORING_HEADTOHEAD) {
+			$divIds = $this->division_model->createDivisionsByArray(array(array("division_name"=>"Division A"),
+							array("division_name"=>"Division B")),$this->dataModel->id);
+			$div1Id = $divIds[0];
+			$div2Id = $divIds[1];
+		}
 		
-		$this->db->insert("fantasy_divisions",$data[0]);
-		$div1Id = $this->db->insert_id();
-		$this->db->insert("fantasy_divisions",$data[1]);
-		$div2Id = $this->db->insert_id();
+		if (!isset($this->team_model)) {
+			$this->load->model('team_model');
+		}
+		$this->team_model->deleteTeams($this->dataModel->id);
 		
-		$this->db->where('league_id',$this->dataModel->id);
-		$this->db->delete("fantasy_teams");
 		$teamsAdded = 0;
 		for ($i = 0; $i < $this->dataModel->max_teams; $i++) {
-			if ($i < ($this->dataModel->max_teams / 2)) {
-				$divId = $div1Id;
-			} else {
-				$divId = $div2Id;
+			$divId = -1;
+			$teamData = array("teamname"=>"Team ".strtoupper(chr(64+($i+1))));
+			if ($this->dataModel->$league_type == LEAGUE_SCORING_HEADTOHEAD) {
+				if ($i < ($this->dataModel->max_teams / 2)) {
+					$divId = $div1Id;
+				} else {
+					$divId = $div2Id;
+				}
+				$teamData = $teamData + array("division_id"=>$divId);
 			}
-			$teamData = array("teamname"=>"Team ".strtoupper(chr(64+($i+1))),"teamnick"=>getRandomTeamNickname(),
-							  "division_id"=>$divId,"league_id"=>$this->dataModel->id);
 			if ($i == 0) { $teamData = $teamData + array("owner_id"=>$this->params['currUser']); }
-			$this->db->insert("fantasy_teams",$teamData);
-			$teamsAdded += $this->db->affected_rows();
+			
+			$teamIds = $this->team_model->createTeamsByArray($teamData,$this->dataModel->id);
+			$teamsAdded = sizeof($teamIds);
 		}
 		if (!$teamsAdded == $this->dataModel->max_teams) {
 			$this->outMess .= "Error adding teams. ".$teamsAdded." were added, ".$this->dataModel->max_teams." were required.";
@@ -1320,10 +1337,71 @@ class league extends BaseEditor {
 		$this->draft_model->setDraftDefaults($this->dataModel->id);
 		return true;
 	}
+	/**
+	* 	BEFORE DELETE.
+	* 	Executes before a record has been successfuly deleted.
+	*
+	*/
+	public function beforeDelete() {
+		
+		//LOAD REQUIRED MODELS
+		if (!isset($this->team_model)) {
+			$this->load->model('team_model');
+		}
+		if (!isset($this->draft_model)) {
+			$this->load->model('draft_model');
+		}
+		if (!isset($this->news_model)) {
+			$this->load->model('news_model');
+		}
+		// DELETE ALL TEAM SCORING
+		$this->dataModel->deleteScoring($this->dataModel->id);
+		// DELETE DRAFT SETTINGS
+		$this->draft_model->deleteDraftSettings($this->dataModel->id);
+		// DELETE DRAFT
+		$this->draft_model->deleteCurrentDraft($this->dataModel->id);
+		// DELETE ALL DRAFT LISTS
+		$this->draft_model->deleteAllDraftLists($this->dataModel->id);
+		// DELETE TRANSACTIONS
+		$this->dataModel->deleteTransactions($this->dataModel->id);
+		// DELETE ROSTERS
+		$this->dataModel->deleteRosters($this->dataModel->id);
+		// DELETE TRADES
+		$this->dataModel->deleteTrades($this->dataModel->id);
+		// DELETE ALL TEAM WAIVER CLAIMS
+		$this->dataModel->deleteWaiverClaims($this->dataModel->id);
+		// DELETE REQUESTS
+		$this->dataModel->deleteTeamRequests($this->dataModel->id);
+		// DELETE INVITES
+		$this->dataModel->deleteTeamInvites($this->dataModel->id);
+		// DELETE NEWS
+		$this->news_model->deleteNews(NEWS_LEAGUE,$this->dataModel->id);
+		
+		// DELETE HEAD-TO-HEAD SPECIFIC DATA IF THAT TYPE OF LEAGUE
+		if ($this->dataModel->getScoringType($this->dataModel->id) == LEAGUE_SCORING_HEADTOHEAD) {
+			if (!isset($this->division_model)) {
+				$this->load->model('division_model');
+			}
+			// DELETE DIVISIONS
+			$this->division_model->clearDivisions($this->dataModel->id);
+			// DELETE GAMES
+			$this->dataModel->deleteSchedule($this->dataModel->id);
+			// DELETE ALL TEAM RECORDS
+			$this->dataModel->deleteRecords($this->dataModel->id);
+		}
+		// DELETE TEAMS
+		$this->team_model->deleteTeams($this->dataModel->id);
+		// DELETE AVATAR
+		if (!empty($this->dataModel->avatar)) {
+			@unlink(PATH_LEAGUES_AVATAR_WRITE.$this->dataModel->avatar);
+		}
+		return true;
+	}
+	
 	public function autoDraftLeague() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
-			$this->data['subTitle'] = "League Rules";
+			$this->data['subTitle'] = "League Auto Draft";
 			$this->load->model($this->modelName,'dataModel');
 			$this->dataModel->load($this->uriVars['id']);
 			$this->data['league_id'] = $this->uriVars['id'];
@@ -1597,8 +1675,9 @@ class league extends BaseEditor {
 					$this->team_model->save();
 					$message = '<span class="success">The owner has been successfully removed from the selected team.</span>';
 					
-					// EDIT 1.0.6 - REMOVE ANY INVITES FOR THIS OWNER
-					$this->dataModel->purgeTeamRequests(false, $owner_id);
+					// EDIT 1.0.6 - REMOVE ANY REQUESTS FROM OR INVITES TO THIS OWNER
+					$this->dataModel->deleteTeamInvites(false, $owner_id);
+					$this->dataModel->deleteTeamRequests(false, $owner_id);
 					
 				} else {
 					$error = true;

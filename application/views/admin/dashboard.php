@@ -1,4 +1,5 @@
 <link media="screen" rel="stylesheet" href="<?php echo($config['fantasy_web_root']); ?>css/colorbox.css" />
+	<script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.md5.js"></script>
 	<script src="<?php echo($config['fantasy_web_root']); ?>js/jquery.colorbox.js"></script>
 	<script type="text/javascript" charset="UTF-8">
 	var ajaxWait = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
@@ -10,19 +11,19 @@
 	$(document).ready(function(){
 		$('a[rel=avail]').click(function (event) {
 			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/availablePlayers/");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/availablePlayers"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=upavail]').click(function (event) {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/updatePlayers/");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/updatePlayers"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=elidg]').click(function (event) {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/elidgibility");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/elidgibility"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=rating]').click(function (event) {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/playerRatings");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/playerRatings"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=sched]').click(function (event) {
@@ -35,7 +36,7 @@
 		});
 		$('a[rel=runWaivers]').click(function (event) {
 			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/manualWaivers");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/manualWaivers"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=sql]').click(function (event) {
@@ -74,13 +75,13 @@
 		$('a[rel=resetSim]').click(function (event) {
 			refreshAfterUpdate = true;
 			if (confirm("Are you sure you want to perform this operation? This will reset the entire season to it's starting point and wipe out ALL season stats, transactions and fantasy data.")) {
-				runAjax("<?php echo($config['fantasy_web_root']); ?>admin/resetSim");
+				runAjax("<?php echo($config['fantasy_web_root']); ?>admin/resetSim"+cacheBuster());
 			}
 			event.preventDefault();
 		});
 		$('a[rel=sim]').click(function (event) {
-			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/processSim");
+			//refreshAfterUpdate = true;
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/processSim"+cacheBuster());
 			event.preventDefault();
 		});
 	});
@@ -112,6 +113,11 @@
 			}
 			//setTimeout('fadeStatus("active")',15000);
 		});
+	}
+	function cacheBuster() {
+		var date = new Date();
+		var hash = $.md5(Math.floor(Math.random())+date.toUTCString()).toString();
+		return "/uid/"+hash.substr(0,16);
 	}
 	function fadeStatus(type) {
 		$('div#'+type+'StatusBox').fadeOut("normal",function() { clearTimeout(fader); $('div#'+type+'StatusBox').hide(); });

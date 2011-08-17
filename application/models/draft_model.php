@@ -154,6 +154,15 @@ class draft_model extends base_model {
 		}
 		return true;
 	}
+	public function deleteDraftSettings($league_id = false) {
+		
+		if ($league_id === false) { $league_id = $this->league_id; }
+		
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tblName);
+		
+		return true;
+	}
 	/**
 	 *	DELETE CURRENT DRAFT.
 	 *
@@ -1029,6 +1038,27 @@ class draft_model extends base_model {
 		
 		return true;
 	}
+	/**
+	* 	DELETE ALL DRAFT LISTS.
+	* 	Removes all draft lists for a given league.
+	*
+	* 	@param 	$league_id			Integrer	Fantasy League ID
+	* 	@return						Boolean		TRUE on success, FALSE on error
+	*	
+	*	@since	1.0.6
+	*	@access	public
+	*
+	*/
+	public function deleteAllDraftLists($league_id = false) {
+	
+		if ($league_id === false) $league_id = $this->league_id;
+	
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tables['DRAFT_LIST']);
+	
+		return true;
+	}
+	
 	/**
 	 * REMOVE FROM DRAFT LISTS.
 	 * Removes a drafted player from all draft lists they appear on.

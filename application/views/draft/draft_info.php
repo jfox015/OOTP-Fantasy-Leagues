@@ -268,7 +268,13 @@
 			if (empty($userTimezone)) { $userTimezone = $config['timezone']; }
 			if ($userTimezone != $config['timezone']) {
 				$adjustedTime = time_translate($config['timezone'],$userTimezone);
+			} else {
+				$adjustedTime = date('Y-m-d h:i:s',time());
 			}
+			//print("Draft Date.Time = ".date('m/d/Y h:i:s A',strtotime($thisItem['draftDate']))."<br />");
+			//print("Server Time  = ".date('m/d/Y h:i:s A',time())."<br />");
+			//print("AdjustedTime = ".date('m/d/Y h:i:s A',strtotime($adjustedTime))."<br />");
+			
 			if ($thisItem['draftStatus'] < 2  || strtotime($adjustedTime) < strtotime($thisItem['draftDate'])) {
 				$message = "<b>NOTE</b>: Your draft has not started yet. More controls will be available once the draft date and time are reached.";
 			} else if ($thisItem['draftStatus'] == 4) {

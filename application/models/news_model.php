@@ -76,6 +76,33 @@ class news_model extends base_model {
 			return false;
 		} // END if
 	}	
+	/**
+	* 	DELETE NEWS.
+	* 	This function clears news articles for a given article type which can be global, league, player or team. 
+	* 	Articles can be deleted by author id as well.
+	*
+	* 	@param	$type_id		(int)	The article type identifier (Global, league or player)
+	* 	@param	$var_id			(int)	Article Type value
+	* 	@param	$author_id		(int)	OPTIONAL Author identifier
+	* 	@return					(int)	Affected Row count
+	*
+	* 	@since	1.0.6
+	*/
+	public function deleteNews($type_id = false, $var_id = false, $author_id = false) {
+		if ($type_id === false || $var_id === false) {
+			$this->errorCode = 1;
+			$this->statusMess = "No article type or identifier value was recieved.";
+			return false;
+		}
+	
+		$this->db->where("type_id",$type_id);
+		$this->db->where("var_id",$var_id);
+		if ($author_id !== false) {
+			$this->db->where("author_id",$author_id);
+		}
+		$this->db->delete($this->tblName);
+		return $this->db->affected_rows();
+	}
 	
 	public function useUploadedImage($image) {
 		$success = false;

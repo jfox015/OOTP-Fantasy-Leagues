@@ -136,8 +136,8 @@ class BaseEditor extends MY_Controller {
 				if ($this->mode == 'delete') {
 					
 					if ($this->input->post('confirm')) {
+						$this->beforeDelete();
 						if ($this->dataModel->delete()) {
-							$this->beforeDelete();
 							$this->outMess = $this->lang->line('form_complete_success_delete');
 							$this->messageType = "success";
 							$this->load->model($this->modelName,'dataModel');

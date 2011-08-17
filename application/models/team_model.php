@@ -262,7 +262,7 @@ class team_model extends base_model {
 	/
 	/	TRADES
 	/
-	/	Added to 1.0.4
+	/	Added to 1.0.5
 	?
 	/
 	----------------------------------------*/
@@ -944,6 +944,224 @@ class team_model extends base_model {
 	/*-------------------------------------
 	/ 	GENERAL TEAM DATA FUNCTIONS
 	/------------------------------------*/
+	/**
+	 * 	DELETE TEAMS.
+	 * 	Deletes all teams for the specified league_id. If no id is passed, the current league id of the loaded team is used.
+	 * 
+	 * 	@param	$league_id		{int}	The League Id
+	 * 	@return					{Boolean}	TRUE on success
+	 * 
+	 *  @since	1.0.6
+	 *  @access	public
+	 */
+	public function deleteTeams($league_id = false) {
+		
+		if ($league_id === false) { $league_id = $this->league_id; }
+		
+		//DELETE AVATARS
+		$team_ids = $this->getTeamsForLeague($league_id);
+		foreach ($team_ids as $team_id) {
+			$avtr = $this->getAvatar($team_id);
+			if (!empty($avtr)) {
+				@unlink(PATH_TEAMS_AVATAR_WRITE.$avtr);
+			}
+		}
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tblName);
+		
+		return true;
+	}
+	/**
+	 * 	GET TEAMS FOR LEAGUE.
+	 * 	Returns all team IDs for the specified league_id. If no id is passed, the current league id of the loaded team is used.
+	 * 
+	 * 	@param	$league_id		{int}	The League Id
+	 * 	@return					{Array}	Array of team IDs
+	 * 
+	 *  @since	1.0.6
+	 *  @access	public
+	 */
+	public function getTeamsForLeague($league_id = false) {
+		
+		if ($league_id === false) { $league_id = $this->league_id; }
+		
+		$teamList = array();
+		$this->db->select('id');
+		$this->db->where('league_id',$league_id);
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			foreach ($query->result() as $row) {
+				array_push($teamList,$row->id);
+			}
+		}
+		$query->free_result();
+		return $teamList;
+		
+	}
+	/**
+	* 	DELETE ROSTERS.
+	* 	<p>
+	* 	Deletes all rosters for the specified team_id. If no id is passed, the current team_id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete rosters for a given league, use the league_model->deleteRosters function instead.
+	*	</p>
+	* 	@param	$team_id				{int}		The Team Id
+	* 	@param	$scoring_period_id		{int}		{Optional} Scoring Period Id
+	* 	@return							{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> league_model -> deleteRosters
+	*/
+	public function deleteRosters($team_id = false, $scoring_period_id = false) {
+	
+		if ($team_id === false) { $team_id = $this->id; }
+	
+		$this->db->where('team_id',$team_id);
+		if ($scoring_period_id !== false) { 
+			$this->db->where('scoring_period_id',$scoring_period_id);
+		}
+		$this->db->delete($this->tables['ROSTERS']);
+	
+		return true;
+	}
+	/**
+	* 	DELETE TRANSACTIONS.
+	* 	<p>
+	* 	Deletes all transactions for the specified team_id. If no id is passed, the current team id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete all league transactions, use the league_model->deleteTransactions function instead.
+	*	</p>
+	* 	@param	$team_id		{int}	The Team Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> league_model -> deleteTransactions
+	*/
+	public function deleteTransactions($team_id = false) {
+	
+		if ($team_id === false) { $team_id = $this->id; }
+	
+		$this->db->where('team_id',$team_id);
+		$this->db->delete($this->tables['TRANSACTIONS']);
+	
+		return true;
+	}
+	/**
+	* 	CREATE TEAM.
+	*  	Creates a new team for the specified league id.  This function returns the ID of the newly
+	*  	created team on success and false if required data is missing.
+	*
+	*  @param	$teamname			{String} 	The Team Name
+	*  @param	$teamnick			{String} 	The team nick name. Create one ranomly if no argument is passed.
+	*  @param	$league_id			{int}		League ID
+	*  @param	$division_id		{int}		(optional) Division ID. Defaults to -1 if not specified
+	*  @return						{int}		The newly created team ID
+	*
+	*  @since 	1.0.6
+	*  @access	public
+	*/
+	public function createTeam($teamname = false, $teamnick = false, $league_id = false, $division_id = false) {
+	
+		if ($teamname === false) {
+			$this->errorCode = 1;
+			$this->statusMess = "A team name and nickname are required but one or more were not recieved.";
+			return false;
+		} // END if
+		
+		if ($teamnick === false) $teamnick = getRandomTeamNickname();  // END if
+	
+		if ($league_id === false) $league_id = $this->league_id;  // END if
+		
+		$data = array('teamname'=>$teamname,'teamnick'=>$teamnick,'league_id'=>$league_id);
+		
+		if ($division_id !== false) {
+			$data = $data + array('division_id'=>$division_id);
+		} // END if
+		
+		$this->db->insert($this->tblName,$data);
+	
+		return $this->db->insert_id();
+	}
+	/**
+	 * 	CREATE TEAMS BY ARRAY.
+	 *  Accepts and array with up to fours params:
+	 *  <ul>
+	 *  	<li>teamname (Required)</li>
+	 *  	<li>teamnick (Optioanl)</li>
+	 *  	<li>league_id (Optional)</li>
+	 *  	<li>division_id (Optional)</li>
+	 *  </ul>
+	 *  <p>
+	 *  <i>Example:</i><br />
+	 *  <code>
+	 *  $team_list = array('teamname'=>'Fox','teamnick'=>'Trot','league_id'=>2);
+	 *  createTeamsByArray($team_list);
+	 *  </code>
+	 *  </p>
+	 *  <p>
+	 *  The league_id param can either be passed as an aegument to the function or as a property of the array. The function
+	 *  defaults to the league ID arg if no league_id is passed in the array.
+	 *	</p>
+	 *  This function returns false if all league_ids are -1.
+	 *	</p>
+	 *  
+	 *  @param	$team_list			{Array} 	Array of team data (See format)
+	 *  @param	$league_id			{int}		League ID (Optional, can be passed per division item)
+	 *  @return						{Array} 	Array of created team Ids
+	 *
+	 *  @since 	1.0.6
+	 *  @access	public
+	 */
+	public function createTeamsByArray($team_list = false, $league_id = false) {
+	
+		if ($league_id === false) $league_id = $this->league_id;  // END if
+	
+		if ($team_list === false) {
+			$this->errorCode = 1;
+			$this->statusMess = "No team list was recieved.";
+			return false;
+		} // END if
+	
+		if (!is_array($team_list) || sizeof($team_list) < 1) {
+			$this->errorCode = 2;
+			$this->statusMess = "The team_list argument received was not a valid array or contained no items.";
+			return false;
+		} // END if
+		
+		$teamIds = array();
+		$teamname = '';
+		$teamnick = '';
+		$division_id = -1;
+		// Loop through array and add each division
+		foreach($team_list as $team_array) {
+			if (isset($team_array['teamname'])) {
+				$teamname = $div_array['teamname'];
+			} // END if
+			if (isset($team_array['teamnick'])) {
+				$teamnick = $div_array['teamnick'];
+			} // END if
+			if (isset($team_array['league_id'])) {
+				$league_id = $div_array['league_id'];
+			} // END if
+			if (isset($team_array['division_id'])) {
+				$division_id = $div_array['division_id'];
+			} // END if
+				
+			$thisTeamId = $this->createTeam($teamname,$teamnick,$league_id,$division_id);
+			if ($thisTeamId && $thisTeamId != -1) {
+				array_push($teamIds, $thisTeamId);
+			} else {
+				$this->errorCode = 4;
+				$this->statusMess = "The division ".$teamname." was not added successfully. Error: ".$this->statusMess;
+				break;
+			} // END if
+		} // END foreach
+		return $teamIds;
+	}
+	
+	
 	public function getTeamOwnerId($team_id = FALSE) {
 		if ($team_id === false) { $team_id = $this->id; }
 		

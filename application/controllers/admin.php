@@ -834,8 +834,9 @@ class admin extends MY_Controller {
 			redirect('user/login');
 		} else {
 			$this->getURIData();
+			$supressEmail = (isset($this->uriVars['noEmail']) && !empty($this->uriVars['noEmail']) && $this->uriVars['noEmail'] == 1) ? true : false;
 			if (isset($this->uriVars['user_id']) && !empty($this->uriVars['user_id']) && $this->uriVars['user_id'] != -1) {
-				if ($this->auth->adminActivate($this->uriVars['user_id'],$this->params['currUser'])) {
+				if ($this->auth->adminActivate($this->uriVars['user_id'],$this->params['currUser'],$supressEmail)) {
 					$this->session->set_flashdata('message', '<span class="success">The user has been activated.</span>');
 				} else {
 					$this->session->set_flashdata('error', '<span class="error">The user was not activated. Error: '.$this->user_auth_model->statusMess.'</span>');
@@ -1635,13 +1636,10 @@ class admin extends MY_Controller {
 			$summary .= $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
 			if ($this->league_model->errorCode != -1) {
 				$mess =  $this->league_model->statusMess;
-				break;
+				$summary .= $this->lang->line('sim_include_errors');
+				$summary .= "<ul>".$mess."</ul>";
 			}
 		}
-		if (!empty($mess)) {
-			$summary .= $this->lang->line('sim_include_errors');
-			$summary .= "<ul>".$mess."</ul>";
-		} // END if
 		$simResult = 1;
 		// UPDATE THE MAIN CONFIG
 		if ($error) {
