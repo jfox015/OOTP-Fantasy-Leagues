@@ -5,7 +5,7 @@ require_once('base_editor.php');
  *	The primary controller for League manipulation and details.
  *	@author			Jeff Fox
  *	@dateCreated	04/04/10
- *	@lastModified	04/14/11
+ *	@lastModified	08/17/11
  *
  */
 class league extends BaseEditor {
@@ -1311,6 +1311,7 @@ class league extends BaseEditor {
 		$this->team_model->deleteTeams($this->dataModel->id);
 		
 		$teamsAdded = 0;
+		$teamList = array();
 		for ($i = 0; $i < $this->dataModel->max_teams; $i++) {
 			$divId = -1;
 			$teamData = array("teamname"=>"Team ".strtoupper(chr(64+($i+1))));
@@ -1324,10 +1325,12 @@ class league extends BaseEditor {
 			}
 			if ($i == 0) { $teamData = $teamData + array("owner_id"=>$this->params['currUser']); }
 			
-			$teamIds = $this->team_model->createTeamsByArray($teamData,$this->dataModel->id);
-			$teamsAdded = sizeof($teamIds);
+			array_push($teamList,$teamData);
 		}
-		if (!$teamsAdded == $this->dataModel->max_teams) {
+		$teamIds = $this->team_model->createTeamsByArray($teamList,$this->dataModel->id);
+		$teamsAdded = sizeof($teamIds);
+		
+		if ($teamsAdded < $this->dataModel->max_teams) {
 			$this->outMess .= "Error adding teams. ".$teamsAdded." were added, ".$this->dataModel->max_teams." were required.";
 		}
 		

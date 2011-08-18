@@ -1,3 +1,13 @@
+	<script type="text/javascript" charset="UTF-8">
+	$(document).ready(function(){	
+		$('a[rel=delete]').live('click',function (e) {
+			e.preventDefault();
+			if (confirm("Are you sure you want to delete this league? It will delete the league entry and ALL supporting data including teams, transactions rosters, etc.\n\n ARE YOU 100% SUREYOU WANT TO DELETE THIS LEAGUE?")) {
+				document.location.href = '<?php echo($config['fantasy_web_root']); ?>league/submit/mode/delete/id/'+this.id;
+			}
+		});
+	});
+	</script>
 		<?php if ($loggedIn) { ?>
         <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
         <?php echo( anchor('/user/createLeague','Create a new League')); ?><br />
@@ -55,8 +65,8 @@
               <td class="last" nowrap="nowrap" align="center">
             <?php 
 			echo( anchor('/league/submit/mode/edit/id/'.$row['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/edit-icon.gif" width="16" height="16" alt="Edit" title="Edit" />'));
-			//echo('&nbsp;');
-           // echo( anchor('/league/submit/mode/delete/id/'.$row['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/hr.gif" width="16" height="16" alt="Delete" title="Delete" />')); ?></td>
+			echo('&nbsp;');
+            echo( anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/hr.gif" width="16" height="16" alt="Delete" title="Delete" />',array('id'=>$row['id'],'rel'=>'delete'))); ?></td>
             <?php } ?>
           </tr>
 			<?php $rowCount++;

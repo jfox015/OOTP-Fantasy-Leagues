@@ -125,6 +125,131 @@ class team_model extends base_model {
 		}
 		return $success;
 	}
+	/**
+	* 	DELETE ROSTERS.
+	* 	<p>
+	* 	Deletes all rosters for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete waiver claims for a given league, use the league_model->deleteRosters function instead.
+	*	</p>
+	* 	@param	$league_id		{int}	The Team Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> league_model -> deleteRosters
+	*/
+	public function deleteRosters($team_id = false, $scoring_period_id = false) {
+	
+		if ($team_id === false) {
+			$team_id = $this->id;
+		}
+	
+		$this->db->where('team_id',$team_id);
+		if ($scoring_period_id !== false) {
+		$this->db->where('scoring_period_id',$scoring_period_id);
+		}
+		$this->db->delete($this->tables['ROSTERS']);
+		
+		return true;
+	}
+	/**
+	* 	DELETE TEAM RECORDS.
+	* 	<p>
+	* 	Deletes all records for the specified team_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete waiver claims for a given league, use the league_model->deleteRecords function instead.
+	*	</p>
+	* 	@param	$team_id		{int}	The Team Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> league_model -> deleteRecords
+	*/
+	public function deleteRecords($team_id = false) {
+
+		return $this->deleteTeamData($this->tables['TEAMS_RECORD'],$team_id);
+
+	}
+	/**
+	* 	DELETE TEAM SCORING.
+	* 	<p>
+	* 	Deletes all scoring for the specified team_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete waiver claims for a given league, use the league_model->deleteScoring function instead.
+	*	</p>
+	* 	@param	$team_id		{int}	The Team Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> league_model -> deleteRecords
+	*/
+	public function deleteScoring($team_id = false) {
+
+		return $this->deleteTeamData($this->tables['TEAMS_SCORING'],$team_id);
+
+	}
+
+	/**
+	* 	DELETE TRADES.
+	* 	<p>
+	* 	Deletes all trades for the specified team_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete waiver claims for a given league, use the league_model->deleteTrades function instead.
+	*	</p>
+	* 	@param	$team_id		{int}	The Team Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> league_model -> deleteTrades
+	*/
+	public function deleteTrades($team_id = false) {
+
+		return $this->deleteTeamData($this->tables['TEAM_TRADES'],$team_id);
+
+	}
+
+	/**
+	* 	DELETE TRANSACTIONS.
+	* 	<p>
+	* 	Deletes all transactions for the specified team_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete waiver claims for a given league, use the league_model->deleteTransactions function instead.
+	*	</p>
+	* 	@param	$team_id		{int}	The Team Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> league_model -> deleteTransactions
+	*/
+	public function deleteTransactions($team_id = false) {
+
+		return $this->deleteTeamData($this->tables['TRANSACTIONS'],$team_id);
+	
+	}
+	/**
+	* 	DELETE WAIVER CLAIMS.
+	* 	<p>
+	* 	Deletes all waiver claims for the specified team_id. If no id is passed, the current league id of the loaded bbject is used.
+	*	</p>
+	*	<p><b>NOTE:</b> To delete waiver claims for a given league, use the league_model->deleteWaiverClaims function instead.
+	*	</p>
+	* 	@param	$team_id		{int}	The Team Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*  	@see	application -> models -> league_model -> deleteWaiverClaims
+	*/
+	public function deleteWaiverClaims($team_id = false) {
+
+		return $this->deleteTeamData($this->tables['WAIVER_CLAIMS'],$team_id);
+	
+	}
 	/*-------------------------------------
 	/
 	/
@@ -999,56 +1124,6 @@ class team_model extends base_model {
 		
 	}
 	/**
-	* 	DELETE ROSTERS.
-	* 	<p>
-	* 	Deletes all rosters for the specified team_id. If no id is passed, the current team_id of the loaded bbject is used.
-	*	</p>
-	*	<p><b>NOTE:</b> To delete rosters for a given league, use the league_model->deleteRosters function instead.
-	*	</p>
-	* 	@param	$team_id				{int}		The Team Id
-	* 	@param	$scoring_period_id		{int}		{Optional} Scoring Period Id
-	* 	@return							{Boolean}	TRUE on success
-	*
-	* 	@since	1.0.6
-	*  	@access	public
-	*  	@see	application -> models -> league_model -> deleteRosters
-	*/
-	public function deleteRosters($team_id = false, $scoring_period_id = false) {
-	
-		if ($team_id === false) { $team_id = $this->id; }
-	
-		$this->db->where('team_id',$team_id);
-		if ($scoring_period_id !== false) { 
-			$this->db->where('scoring_period_id',$scoring_period_id);
-		}
-		$this->db->delete($this->tables['ROSTERS']);
-	
-		return true;
-	}
-	/**
-	* 	DELETE TRANSACTIONS.
-	* 	<p>
-	* 	Deletes all transactions for the specified team_id. If no id is passed, the current team id of the loaded bbject is used.
-	*	</p>
-	*	<p><b>NOTE:</b> To delete all league transactions, use the league_model->deleteTransactions function instead.
-	*	</p>
-	* 	@param	$team_id		{int}	The Team Id
-	* 	@return					{Boolean}	TRUE on success
-	*
-	* 	@since	1.0.6
-	*  	@access	public
-	*  	@see	application -> models -> league_model -> deleteTransactions
-	*/
-	public function deleteTransactions($team_id = false) {
-	
-		if ($team_id === false) { $team_id = $this->id; }
-	
-		$this->db->where('team_id',$team_id);
-		$this->db->delete($this->tables['TRANSACTIONS']);
-	
-		return true;
-	}
-	/**
 	* 	CREATE TEAM.
 	*  	Creates a new team for the specified league id.  This function returns the ID of the newly
 	*  	created team on success and false if required data is missing.
@@ -1328,6 +1403,21 @@ class team_model extends base_model {
 				    $this->getBatters($scoring_period, $team_id,-1)+$this->getPitchers($scoring_period, $team_id, -1),
 					$this->getBatters($scoring_period, $team_id,2)+$this->getPitchers($scoring_period, $team_id, 2));
 				
+	}
+	
+	protected function deleteTeamData($table = false, $team_id = false) {
+	
+		if ($table === false) {
+			return false;
+		}
+		if ($team_id === false) {
+			$team_id = $this->id;
+		}
+	
+		$this->db->where('team_id',$team_id);
+		$this->db->delete($table);
+	
+		return true;
 	}
 	
 	/*public function getTeamStats($playerIds = array(), $order_by = 'total', $scoring_period_id = false, $league_id = false) {

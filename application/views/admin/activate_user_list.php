@@ -7,7 +7,7 @@
             
             <div class='tablebox'>
             <table cellspacing="0" cellpadding="3" width="725">
-            <tr class='title'><td colspan="4">Pending Activationa</td></tr>
+            <tr class='title'><td colspan="4">Pending Activations</td></tr>
             <tr class='headline' style="text-align:left;">
                 <td width="30%">Username</td>
                 <td width="30%">E-Mail</td>

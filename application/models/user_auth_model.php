@@ -64,9 +64,9 @@ class user_auth_model extends base_model {
 		$this->tblName = $this->tables['users_core'];
 		$this->tblAccess = $this->tables['access_log'];
 
-		$this->fieldList = array('username','typeId','levelId','accessId');
+		$this->fieldList = array('username','email','typeId','levelId','accessId');
 		$this->conditionList = array('newPassword','lockStatus','loginAttemptCount','newEmail');
-		$this->readOnlyList = array('password','email','dateCreated','dateModified','lastModifiedBy',
+		$this->readOnlyList = array('password','dateCreated','dateModified','lastModifiedBy',
 									'locked','loginAttempts','loggedIn','active');  
 		
 		$this->columns_select = array($this->tblName.'.id','username','email','levelId','accessId','dateCreated','dateModified','lastModifiedBy',
@@ -185,7 +185,7 @@ class user_auth_model extends base_model {
 					$this->password = $this->hashPassword($input->post('newPassword'));
 				} // END if
 			} // END if
-			if ($input->post('newEmail') && $this->testEmail($input->post('newEmail')))
+			if ($input->post('newEmail') && !$this->checkEmail($input->post('newEmail')))
 				$this->email = $input->post('newEmail');  // END if
 			if ($input->post('lockStatus')) {
 				$this->accountLockStatus = $input->post('lockStatus');

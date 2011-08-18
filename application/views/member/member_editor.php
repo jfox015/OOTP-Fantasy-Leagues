@@ -13,7 +13,7 @@
 	});
     </script>
     <div id="left-column">
-   	<? include_once('nav_members.php'); ?>
+   	<?php include_once('nav_members.php'); ?>
     </div>
     <div id="center-column">
         <div class="top-bar"> <h1><?php echo $subTitle; ?></h1></div>

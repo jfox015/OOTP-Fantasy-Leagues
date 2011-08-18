@@ -1,9 +1,9 @@
     <div id="left-column">
-   	<? include_once('nav_members.php'); ?>
+   	<?php include_once('nav_members.php'); ?>
     </div>
     <div id="center-column">
    	<div id="subPage">
-       	<div class="top-bar"><h1><? echo($thisItem['username']); ?></h1></div>
+       	<div class="top-bar"><h1><?php echo($thisItem['username']); ?></h1></div>
        	<div id="content">
            	<!-- BEGIN RIGHT COLUMN -->
            	<div id="metaColumn">

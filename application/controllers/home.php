@@ -47,7 +47,7 @@ class home extends MY_Controller {
 		$this->data['events'] =  $this->ootp_league_model->getNextEvents();
 		$lastprocess = $this->params['config']['last_process_time'];
 		if ($lastprocess != EMPTY_DATE_TIME_STR && $lastprocess != EMPTY_DATE_STR) {
-			$this->data['nextSimDate'] =  date('m/d/Y',(strtotime($lastperocess) + ((60*60*24)*3)));
+			$this->data['nextSimDate'] =  date('m/d/Y',(strtotime($lastprocess) + ((60*60*24)*3)));
 		} else {
 			$this->data['nextSimDate'] = "Not yet determined";
 		}

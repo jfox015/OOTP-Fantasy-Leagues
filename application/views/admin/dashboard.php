@@ -221,7 +221,10 @@
             Security Settings</li>
         </ul>
         <br clear="all" /><br />
-        <?php if (isset($league_info) && $league_info->current_date <= $league_info->start_date) { ?>
+        <?php 
+        $currDate = strtotime($league_info->current_date);
+        $startDate = strtotime($league_info->start_date);
+        if (isset($league_info) && $currDate <= $startDate) { ?>
         <h3>Pre-Season Functions</h3>
         <?php if ($playerCount == 0) {
 		echo('<br /><span class="error" style="margin:0px; width:90%;">'.$this->lang->line('dash_error_no_players').'</span><br />'); } ?>
@@ -251,8 +254,12 @@
 			?>
         </ul>
         <br clear="all" /><br />
-        <?php } ?>
-        <?php if ($in_season && isset($league_info)) { ?>
+        <?php 
+		}  // END if
+		
+		// IN-SEASON FUNCTIONS
+		
+		if ($in_season && isset($league_info) && ($currDate>=strtotime($configCurrPeriod['date_start']) && $currDate<=strtotime($configCurrPeriod['date_end']))) { ?>
         <h3>Regular Season Functions</h3>
 		<b class="error_txt"><i>NOTE:</i></b> Depending on the size of your league, some of the following functions may consume a good deal of time and server resources as all players in the OOTP game will be processed. Please be
 		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.

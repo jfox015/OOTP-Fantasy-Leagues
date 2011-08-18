@@ -97,6 +97,8 @@ class admin extends MY_Controller {
 
 			$this->data['currPeriod'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
 			
+			$this->data['configCurrPeriod'] = getScoringPeriod($this->params['config']['current_period']+1);
+			
 			$this->data['periodCount'] = getScoringPeriodCount();
 			if (!function_exists('getSQLFileList')) {
 				$this->load->helper('config');

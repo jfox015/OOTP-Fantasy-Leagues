@@ -5,15 +5,15 @@
 		?>
         <h3>About this member</h3>
           <ul class="nav">
-            <li><? echo( anchor('/member/info/'.$itemId,'View Info')); ?></li>
-            <li><? echo( anchor('/member/submit/mode/edit/id/'.$itemId,'Edit')); ?></li>
-            <li><? echo( anchor('/member/submit/mode/delete/id/'.$itemId,'Delete')); ?></li>
-            <li><? echo( anchor('/member/resetPassword/attendeeId/'.$itemId,'Reset Password')); ?></li>
+            <li><?php echo( anchor('/member/info/'.$itemId,'View Info')); ?></li>
+            <li><?php echo( anchor('/member/submit/mode/edit/id/'.$itemId,'Edit')); ?></li>
+            <li><?php echo( anchor('/member/submit/mode/delete/id/'.$itemId,'Delete')); ?></li>
+            <li><?php echo( anchor('/member/resetPassword/attendeeId/'.$itemId,'Reset Password')); ?></li>
           </ul>
           
-        <? } ?>
+        <?php } ?>
         <h3>More Attendee Tools</h3>
         <ul class="nav">
-            <li><? echo( anchor('/search/members','View member list')); ?></li>
-            <li><? echo( anchor('/member/submit/add','Add a new member')); ?></li>
+            <li><?php echo( anchor('/search/members','View member list')); ?></li>
+            <li><?php echo( anchor('/member/submit/add','Add a new member')); ?></li>
         </ul>

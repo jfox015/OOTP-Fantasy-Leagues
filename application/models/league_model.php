@@ -186,17 +186,16 @@ class league_model extends base_model {
 	*/
 	public function deleteRecords($league_id = false) {
 	
-		if ($league_id === false) { $league_id = $this->id; }
+		return $this->deleteLeagueData($this->tables['TEAMS_RECORD'],$league_id);
 	
-		$this->db->where('league_id',$league_id);
-		$this->db->delete($this->tables['TEAMS_RECORD']);
-	
-		return true;
 	}
 	/**
 	* 	DELETE SCHEDULE.
 	* 	<p>
 	* 	Deletes all schedules for the specified league_id. If no id is passed, the current league id of the loaded object is used.
+	*	</p>
+	*	<p><b>NOTE:</b> Because scheduling involves more than one team per game, there is no equivilent function for removing scheduled 
+	*	games for individual teams in the team_model. 
 	*	</p>
 	* 	@param	$league_id		{int}	The League Id
 	* 	@return					{Boolean}	TRUE on success
@@ -206,12 +205,8 @@ class league_model extends base_model {
 	*/
 	public function deleteSchedule($league_id = false) {
 	
-		if ($league_id === false) { $league_id = $this->id; }
+		return $this->deleteLeagueData($this->tables['GAMES'],$league_id);
 	
-		$this->db->where('league_id',$league_id);
-		$this->db->delete($this->tables['GAMES']);
-	
-		return true;
 	}
 	/**
 	* 	DELETE TEAM SCORING.
@@ -229,12 +224,8 @@ class league_model extends base_model {
 	*/
 	public function deleteScoring($league_id = false) {
 	
-		if ($league_id === false) { $league_id = $this->id; }
+		return $this->deleteLeagueData($this->tables['TEAMS_SCORING'],$league_id);
 	
-		$this->db->where('league_id',$league_id);
-		$this->db->delete($this->tables['TEAMS_SCORING']);
-	
-		return true;
 	}
 	
 	/**
@@ -253,12 +244,8 @@ class league_model extends base_model {
 	*/
 	public function deleteTrades($league_id = false) {
 	
-		if ($league_id === false) { $league_id = $this->id; }
+		return $this->deleteLeagueData($this->tables['TEAM_TRADES'],$league_id);
 	
-		$this->db->where('league_id',$league_id);
-		$this->db->delete($this->tables['TEAM_TRADES']);
-	
-		return true;
 	}
 	
 	/**
@@ -277,12 +264,8 @@ class league_model extends base_model {
 	*/
 	public function deleteTransactions($league_id = false) {
 	
-		if ($league_id === false) { $league_id = $this->id; }
+		return $this->deleteLeagueData($this->tables['TRANSACTIONS'],$league_id);
 	
-		$this->db->where('league_id',$league_id);
-		$this->db->delete($this->tables['TRANSACTIONS']);
-	
-		return true;
 	}
 	/**
 	* 	DELETE WAIVER CLAIMS.
@@ -300,12 +283,8 @@ class league_model extends base_model {
 	*/
 	public function deleteWaiverClaims($league_id = false) {
 	
-		if ($league_id === false) { $league_id = $this->id; }
+		return $this->deleteLeagueData($this->tables['WAIVER_CLAIMS'],$league_id);
 	
-		$this->db->where('league_id',$league_id);
-		$this->db->delete($this->tables['WAIVER_CLAIMS']);
-	
-		return true;
 	}
 	
 	// SPECIAL QUERIES
@@ -639,10 +618,16 @@ class league_model extends base_model {
 	*/
 	public function deleteTeamInvites($league_id = false, $user_id = false, $team_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
-	
-		$this->db->where("league_id",$league_id);
+		$userMail = '';
 		if ($user_id !== false) {
-			$this->db->where("user_id",$user_id);
+			$userMail = getEmail($user_id);
+		}
+		
+		$this->db->flush_cache();
+		$this->db->where("league_id",$league_id);
+		
+		if (!empty($userMail)) {
+			$this->db->where("to_email",$userMail);
 		}
 		if ($team_id !== false) {
 			$this->db->where("team_id",$team_id);
@@ -2645,7 +2630,16 @@ class league_model extends base_model {
 	/*---------------------------------------
 	/	PRIVATE/PROTECTED FUNCTIONS
 	/--------------------------------------*/
-
+	protected function deleteLeagueData($table = false, $league_id = false) {
+		
+		if ($table === false) { return false; }
+		if ($league_id === false) { $league_id = $this->id; }
+		
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($table);
+		
+		return true;
+	}
 	/*---------------------------------------
 	/	DEPRECATED FUNCTIONS
 	/--------------------------------------*/
