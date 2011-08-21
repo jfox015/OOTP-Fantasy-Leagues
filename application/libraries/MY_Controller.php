@@ -225,7 +225,7 @@ class MY_Controller extends Controller {
 		} else {
 			$scoring_period = getCurrentScoringPeriod($this->ootp_league_model->current_date);
 		}
-		// SINCE getCurrentScoringPeriod return -1 when it can't reconcile the league date (usually becausee
+        // SINCE getCurrentScoringPeriod return -1 when it can't reconcile the league date (usually because
 		// usually because the league date is before opening day), pull the scoring period ID from the config
 		// table to assure a positive integer
 		if (!isset($scoring_period['id']) || $scoring_period['id'] == -1) {

@@ -13,33 +13,54 @@
             <tr class='title'><td colspan="9">Trade Details</td></tr>
             <tr class='headline'>
                 <td width="8%">Date</td>
-                <td width="10%">From</td>
-                <td width="10%">To</td>
-                <td width="15%">Offered</td>
-                <td width="15%">Requested</td>
-                <td align="center" width="8%">Effective</td>
-                <td align="center" width="8%">Protests</td>
-                <td align="center" width="20%">Status</td>
+                <td width="15%">From</td>
+                <td width="15%">To</td>
+                <td width="18%">Offered</td>
+                <td width="17%">Requested</td>
+                <td align="center" width="5%">Effective</td>
+                <td align="center" width="5%">Protests</td>
+                <td align="center" width="10%">Status</td>
                 <td align="center" width="8%">Tools</td>
             </tr>
-            <?php 
-            if (isset($thisItem['trades']) && sizeof($thisItem['trades']) > 0) {
+            <?php
+                //print("Size of trades = ".sizeof($thisItem['trades'])."<br />");
+            if (isset($trades) && sizeof($trades) > 0) {
                $rowCount = 0;
-			   foreach ($thisItem['trades'] as $row) {
+			   foreach ($trades as $row) {
 				$cls="s".($rowCount%2);
 				?>
  				<tr class="<?php echo($cls); ?>" style="text-align:left;">
 					<td><?php print(date('m/d/Y',strtotime($row['offer_date']))); ?></td>
                     <td><?php print(anchor('/team/info/'.$row['team_1_id'],$row['team_1_name'])); ?></td>
-                    <td><?php print(anchor('/team/info/'.$row['team_2_id'],$row['team_3_name'])); ?></td>
-                    <td><?php print($row['send_players']); ?></td>
-                    <td><?php print($row['receive_players']); ?></td>
+                    <td><?php print(anchor('/team/info/'.$row['team_2_id'],$row['team_2_name'])); ?></td>
+                    <td><?php //print($row['send_players']);
+                    if (isset($row['send_players']) && sizeof($row['send_players']) > 0) {
+                        $numDrawn = 0;
+                        foreach ($row['send_players'] as $playerInfo) {
+                            if ($numDrawn != 0 && $numDrawn != sizeof($row['send_players'])) { echo("<br />"); }
+                            echo($playerInfo);
+                            $numDrawn++;
+                        } // END foreach
+                    } // END if
+                    ?>
+                    </td>
+                    <td><?php //print($row['receive_players']);
+
+                        if (isset($row['receive_players']) && sizeof($row['receive_players']) > 0) {
+                        $numDrawn = 0;
+                        foreach ($row['receive_players'] as $playerInfo) {
+                            if ($numDrawn != 0 && $numDrawn != sizeof($row['receive_players'])) { echo("<br />"); }
+                            echo($playerInfo);
+                            $numDrawn++;
+                        } // END foreach
+                    } // END if
+                    ?></td>
                     <td align="center"><?php echo($row['in_period']); ?></td>
                     <td align="center"><?php echo($row['protest_count']); ?></td>
-                    <td align="center"><?php echo($row['status']); ?></td>
+                    <td align="center"><?php echo($row['tradeStatus']); ?></td>
                     <td align="center" class="last" nowrap="nowrap">
 					<?php 
-                     echo( anchor('/team/tradeReview/league_id/'.$league_id.'/team_id/'.$row['id'].'/trans_type/5','<img src="'.$config['fantasy_web_root'].'images/icons/search.png" width="16" height="16" alt="Review" border="0" title="Review" />')); ?></td>
+                     echo( anchor('/team/tradeReview/league_id/'.$league_id.'/team_id/'.$row['team_1_id'].'/trade_id/'.$row['trade_id'].'/trans_type/5','<img src="'.$config['fantasy_web_root'].'images/icons/search.png" width="16" height="16" alt="Review" border="0" title="Review" />')); ?></td>
     			</tr>
 				<?php 
 				$rowCount++;

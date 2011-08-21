@@ -62,51 +62,49 @@
 					foreach($thisItem['divisions'] as $id=>$divisionData) { 
 						$division_options = $division_options + array($id=>$divisionData['division_name']);
 					}
-				foreach($thisItem['divisions'] as $id=>$divisionData) { 
-				
-				?>
-                <tr class='title'>
-                    <td colspan='6' class='lhl'><?php echo($divisionData['division_name']); ?></td></tr>
-                <tr class='headline'>
-                    <td class='hsc2_c'>&nbsp;</td>
-                    <td class='hsc2_c'>Team Name</td>
-                    <td class='hsc2_c'>Team Nick</td>
-                    <td class='hsc2_c'>Request</td>
-                </tr>
-                <?php
-				$teamcount = 0;
-                $rowcount = 0;
-                if (isset($divisionData['teams']) && sizeof($divisionData['teams']) > 0) { 
-                    foreach($divisionData['teams'] as $teamId => $teamData) { 
-                    if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
-                    // END if
-					?> 
-                <tr style="background-color:<?php echo($color); ?>">
-                    <?php
-                    if (isset($teamData['avatar']) && !empty($teamData['avatar'])) { 
-                        $avatar = PATH_TEAMS_AVATARS.$teamData['avatar'];
-                    } else {
-                        $avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
-                    } // END if
-                    ?>
-                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" border="0" /></td>
-                    <td class='hsc2_l'><?php echo($teamData['teamname']); ?></td>
-                    <td class='hsc2_l'><?php echo($teamData['teamnick']); ?></td>
-                    <td class='hsc2_l' align='center'>
-                    <input type="radio" name="team_id" value="<?php echo($teamId); ?>" />
-                    </td>
-                </tr>
-                    <?php
-                    $rowcount++;
-					if (!$drawn) { $drawn = true; }
-                    } // END foreach
-                } else { ?>
-                <tr>
-                    <td class="hsc2_l" colspan="4">No Teams were Found</td>
-                </tr>
-                <?php 
-				} // END if
-				} // END foreach
+					foreach($thisItem['divisions'] as $id=>$divisionData) { 
+						?>
+						<tr class='title'>
+							<td colspan='6' class='lhl'><?php echo($divisionData['division_name']); ?></td></tr>
+						<tr class='headline'>
+							<td class='hsc2_c'>&nbsp;</td>
+							<td class='hsc2_c'>Team Name</td>
+							<td class='hsc2_c'>Team Nick</td>
+							<td class='hsc2_c'>Request</td>
+						</tr>
+						<?php
+						$teamcount = 0;
+						$rowcount = 0;
+						if (isset($divisionData['teams']) && sizeof($divisionData['teams']) > 0) { 
+							foreach($divisionData['teams'] as $teamId => $teamData) { 
+								if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } // END if
+							?> 
+							<tr style="background-color:<?php echo($color); ?>">
+							<?php
+							if (isset($teamData['avatar']) && !empty($teamData['avatar'])) { 
+								$avatar = PATH_TEAMS_AVATARS.$teamData['avatar'];
+							} else {
+								$avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
+							} // END if
+							?>
+							<td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" border="0" /></td>
+							<td class='hsc2_l'><?php echo($teamData['teamname']); ?></td>
+							<td class='hsc2_l'><?php echo($teamData['teamnick']); ?></td>
+							<td class='hsc2_l' align='center'>
+							<input type="radio" name="team_id" value="<?php echo($teamId); ?>" />
+							</td>
+						</tr>
+						<?php
+							$rowcount++;
+							if (!$drawn) { $drawn = true; }
+							} // END foreach
+						} else { ?>
+						<tr>
+							<td class="hsc2_l" colspan="4">No Teams were Found</td>
+						</tr>
+						<?php 
+						} // END if
+					} // END foreach
 				} else {
 				?>
 				<tr class='title'>
@@ -150,30 +148,32 @@
                 <?php 
 				}  // END if
 				?>
+                <?php
+                } ?>
 				<tr>
-					<td class="hsc2_l" colspan="4">
-					<label for="message">Message to the commissioner:</label> (Optional)<br clear="all" />
-					Include a short note to the league commissioner as to why you want to own this team.
-					<br /><br />		
-					<?php 
-					$data = array(
-		              'name'        => 'message',
-		              'id'          => 'message',
-		              'value'       => '',
-		              'maxlength'   => '1000',
-		              'class'		=> 'word_count',
-		              'rows'        => '5',
-		              'cols'		=> '45'
-					);
-					echo(form_textarea($data));
-					?><br clear="all" />
-					<span class="counter"></span>, Limit 1000.
-					</td>
-				</tr>
+                <td class="hsc2_l" colspan="4">
+                <label for="message">Message to the commissioner:</label> (Optional)<br clear="all" />
+                Include a short note to the league commissioner as to why you want to own this team.
+                <br /><br />
+                <?php
+                $data = array(
+                		              'name'        => 'message',
+                		              'id'          => 'message',
+                		              'value'       => '',
+                		              'maxlength'   => '1000',
+                		              'class'		=> 'word_count',
+                		              'rows'        => '5',
+                		              'cols'		=> '45'
+                );
+                echo(form_textarea($data));
+                ?><br clear="all" />
+                					<span class="counter"></span>, Limit 1000.
+                					</td>
+                </tr>
 				<?php 
-				if ($drawn) {
-				echo(form_fieldset_close());
-				} // END if isset($divisions)
+				//if ($drawn) {
+				//	echo(form_fieldset_close());
+				//} // END if ($drawn)
 				?>
                 <tr>
                     <td class="hsc2_l" colspan="4">
@@ -187,8 +187,7 @@
 				?>
                 	</td>
                 </tr>
-                <?php
-                }
+				<?php
 				echo(form_close()); ?>
                 </table>
             </div>  <!-- end batting stat div -->

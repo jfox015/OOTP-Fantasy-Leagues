@@ -269,7 +269,6 @@ class team extends BaseEditor {
 					} // END if
 				} // END if
 			} // END if
-			print("tradeteam_id2id = ".$this->data['team_id2']."<br />");
 			
 			if (isset($this->uriVars['team_id2']) && !empty($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
 				$this->data['team_id2'] = $this->uriVars['team_id2'];
@@ -1948,11 +1947,19 @@ class team extends BaseEditor {
 		if (!function_exists('getScoringPeriod')) {
 			$this->load->helper('admin');
 		}
-		$curr_period = $this->getScoringPeriod();
-		
-		$curr_period_id = $curr_period['id'];
+
+        if (isset($this->uriVars['period_id'])) {
+            $curr_period_id = $this->uriVars['period_id'];
+            $curr_period = getScoringPeriod($curr_period_id);
+        } else {
+		    $curr_period = $this->getScoringPeriod();
+		    $curr_period_id = $curr_period['id'];
+        }
 		
 		$this->data['curr_period'] = $curr_period_id;
+
+        //print("curr_period['id'] = ".$curr_period['id']."<br />");
+        //print("params->config['current_period] = ".$this->params['config']['current_period']."<br />");
 		
 		if (!isset($this->league_model)) {
 			$this->load->model('league_model');

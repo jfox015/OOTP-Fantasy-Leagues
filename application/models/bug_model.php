@@ -67,7 +67,7 @@ class bug_model extends base_model {
 		$this->uniqueField = 'summary';
 		$this->textList = array('browVersion','tags');
 		
-		$this->columns_select = array('id', 'dateCreated','projectId', 'summary','assignmentId','createdById', 'tags', 'bugStatusId', 'priorityId','severityId');
+		$this->columns_select = array('id', 'description', 'dateCreated','projectId', 'summary','assignmentId','createdById', 'tags', 'bugStatusId', 'priorityId','severityId');
 		$this->columns_text_search = array('summary', 'description', 'tags');
 		$this->columns_alpha_search = array();
 		

@@ -451,11 +451,12 @@ class team_model extends base_model {
 	 * @param $status			The trade status type
 	 * @param $comments			(OPTIONAL) Response comments
 	 */
-	public function processTrade($trade_id, $status, $comments = ""){
+	public function processTrade($trade_id, $status, $comments = "", $league_id = false){
 		
 		$outMess = "";
 
 		if (!isset($trade_id) || !isset($status)) return false;
+        if ($league_id === false) { $league_id = $this->league_id;}
 		
 		if (!function_exists('updateOwnership')) {
 			$this->load->helper('roster');
@@ -473,6 +474,7 @@ class team_model extends base_model {
 						//print('TMP Player str = '.$playerStr.'<br />');
 						$this->db->flush_cache();
 						$this->db->where('player_id',$tmpPlayer[0]);
+                        $this->db->where('league_id',$league_id);
 						if ($tmpPlayer[1] == "LF" || $tmpPlayer[1] == "CF" || $tmpPlayer[1] == "RF") {
 							$tmpPlayer[1] = "OF";
 						}
@@ -659,7 +661,7 @@ class team_model extends base_model {
 		if ($league_id === false) { $league_id = $this->league_id; }
 		
 		$trades = array();
-		$selectStr = $this->tables['TRADES'].".id, offer_date, status, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_date, ".$this->tables['TRADES'].".comments, response"; 
+		$selectStr = $this->tables['TRADES'].".id, offer_date, status, team_1_id, send_players, receive_players, team_2_id, tradeStatus, ".$this->tables['TRADES'].".status, in_period, previous_trade_id, expiration_date, ".$this->tables['TRADES'].".comments, response";
 		if ($countProtests === true) {
 			$selectStr .= ",(SELECT COUNT(".$this->tables['TRADE_PROTESTS'].".id) FROM ".$this->tables['TRADE_PROTESTS']." WHERE ".$this->tables['TRADE_PROTESTS'].".trade_id = ".$this->tables['TRADES'].".id) as protest_count";
 		}
@@ -736,10 +738,9 @@ class team_model extends base_model {
 				array_push($trades,array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
 													  'send_players'=>$playerArrays['send_players'], 'receive_players'=>$playerArrays['receive_players'], 
 													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
-													  'status'=>$row->status,'comments'=>$row->comments,'expiration_date'=>$row->expiration_date,'protest_count'=>$protestCount,'response'=>$row->response));			}
+													  'status'=>$row->status,'tradeStatus'=>$row->tradeStatus, 'comments'=>$row->comments,'expiration_date'=>$row->expiration_date,'protest_count'=>$protestCount,'response'=>$row->response));			}
 		}
 		$query->free_result();
-		
 		return $trades;
 	}
 	/*-----------------------------------------------
