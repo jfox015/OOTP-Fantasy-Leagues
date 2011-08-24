@@ -81,11 +81,11 @@
 	                    Complete Draft</li>
 	                <?php }  // END if
 				} // END if 
-				if (($draftEnabled && $draftStatus > 0 && $draftStatus < 3) ||$accessLevel == ACCESS_ADMINISTRATE) { ?>
-                    <li><?php echo anchor('/league/autoDraftLeague/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" border="0" />',array('rel'=>'sim')); ?><br />
-                    Use Auto Draft Bypass</li>
+				//if (($draftEnabled && $draftStatus > 0 && $draftStatus < 3) ||$accessLevel == ACCESS_ADMINISTRATE) { ?>
+                    <!--li><?php //echo anchor('/league/autoDraftLeague/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" border="0" />',array('rel'=>'sim')); ?><br />
+                    Use Auto Draft Bypass</li-->
                 <?php 
-				} // END if
+				//} // END if
 				if (ACCESS_ADMINISTRATE && $draftStatus >= 1 && $draftStatus < 5) { ?>
                 <li><?php echo anchor('/league/resetDraft/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" border="0" />'); ?><br />
             	Reset Draft</li><br />

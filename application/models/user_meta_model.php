@@ -129,7 +129,7 @@ class user_meta_model extends base_model {
 		return $this->db->count_all_results();
 	}
 	
-	public function getUserTeams($league_id = false, $userId = false) {
+	public function getUserTeams($league_id = false, $userId = false, $scoring_period_id = false) {
 		
 		if ($userId === false) $userId = $this->userId;
 		
@@ -141,6 +141,9 @@ class user_meta_model extends base_model {
 		if ($league_id !== false) {
 			$this->db->where($this->tables['TEAMS'].'.league_id', $league_id);
 		}
+        if ($scoring_period_id !== false) {
+            $this->db->where('(fantasy_teams_scoring.scoring_period_id = '.$scoring_period_id.' OR fantasy_teams_record.scoring_period_id = '.$scoring_period_id.")");
+        }
 		$this->db->where('owner_id', $userId);
 		$query = $this->db->get($this->tables['TEAMS']);
 		//echo($this->db->last_query()."<br />");
@@ -155,7 +158,7 @@ class user_meta_model extends base_model {
 		return $teamList;
 	}
 	
-	public function getUserTeamIds($league_id = false, $userId = false) {
+	public function getUserTeamIds($league_id = false, $userId = false, $scoring_period_id = false) {
 		
 		if ($userId === false) $userId = $this->userId;
 		$teamIds = array();

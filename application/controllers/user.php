@@ -564,7 +564,6 @@ class user extends MY_Controller {
 				$this->data['theContent'] = $message;
 				$this->params['content'] = $this->load->view($this->views['FORGOT_PASSWORD'], $this->data, true);
 				$this->params['pageType'] = PAGE_FORM;
-				$this->displayView();
 			}
 	    }
 		$this->displayView();
@@ -677,6 +676,17 @@ class user extends MY_Controller {
 			$func = $this->uriVars['id'];
 		}
 		$view = $this->views['PROFILE'];
+        $userTeams = array();
+        if (isset($this->params['userTeams'])) {
+            $userTeams = $this->params['userTeams'];
+        } else {
+            $currPeriod = false;
+            if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
+                $currPeriod = $this->params['config']['current_period'];
+            }
+            $userTeams = $this->user_meta_model->getUserTeams(false,false,$currPeriod);
+        }
+
 		if ($func == "view") {
 			$view = $this->views['PROFILE'];
 			$session_auth = $this->session->userdata($this->config->item('session_auth'));
@@ -684,7 +694,7 @@ class user extends MY_Controller {
 				$this->data['invites'] = $this->user_meta_model->getTeamInvites();
 				$this->data['requests'] = $this->user_meta_model->getTeamRequests();
 				$this->data['profile'] = $this->user_meta_model->profile();
-				$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$session_auth);
+				$this->data['thisItem']['userTeams'] = $userTeams;
 				$this->data['dateCreated'] = $this->user_auth_model->dateCreated;
 				$this->data['dateModified'] = $this->user_auth_model->dateModified;
 				$this->data['myProfile'] = true;
@@ -708,7 +718,7 @@ class user extends MY_Controller {
 				}
 				$this->data['countryStr'] = $countryStr;
 				
-				$this->data['userTeams'] = $this->user_meta_model->getUserTeams();
+				$this->data['userTeams'] = $userTeams;
 				
 				$userDrafts = $this->user_meta_model->getUserDrafts();
 				
@@ -790,8 +800,13 @@ class user extends MY_Controller {
 			if ($this->user_meta_model->load($userId,'userId')) {
 				$this->data['profile'] = $this->user_meta_model->profile();
 				$dates = $this->user_auth_model->getDateDetails($userId);
-				$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$userId);
-		
+
+                $currPeriod = false;
+                if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
+                    $currPeriod = $this->params['config']['current_period']-1;
+                }
+                $this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$userId,$currPeriod);
+
 				$this->data['dateCreated'] = $dates['dateCreated'];
 				$this->data['dateModified'] = $dates['dateModified'];
 				$this->data['subTitle'] = 'User Profile';

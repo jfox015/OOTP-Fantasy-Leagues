@@ -96,9 +96,12 @@ class admin extends MY_Controller {
 			$this->data['in_season'] = $this->ootp_league_model->in_season();
 
 			$this->data['currPeriod'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
-			
-			$this->data['configCurrPeriod'] = getScoringPeriod($this->params['config']['current_period']+1);
-			
+
+            $this->data['currPeriodConfig'] = getScoringPeriod($this->params['config']['current_period']);
+			$this->data['configCurrPeriodStart'] = strtotime($this->data['currPeriodConfig']['date_start']." 00:00:00");
+            $this->data['nextPeriodConfig'] = getScoringPeriod(($this->params['config']['current_period']+1));
+			$this->data['configCurrPeriodEnd'] = strtotime($this->data['nextPeriodConfig']['date_end']." 00:00:00");
+
 			$this->data['periodCount'] = getScoringPeriodCount();
 			if (!function_exists('getSQLFileList')) {
 				$this->load->helper('config');

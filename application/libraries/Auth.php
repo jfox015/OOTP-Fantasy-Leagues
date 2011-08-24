@@ -145,7 +145,7 @@ class Auth
 
 		if ($fpc) {
 			$this->ci->user_auth_model->load($fpc);
-			$data = array('new_password' => $this->ci->user_auth_model->newPassword,'siteName'=>$this->ci->params['config']['site_name']);
+			$data = array('new_password' => $this->ci->user_auth_model->newPassword,'siteName'=>$this->ci->params['config']['site_name'],'login_url'=>anchor('/user/login','Site login page'));
             
 			$message = $this->ci->load->view($this->ci->config->item('email_templates').'new_password', $data, true);
 			

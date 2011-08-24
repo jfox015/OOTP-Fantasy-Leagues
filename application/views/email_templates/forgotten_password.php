@@ -6,7 +6,7 @@
 	</head>
 	<body>
 		<h1><?php echo($siteName); ?> Forgotten Password Request</h1>
-		<p>A requeste for a new password has been created on the <?php echo($siteName); ?>  site for this account.</p>
+		<p>A request for a new password has been created on the <?php echo($siteName); ?>  site for this account.</p>
 		<p>Please click the following link and enter the verification code below to create your new password:</p>
 		<p>Verification Code: <b><?php echo $forgotten_password_code; ?></b></p>
 		<p><?php print($verify_url); ?></p>

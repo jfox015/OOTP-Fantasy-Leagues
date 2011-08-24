@@ -124,7 +124,22 @@ class MY_Controller extends Controller {
 		$this->views['STATS_TABLE'] = 'stats_table';
 		$this->views['TRANSACTION_SUMMARY'] = 'transaction_summary';
 		$this->views['RECAPTCHA_JS'] = 'recaptcha';
-		
+        
+        $this->load->helper('config');
+        $this->params['config'] = $this->data['config'] = load_config();
+
+        if (!isset($this->ootp_league_model)) {
+			$this->load->model('ootp_league_model');
+		} // END if
+		if ($this->ootp_league_model->load($this->params['config']['ootp_league_id'],'league_id')) {
+			$this->params['league_info'] = $this->ootp_league_model;
+			$this->data['league_info'] = $this->ootp_league_model;
+		}  // END if//else {
+
+        $currPeriod = false;
+        if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
+            $currPeriod = $this->params['config']['current_period']-1;
+        }
 		// GET USER DATA IF LOGGED IN
 		$this->params['loggedIn'] = $this->auth->logged_in();
 		$this->params['name'] = '';
@@ -137,7 +152,7 @@ class MY_Controller extends Controller {
 				$this->params['name'] = $this->user_auth_model->username;
 				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
 				$this->params['accessLevel'] = $this->user_auth_model->accessId;
-				$this->params['userTeams'] = $this->user_meta_model->getUserTeams(false, $this->params['currUser']);
+				$this->params['userTeams'] = $this->user_meta_model->getUserTeams(false, $this->params['currUser'],$currPeriod  );
 				// EDIT 1.0.6, track and use member timezone preferences
 				$this->params['userTimezone'] = $this->user_meta_model->getTimezone($this->params['currUser']);
 			} // END if
@@ -159,16 +174,7 @@ class MY_Controller extends Controller {
 		$this->params['title'] = $this->lang->line('site_name');
 		$this->params['tag_line'] = $this->lang->line('tag_line');
 		
-		$this->load->helper('config');
-		$this->params['config'] = $this->data['config'] = load_config();
-		
-		if (!isset($this->ootp_league_model)) {
-			$this->load->model('ootp_league_model');
-		} // END if
-		if ($this->ootp_league_model->load($this->params['config']['ootp_league_id'],'league_id')) {
-			$this->params['league_info'] = $this->ootp_league_model;
-			$this->data['league_info'] = $this->ootp_league_model;
-		}  // END if//else {
+
 			//$this->data['message'] = "OOTP League load error. Code: ".$this->ootp_league_model->errorCode.", ".$this->ootp_league_model->statusMess;
 		//}
 		$this->params['subNavSection'] = array(top_nav($this->params['loggedIn'],$this->data['accessLevel'] == ACCESS_ADMINISTRATE,$this->params['userTeams']));

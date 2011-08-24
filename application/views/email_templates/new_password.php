@@ -7,6 +7,6 @@
 	<body>
 		<h1><?php echo($siteName); ?> New Password</h1>
 		<p>Your new password is : <b><?php echo $new_password; ?></b></p>
-        <p>Login using your new password on the <?php echo anchor('/user/login','Login page'); ?>.</p>
+        <p>Login using your new password on the <?php echo $login_url; ?>.</p>
 	</body>
 </html>

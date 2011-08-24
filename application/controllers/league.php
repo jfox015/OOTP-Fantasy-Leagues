@@ -960,7 +960,7 @@ class league extends BaseEditor {
 		if (isset($this->uriVars['period_id'])) {
 			$curr_period_id = $this->uriVars['period_id'];
 		} else {
-			$curr_period_id = $this->params['config']['current_period'] - 1;
+			$curr_period_id = $this->params['config']['current_period'];
 		}
 		$curr_period = getScoringPeriod($curr_period_id);
 		$this->data['curr_period'] = $curr_period_id;
@@ -969,7 +969,7 @@ class league extends BaseEditor {
 		$this->data['league_start'] = $this->params['config']['season_start'];
 		$league_start_str = str_replace('[START_DATE]', date('m/d/Y',strtotime($this->params['config']['season_start'])), $this->lang->line('league_start_standings'));
 		$this->data['start_str'] = str_replace('[GAME_YEAR]', date('Y',strtotime($this->ootp_league_model->start_date)), $league_start_str);
-		$leagueStandings = $this->dataModel->getLeagueStandings();
+		$leagueStandings = $this->dataModel->getLeagueStandings($curr_period_id);
 		$view = "";
 		
 		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {

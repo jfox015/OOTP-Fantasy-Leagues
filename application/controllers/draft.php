@@ -91,7 +91,7 @@ class draft extends BaseEditor {
 		$this->restrictAccess = true;
 		$this->minAccessLevel = ACCESS_WRITE;
 		
-		$this->debug = false; 
+		$this->debug = true;
 	}
 	/*--------------------------------
 	/	PRIVATE FUNCTIONS
@@ -627,7 +627,7 @@ class draft extends BaseEditor {
 								//-----------------------------------------------
 								$round = $picks[$i]['round'];
 								//print('round pick = '.$picks[$i]['pick']."<br />");
-								if ($i > 1 && $picks[$i]['pick'] == 1) {
+								if ($i > 1 && ($picks[$i]['pick'] == 1 || $i == $lastPick)) {
 									if ($this->dataModel->emailDraftSummary == 1) {
 										
 										$message = '';
@@ -804,20 +804,27 @@ class draft extends BaseEditor {
 								$dpick = '';
 								##### Get next team in draft order #####
 								for ($j=$i+1;$j<=$lastPick;$j++) {
-									if (!isset($picks[$j]['player'])) {
-										$dteam=$picks[$j]['team'];
-										$i=$j-1;
-										$nextPick = $j;
+									if (isset($picks[$j]['round'])) {
+										if (!isset($picks[$j]['player'])) {
+											$dteam=$picks[$j]['team'];
+											$i=$j-1;
+											$nextPick = $j;
+											break;
+										} // END if
+									} else {
 										break;
-									}
-								}
+									} // END if
+								} // END for
+                                // EDIT 1.0.6 - FAIL SAFE IN CASE WE GET HERE AND THE NEXT PICK IS OUTSIDE THE
+						        // DRAFT SIZE RANGE
+								if ($j > $lastPick) { break; }
 								if ($this->debug) {
 									echo("Next pick ID = ".$j."<br />");
 									echo("Next pick = ".$nextPick."<br />");
 									echo("Pick Round =  ".$pickRound."<br />");
 									echo("Next team to pick = ".$dteam."<br />");
 									echo($dteam." has auto list? ".($teams[$dteam]['autoList']==1?'true':'false')."<br />");
-								}
+								} // END if
 								##### Check team for auto draft list #####
 								if ($teams[$dteam]['autoList']==1) {	   
 									$dpick='';
@@ -842,6 +849,10 @@ class draft extends BaseEditor {
 									echo("-----FORCE AUTO SELECT, AUTO OPEN NO OWNER TEAM, TEAM AUTO PICK OPTION---<br />");
 								}
 								##### Check if team is not human controlled #####
+                                if ($this->debug) {
+                                   print("J = ".$j."<br />");
+                                }
+
 								$pickRound=$picks[$j]['round'];
 								$pickNum = $picks[$j]['pick'];
 								if ($this->debug) {
@@ -1043,7 +1054,25 @@ class draft extends BaseEditor {
 	 */
 	protected function makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted) {
 		$dpick = '';
-		foreach ($values as $pid => $val) {
+        $posUtil = get_pos_num('U');
+        $hasUtil = false;
+        foreach($rules as $ruleKey => $ruleVal) {
+           if ($ruleKey == $posUtil) {
+               $hasUtil = true;
+               break;
+           }
+        }
+        // $posIF = get_pos_num('IF');
+        // $posMI = get_pos_num('MI');
+        // $posCI = get_pos_num('CI');
+        if ($this->debug) {
+            print("----------------MAKE AUTO PICK- -------");
+            if (isset($teamQuotas[$dteam][$posUtil])) {
+                print("teamQuotas[dteam][posUtil] =  ".$teamQuotas[$dteam][$posUtil]."<br/>");
+            }
+            print("hasUtil =  ".$hasUtil."<br/>");
+        }
+        foreach ($values as $pid => $val) {
 			if (!isset($drafted[$pid])) {
 				if (!isset($this->player_model)) {
 					$this->load->model('player_model');
@@ -1058,41 +1087,35 @@ class draft extends BaseEditor {
 						$pos = $details['role'];
 					}
 				} else {
-					if ($details['position']== 7 || $details['position'] == 8 || $details['position'] == 9) {
-						$pos = 20;
-					} else {
-						$pos = $details['position'];
-					}
+					if ($hasUtil && !isset($teamQuotas[$dteam][$posUtil])) {
+                        $pos = $posUtil;
+                    } else {
+                        if ($details['position']== 7 || $details['position'] == 8 || $details['position'] == 9) {
+                            $pos = 20;
+                        } else {
+                            $pos = $details['position'];
+                        }
+                    }
 				}
 				// TEST THIS PLAYERS POSITION AGAINST TEAM QUOTA
 				if ($this->debug) {
-					//echo("Player $pid position = ".$pos."<br />");
+					echo("dteam= ".$dteam."<br />");
+                    echo("Player $pid position = ".get_pos($pos)."<br />");
 				}
 				$draft = true;
-				// HANDLE SPECIAL CATEGORIES THAT GROUP POSITONS
-				// THESE NEED TO BE FILLED FIRST
-				
-				$posUtil = get_pos_num('U');
-				$posIF = get_pos_num('IF');
-				$posMI = get_pos_num('MI');
-				$posCI = get_pos_num('CI');
-				if (in_array($posUtil,$rules) && !isset($teamQuotas[$dteam][$posUtil])) {
-					$teamQuotas[$dteam][$posUtil] = 1;
-				} else {
-					if (isset($teamQuotas[$dteam][$pos])) {
-						if ($this->debug) {
-							//echo("teamQuotas[".$dteam."][".$pos."] = ".$teamQuotas[$dteam][$pos]."<br />");
-							//echo("rules[".$pos."]['active_max'] = ".$rules[$pos]['active_max']."<br />");
-						}
-						if ($teamQuotas[$dteam][$pos] >= $rules[$pos]['active_max']) {
-							$draft = false;
-						} else {
-							$teamQuotas[$dteam][$pos] += 1;
-						}
-					} else {
-						$teamQuotas[$dteam][$pos] = 1;
-					}
-				}
+                if (isset($teamQuotas[$dteam][$pos])) {
+                    if ($this->debug) {
+                        echo("teamQuotas[".$dteam."][".$pos."] = ".$teamQuotas[$dteam][$pos]."<br />");
+                        echo("rules[".$pos."]['active_max'] = ".$rules[$pos]['active_max']."<br />");
+                    }
+                    if ($teamQuotas[$dteam][$pos] >= $rules[$pos]['active_max']) {
+                        $draft = false;
+                    } else {
+                        $teamQuotas[$dteam][$pos] += 1;
+                    }
+                } else {
+                    $teamQuotas[$dteam][$pos] = 1;
+                }
 				if ($draft) { $dpick=$pid; break; }
 			}
 		}

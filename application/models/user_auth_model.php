@@ -438,7 +438,7 @@ class user_auth_model extends base_model {
 			$this->load($result->id);
 			$clearPw = substr($this->hashPassword(microtime().$this->email),0,12);
 		    $password   = $this->hashPassword($clearPw);
-            $data = array('password' => $password);
+            $data = array('password' => $password,'passConfirmKey'=>'');
             
 			$this->newPassword = $clearPw;
             $this->db->update($this->tblName, $data, array('id' => $result->id));

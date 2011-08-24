@@ -198,7 +198,12 @@ class member extends BaseEditor {
 		$this->data['thisItem']['levelStr'] = $levelStr;
 		
 		$this->user_meta_model->load($this->dataModel->id,'userId');
-		$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$this->dataModel->id);
+        $currPeriod = false;
+        if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
+            $currPeriod = $this->params['config']['current_period']-1;
+        }
+
+		$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$this->dataModel->id,$currPeriod);
 		
 		$this->data['thisItem']['locked'] = '<p style="display:inline;color:'.(($this->dataModel->locked == 1) ? '#040;">Not Locked':'#f60;">Locked').'</p>';
 		$this->data['thisItem']['active_id'] = $this->dataModel->active;
