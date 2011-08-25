@@ -1281,7 +1281,68 @@ class team_model extends base_model {
 		$query->free_result();
 		return $avatar;
 	}
-	
+
+    public function getGamesPlayedByRoster($team_id = false, $scoring_period_id = false, $ootp_league_id = 100, $year = false) {
+
+        if ($team_id === false) { $team_id = $this->id; }
+        if ($year === false) { $year = date('Y'); }
+        $game_stats= array();
+        $player_list=$this->getBasicRoster($scoring_period_id,$team_id);
+        foreach($player_list as $data) {
+            $player_id = $data['id'];
+            $player_stats = array();
+            if ($data['player__position'] != 1) {
+				$this->db->flush_cache();
+				$this->db->select("g, position");
+				$this->db->from("players_career_fielding_stats");
+				$this->db->where("player_id",$player_id);
+				$this->db->where("level_id",1);
+				$this->db->where("league_id",$ootp_league_id);
+				$this->db->where("year",$year);
+				$gquery = $this->db->get();
+				if ($gquery->num_rows() > 0) {
+                    $player_stats = array();
+					foreach ($gquery->result() as $grow) {
+                        $thisPos = $grow->position;
+                        if ($grow->position == 7 || $grow->position == 8 || $grow->position == 9) {
+                            $thisPos = 20;
+                        }
+                        $player_stats = $player_stats + array($thisPos=>$grow->g);
+					}
+				}
+				$gquery->free_result();
+			} else {
+				$this->db->flush_cache();
+				$this->db->select("g, gs");
+				$this->db->from("players_career_pitching_stats");
+				$this->db->where("player_id",$row->player_id);
+				$this->db->where("level_id",1);
+				$this->db->where("split_id",1);
+				$this->db->where("league_id",$league_id);
+				$this->db->where("year",$year);
+				$gquery = $this->db->get();
+				if ($gquery->num_rows() > 0) {
+					foreach ($gquery->result() as $grow) {
+
+                        $player_stats = $player_stats + array(11=>$grow->gs);
+                        if ($grow->gs > 0) {
+                            $gDiff =  - $grow->gs;
+                        } else {
+                            $gDiff = $grow->g;
+                        }
+                        $player_stats = $player_stats + array(12=>$gDiff);
+					}
+				}
+				$gquery->free_result();
+			}
+            asort($player_stats);
+            $data = $data + $player_stats;
+            $game_stats = array_push($game_stats,$data);
+		}
+		$this->db->flush_cache();
+
+        return $game_stats;
+    }
 	
 	public function getBasicRoster($score_period = -1, $team_id = false) {
 		
