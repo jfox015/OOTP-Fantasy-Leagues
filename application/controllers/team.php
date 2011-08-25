@@ -682,7 +682,7 @@ class team extends BaseEditor {
 					$id = $playerDetails[0];
 					$playerName = $this->player_model->getPlayerName($id);
 				    if (!empty($send_player_str)) { $send_player_str .= "<br />"; }
-					$send_player_str .= anchor('/players/info/'.$id,$playerName);
+					$send_player_str .= anchor('/players/info/player_id/'.$id.'/league_id/'.$this->dataModel->league_id,$playerName);
 					if ($playerDetails[1] != 'P') {
 						$pos = $playerDetails[1];
 					} else {
@@ -697,7 +697,7 @@ class team extends BaseEditor {
 					$id = $playerDetails[0];
 					$playerName = $this->player_model->getPlayerName($id);
 				    if (!empty($recieve_player_str)) { $recieve_player_str .= "<br />"; }
-					$recieve_player_str .= anchor('/players/info/'.$id,$playerName);
+					$recieve_player_str .= anchor('/players/info/player_id/'.$id.'/league_id/'.$this->dataModel->league_id,$playerName);
 					if ($playerDetails[1] != 'P') {
 						$pos = $playerDetails[1];
 					} else {
@@ -715,7 +715,7 @@ class team extends BaseEditor {
 				$msg = str_replace('[RECEIVE_PLAYERS]', $recieve_player_str,$msg);
 				$msg = str_replace('[USERNAME]', getUsername($this->dataModel->getTeamOwnerId($team2Id)), $msg);
 				$msg = str_replace('[COMMENTS]', $comments,$msg);
-				$msg = str_replace('[TRADE_REVIEW_URL]', anchor('/team/tradeReview/id/'.$team2Id.'/trade_id/'.$trade_id,'Review the Trade offer'),$msg);
+				$msg = str_replace('[TRADE_REVIEW_URL]', anchor('/team/tradeReview/team_id/'.$team2Id.'/league_id/'.$this->dataModel->league_id.'/trans_type/2/trade_id/'.$trade_id,'Review the Trade offer'),$msg);
 				$expireStr = "";
 				if ($expiresIn > 0) {
 					$expireStr = str_replace('[EXPIRES]',$expiresIn,$this->lang->line('team_trade_expires_message_to'));
@@ -742,7 +742,7 @@ class team extends BaseEditor {
 				$msg = str_replace('[USERNAME]', getUsername($this->dataModel->getTeamOwnerId($team_id)), $msg);
 				$msg = str_replace('[SEND_PLAYERS]', $send_player_str,$msg);
 				$msg = str_replace('[RECEIVE_PLAYERS]', $recieve_player_str,$msg);
-				$msg = str_replace('[TRADE_REVIEW_URL]', anchor('/team/tradeReview/id/'.$team_id.'/trade_id/'.$trade_id,'Trade Review Page'),$msg);
+				$msg = str_replace('[TRADE_REVIEW_URL]', anchor('/team/tradeReview/team_id/'.$team_id.'/league_id/'.$this->dataModel->league_id.'/trans_type/3/trade_id/'.$trade_id,'Trade Review Page'),$msg);
 				$expireStr = "";
 				if ($expiresIn > 0) {
 					$expireStr = str_replace('[EXPIRES]',$expiresIn,$this->lang->line('team_trade_expires_message_from'));
@@ -1256,6 +1256,8 @@ class team extends BaseEditor {
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
 			
 			$this->data['scoring_period'] = $this->getScoringPeriod();
+
+            //print("Scoring Period id = ".$this->data['scoring_period']['id']."<br />")
 			$returnVar= 'playerList';
 			$this->data['list_type'] = (isset($this->uriVars['list_type'])) ? $this->uriVars['list_type'] : 2;
 			if (isset($this->data['list_type']) && $this->data['list_type'] == 2) {

@@ -139,7 +139,7 @@ class league extends BaseEditor {
 		$this->params['subTitle'] = $this->dataModel->league_name;
 		
 		
-		$leagueStandings = $this->dataModel->getLeagueStandings();
+		$leagueStandings = $this->dataModel->getLeagueStandings($curr_period_id);
 		
 		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
 			$this->data['thisItem']['divisions'] = $leagueStandings;
@@ -960,7 +960,11 @@ class league extends BaseEditor {
 		if (isset($this->uriVars['period_id'])) {
 			$curr_period_id = $this->uriVars['period_id'];
 		} else {
-			$curr_period_id = $this->params['config']['current_period'];
+			if ($this->params['config']['current_period'] > 1) {
+                $curr_period_id = $this->params['config']['current_period']-1;
+            } else {
+                $curr_period_id = 1;
+            }
 		}
 		$curr_period = getScoringPeriod($curr_period_id);
 		$this->data['curr_period'] = $curr_period_id;
