@@ -351,18 +351,21 @@ class team extends BaseEditor {
 				$this->data['receiveList'] = $receiveList['players'];
 			} // END if
 			
-			// GET USER INITATED TRADES AND OFFERED TRADES
+			// GET USER INITIATED TRADES AND OFFERED TRADES
 			$this->data['allowProtests'] = ($this->params['config']['approvalType'] == 2) ? true : false;
-			$this->data['tradeList'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id'], false, false,$this->data['allowProtests']);
-			$this->data['tradeList'] = $this->data['tradeList'] + $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$this->data['allowProtests']);
+			$trades = array();
+            $trades['offered'] = $this->dataModel->getPendingTrades($this->data['league_id'],$this->data['team_id'], false, false,$this->data['allowProtests']);
+			$trades['incoming'] = $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$this->data['allowProtests']);
+
 			// GET PROTEST COUNT
 			if ($this->data['allowProtests'] === true) {
 				$tradesToApprove = $this->dataModel->getPendingTrades($this->data['league_id'], false, false, $this->data['team_id'], $this->data['allowProtests'], TRADE_PENDING_LEAGUE_APPROVAL);
 				if (sizeof($tradesToApprove) > 0) {
 					$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
+                    $trades['approvals'] = $tradesToApprove;
 				}
-				$this->data['tradeList'] = $this->data['tradeList'] + $tradesToApprove;
 			}
+            $this->data['teamTrades'] = $trades;
 			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
 			

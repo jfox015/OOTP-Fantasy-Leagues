@@ -883,14 +883,27 @@
 				/*-------------------------------------------------------
 				/	PENDING TRADES
 				/-----------------------------------------------------*/
-				if (isset($tradeList) && sizeof($tradeList) > 0) { ?>
-                
-                <br class="clear" clear="all" />
+				if (isset($teamTrades) && sizeof($teamTrades) > 0) { ?>
                 <div id="tradeStatusBox"><div id="tradeStatus"></div></div>
-            	<div class='textbox'>
+            	<?php
+                    $types = array('incoming','offered','approvals');
+                    foreach($types as $type) {
+                       if (isset($teamTrades[$type]) && sizeof($teamTrades[$type]) > 0) {
+                           $tradeList = $teamTrades[$type];
+                    ?>
+                
+                <br class="clear" clear="all" /><br />
+                        <?php
+                        if ( ! function_exists('humanize')) {
+                            $this->load->helper('inflector');
+                        }
+                        print('<b style="color:#700;">'.humanize($type).'</b>');
+                        ?>
+                <br class="clear" clear="all" />
+                       <div class='textbox'>
                 <table cellpadding="3" cellspacing="1" border="0" width="265px">
                 <tr class='title'>
-                    <td style='padding:3px' colspan="3">Pending Trade Offers</td>
+                    <td style='padding:3px' colspan="3"><?php print(humanize($type));?> Trade Details</td>
                 </tr>
                 <?php
                 //echo("Team id = ".$team_id."<br />");
@@ -1024,8 +1037,10 @@
                 <?php  } ?>
                 </table>
                 </div>
-               <?php 
-				}
-				?>
+                        <?php
+                                            }
+                    }
+                }
+?>
             </div>
     <p /><br />
