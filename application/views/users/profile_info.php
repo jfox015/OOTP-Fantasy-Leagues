@@ -142,8 +142,8 @@
                     <b>Last Updated:</b> <?php print(date('m/d/Y',strtotime($dateModified))); ?><br />    
                     <br />                
                   	<h3>Fantasy Teams</h3>
-                   	<div class='textbox'>
-                   	<?php  if (isset($thisItem['userTeams']) && sizeof($thisItem['userTeams']) > 0) {
+                   	<?php
+                    if (isset($thisItem['userTeams']) && sizeof($thisItem['userTeams']) > 0) {
 					$teamList = array('rot'=>array(),'h2h'=>array());
 					if (sizeof($thisItem['userTeams']) > 0) { 
 						foreach($thisItem['userTeams'] as $data) {
@@ -159,6 +159,7 @@
 					foreach($teamList as $type => $teams) {
 						if (sizeof($teams) > 0) {
 					?>
+                    <div class='textbox'>
                     <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
                     <tr class='title'>
                     	<?php 
@@ -218,7 +219,9 @@
                         <td class='hsc2_l'><?php echo anchor('/league/select/id/'.$data['league_id'].'/team_id/'.$data['id'],'Select'); ?></td>
                         <?php } ?>
 					</tr>
-                    <?php if (isset($userDrafts) && isset($userDrafts[$data['league_id']])) { 
+                    <?php
+                        // GET AND DISPLAY USER DRAFTS
+                        if (isset($userDrafts) && isset($userDrafts[$data['league_id']])) {
 						$draftInfo = $userDrafts[$data['league_id']];
 						if ($draftInfo['draftStatus'] > 0 && $draftInfo['draftStatus'] < 5) {
 					?>
@@ -249,18 +252,57 @@
 							}
 							echo anchor('/draft/selection/league_id/'.$data['league_id'].'/team_id/'.$data['id'],$outText,array('style'=>'font-weight:bold;')); 
 						} // END if ($draftInfo['draftStatus'] > 0 
-					} // if (isset($userDrafts)
 					?></td>
 					</tr>
-						<?php
-						$rowcount++;
-						} // END for
-					} // END if (sizeof($userTeams)
-					}
+					<?php
+					} // if (isset($userDrafts)
+                    $col_size_a_1 = 8;
+                    $col_size_b_1 = 2;
+                    $col_size_b_2 = 4;
+                    $col_size_b_3 = 2;
+                    if ($type == 'rot') {
+                        $col_size_a_1 = 5;
+                        $col_size_b_1 = 1;
+                        $col_size_b_2 = 2;
+                        $col_size_b_3 = 2;
+                    }
+                    // GET AND DISPLAY USER TRADES
+                    if (isset($userTrades) && isset($userTrades[$data['league_id']])) {
+                        $tradeInfo = $userTrades[$data['league_id']];
+                    ?>
+                    <tr style="background-color:#C9F0C7;">
+						<td class='hsc2_l' colspan="<?php print($col_size_a_1); ?>">
+                        <span style="color:#0C4A09;font-weight:bold;">You have <?php print(sizeof($tradeInfo)); ?> trade offers pending!</span>
+                        </td>
+                    </tr>
+                    <?php
+                        foreach($tradeInfo as $tradeOffer) {
+					?>
+                    <tr style="background-color:#C9F0C7 ;" align="left" valign="top">
+						<td class='hsc2_l' colspan="<?php print($col_size_b_1); ?>">
+                        <b>Offer from:</b> <?php print(anchor('/team/info/'.$tradeOffer['team_1_id'],$tradeOffer['teamname'].' '.$tradeOffer['teamnick'])); ?>
+                         </td>
+						<td class='hsc2_l' colspan="<?php print($col_size_b_2); ?>">
+						<b>Received:</b> <?php print(date('m/d/Y h:i:s A',strtotime($tradeOffer['offer_date'])));
+                        if (isset($tradeOffer['expiration_date']) && $tradeOffer['expiration_date'] != EMPTY_DATE_TIME_STR) {
+                            print(',<br /><b>Expires:</b> '.date('m/d/Y h:i:s A',strtotime($tradeOffer['expiration_date'])));
+                        }
+                        ?>
+						</td>
+                        <td class='hsc2_l' colspan="<?php print($col_size_b_3); ?>">
+                        <?php print anchor('/team/tradeReview/trade_id/'.$tradeOffer['trade_id'].'/league_id/'.$data['league_id'].'/team_id/'.$tradeOffer['team_2_id'].'/trans_type/2','Review Offer');
+					?></td>
+					</tr>
+					<?php
+					    } // END foreach
+					    $rowcount++;
+					} // if (isset($userTrades)
+                    } // ENd foreach
 					?>
                     </table>
                     </div>
 					<?php } else { ?>
+                    <div class="textbox">
 					<table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
                     <tr class='title'>
                         <td colspan='8' class='lhl'>No Teams Found</td>
@@ -270,8 +312,10 @@
 					</tr>
 					</table>
 					</div>
-					<?php } ?>
+					<?php } // END if
+                    } // ENd foreach
+               }?>
                     <br clear="all" class="clear" />
                     </div>
                     </div>
-	</div>
+    </div>

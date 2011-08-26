@@ -677,13 +677,14 @@ class user extends MY_Controller {
 		}
 		$view = $this->views['PROFILE'];
         $userTeams = array();
+        $currPeriod = false;
+        if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
+            $currPeriod = ($this->params['config']['current_period']-1);
+        }
         if (isset($this->params['userTeams'])) {
-            $userTeams = $this->params['userTeams'];
+        $userTeams = $this->params['userTeams'];
         } else {
-            $currPeriod = false;
-            if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
-                $currPeriod = $this->params['config']['current_period'];
-            }
+
             $userTeams = $this->user_meta_model->getUserTeams(false,false,$currPeriod);
         }
 
@@ -730,6 +731,9 @@ class user extends MY_Controller {
 					$userDrafts[$data['league_id']]['draftDate'] = $this->draft_model->getDraftDate($data['league_id']);
 				}
 				$this->data['userDrafts'] = $userDrafts;
+
+                $this->data['userTrades'] = $this->user_meta_model->getTradeOffers(false,$currPeriod);
+
 			}
 			$this->params['content'] = $this->load->view($view, $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;

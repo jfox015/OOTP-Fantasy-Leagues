@@ -56,7 +56,8 @@ class user_meta_model extends base_model {
 		$this->tables['DRAFT'] = 'fantasy_draft';
 		$this->tables['INVITES'] = 'fantasy_invites';
 		$this->tables['REQUESTS'] = 'fantasy_leagues_requests';
-		
+		$this->tables['TRADES'] = 'fantasy_teams_trades';
+
 
 		$this->fieldList = array('firstName', 'lastName', 'nickName', 'city', 'state', 'country', 'zipCode', 'title', 'bio', 'gender','timezone');
 		$this->conditionList = array('birthDay','birthMonth','birthYear','avatarFile');
@@ -163,7 +164,7 @@ class user_meta_model extends base_model {
 		if ($userId === false) $userId = $this->userId;
 		$teamIds = array();
 		
-		$teams = $this->getUserTeams($league_id,$userId);
+		$teams = $this->getUserTeams($league_id,$userId,$scoring_period_id);
 		if (sizeof($teams) > 0) {
 			foreach($teams as $row) {
 				//echo("Team id = ".$row['id']."<br />");
@@ -235,6 +236,70 @@ class user_meta_model extends base_model {
 			}
 		}
 		return $requests;
+	}
+    /**
+     * GET USER TRADE OFFERS.
+     * Retrieves a list of all trade offers for this user.
+     *
+     * @param       bool    $userId
+     * @param       bool    $scoring_period_id
+     * @param       bool    $team_id
+     * @param       bool    $league_id
+     * @param       bool    $debug
+     * @return      array   List of offers index by ($league_id => $array($offers))
+     *
+     * @since       1.0.6
+     * @access      public
+     */
+    public function getTradeOffers($userId = false, $scoring_period_id = false, $team_id = false, $league_id = false, $debug = false) {
+
+        $tradeOfferList = array();
+        if ($userId === false) { $userId = $this->userId; }
+		if ($userId == -1) {
+			$this->errorCode = 1;
+			$this->statusMess = "No user Id was received.";
+		} else {
+            $team_list = array();
+            if ($team_id !== false) {
+                array_push($team_list,$team_id);
+            } else {
+                $team_list = $this->getUserTeamIds($league_id,$userId,$scoring_period_id);
+            }
+            $this->db->select($this->tables['TRADES'].'.id, team_1_id, teamname, teamnick, team_2_id, status, 	tradeStatus, '.$this->tables['TRADES'].'.league_id, offer_date, expiration_date');
+            $this->db->join($this->tables['TEAMS'],$this->tables['TRADES'].'.team_1_id = '.$this->tables['TEAMS'].'.id','right outer');
+            $this->db->join('fantasy_teams_trades_status','fantasy_teams_trades_status.id = '.$this->tables['TRADES'].'.status','right outer');
+            $teamListStr = "(";
+            if (sizeof($team_list) > 0) {
+                foreach ($team_list as $id) {
+                    if ($teamListStr != "(") { $teamListStr .= ","; }
+                    $teamListStr .= $id;
+                }
+            }
+            $teamListStr .= ")";
+            $this->db->where('team_2_id IN '.$teamListStr);
+            $this->db->where('('.$this->tables['TRADES'].'.status = 1 OR '.$this->tables['TRADES'].'.status = 13 OR '.$this->tables['TRADES'].'.status = 14)');
+            if ($scoring_period_id !== false) {
+                $this->db->where('in_period',$scoring_period_id+1);
+            }
+            $this->db->orderBy($this->tables['TRADES'].'.league_id','asc');
+            $query = $this->db->get($this->tables['TRADES']);
+            if ($debug === true) { print($this->db->last_query()."<br />"); }
+            if ($query->num_rows() > 0) {
+                $curr_league = -1;
+                $offers = array();
+                $itemCount = 0;
+                foreach($query->result() as $row) {
+                    if ($curr_league == -1 || ($curr_league != -1 && $curr_league != $row->league_id)) {
+                        if (sizeof($offers) > 0) { $tradeOfferList = $tradeOfferList + array($curr_league => $offers);  $offers = array(); }
+                        $curr_league = $row->league_id;
+                    }
+                    array_push($offers,array('trade_id'=>$row->id,'team_1_id'=>$row->team_1_id,'team_2_id'=>$row->team_2_id,'teamname'=>$row->teamname,'teamnick'=>$row->teamnick,
+                                                'offer_date'=>$row->offer_date,'status'=>$row->status,'tradeStatus'=>$row->tradeStatus, 'expiration_date'=>$row->expiration_date));
+                    if ($query->num_rows() == 1) { $tradeOfferList = $tradeOfferList + array($curr_league => $offers);  $offers = array(); }
+                } // END foreach
+            } // END if
+        }
+		return $tradeOfferList;
 	}
 	public function getUserDrafts() {
 		
