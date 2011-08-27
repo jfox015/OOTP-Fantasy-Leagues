@@ -6,7 +6,7 @@ require_once('base_editor.php');
  *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
  *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
  *	@dateCreated	04/04/10
- *	@lastModified	03/16/11
+ *	@lastModified	08/24/11
  *
  */
 class team extends BaseEditor {
@@ -96,6 +96,7 @@ class team extends BaseEditor {
 		$this->views['TRADE'] = 'team/team_trade';
 		$this->views['TRADE_REVIEW'] = 'team/team_trade_review';
 		$this->views['TRADE_HISTORY'] = 'team/team_trade_history';
+		$this->views['ELIGIBILITY'] = 'team/team_eligibility';
 		$this->debug = false;
 		$this->useWaivers = (isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) ? true : false;
 	}
@@ -1644,6 +1645,72 @@ class team extends BaseEditor {
 			$this->output->set_output($result);
 		}
 	}
+	/**
+	 *	PLAYER ELIGIBILITY.
+	 *	Pulls an array of player info and the number of games played per position. 
+	 *
+	 *	@since	1.0.6
+	 *	@access	public
+	 *
+	 */
+	public function eligibility() {
+		
+		$this->getURIData();
+		$this->data['subTitle'] = "Position Eligibility";
+		$this->load->model($this->modelName,'dataModel');
+		
+		$team_id = -1;
+		if (isset($this->uriVars['id']) && !empty($this->uriVars['id']) && $this->uriVars['id'] != -1) {
+			$team_id = $this->uriVars['id'];
+		} else if (isset($this->uriVars['team_id']) && !empty($this->uriVars['team_id']) && $this->uriVars['team_id'] != -1) {
+			$team_id = $this->uriVars['team_id'];
+		} 
+		$this->dataModel->load($team_id);
+		$this->data['team_id'] = $this->dataModel->id;
+		$this->data['teamname'] = $this->dataModel->teamname;
+		$this->data['teamnick'] = $this->dataModel->teamnick;
+		$this->data['avatar'] = $this->dataModel->avatar;
+		$this->data['team_id'] = $team_id;	
+		$this->data['years'] = $this->ootp_league_model->getAllSeasons();
+		if (isset($this->uriVars['year'])) {
+			$this->data['lgyear'] = $this->uriVars['year'];
+		} else {
+			$currDate = strtotime($this->ootp_league_model->current_date);
+			$startDate = strtotime($this->ootp_league_model->start_date);
+			if ($currDate <= $startDate) {
+				$this->data['lgyear'] = (intval($this->data['years'][0]));
+			} else {
+				$this->data['lgyear'] = date('Y',$currDate);
+			}
+		}
+		$this->data['league_id']  = $this->dataModel->league_id;
+		
+		if (!isset($this->league_model)) {
+			$this->load->model('league_model');
+		}
+		$this->league_model->load($this->data['league_id']);
+		$rules = array();
+		if ($this->league_model->id != -1) {
+			$tmprules = $this->league_model->getRosterRules();
+			if (sizeof($tmprules) > 0) {
+				foreach($tmprules as $ruleId => $ruleData) {
+					if ($ruleId < 100) {
+						$rules = $rules + array($ruleId =>$ruleData);
+					}
+				}
+			}
+		}
+		$this->data['roster_rules'] = $rules;
+		$this->data['scoring_period'] = $this->getScoringPeriod();
+		$this->data['player_eligibility'] = $this->dataModel->getGamesPlayedByRoster($this->data['team_id'],$this->data['scoring_period']['id'],$this->ootp_league_model->league_id,$this->data['lgyear']);
+		$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
+		
+		$this->makeNav();
+		$this->params['pageType'] = PAGE_FORM;
+		$this->params['subTitle'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
+		$this->params['content'] = $this->load->view($this->views['ELIGIBILITY'], $this->data, true);
+	    $this->displayView();
+	}
 	public function stats() {
 		
 		$this->getURIData();
@@ -1662,7 +1729,18 @@ class team extends BaseEditor {
 		$this->data['thisItem']['teamnick'] = $this->dataModel->teamnick;
 		$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
 		$this->data['team_id'] = $team_id;	
-		$this->data['year'] = date('Y');
+		if (isset($this->uriVars['year'])) {
+			$this->data['lgyear'] = $this->uriVars['year'];
+		} else {
+			$currDate = strtotime($this->ootp_league_model->current_date);
+			$startDate = strtotime($this->ootp_league_model->start_date);
+			if ($currDate <= $startDate) {
+				$this->data['lgyear'] = (intval($this->data['years'][0]));
+			} else {
+				$this->data['lgyear'] = date('Y',$currDate);
+			}
+		}
+		$this->data['year'] = $this->data['lgyear'];
 		$this->data['league_id']  = $this->dataModel->league_id;
 		
 		

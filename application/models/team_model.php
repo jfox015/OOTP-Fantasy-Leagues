@@ -4,7 +4,7 @@
  *	
  *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
  *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
- *	@version		1.0
+ *	@version		1.0.6.127
  *	@since			1.0
  *
 */
@@ -1237,7 +1237,6 @@ class team_model extends base_model {
 		return $teamIds;
 	}
 	
-	
 	public function getTeamOwnerId($team_id = FALSE) {
 		if ($team_id === false) { $team_id = $this->id; }
 		
@@ -1253,7 +1252,7 @@ class team_model extends base_model {
 		return $ownerId;
 	}
 	public function getTeamName($team_id = FALSE) {
-		if ($team_id === false) { $team_id = $this->id; }
+		if ($team_id === false) { $team_id = $this->id; } // END if
 		
 		$teamName = FALSE;
 		$this->db->select('teamname, teamnick');
@@ -1268,7 +1267,7 @@ class team_model extends base_model {
 	}
 	
 	public function getAvatar($team_id = FALSE) {
-		if ($team_id === false) { $team_id = $this->id; }
+		if ($team_id === false) { $team_id = $this->id; } // END if
 		
 		$avatar = FALSE;
 		$this->db->select('avatar');
@@ -1281,70 +1280,88 @@ class team_model extends base_model {
 		$query->free_result();
 		return $avatar;
 	}
+	/**
+	 *	
+	 *
+	 *
+	 */
+    public function getGamesPlayedByRoster($team_id = false, $scoring_period_id = false, $ootp_league_id = 100, $year = false, $league_id = false) {
 
-    public function getGamesPlayedByRoster($team_id = false, $scoring_period_id = false, $ootp_league_id = 100, $year = false) {
-
-        if ($team_id === false) { $team_id = $this->id; }
-        if ($year === false) { $year = date('Y'); }
+        if ($team_id === false) { $team_id = $this->id; } // END if
+        if ($year === false) { $year = date('Y'); } // END if
+		if ($league_id === false) { $league_id = $this->league_id; } // END if
+		
         $game_stats= array();
-        $player_list=$this->getBasicRoster($scoring_period_id,$team_id);
+        $player_list=$this->getBasicRoster($scoring_period_id,$team_id,true);
         foreach($player_list as $data) {
-            $player_id = $data['id'];
-            $player_stats = array();
-            if ($data['player__position'] != 1) {
+            $player_stats = array('player_id'=>$data['player_id'],"player_name" =>$data['player_name'],'role'=>$data['player_role'],'position'=>$data['player_position']);
+            if ($data['player_position'] != 1) {
+				$u_game_count = 0;
+				$of_game_count = 0;
+				$if_game_count = 0;
+				$mi_game_count = 0;
+				$ci_game_count = 0;
 				$this->db->flush_cache();
 				$this->db->select("g, position");
 				$this->db->from("players_career_fielding_stats");
-				$this->db->where("player_id",$player_id);
+				$this->db->where("player_id",$data['ootp_player_id']);
 				$this->db->where("level_id",1);
 				$this->db->where("league_id",$ootp_league_id);
 				$this->db->where("year",$year);
 				$gquery = $this->db->get();
+				//print("batters: ".$this->db->last_query()."<br />");
 				if ($gquery->num_rows() > 0) {
-                    $player_stats = array();
-					foreach ($gquery->result() as $grow) {
-                        $thisPos = $grow->position;
-                        if ($grow->position == 7 || $grow->position == 8 || $grow->position == 9) {
-                            $thisPos = 20;
-                        }
-                        $player_stats = $player_stats + array($thisPos=>$grow->g);
-					}
-				}
+                    foreach ($gquery->result() as $grow) {
+						$u_game_count += $grow->g;
+						if ($grow->position == 3 || $grow->position == 4 || $grow->position == 5 || $grow->position == 6) {
+							$if_game_count += $grow->g;
+							if($grow->position == 4 || $grow->position == 5) {
+								$mi_game_count += $grow->g;
+							} else {
+								$ci_game_count += $grow->g;
+							}
+						}
+						if ($grow->position == 7 || $grow->position == 8 || $grow->position == 9) {
+                            $of_game_count += $grow->g;
+						} else {
+							$player_stats = $player_stats + array($grow->position=>$grow->g);
+						} // END if
+					} // END foreach
+				} // END if
 				$gquery->free_result();
+				if ($u_game_count > 0) { $player_stats = $player_stats + array(get_pos_num('U')=>$u_game_count); } // END if
+				if ($of_game_count > 0) { $player_stats = $player_stats + array(get_pos_num('OF')=>$of_game_count); } // END if
 			} else {
 				$this->db->flush_cache();
 				$this->db->select("g, gs");
 				$this->db->from("players_career_pitching_stats");
-				$this->db->where("player_id",$row->player_id);
+				$this->db->where("player_id",$data['ootp_player_id']);
 				$this->db->where("level_id",1);
 				$this->db->where("split_id",1);
-				$this->db->where("league_id",$league_id);
+				$this->db->where("league_id",$ootp_league_id);
 				$this->db->where("year",$year);
 				$gquery = $this->db->get();
 				if ($gquery->num_rows() > 0) {
 					foreach ($gquery->result() as $grow) {
-
                         $player_stats = $player_stats + array(11=>$grow->gs);
-                        if ($grow->gs > 0) {
-                            $gDiff =  - $grow->gs;
+                        if ($grow->gs > 0 && $grow->gs != $grow->g) {
+                            $gDiff = $grow->g - $grow->gs;
                         } else {
                             $gDiff = $grow->g;
-                        }
+                        } // END if
                         $player_stats = $player_stats + array(12=>$gDiff);
-					}
-				}
+					} // END foreach
+				} // END if
 				$gquery->free_result();
-			}
-            asort($player_stats);
-            $data = $data + $player_stats;
-            $game_stats = array_push($game_stats,$data);
-		}
+			} // END if
+			asort($player_stats);
+			array_push($game_stats,$player_stats);
+		} // END foreach
 		$this->db->flush_cache();
-
         return $game_stats;
     }
 	
-	public function getBasicRoster($score_period = -1, $team_id = false) {
+	public function getBasicRoster($score_period = -1, $team_id = false, $extendedIds = false) {
 		
 		if ($team_id === false) { $team_id = $this->id; }
 		$roster = array();
@@ -1352,35 +1369,39 @@ class team_model extends base_model {
 		$sql = "SELECT player_id FROM fantasy_rosters WHERE team_id = ".$team_id;
 		if ($score_period != -1) {
 			$sql .= " AND scoring_period_id = ".$score_period;
-		}
+		} // END if
 		$query = $this->db->query($sql);
 		$playerIds = array();
 		foreach ($query->result() as $row) {
 			array_push($playerIds,$row->player_id);
-		}
+		} // END foreach
 		//echo("getBasicRoster last SQL pre ids = ".$this->db->last_query()."<br />");
 		$query->free_result();
 		//echo("Player ids = ".sizeof($playerIds)."<br />");
 		if (sizeof($playerIds) > 0) {
-			$this->db->select('fantasy_rosters.player_id, first_name, last_name, fantasy_rosters.player_position, fantasy_rosters.player_role, fantasy_rosters.player_status');
+			$this->db->select('fantasy_players.id, fantasy_rosters.player_id, fantasy_players.player_id AS ootp_player_id, first_name, last_name, fantasy_rosters.player_position, fantasy_rosters.player_role, fantasy_rosters.player_status');
 			$this->db->join('fantasy_rosters','fantasy_players.id = fantasy_rosters.player_id','left');
 			$this->db->join('players','players.player_id = fantasy_players.player_id','right outer');
 			$this->db->where_in("fantasy_players.id",$playerIds);
 			$this->db->where('fantasy_rosters.team_id',$team_id);
 			if ($score_period != -1) {
 				$this->db->where('fantasy_rosters.scoring_period_id',$score_period);
-			}
+			} // END if
 			$this->db->order_by('player_position, player_role');
 			$query = $this->db->get('fantasy_players');
 			//echo("last SQL positions = ".$this->db->last_query()."<br />");
 			if ($query->num_rows() > 0) {
 				foreach ($query->result() as $row) {
-					array_push($roster,array('player_name'=>$row->first_name." ".$row->last_name,'id'=>$row->player_id,'player_position'=>$row->player_position,'player_role'=>$row->player_role,
-												'player_status'=>$row->player_status));
-				}
-			}
+					$tmpData = array('player_name'=>$row->first_name." ".$row->last_name,'id'=>$row->player_id,'player_position'=>$row->player_position,'player_role'=>$row->player_role,
+												'player_status'=>$row->player_status);
+					if ($extendedIds !== false) {
+						$tmpData = $tmpData + array('player_id'=>$row->id,'ootp_player_id'=>$row->ootp_player_id);
+					}
+					array_push($roster,$tmpData);
+				} // END foreach
+			} // END if
 			$query->free_result();
-		}
+		} // END if
 		//echo("Team, get roster, size of roster = ".sizeof($roster)."<br />");
 		return $roster;
 	}
@@ -1388,7 +1409,7 @@ class team_model extends base_model {
 	// SPECIAL QUERIES
 	public function getBatters($scoring_period = -1, $team_id = false, $status = 1) {
 		
-		if ($team_id === false && $this->id != -1) { $team_id = $this->id; }
+		if ($team_id === false && $this->id != -1) { $team_id = $this->id; } // END if
 		
 		$players = array();
 		$this->db->select('fantasy_players.id, fantasy_players.player_id, first_name, last_name, position, teams.abbr, players.team_id, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, player_position, players.team_id, fantasy_players.positions, fantasy_players.player_status, own, own_last, start, start_last');
@@ -1399,10 +1420,10 @@ class team_model extends base_model {
 		$this->db->where('fantasy_rosters.player_position <>', 1);
 		if ($status != -999) {
 			$this->db->where('fantasy_rosters.player_status',$status);
-		}
+		} // END if
 		if ($scoring_period != -1) {
 			$this->db->where('fantasy_rosters.scoring_period_id',$scoring_period);
-		}
+		} // END if
 		$this->db->group_by('fantasy_rosters.player_id');
 		$this->db->order_by('fantasy_rosters.player_position');
 		$query = $this->db->get($this->tables['ROSTERS']);
@@ -1415,8 +1436,8 @@ class team_model extends base_model {
 																  'injury_id'=>$row->injury_id,'injury_career_ending'=>$row->injury_career_ending,
 																  'positions'=>$row->positions, 'player_status'=>$row->player_status, 'own_last'=>$row->own_last,
 									   							  'start_last'=>$row->start_last,'own'=>$row->own,'start'=>$row->start));
-			}
-		}
+			} // END foreach
+		} // END if
 		$query->free_result();
 		return $players;
 	}
