@@ -1340,7 +1340,16 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
       echo "     <tr class='$cls'>";
       echo "<td class='".$cls."_l'>";
-      echo "<a href='./teamHist.php?page=year&team_id=$tid&year=$yr'>$yr - $tabbr</a>";
+      // IF TEAM HTML HISTORY PAGE IS AVIALABLE FOR THIS TEAM AND YEAR, RENDER A LINK To IT
+	  // FIXES BUG ID 212
+	  $team_hist_path = "history/team_year_".$tid."_".$yr.".html";
+	  $hasTeamHTML = file_exists($filepath."/".$team_hist_path);
+	  if($hasTeamHTML) { echo('<a href="'.$htmlpath.$team_hist_path.'">'); }
+	  $tabbr = ((isset($teams[$tid][$yr])) ? $teams[$tid][$yr] : "");
+      if ($tabbr=="" && isset($teams[$tid][$year])) {$tabbr=$teams[$tid][$year];}
+	  echo ($yr." - ".$tabbr);
+	  if($hasTeamHTML) { echo('</a>'); }
+	  // END HTML LINK EDIT
       if (isset($as[$yr]))
        {
         if (empty($awrdStr)) $awrdStr.="("; else $awrdStr.=",";
@@ -1409,7 +1418,17 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       #Expanded
       $expTable.="     <tr class='$cls'>";
       $expTable.="<td class='".$cls."_l'>";
-      $expTable.="<a href='./teamHist.php?page=year&team_id=$tid&year=$yr'>$yr - $tabbr</a>";
+	  // IF TEAM HTML HISTORY PAGE IS AVIALABLE FOR THIS TEAM AND YEAR, RENDER A LINK To IT
+	  // FIXES BUG ID 212
+	  $team_hist_path = "history/team_year_".$tid."_".$yr.".html";
+	  $hasTeamHTML = file_exists($filepath."/".$team_hist_path);
+	  if($hasTeamHTML) { $expTable.='<a href="'.$htmlpath.$team_hist_path.'">'; }
+	  $tabbr = ((isset($teams[$tid][$yr])) ? $teams[$tid][$yr] : "");
+      if ($tabbr=="" && isset($teams[$tid][$year])) {$tabbr=$teams[$tid][$year];}
+	  $expTable.= $yr.' - '.$tabbr;
+	  if($hasTeamHTML) { $expTable.='</a>'; }
+	  $expTable.="</td>";
+	  // END HTML LINK EDIT
       if (isset($as[$yr])) {$expTable.=" (AS)";}
       $expTable.="</td>";
       $expTable.="<td>$age</td>";
@@ -2291,7 +2310,16 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
       echo "     <tr class='$cls'>";
       echo "<td class='".$cls."_l'>";
-      echo "<a href='./teamHist.php?page=year&team_id=$tid&year=$yr'>$yr - $tabbr</a>";
+	  // IF TEAM HTML HISTORY PAGE IS AVIALABLE FOR THIS TEAM AND YEAR, RENDER A LINK To IT
+	  // FIXES BUG ID 212
+	  $team_hist_path = "history/team_year_".$tid."_".$yr.".html";
+	  $hasTeamHTML = file_exists($filepath."/".$team_hist_path);
+	  if($hasTeamHTML) { echo('<a href="'.$htmlpath.$team_hist_path.'">'); }
+	  $tabbr = ((isset($teams[$tid][$yr])) ? $teams[$tid][$yr] : "");
+      if ($tabbr=="" && isset($teams[$tid][$year])) {$tabbr=$teams[$tid][$year];}
+	  echo ($yr." - ".$tabbr);
+	  if($hasTeamHTML) { echo('</a>'); }
+	  // END HTML LINK EDIT
       if (isset($as[$yr]))
        {
         if (empty($awrdStr)) $awrdStr.="("; else $awrdStr.=",";
@@ -2357,7 +2385,19 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
       #Expanded
       $expTable.="     <tr class='$cls'>";
-      $expTable.="<td class='".$cls."_l'><a href='./teamHist.php?page=year&team_id=$tid&year=$yr'>$yr - $tabbr</a>";
+	  $expTable.="<td class='".$cls."_l'>";
+	  // IF TEAM HTML HISTORY PAGE IS AVIALABLE FOR THIS TEAM AND YEAR, RENDER A LINK To IT
+	  // FIXES BUG ID 212
+	  $team_hist_path = "history/team_year_".$tid."_".$yr.".html";
+	  $hasTeamHTML = file_exists($filepath."/".$team_hist_path);
+	  if($hasTeamHTML) { $expTable.='<a href="'.$htmlpath.$team_hist_path.'">'; }
+	  $tabbr = ((isset($teams[$tid][$yr])) ? $teams[$tid][$yr] : "");
+      if ($tabbr=="" && isset($teams[$tid][$year])) {$tabbr=$teams[$tid][$year];}
+	  $expTable.= $yr.' - '.$tabbr;
+	  if($hasTeamHTML) { $expTable.='</a>'; }
+	  $expTable.="</td>";
+	  // END HTML LINK EDIT
+
       if (isset($as[$yr])) {$expTable.=" (AS)";}
       $expTable.="</td>";
       $expTable.="<td>$age</td>";

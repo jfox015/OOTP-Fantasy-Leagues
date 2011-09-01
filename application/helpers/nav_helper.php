@@ -92,6 +92,7 @@ function team_nav($team_id = false, $teamName = false, $show_admin = false, $sho
 		array_push($nav,array('url'=>'/team/admin/id/'.$team_id,'label'=>'Admin'));
 	}
 	array_push($nav,array('url'=>'/team/info/'.$team_id,'label'=>'Lineup'));
+	array_push($nav,array('url'=>'/team/eligibility/'.$team_id,'label'=>'Eligibility'));
 	array_push($nav,array('url'=>'/team/stats/'.$team_id,'label'=>'Stats'));
 	if ($show_admin) {
 		array_push($nav,array('url'=>'/team/adddrop/id/'.$team_id,'label'=>'Add/Drop'));

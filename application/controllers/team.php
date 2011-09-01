@@ -803,11 +803,8 @@ class team extends BaseEditor {
 			
 			$this->dataModel->load($this->uriVars['team_id']);
 			$this->data['team_id'] = $this->uriVars['team_id'];
-			$this->data['teamname'] = $this->dataModel->teamname;
-			$this->data['teamnick'] = $this->dataModel->teamnick;
-			$this->data['avatar'] = $this->dataModel->avatar;
 			$this->data['league_id'] = $this->dataModel->league_id;
-				 
+			
 			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? $this->uriVars['trade_id'] : -1;
 			
 			$sendList = array();
@@ -872,6 +869,7 @@ class team extends BaseEditor {
 			$this->data['scoring_period'] = $this->getScoringPeriod();
 			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
 			
+			// GET STATS FOR PLAYERS IN TRADE OFFER
 			$this->prepForQuery();
 			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
 				$this->data['stats_range'] = 0;
@@ -890,9 +888,23 @@ class team extends BaseEditor {
 			if ($this->data['stats_range'] != 0) {
 				$periodForQuery = -1;
 			}
+			
+			// TEAM META DATA FOR DISPLAY
+			$this->data['team_id1'] = -1;
+			$this->data['team_name1'] = "";
+			$this->data['team_avatar1'] = "";
 			$this->data['team_id2'] = -1;
 			$this->data['team_name2'] = "";
 			$this->data['team_avatar2'] = "";
+			if (isset($this->uriVars['team_id1']) && !empty($this->uriVars['team_id1']) && $this->uriVars['team_id1'] != -1) {
+				$this->data['team_id1'] = $this->uriVars['team_id1'];
+				$this->data['team_name1'] = $this->dataModel->getTeamName($this->data['team_id1']);
+				$this->data['team_avatar1'] = $this->dataModel->getAvatar($this->data['team_id1']);
+			} else if (isset($trade) && isset($trade['trade_id'])) {
+				$this->data['team_id1'] = $trade['team_1_id'];
+				$this->data['team_name1'] = $this->dataModel->getTeamName($trade['team_1_id']);
+				$this->data['team_avatar1'] = $this->dataModel->getAvatar($trade['team_1_id']);
+			}
 			if (isset($this->uriVars['team_id2']) && !empty($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
 				$this->data['team_id2'] = $this->uriVars['team_id2'];
 				$this->data['team_name2'] = $this->dataModel->getTeamName($this->data['team_id2']);
@@ -915,9 +927,9 @@ class team extends BaseEditor {
 				$this->data['formatted_stats']['team_id2']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			}
 			if (sizeof($sendList['pitchers']) > 0) {
-				$stats['team_id']['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id2'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$sendList['pitchers']);
-				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id']['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
-				$this->data['formatted_stats']['team_id']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+				$stats['team_id1']['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id2'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$sendList['pitchers']);
+				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id1']['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
+				$this->data['formatted_stats']['team_id1']['pitchers'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			}
 			// BATTERS
 			$this->data['title']['batters']  = "Batting";
@@ -925,15 +937,15 @@ class team extends BaseEditor {
 			$this->data['fields'] = player_stat_fields_list(1, QUERY_STANDARD, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			
 			if (sizeof($receiveList['batters']) > 0) {
-				$stats['team_id2']['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$receiveList['batters']);
+				$stats['team_id2']['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id1'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$receiveList['batters']);
 				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id2']['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
 				$this->data['formatted_stats']['team_id2']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			}
 			// BATTERS
 			if (sizeof($sendList['batters']) > 0) {
-				$stats['team_id']['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$sendList['batters']);
-				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id']['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
-				$this->data['formatted_stats']['team_id']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
+				$stats['team_id1']['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id1'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$sendList['batters']);
+				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id1']['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
+				$this->data['formatted_stats']['team_id1']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			}
 			
 			if ($this->data['trans_type'] == 4) {

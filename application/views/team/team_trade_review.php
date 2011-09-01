@@ -1,6 +1,7 @@
    	<script type="text/javascript" charset="UTF-8">
 	var queryStr = '';
 	var teamId = <?php print($team_id); ?>;
+	var teamId1 = <?php print($team_id1); ?>;
 	var teamId2 = <?php print($team_id2); ?>;
 	$(document).ready(function(){
 		$('#btnEdit').click(function(){
@@ -111,7 +112,7 @@
 			if (isset($formatted_stats) && sizeof($formatted_stats) > 0) { ?>
             
             <?php
-				$lists = array('team_id2','team_id');
+				$lists = array('team_id2','team_id1');
 				// If this is recipient viewing the trade, swap the order
 				if (isset($trans_type) && $trans_type == 2) {
 					$lists = array_reverse($lists);
@@ -125,8 +126,8 @@
 						$theAvatar = $team_avatar2;
 						$theName = $team_name2;
 					} else {
-						$theAvatar = $avatar;
-						$theName = $teamname." ".$teamnick;
+						$theAvatar = $team_avatar1;
+						$theName = $team_name1;
 					}
 					?>
 					<h2 style="float:left; display:inline-block"><?php
