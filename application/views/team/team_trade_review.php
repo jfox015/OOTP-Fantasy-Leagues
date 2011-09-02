@@ -85,8 +85,15 @@
 		?>
 		<div id="content">
 			<?php
+			$msgClass = "notice";
+			$outMess = "";
+			if ($status > TRADE_OFFERED && ($status != TRADE_PENDING_LEAGUE_APPROVAL && $status != TRADE_PENDING_COMMISH_APPROVAL)) {
+				// Override transaction type to read only
+				$trans_type = 50;
+				$msgClass = "info";
+				$outMess = "This trade is no longer active. You are viewing a read only version.";
+			}
 			if (isset($trans_type) && $trans_type > 1 && $trans_type <= 3) {
-				$outMess = "";
 				if ($status == TRADE_OFFERED) {
 					if ($trans_type == 2) {
 						$outMess = "This trade requires a response from you.";
@@ -104,10 +111,8 @@
 					if (!empty($outMess)) { $outMess.="<br />"; }
 					$outMess.="This trade ".$actionType." ".$approvalType[$config['approvalType']]." approval.";
 				}
-			?>
-                <span class="notice"><?php print($outMess); ?></span>
-            <?php
 			}
+			if (!empty($outMess)) { print('<span class="'.$msgClass.'">'.$outMess.'</span>'); }
 
 			if (isset($formatted_stats) && sizeof($formatted_stats) > 0) { ?>
             
@@ -183,7 +188,7 @@
                         if ($trans_type == 1) {
                             $expireList = array(-1=>"Select One",100=>"Next Sim Period"); 
                             ?>
-                            <label for="expires">Expires in: </label>
+                            <label for="expiresIn">Expires in: </label>
                             <select id="expiresIn" name="expiresIn">
                             <?php 
 							foreach($expireList as $days => $label) { 
@@ -204,7 +209,7 @@
                         } else { 
                             if (isset($expiration_date)) {
                             ?>
-                            <label for="expires">Expires:</label>
+                            <label for="textAreaForDisplay">Expires:</label>
                             <div class="textAreaForDisplay"><?php print(date('m/d/Y h:m:s A',strtotime($expiration_date))); ?></div>
                             <?php
                             }
@@ -262,7 +267,7 @@
                     /	3:	Trade initator Reviewing Trade (read only)
                     /	4:	Other League Owner Reviewing offer
                     /	5:	League Commisioner/Admin Review
-                    /	6:
+                    /	50: Read Only (Archived) View
                     */
 					// TRADE OWNER
 					if ($trans_type == 1) { ?>

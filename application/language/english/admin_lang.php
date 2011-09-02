@@ -48,7 +48,14 @@ $lang['sim_process_records'] = 'Processing team records<br />';
 $lang['sim_process_copy_rosters'] = 'Copying rosters to the next scoring period.<br />';
 
 $lang['sim_process_trades'] = 'Processing Expiring trade offers.<br />';
+$lang['sim_process_trades_error'] = "Errors occured during trade expirations processing.<br />";
+$lang['sim_increment_trades'] = 'Incrementing trade offers currently in &quot;Offered&quot; status to next scoring period.<br />';
+$lang['sim_increment_trades_error'] = "Errors occured during trade incremtnal processing.<br />";
+$lang['sim_process_trades_to_expire_count'] = '[COUNT] trade records returned to be expired.<br />';
+$lang['sim_process_trades_to_increment_count'] = '[COUNT] trade records returned to be incremented.<br />';
 $lang['sim_process_trades_count'] = '[COUNT] Expired trades processed.<br />';
+$lang['sim_process_trades_emails'] = '[COUNT] Trade Expiration notice emails sent.<br />';
+$lang['sim_increment_trades_count'] = '[COUNT] Trades inremented to scoring period [PERIOD_ID].<br />';
 $lang['sim_process_waivers'] = 'Processing waiver claims.<br />';
 $lang['sim_process_waivers_count'] = '[COUNT] Waiver claims processed.<br />';
 
