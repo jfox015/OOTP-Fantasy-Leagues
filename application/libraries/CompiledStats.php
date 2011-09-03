@@ -59,11 +59,13 @@ class CompiledStats {
 	public function updateStats($values) {
 		if ($values !== false && sizeof($values) > 0) { 
 			$tmpVals = array();
-			foreach($values as $id -> $value) {
-				if(isset($this->values[$id])) {
-					$tmpVals[$id] = $this->values[$id] + $value;
-				} else {
-					$tmpVals[$id] = $value;
+			foreach($values as $id => $value) {
+				if (preg_match('/^[0-9]*$/',trim(intval($id)))) {
+					if(isset($this->values[$id])) {
+						$tmpVals[$id] = $this->values[$id] + $value;
+					} else {
+						$tmpVals[$id] = $value;
+					}
 				}
 			}
 			$this->values = $tmpVals;
@@ -83,65 +85,50 @@ class CompiledStats {
 	 *	@since		1.0
 	 *	@access		public
 	 */
-	public function getCompiledStats($type = false, $cat = false) {
-		if ($type === false || $cat === false) return false;
+	public function getCompiledStats($cat = false) {
+		if ($cat === false) return false;
 		
 		$value = 0;
-		switch ($type) {
-			case 'batting':
-				switch($cat) {
-					// AVG
-					case 18:
-						$value =  $this->values['h'] / $this->values['ab'];
-						break;
-					// OBP
-					case 19:
-						$value = ($this->values['h']+$this->values['bb']+$this->values['hp']) / ($this->values['ab']+$this->values['bb']+$this->values['ab']+$this->values['hp']+$this->values['sf']);
-						break;
-					// SLG
-					case 20:
-						$value = ($this->values['h']+($this->values['d']*2)+($this->values['t']*3)+$this->values['hr']) / $this->values['ab'];
-						break;
-					// OPS (OBP + SLG)
-					case 25:
-						$value = (($this->values['h']+$this->values['bb']+$this->values['hp']) / ($this->values['ab']+$this->values['bb']+$this->values['ab']+$this->values['hp']+$this->values['sf'])) + (($this->values['h']+($this->values['d']*2)+($this->values['t']*3)+$this->values['hr']) / $this->values['ab']);
-						break;
-					// SKIP ISO, TAVG and VORP
-					case 23:
-					case 24;
-					case 26;
-						break;
-					// ALL OTHERS
-					default:
-						$stat = strtolower(get_ll_cat($cat, true));
-						if (isset($this->values[$stat])) {
-							$value = $this->values[$stat];
-						}
-						break;
-				} // END switch
+		switch($cat) {
+			// AVG
+			case 18:
+				$value =  $this->values['h'] / $this->values['ab'];
 				break;
-			case 'pitching':
-				switch($cat) {
-					// ERA
-					case 40:
-						$value =  (9*$this->values['er']) / ($this->values['ip']+($this->values['ipf']/3));
-						break;
-					// WHIP
-					case 42:
-						$value = ($this->values['ha']+$this->values['bb']) / ($this->values['ip']+($this->values['ipf']/3));
-						break;
-					// BABIP
-					case 41:
-						$value = ($this->values['ha']-$this->values['hra']) / ($this->values['ab']-$this->values['k']-$this->values['hra']+$this->values['sf']);
-						break;
-					// ALL OTHERS
-					default:
-						$stat = strtolower(get_ll_cat($cat, true));
-						if (isset($this->values[$stat])) {
-							$value = $this->values[$stat];
-						}
-						break;
-				} // END switch
+			// OBP
+			case 19:
+				$value = ($this->values['h']+$this->values['bb']+$this->values['hp']) / ($this->values['ab']+$this->values['bb']+$this->values['ab']+$this->values['hp']+$this->values['sf']);
+				break;
+			// SLG
+			case 20:
+				$value = ($this->values['h']+($this->values['d']*2)+($this->values['t']*3)+$this->values['hr']) / $this->values['ab'];
+				break;
+			// OPS (OBP + SLG)
+			case 25:
+				$value = (($this->values['h']+$this->values['bb']+$this->values['hp']) / ($this->values['ab']+$this->values['bb']+$this->values['ab']+$this->values['hp']+$this->values['sf'])) + (($this->values['h']+($this->values['d']*2)+($this->values['t']*3)+$this->values['hr']) / $this->values['ab']);
+				break;
+			// SKIP ISO, TAVG and VORP
+			case 23:
+			case 24;
+			case 26;
+				break;
+			// ERA
+			case 40:
+				$value =  (9*$this->values['er']) / ($this->values['ip']+($this->values['ipf']/3));
+				break;
+			// BABIP
+			case 41:
+				$value = ($this->values['ha']-$this->values['hra']) / ($this->values['ab']-$this->values['k']-$this->values['hra']+$this->values['sf']);
+				break;
+			// WHIP
+			case 42:
+				$value = ($this->values['ha']+$this->values['bb']) / ($this->values['ip']+($this->values['ipf']/3));
+				break;
+			// ALL OTHERS
+			default:
+				$stat = strtolower(get_ll_cat($cat, true));
+				if (isset($this->values[$stat])) {
+					$value = $this->values[$stat];
+				}
 				break;
 		} // END switch
 		return $value;

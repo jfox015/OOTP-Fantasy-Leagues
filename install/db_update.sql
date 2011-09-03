@@ -118,7 +118,7 @@ INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(2, 'Adminis
 #	Version 1.0.5 to 1.0.6
 #	REMOVE ALL COMMENTS FOR DIST
 ALTER TABLE `users_meta` ADD `timezone` TEXT NOT NULL DEFAULT '';
-ALTER TABLE `fantasy_teams_scoring` ADD `stats_batting` TEXT NOT NULL DEFAULT '', `stats_pitching` TEXT NOT NULL DEFAULT '';
+ALTER TABLE `fantasy_teams_scoring` ADD `stats_compiled` TEXT NOT NULL AFTER `scoring_period_id`;
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('timezone', '');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('security_enabled', '-1');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('security_type', '');
