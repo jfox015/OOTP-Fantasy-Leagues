@@ -265,7 +265,7 @@ class user_meta_model extends base_model {
             } else {
                 $team_list = $this->getUserTeamIds($league_id,$userId,$scoring_period_id);
             }
-            $this->db->select($this->tables['TRADES'].'.id, team_1_id, teamname, teamnick, team_2_id, status, 	tradeStatus, '.$this->tables['TRADES'].'.league_id, offer_date, expiration_date');
+            $this->db->select($this->tables['TRADES'].'.id, team_1_id, teamname, teamnick, team_2_id, status, 	tradeStatus, '.$this->tables['TRADES'].'.league_id, offer_date, expiration_days');
             $this->db->join($this->tables['TEAMS'],$this->tables['TRADES'].'.team_1_id = '.$this->tables['TEAMS'].'.id','right outer');
             $this->db->join('fantasy_teams_trades_status','fantasy_teams_trades_status.id = '.$this->tables['TRADES'].'.status','right outer');
             $teamListStr = "(";
@@ -294,7 +294,7 @@ class user_meta_model extends base_model {
                         $curr_league = $row->league_id;
                     }
                     array_push($offers,array('trade_id'=>$row->id,'team_1_id'=>$row->team_1_id,'team_2_id'=>$row->team_2_id,'teamname'=>$row->teamname,'teamnick'=>$row->teamnick,
-                                                'offer_date'=>$row->offer_date,'status'=>$row->status,'tradeStatus'=>$row->tradeStatus, 'expiration_date'=>$row->expiration_date));
+                                                'offer_date'=>$row->offer_date,'status'=>$row->status,'tradeStatus'=>$row->tradeStatus, 'expiration_days'=>$row->expiration_days));
                     if ($query->num_rows() == 1) { $tradeOfferList = $tradeOfferList + array($curr_league => $offers);  $offers = array(); }
                 } // END foreach
             } // END if

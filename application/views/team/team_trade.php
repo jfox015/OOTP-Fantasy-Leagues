@@ -118,7 +118,7 @@
 		});
 		$('input[rel=reviewbtn]').live('click',function () {
 			var params = this.id.split("|");
-			document.location.href = "<?php echo($config['fantasy_web_root']); ?>team/tradeReview/team_id/"+team_id+"/team_id1/"+team_id+"/league_id/"+league_id+"/trans_type/"+params[0]+"/trade_id/"+params[1]+cacheBuster();
+			document.location.href = "<?php echo($config['fantasy_web_root']); ?>team/tradeReview/team_id/"+team_id+"/league_id/"+league_id+"/trans_type/"+params[0]+"/trade_id/"+params[1]+cacheBuster();
 			
 		});
 		$('input#btnReview').live('click',function () {
@@ -784,11 +784,11 @@
                         <?php $types = array(0=>"This Year", 1=>"Last Year", 2=>"Two Years Ago", 4=>"3 Year Average");
                         foreach ($types as $key => $val) {
                             echo("<option value='$key'");
-                            if ($key==$stats_range) { echo(" selected");}
+                            if ($key == $stats_range) { echo(" selected");}
                             echo(">$val</option>");
                         } ?>
                       </select>
-                    <label id="lblStatsSource" for="type">Source:</label> 
+                    <label for="stat_source" id="lblStatsSource">Source:</label>
                     <select id="stat_source">
 						<option value="sp_all"<?php 
 						if ($stat_source=="sp_all") { echo " selected"; } ?>>All Periods</option>
@@ -957,11 +957,24 @@
                 </tr>
                 <?php 
 				// EXPIRATION DATE
-				if ($tradeData['expiration_date'] != EMPTY_DATE_TIME_STR) { ?>
+				if ($config['tradesExpire'] == 1 && !empty($tradeData['expiration_days'])) { ?>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
 					<td><b>Expires:</b></td>
 					<td>
-					<?php print(date('m/d/Y h:m A', strtotime($tradeData['expiration_date']))); ?>
+					<?php
+                        $expireStr = "";
+                        switch(intval($tradeData['expiration_days'])) {
+                            case -1:
+                                $expireStr = "No expiration";
+                                break;
+                            case 500:
+                                $expireStr = "Next Sim";
+                                break;
+                            default:
+                                $expireStr = date('m/d/Y h:m A', (strtotime($tradeData['offer_date']) + ((60*60*24) * $tradeData['expiration_days'])));
+                                break;
+                        }
+                        print($expireStr); ?>
 				</td>
                 </tr>
                 <?php $rowNum++;

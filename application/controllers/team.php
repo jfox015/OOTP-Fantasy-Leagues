@@ -813,6 +813,12 @@ class team extends BaseEditor {
 			$this->data['tradeFrom'] = array();
 			
 			if ($this->data['trade_id'] != -1) {
+                // EXPIRATION CHECK FOR EXISTING TRADES ONLY
+                if ($this->params['config']['tradesExpire'] == 1) {
+                    if ($this->dataModel->getIsTradePastExpiration($this->data['trade_id'])) {
+                        $this->dataModel->updateTrade($this->data['trade_id'], TRADE_EXPIRED, $this->lang->line('team_trade_auto_expired'));
+                    }
+                }
 				$trade = $this->dataModel->getTrade($this->data['trade_id']);
 				$sendList['all'] = $this->data['tradeTo'] = $trade['send_players'];
 				$receiveList['all'] = $this->data['tradeFrom'] = $trade['receive_players'];
@@ -824,7 +830,7 @@ class team extends BaseEditor {
 			}
 			
 			$this->dataModel->load($this->uriVars['team_id']);
-			
+
 			if (!isset($this->params['currUser'])) {
 				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
 			}
@@ -902,7 +908,7 @@ class team extends BaseEditor {
 				$this->data['team_avatar1'] = $this->dataModel->getAvatar($this->data['team_id1']);
 			} else if (isset($trade) && isset($trade['trade_id'])) {
 				$this->data['team_id1'] = $trade['team_1_id'];
-				$this->data['team_name1'] = $this->dataModel->getTeamName($trade['team_1_id']);
+                $this->data['team_name1'] = $this->dataModel->getTeamName($trade['team_1_id']);
 				$this->data['team_avatar1'] = $this->dataModel->getAvatar($trade['team_1_id']);
 			}
 			if (isset($this->uriVars['team_id2']) && !empty($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
@@ -911,7 +917,7 @@ class team extends BaseEditor {
 				$this->data['team_avatar2'] = $this->dataModel->getAvatar($this->data['team_id2']);
 			} else if (isset($trade) && isset($trade['trade_id'])) {
 				$this->data['team_id2'] = $trade['team_2_id'];
-				$this->data['team_name2'] = $this->dataModel->getTeamName($trade['team_2_id']);
+                $this->data['team_name2'] = $this->dataModel->getTeamName($trade['team_2_id']);
 				$this->data['team_avatar2'] = $this->dataModel->getAvatar($trade['team_2_id']);
 			}
 			
@@ -954,7 +960,9 @@ class team extends BaseEditor {
 			$this->data['comments']  = (isset($trade['comments'])) ? $trade['comments'] : "";
 			$this->data['response']  = (isset($trade['response'])) ? $trade['response'] : "";
 			$this->data['status']  = (isset($trade['status'])) ? $trade['status'] : -1;
-			
+            $this->data['expiration_days']  = (isset($trade['expiration_days'])) ? $trade['expiration_days'] : -1;
+            $this->data['offer_date']  = (isset($trade['offer_date'])) ? $trade['offer_date'] : EMPTY_DATE_TIME_STR;
+
 			$this->data['subTitle'] = "Review Trade";
 			$this->params['content'] = $this->load->view($this->views['TRADE_REVIEW'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;

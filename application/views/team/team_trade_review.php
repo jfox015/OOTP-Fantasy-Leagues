@@ -87,7 +87,7 @@
 			<?php
 			$msgClass = "notice";
 			$outMess = "";
-			if ($status > TRADE_OFFERED && ($status != TRADE_PENDING_LEAGUE_APPROVAL && $status != TRADE_PENDING_COMMISH_APPROVAL)) {
+			if (isset($status) && $status > TRADE_OFFERED && ($status != TRADE_PENDING_LEAGUE_APPROVAL && $status != TRADE_PENDING_COMMISH_APPROVAL)) {
 				// Override transaction type to read only
 				$trans_type = 50;
 				$msgClass = "info";
@@ -124,14 +124,14 @@
 				}
 				$types = array('batters','pitchers');
 				foreach($lists as $team) {
-					if (isset($formatted_stats[$team]) && !empty($formatted_stats[$team])) { 
+					if (isset($formatted_stats[$team]) && !empty($formatted_stats[$team])) {
 					$theAvatar = "";
 					$theName = "";
 					if ($team == 'team_id2') {
 						$theAvatar = $team_avatar2;
 						$theName = $team_name2;
 					} else {
-						$theAvatar = $team_avatar1;
+                        $theAvatar = $team_avatar1;
 						$theName = $team_name1;
 					}
 					?>
@@ -186,19 +186,19 @@
                         
                         <?php 
                         if ($trans_type == 1) {
-                            $expireList = array(-1=>"Select One",100=>"Next Sim Period"); 
+                            $expireList = array("X"=>"Select One",-1=>"No Expiration",500 =>"Next Sim Period");
                             ?>
                             <label for="expiresIn">Expires in: </label>
                             <select id="expiresIn" name="expiresIn">
-                            <?php 
-							foreach($expireList as $days => $label) { 
+                            <?php
+							foreach($expireList as $days => $label) {
 								print('<option value="'.$days.'"');
 								if (isset($expiresIn) && $expiresIn == $days){
 									print(' selected="selected"');
 								}
 								print('>'.$label.'</option>');
 							}
-							for($d = 1; $d < $config['sim_length'] + 1; $d++) { 
+							for($d = 1; $d < TRADE_MAX_EXPIRATION_DAYS; $d++) {
 								print('<option value="'.$d.'"');
 								if (isset($expiresIn) && $expiresIn == $d){
 									print(' selected="selected"');
@@ -207,17 +207,34 @@
 							}
 							print('</select>');
                         } else { 
-                            if (isset($expiration_date)) {
+                            if (isset($expiration_days) && isset($offer_date)) {
+                                $expireStr = "";
+                                $expireLabel = "Expires";
+                                switch(intval($expiration_days)) {
+                                    case -1:
+                                        $expireStr = "No expiration";
+                                        break;
+                                    case 500:
+                                        $expireStr = "Next Sim";
+                                        break;
+                                    default:
+                                        $expireDate = (strtotime($offer_date) + ((60*60*24) * $expiration_days));
+                                        if ($expireDate < time()) {
+                                            $expireLabel = "Expired";
+                                        }
+                                        $expireStr = date('m/d/Y h:m A', $expireDate);
+                                        break;
+                                }
                             ?>
-                            <label for="textAreaForDisplay">Expires:</label>
-                            <div class="textAreaForDisplay"><?php print(date('m/d/Y h:m:s A',strtotime($expiration_date))); ?></div>
+                            <label for="txt_ref"><?php print($expireLabel); ?></label>
+                            <div id="txt_ref" class="textAreaForDisplay"><?php print($expireStr); ?></div>
                             <?php
                             }
 						}
                   	?>
                     <br class="clear" clear="all" />
 					<?php
-                    }  // END if
+                    }  // END if tradesExpire == 1
 					if ($trans_type != 1 && $trans_type != 4) {
 						if (isset($comments) && !empty($comments)) { ?>
 						<label for="comments">Comments: </label> 	

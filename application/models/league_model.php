@@ -414,7 +414,7 @@ class league_model extends base_model {
 		
 		$owners = array();
 		if ($league_id === false) { $league_id = $this->id; }
-		$this->db->select('fantasy_teams.id as team_id, teamname, teamnick, users_core.id as owner_id, email, username, firstName, lastName');
+		$this->db->select('fantasy_teams.id as team_id, teamname, teamnick, users_core.id as owner_id, email, username');
 		$this->db->from($this->tables['TEAMS']);
 		$this->db->join('users_core','users_core.id = fantasy_teams.owner_id');
 		$this->db->where("league_id",$league_id);
@@ -422,9 +422,8 @@ class league_model extends base_model {
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				
-				$owners = $owners + array($row->team_id=>array('owner_id'=>$row->owner_id,'email'=>$row->email, 'first_name'=>$row->first_name,
-																'last_name'=>$row->last_name, 'username'=>$row->username, 'teamname'=>$row->teamname,
-																'teamnick'=>$row->teamnick));
+				$owners = $owners + array($row->team_id=>array('owner_id'=>$row->owner_id,'email'=>$row->email, 'username'=>$row->username,
+                                                               'teamname'=>$row->teamname,'teamnick'=>$row->teamnick));
 			}
 		}
 		$query->free_result();
@@ -1926,7 +1925,7 @@ class league_model extends base_model {
 			// IF TRADE EXPIRATIONS ARE ENABLED, PROCESS EXPIRING TRADES
 			if ((isset($this->params['config']['useTrades']) && $this->params['config']['useTrades'] == 1 && $this->params['config']['tradesExpire'] == 1)) {
 				$summary .= $this->lang->line('sim_process_trades');
-				$summary .= $this->expireOldTrades($scoring_period['id'], $league_id, 'same', $this->debug);
+				$summary .= $this->expireOldTrades($league_id, $this->debug);
 			} // END if
 			// INCREMENT REMAINING OFFERED TRADES  FOR THE SCORING PERIOD TO THE NEXT ONE
 			$summary .= $this->lang->line('sim_increment_trades');
@@ -2432,21 +2431,25 @@ class league_model extends base_model {
 		}
 		$summary .= str_replace('[COUNT]',$query->num_rows(),$this->lang->line('sim_process_trades_to_increment_count'));
 		if ($query->num_rows() > 0) {
-			$trade_id_str = "(";
-			foreach ($query->row() as $row) {
-				if ($trade_id_str != "(") { $trade_id_str .= ","; }
-				$trade_id_str .= $row->id;
-			}
-			$trade_id_str = ")";
-			// UPDATE THE TRADE 
-			$this->db->where('id IN '.$trade_id_str);
-			$this->db->set('in_period',($period_id+1));
-			$this->db->update($this->tables['TRADES']);
-			if ($debug) {
-				print($this->db->last_query()."<br />");
-			}
-			$dbSummary = str_replace('[COUNT]',$this->db->affected_rows(),$this->lang->line('sim_increment_trades_count'));
-			$summary .= str_replace('[PERIOD_ID]',($period_id+1),$dbSummary);
+            $trade_id_str = "(";
+            foreach ($query->result() as $row) {
+                if ($trade_id_str != "(") { $trade_id_str .= ","; }
+                $trade_id_str .= $row->id;
+            }
+            $rowCount = 0;
+            $trade_id_str .= ")";
+            if ($trade_id_str != "()") {
+                // UPDATE THE TRADE
+                $this->db->where('id IN '.$trade_id_str);
+                $this->db->set('in_period',($period_id+1));
+                $this->db->update($this->tables['TRADES']);
+                if ($debug) {
+                    print($this->db->last_query()."<br />");
+                }
+                $rowCount = $this->db->affected_rows();
+            }
+            $dbSummary = str_replace('[COUNT]',$rowCount,$this->lang->line('sim_increment_trades_count'));
+            $summary .= str_replace('[PERIOD_ID]',($period_id+1),$dbSummary);
 		}
 		$query->free_result();
 		if ($error) {
@@ -2467,93 +2470,96 @@ class league_model extends base_model {
      *	@access	public
 	 *
 	 */
-	public function expireOldTrades($period_id = false, $league_id = false, $rosterPeriod = 'same', $debug = false) {
-		if ($period_id === false) { return; }
+	public function expireOldTrades($league_id = false, $debug = false) {
 		if ($league_id === false) { $league_id = $this->id; } // END if
 		
-		if (!function_exists('getScoringPeriod')) {
-			$this->load->helper("admin");
-		} // END if
-		$score_period = getScoringPeriod($period_id);
 		$error = false;
 		$summary = '';
 		// COLLECT TRADES THAT ARE IN OFFERED STATE FOR THIS SCORING PERIOD
-		$this->db->select($this->tables['TRADES'].".id, offer_date, status, team_1_id, team_2_id, tradeStatus, in_period, expiration_date"); 
+		$this->db->select($this->tables['TRADES'].".id, offer_date, status, team_1_id, team_2_id, tradeStatus, in_period, expiration_days");
 		$this->db->join($this->tables['TRADES_STATUS'],$this->tables['TRADES_STATUS'].".id = ".$this->tables['TRADES'].".status", "right outer");
 		$this->db->where($this->tables['TRADES'].".league_id",$league_id);
 		$this->db->where($this->tables['TRADES'].".status",TRADE_OFFERED);
-		$this->db->where($this->tables['TRADES'].".in_period",$period_id);
-		$this->db->where("(".$this->tables['TRADES'].".expiration_date <> ".EMPTY_DATE_TIME_STR." AND ".$this->tables['TRADES'].".expiration_date < ".date('Y-m-d h:i:s',strtotime($score_period['date_end']))."))");
+		$this->db->where($this->tables['TRADES'].".expiration_days > -1");
 		$query = $this->db->get($this->tables['TRADES']);
 		if ($debug) {
 			print($this->db->last_query()."<br />");
-		} // END if
+        } // END if
 		$summary .= str_replace('[COUNT]',$query->num_rows(),$this->lang->line('sim_process_trades_to_expire_count'));
 		if ($query->num_rows() > 0) {
+
 			$ownersByTeam = $this->getDetailedOwnerInfo($league_id);
 			
 			$this->lang->load('team');
 			$trade_id_str = "(";
 			$owner_info = array('receiving'=>array(),'offering' => array());
 			
-			foreach ($query->row() as $row) {
-				if ($trade_id_str != "(") { $trade_id_str .= ","; } // END if
-				$trade_id_str .= $row->id;
-				array_push($owner_info['offering'],array("email"=>$ownersByTeam[$row->team_1_id]['email'],'username'=>$ownersByTeam[$row->team_1_id]['username'],
-														"receiving_team"=>$ownersByTeam[$row->team_2_id]['teamname']. " ".$ownersByTeam[$row->team_2_id]['teamnick']));
-				array_push($owner_info['receiving'],array("email"=>$ownersByTeam[$row->team_2_id]['email'],'username'=>$ownersByTeam[$row->team_2_id]['username'],
-														"offering_team"=>$ownersByTeam[$row->team_1_id]['teamname']. " ".$ownersByTeam[$row->team_1_id]['teamnick']));
+			foreach ($query->result() as $row) {
+                $expireDate = strtotime(EMPTY_DATE_TIME_STR);
+                if ($row->expiration_days < 500) {
+                    $expireDate = (strtotime($row->offer_date) + ((60*60*24) * $row->expiration_days));
+                }
+                if ($row->expiration_days == 500 || $expireDate > time()) {
+                    if ($trade_id_str != "(") { $trade_id_str .= ","; } // END if
+                    $trade_id_str .= $row->id;
+                    array_push($owner_info['offering'],array("email"=>$ownersByTeam[$row->team_1_id]['email'],'username'=>$ownersByTeam[$row->team_1_id]['username'],
+                                                            "receiving_team"=>$ownersByTeam[$row->team_2_id]['teamname']. " ".$ownersByTeam[$row->team_2_id]['teamnick']));
+                    array_push($owner_info['receiving'],array("email"=>$ownersByTeam[$row->team_2_id]['email'],'username'=>$ownersByTeam[$row->team_2_id]['username'],
+                                                        "offering_team"=>$ownersByTeam[$row->team_1_id]['teamname']. " ".$ownersByTeam[$row->team_1_id]['teamnick']));
+                }
 			} // END foreach
-			$trade_id_str = ")";
-			// UPDATE THE TRADE 
-			$this->db->where('id IN '.$trade_id_str);
-			$this->db->set('status',TRADE_EXPIRED);
-			$this->db->set('response_date',date('Y-m-d h:m:s',time()));
-			if (!empty($comments)) {
-				$this->db->set('response',$this->lang->line('team_trade_auto_expired'));
-			} // END if
-			$this->db->update($this->tables['TRADES']);
-			$summary .= str_replace('[COUNT]',$this->db->affected_rows(),$this->lang->line('sim_process_trades_count'));
-			
-			if ($debug) {
-				print($this->db->last_query()."<br />");
-			} // END if
-			$tradeTypes = loadSimpleDataList('tradeStatus');
-			
-			$emailCount = 0;
-			foreach ($owner_info as $infoType => $infoData) {
-				foreach ($owner_info as $ownerData) {
-					$msg = '';
-					switch ($infoType) {
-						case 'offering':
-							$msg = $this->lang->line('team_trade_expired_offering_team').$this->lang->line('email_footer');
-							$msg = str_replace('[ACCEPTING_TEAM_NAME]', $ownerData['receiving_team'], $msg);
-							break;
-						case 'receiving':
-							$msg = $this->lang->line('team_trade_expired').$this->lang->line('email_footer');
-							$msg = str_replace('[OFFERING_TEAM_NAME]', $ownerData['offering_team'], $msg);
-							break;
-						default:
-							$msg = $this->lang->line('team_trade_expired').$this->lang->line('email_footer');
-							$msg = str_replace('[ACCEPTING_TEAM_NAME]', 'Unknown Team', $msg);
-							$msg = str_replace('[OFFERING_TEAM_NAME]', 'Unknown Team', $msg);
-							break;
-					} // END switch
-					$msg = str_replace('[USERNAME]', $ownerData['username'], $msg);
-					$data['messageBody']= $msg;
-					$data['leagueName'] = $this->league_model->league_name;
-					$data['title'] = $this->lang->line('team_email_title_trade_response');
-					$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-					// SEND MESSAGES
-					$error = !sendEmail($ownerData['email'],getEmail($this->params['config']['primary_contact']),
-					$this->params['config']['site_name']." Administrator",$this->league_name.' Fantasy League - Trade Update - Offer '.$tradeTypes[TRADE_EXPIRED],
-					$message,'','email_trd_msg_');
-					$emailCount++;
-				} // END foreach
-			} // END foreach
-			
-			$summary .= str_replace('[COUNT]',$emailCount,$this->lang->line('sim_process_trades_emails'));
-			
+			$trade_id_str .= ")";
+            if ($trade_id_str != "()") {
+                // UPDATE THE TRADE
+                $this->db->where('id IN '.$trade_id_str);
+                $this->db->set('status',TRADE_EXPIRED);
+                $this->db->set('response_date',date('Y-m-d h:m:s',time()));
+                if (!empty($comments)) {
+                    $this->db->set('response',$this->lang->line('team_trade_auto_expired'));
+                } // END if
+                $this->db->update($this->tables['TRADES']);
+                $summary .= str_replace('[COUNT]',$this->db->affected_rows(),$this->lang->line('sim_process_trades_count'));
+
+                if ($debug) {
+                    print($this->db->last_query()."<br />");
+                } // END if
+                $tradeTypes = loadSimpleDataList('tradeStatus');
+
+                $emailCount = 0;
+                foreach ($owner_info as $infoType => $infoData) {
+
+                    foreach ($infoData as $ownerData) {
+                        $msg = '';
+                        switch ($infoType) {
+                            case 'offering':
+                                $msg = $this->lang->line('team_trade_expired_offering_team').$this->lang->line('email_footer');
+                                $msg = str_replace('[ACCEPTING_TEAM_NAME]', $ownerData['receiving_team'], $msg);
+                                break;
+                            case 'receiving':
+                                $msg = $this->lang->line('team_trade_expired').$this->lang->line('email_footer');
+                                $msg = str_replace('[OFFERING_TEAM_NAME]', $ownerData['offering_team'], $msg);
+                                break;
+                            default:
+                                $msg = $this->lang->line('team_trade_expired').$this->lang->line('email_footer');
+                                $msg = str_replace('[ACCEPTING_TEAM_NAME]', 'Unknown Team', $msg);
+                                $msg = str_replace('[OFFERING_TEAM_NAME]', 'Unknown Team', $msg);
+                                break;
+                        } // END switch
+                        $msg = str_replace('[USERNAME]', $ownerData['username'], $msg);
+                        $data['messageBody']= $msg;
+                        $data['leagueName'] = $this->league_model->league_name;
+                        $data['title'] = $this->lang->line('team_email_title_trade_response');
+                        $message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+                        // SEND MESSAGES
+                        $error = !sendEmail($ownerData['email'],getEmail($this->params['config']['primary_contact']),
+                        $this->params['config']['site_name']." Administrator",$this->league_name.' Fantasy League - Trade Update - Offer '.$tradeTypes[TRADE_EXPIRED],
+                        $message,'','email_trd_msg_');
+                        $emailCount++;
+                    } // END foreach
+                } // END foreach
+
+                $summary .= str_replace('[COUNT]',$emailCount,$this->lang->line('sim_process_trades_emails'));
+            }
 		} // END if
 		$query->free_result();
 		if ($error) {

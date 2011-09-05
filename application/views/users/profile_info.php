@@ -284,8 +284,20 @@
                          </td>
 						<td class='hsc2_l' colspan="<?php print($col_size_b_2); ?>">
 						<b>Received:</b> <?php print(date('m/d/Y h:i:s A',strtotime($tradeOffer['offer_date'])));
-                        if (isset($tradeOffer['expiration_date']) && $tradeOffer['expiration_date'] != EMPTY_DATE_TIME_STR) {
-                            print(',<br /><b>Expires:</b> '.date('m/d/Y h:i:s A',strtotime($tradeOffer['expiration_date'])));
+                        if ($config['tradesExpire'] == 1 && (isset($tradeOffer['expiration_days']) && !empty($tradeOffer['expiration_days']))) {
+                            $expireStr = "";
+                                switch(intval($tradeOffer['expiration_days'])) {
+                                    case -1:
+                                        $expireStr = "No expiration";
+                                        break;
+                                    case 500:
+                                        $expireStr = "Next Sim";
+                                        break;
+                                    default:
+                                        $expireStr = date('m/d/Y h:m A', (strtotime($tradeOffer['offer_date']) + ((60*60*24) * $tradeOffer['expiration_days'])));
+                                        break;
+                                }
+                            print(',<br /><b>Expires:</b> '.$expireStr);
                         }
                         ?>
 						</td>
