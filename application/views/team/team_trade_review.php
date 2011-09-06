@@ -181,7 +181,12 @@
                     }
                     ?>
                     <form action="<?php print($config['fantasy_web_root']); ?>team/<?php print($action); ?>/" method="post" id="tradeForm" id="tradeForm">
-                 	<?php 
+                 	<?php
+                    if (isset($statusStr) && !empty($statusStr)) { ?>
+                        <label for="txt_status">Status:</label>
+                        <div id="txt_status" class="textAreaForDisplay"><?php print($statusStr); ?></div>
+                        <?php
+                    }
 					if ($config['tradesExpire'] == 1) { ?>
                         
                         <?php 

@@ -886,7 +886,7 @@
 				if (isset($teamTrades) && sizeof($teamTrades) > 0) { ?>
                 <div id="tradeStatusBox"><div id="tradeStatus"></div></div>
             	<?php
-                    $types = array('incoming','offered','approvals');
+                    $types = array('incoming','offered','approvals','completed','other');
                     foreach($types as $type) {
                        if (isset($teamTrades[$type]) && sizeof($teamTrades[$type]) > 0) {
                            $tradeList = $teamTrades[$type];
@@ -955,7 +955,11 @@
                 	<td><b>Effective:</b></td>
                 	<td>Period <?php print($tradeData['in_period']); $rowNum++; ?></td>
                 </tr>
-                <?php 
+                <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+                	<td><b>Status:</b></td>
+                	<td><?php print($tradeData['tradeStatus']); $rowNum++; ?></td>
+                </tr>
+                <?php
 				// EXPIRATION DATE
 				if ($config['tradesExpire'] == 1 && !empty($tradeData['expiration_days'])) { ?>
                 <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">

@@ -397,6 +397,7 @@ class team_model extends base_model {
 
         $this->db->select('offer_date, expiration_days');
         $this->db->where('id',$trade_id);
+        $this->db->where('status',TRADE_OFFERED);
 		$query = $this->db->get($this->tables['TRADES']);
         if ($query->num_rows() > 0) {
             $row = $query->row();
@@ -409,7 +410,7 @@ class team_model extends base_model {
         } else {
             $this->errorCode = 1;
             $this->statusMess = "Trade ID ".$trade_id." not found.";
-            return true;
+            return false;
         }
         $query->free_result();
         return false;
@@ -616,9 +617,22 @@ class team_model extends base_model {
 	 */
 	public function getPendingTrades($league_id = false, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $status = false, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
-		return $this->getTradeData($league_id, $team_id, $team_2_id, false, $status, $exclude_team_id, $countProtests, $limit, $startIndex);
+		return $this->getTradeData($league_id, $team_id, $team_2_id, false, $status, $exclude_team_id, $countProtests, false, $limit, $startIndex);
 	}
-	
+	/**
+	 * GET TRADES FOR SCORING PERIOD
+	 * Retrieves trade data from the TRADES table for all trades matching the current scoring period id.
+	 * @param $league_id		The league id. Uses $this->$league_id if FALSE
+	 * @param $team_id			The ID of the team making the offer. Ommited if FALSE
+	 * @param $limit			The limit on rows to return. No limit if =1
+	 * @param $startIndex		The first row to return. Stars with first row if 0.
+	 */
+	public function getTradesForScoringPeriod($league_id = false, $scoring_period_id = -1, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $status = false, $limit = -1, $startIndex = 0) {
+		if ($league_id === false) $league_id = $this->league_id;
+		$trades = $this->getTradeData($league_id, $team_id, false, false, 100, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
+		$trades = $trades + $this->getTradeData($league_id, false, $team_id, 100, false, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
+        return $trades;
+	}
 	/**
 	 * GET COMPLETED TRADES
 	 * Retrieves trade data from the TRADES table for all COMPLETED trades.
@@ -629,7 +643,7 @@ class team_model extends base_model {
 	 */
 	public function getCompletedTrades($league_id = false, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
-		return $this->getTradeData($league_id, $team_id, $team_2_id, false, TRADE_COMPLETED, $exclude_team_id, $countProtests, $limit, $startIndex);
+		return $this->getTradeData($league_id, $team_id, $team_2_id, false, TRADE_COMPLETED, $exclude_team_id, $countProtests, false, $limit, $startIndex);
 	}
 	/**
 	 * GET ALL TRADES
@@ -641,7 +655,7 @@ class team_model extends base_model {
 	 */
 	public function getAllTrades($league_id = false, $countProtests = false, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
-		return $this->getTradeData($league_id, false, false, false, 100, false, $countProtests, $limit, $startIndex);
+		return $this->getTradeData($league_id, false, false, false, 100, false, $countProtests, false, $limit, $startIndex);
 	}
 	
 	/**
@@ -667,7 +681,7 @@ class team_model extends base_model {
 			$trade = array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id, 
 													  'send_players'=>unserialize($row->send_players), 'receive_players'=>unserialize($row->receive_players), 
 													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
-													  'status'=>$row->status,'comments'=>$row->comments,'expiration_days'=>$row->expiration_days);
+													  'status'=>$row->status,'tradeStatus'=>$row->tradeStatus,'comments'=>$row->comments,'expiration_days'=>$row->expiration_days);
 		}
 		$query->free_result();
 		return $trade;
@@ -683,7 +697,7 @@ class team_model extends base_model {
 	 * @see						getCompletedTrades(), getPendingTrades()
 	 * 
 	 */
-	public function getTradeData($league_id, $team_id = false, $team_2_id = false, $trade_id = false, $status = false, $exclude_team_id = false, $countProtests = false, $limit = -1, $startIndex = 0) {
+	public function getTradeData($league_id, $team_id = false, $team_2_id = false, $trade_id = false, $status = false, $exclude_team_id = false, $countProtests = false, $scoring_period_id = false, $limit = -1, $startIndex = 0) {
 		
 		if ($league_id === false) { $league_id = $this->league_id; }
 		
@@ -702,6 +716,9 @@ class team_model extends base_model {
 		}
 		if ($team_2_id !== false) {
 			$this->db->where('team_2_id',$team_2_id);
+		}
+        if ($scoring_period_id !== false) {
+			$this->db->where('in_period',$scoring_period_id);
 		}
 		if ($status !== false && $status != 100) {
 			$this->db->where('status',$status);

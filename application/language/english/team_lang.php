@@ -13,6 +13,8 @@ $lang['team_trade_offer_submitted'] = '<p>Your trade offer as submitted sucessfu
 $lang['team_trade_offer_roster_error'] = "Problems were found with this trade offer:<br />[ROSTER_MESSAGES]";
 // INVALID
 $lang['team_trade_invalid'] = 'The effective scoring period for this trade is passed the current period id. The trade has expired.';
+// INVALID
+$lang['team_trade_not_offered'] = 'The status of this trade has changed. The trade is no longer valid because it is now in [STATUS].';
 // COMPLETED
 $lang['team_trade_processed'] = 'The trade has been successfully completed. All players have been assigned to their new rosters.';
 // PENING APPROVAL

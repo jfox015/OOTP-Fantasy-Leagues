@@ -2423,7 +2423,8 @@ class league_model extends base_model {
 		// COLLECT TRADES THAT ARE IN OFFERED STATE FOR THIS SCORING PERIOD
 		$this->db->select($this->tables['TRADES'].".id"); 
 		$this->db->where($this->tables['TRADES'].".league_id",$league_id);
-		$this->db->where($this->tables['TRADES'].".status",TRADE_OFFERED);
+		$this->db->where("(".$this->tables['TRADES'].".status = ".TRADE_OFFERED." OR ".$this->tables['TRADES'].".status =".TRADE_PENDING_COMMISH_APPROVAL
+        ." OR ".$this->tables['TRADES'].".status =".TRADE_PENDING_LEAGUE_APPROVAL.")");
 		$this->db->where($this->tables['TRADES'].".in_period",$period_id);
 		$query = $this->db->get($this->tables['TRADES']);
 		if ($debug) {
