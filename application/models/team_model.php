@@ -410,7 +410,6 @@ class team_model extends base_model {
         } else {
             $this->errorCode = 1;
             $this->statusMess = "Trade ID ".$trade_id." not found.";
-            return false;
         }
         $query->free_result();
         return false;
@@ -452,19 +451,19 @@ class team_model extends base_model {
 		
 		if ($league_id === false) $league_id = $this->league_id;
 		if ($team_id === false) $team_id = $this->id;
-		$expireDate = EMPTY_DATE_TIME_STR;
-		$day = 60*60*24;
+		//$expireDate = EMPTY_DATE_TIME_STR;
+		//$day = 60*60*24;
 		if ($expiresIn === false) {
 			$expiresIn = $defaultExpiration;
 		}
-        if ($expiresIn == -1 || $expiresIn == 500) {
+        /*if ($expiresIn == -1 || $expiresIn == 500) {
             $expireDate = $expiresIn;
         } else {
 		   $expireDate = date('Y-m-d h:i:s',(strtotime(date('Y-m-d 00:00:00')) + ($day * $expiresIn)));
-        }
+        */
         $data = array('team_1_id' =>$team_id, 'send_players' => serialize($sendPlayers), 'team_2_id' => $team2Id,'receive_players' => serialize($receivePlayers),
 					  'status'=>1, 'league_id'=> $league_id,'comments'=>$comments, 'previous_trade_id'=>$prevTradeId,
-					  'expiration_days'=>$expireDate,'in_period'=>intval($scoring_period_id));
+					  'expiration_days'=>$expiresIn,'in_period'=>intval($scoring_period_id));
 		
 		$this->db->insert($this->tables['TRADES'],$data);
 

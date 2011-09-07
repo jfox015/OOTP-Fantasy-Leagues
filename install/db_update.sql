@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `fantasy_teams_trade_protests` (  `id` int(11) NOT NU
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('useTrades', '1');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('approvalType', '-1');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('tradesExpire', '1');
-INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('defaultExpiration', '100');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('defaultExpiration', '500');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('minProtests', '3');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('protestPeriodDays', '3');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('limit_load_all_sql', '1');
@@ -129,3 +129,4 @@ INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_key_pri
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_theme', '');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_lang', '');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_compliant', '');
+UPDATE `fantasy_config` SET `cfg_value`= '500' WHERE `cfg_key` = 'defaultExpiration';

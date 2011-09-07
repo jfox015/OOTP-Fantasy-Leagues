@@ -867,7 +867,29 @@
                     </table>
                     </td>
                 </tr>
-                <tr>
+                <?php if ($config['tradesExpire'] == 1) { 
+					$expireStr = "";
+					if ($config['defaultExpiration'] == -1) {
+						$expireStr .= "This trade has <b>no expiration</b> date.";
+					} else {
+						$expireStr = "Trade expiration: ";
+						if ($config['defaultExpiration']  == 500) {
+							$expireStr .= "<b>Next Sim Period</b>";
+						} else {
+							$expireStr .= "<b>".$config['defaultExpiration']." days</b>";
+						}
+					}
+				?>
+				<tr class='headline'>
+                    <td style='padding:6px'>Expiration</td>
+                </tr>
+				<tr>
+                    <td style='padding:6px'><?php print($expireStr.'<br /><br /><span class="small">To change expiration options, click <b>Review</b></span>'); ?></td>
+                </tr>
+				<?php 
+				} // END if config['tradesExpire']
+				?>
+				<tr>
                     <td style='padding:6px'>
                     <div class="button_bar" style="text-align:right;">
                     	<input type='button' id="btnClear" class="button" value='Clear' style="display:none;float:left;margin-right:8px;" />
@@ -875,7 +897,6 @@
                         <input type='button' id="btnSubmit" class="button" value='Make Offer' style="display:none;float:left;" />
                     </div></td>
                 </tr>
-                
                 </table>
                 </div>
                 

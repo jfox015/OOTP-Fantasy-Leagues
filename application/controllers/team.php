@@ -464,59 +464,52 @@ class team extends BaseEditor {
 
 			$recipient_id = $trade['team_1_id'];
 			if ($this->data['type'] == TRADE_ACCEPTED) {
-                if ($trade['status'] != TRADE_OFFERED) {
-                    if ($this->data['scoring_period']['id'] == $trade['in_period']) {
-                        $rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period']);
-                        if (empty($rosterMessages)) {
-                            if ($this->params['config']['approvalType'] == -1) {
-                                $processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments']);
-                                if ($processResponse) {
-                                    $msg = $this->lang->line('team_trade_accepted_no_approvals');
-                                    $this->dataModel->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'],
-                                                          $this->league_model->commissioner_id, $this->params['currUser'],
-                                                          $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'],
-                                                          $this->dataModel->league_id, $trade['team_1_id'], $this->dataModel->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
-                                    $this->dataModel->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'],
-                                                          $this->league_model->commissioner_id, $this->params['currUser'],
-                                                          $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'],
-                                                          $this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
-                                    $code = 200;
-                                    $status = $this->lang->line('team_trade_processed');
-                                } else {
-                                    $code = 301;
-                                    $status = $processResponse;
-                                } // END if
-                            } else {
-                                if ($this->params['config']['approvalType'] == 2) {
-                                    $this->data['type'] = TRADE_PENDING_LEAGUE_APPROVAL;
-                                    $msg = $this->lang->line('team_trade_pending_league_approval');
-                                    $approver = "League";
-                                } else if ($this->params['config']['approvalType'] == 1) {
-                                    $this->data['type'] = TRADE_PENDING_COMMISH_APPROVAL;
-                                    $msg = $this->lang->line('team_trade_pending_commish_approval');
-                                    $approver = "commissioner";
-                                }
-                                $error = $this->dataModel->updateTrade($this->data['trade_id'], $this->data['type'], $this->data['comments']);
-                                $code = 200;
-                                $status = str_replace('[APPROVER_TYPE]',$approver,$this->lang->line('team_trade_pendsing_approval'));
-                            }
-                        } else {
-                            $error = true;
-                            $code = 301;
-                            $status = $rosterMessages;
-                        } // END if
-                    } else {
-                        $error = true;
-                        $code = 301;
-                        $status = $this->lang->line('team_trade_invalid');
-                        $this->dataModel->updateTrade($this->data['trade_id'],TRADE_INVALID,$status);
-                    } // END if
-                } else {
-                    $error = true;
-                    $code = 301;
-                    $status = str_replace('[STATUS]',$trade['tradeStatus'],$this->lang->line('team_trade_not_offered'));
-                    //$this->dataModel->updateTrade($this->data['trade_id'],TRADE_INVALID,$status);
-                } // END if
+				if ($this->data['scoring_period']['id'] == $trade['in_period']) {
+					$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period']);
+					if (empty($rosterMessages)) {
+						if ($this->params['config']['approvalType'] == -1) {
+							$processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments']);
+							if ($processResponse) {
+								$msg = $this->lang->line('team_trade_accepted_no_approvals');
+								$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'],
+													  $this->league_model->commissioner_id, $this->params['currUser'],
+													  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'],
+													  $this->dataModel->league_id, $trade['team_1_id'], $this->dataModel->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
+								$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'],
+													  $this->league_model->commissioner_id, $this->params['currUser'],
+													  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'],
+													  $this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
+								$code = 200;
+								$status = $this->lang->line('team_trade_processed');
+							} else {
+								$code = 301;
+								$status = $processResponse;
+							} // END if
+						} else {
+							if ($this->params['config']['approvalType'] == 2) {
+								$this->data['type'] = TRADE_PENDING_LEAGUE_APPROVAL;
+								$msg = $this->lang->line('team_trade_pending_league_approval');
+								$approver = "League";
+							} else if ($this->params['config']['approvalType'] == 1) {
+								$this->data['type'] = TRADE_PENDING_COMMISH_APPROVAL;
+								$msg = $this->lang->line('team_trade_pending_commish_approval');
+								$approver = "commissioner";
+							}
+							$error = $this->dataModel->updateTrade($this->data['trade_id'], $this->data['type'], $this->data['comments']);
+							$code = 200;
+							$status = str_replace('[APPROVER_TYPE]',$approver,$this->lang->line('team_trade_pendsing_approval'));
+						}
+					} else {
+						$error = true;
+						$code = 301;
+						$status = $rosterMessages;
+					} // END if
+				} else {
+					$error = true;
+					$code = 301;
+					$status = $this->lang->line('team_trade_invalid');
+					$this->dataModel->updateTrade($this->data['trade_id'],TRADE_INVALID,$status);
+				} // END if
 			} else {
 				$updateDb = true;
 				switch ($this->data['type']) {		
@@ -658,7 +651,7 @@ class team extends BaseEditor {
 		$team2Id = -1;
 		$recievePlayers = array();
 		$comments = '';
-		$expiresIn = 0;
+		$expiresIn = $this->params['config']['defaultExpiration'];
 		$prevTradeId = false;
 		$league_id = false;
 		$team_id = -1;
@@ -698,6 +691,9 @@ class team extends BaseEditor {
 				if (isset($this->uriVars['prevTradeId'])) {
 					$prevTradeId = $this->uriVars['prevTradeId'];
 				}
+				if (isset($this->uriVars['expiresIn'])) {
+					$expiresIn = $this->uriVars['expiresIn'];
+				}
 			} else {
 				$error = true;
 				$message = $message_list_missing;
@@ -722,6 +718,7 @@ class team extends BaseEditor {
                     //print ($rawInfo."<br />");
 					$playerDetails = explode("_",$rawInfo);
 					$id = $playerDetails[0];
+					$id = str_replace(";","",$id);
 					$playerName = $this->player_model->getPlayerName($id);
 				    if (!empty($send_player_str)) { $send_player_str .= "<br />"; }
 					$send_player_str .= anchor('/players/info/player_id/'.$id.'/league_id/'.$this->dataModel->league_id,$playerName);
@@ -737,6 +734,7 @@ class team extends BaseEditor {
 					//print ($rawInfo."<br />");
                     $playerDetails = explode("_",$rawInfo);
 					$id = $playerDetails[0];
+					$id = str_replace(";","",$id);
 					$playerName = $this->player_model->getPlayerName($id);
 				    if (!empty($recieve_player_str)) { $recieve_player_str .= "<br />"; }
 					$recieve_player_str .= anchor('/players/info/player_id/'.$id.'/league_id/'.$this->dataModel->league_id,$playerName);
@@ -759,10 +757,17 @@ class team extends BaseEditor {
 				$msg = str_replace('[COMMENTS]', $comments,$msg);
 				$msg = str_replace('[TRADE_REVIEW_URL]', anchor('/team/tradeReview/team_id/'.$team2Id.'/league_id/'.$this->dataModel->league_id.'/trans_type/2/trade_id/'.$trade_id,'Review the Trade offer'),$msg);
 				$expireStr = "";
-				if ($expiresIn > 0) {
-					$expireStr = str_replace('[EXPIRES]',$expiresIn,$this->lang->line('team_trade_expires_message_to'));
+				if ($this->params['config']['tradesExpire'] == 1) {
+					if ($expiresIn == -1) {
+						$expireStr = $this->lang->line('team_trade_expires_message_to_none');
+					} else if ($expiresIn == 500) {
+						$expireStr = $this->lang->line('team_trade_expires_message_to_next_sim');
+					} else {
+						$expireStr = str_replace('[EXPIRES]',$expiresIn,$this->lang->line('team_trade_expires_message_to'));
+					}
 				}
 				$msg = str_replace('[EXPIRES]',$expireStr,$msg);
+
 				$msg = str_replace('[LEAGUE_NAME]', $this->league_model->getLeagueName($this->dataModel->league_id),$msg);
 				$data['messageBody']= $msg;
 				$data['leagueName'] = $this->league_model->league_name;
@@ -786,8 +791,14 @@ class team extends BaseEditor {
 				$msg = str_replace('[RECEIVE_PLAYERS]', $recieve_player_str,$msg);
 				$msg = str_replace('[TRADE_REVIEW_URL]', anchor('/team/tradeReview/team_id/'.$team_id.'/league_id/'.$this->dataModel->league_id.'/trans_type/3/trade_id/'.$trade_id,'Trade Review Page'),$msg);
 				$expireStr = "";
-				if ($expiresIn > 0) {
-					$expireStr = str_replace('[EXPIRES]',$expiresIn,$this->lang->line('team_trade_expires_message_from'));
+				if ($this->params['config']['tradesExpire'] == 1) {
+					if ($expiresIn == -1) {
+						$expireStr = $this->lang->line('team_trade_expires_message_from_none');
+					} else if ($expiresIn == 500) {
+						$expireStr = $this->lang->line('team_trade_expires_message_from_next_sim');
+					} else {
+						$expireStr = str_replace('[EXPIRES]',$expiresIn,$this->lang->line('team_trade_expires_message_from'));
+					}
 				}
 				$msg = str_replace('[EXPIRES]',$expireStr,$msg);
 				$msg = str_replace('[LEAGUE_NAME]', $this->league_model->getLeagueName($this->dataModel->league_id),$msg);
@@ -2033,6 +2044,9 @@ class team extends BaseEditor {
 		} // END if
 		if ($this->input->post('prev_trade_id')) {
 			$this->uriVars['prev_trade_id'] = $this->input->post('prev_trade_id');
+		} // END if
+		if ($this->input->post('expiresIn')) {
+			$this->uriVars['expiresIn'] = $this->input->post('expiresIn');
 		} // END if
 		
 	}

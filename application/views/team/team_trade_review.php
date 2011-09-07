@@ -190,6 +190,9 @@
 					if ($config['tradesExpire'] == 1) { ?>
                         
                         <?php 
+						if (!isset($expiresIn) || empty($expiresIn)) {
+							$expiresIn = $config['defaultExpiration'];
+						}
                         if ($trans_type == 1) {
                             $expireList = array("X"=>"Select One",-1=>"No Expiration",500 =>"Next Sim Period");
                             ?>
@@ -203,7 +206,7 @@
 								}
 								print('>'.$label.'</option>');
 							}
-							for($d = 1; $d < TRADE_MAX_EXPIRATION_DAYS; $d++) {
+							for($d = 1; $d < TRADE_MAX_EXPIRATION_DAYS + 1; $d++) {
 								print('<option value="'.$d.'"');
 								if (isset($expiresIn) && $expiresIn == $d){
 									print(' selected="selected"');
@@ -223,8 +226,8 @@
                                         $expireStr = "Next Sim";
                                         break;
                                     default:
-                                        $expireDate = (strtotime($offer_date) + ((60*60*24) * $expiration_days));
-                                        if ($expireDate < time()) {
+                                        $expireDate = (strtotime($offer_date) + ((60*60*24)*$expiration_days));
+										if ($expireDate < time()) {
                                             $expireLabel = "Expired";
                                         }
                                         $expireStr = date('m/d/Y h:m A', $expireDate);

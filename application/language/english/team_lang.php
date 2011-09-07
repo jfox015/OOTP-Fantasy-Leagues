@@ -48,9 +48,13 @@ $lang['team_trade_offer'] = 'To [USERNAME],
 ';
 
 // EXPIRATION MESSAGING
-$lang['team_trade_expires_message_to'] = 'This trade offer expires in [EXPIRES] days.';
-$lang['team_trade_expires_message_from'] = 'You have given this owner [EXPIRES] days to accept or reject your offer.';
+$lang['team_trade_expires_message_to'] = 'This trade offer expires in [EXPIRES] days from the time of this offer.';
+$lang['team_trade_expires_message_to_next_sim'] = 'This trade offer expires when the next sim is processed.';
+$lang['team_trade_expires_message_to_none'] = 'This trade offer is good until accepted or retracted by the offering team.';
 
+$lang['team_trade_expires_message_from'] = 'You have given this owner [EXPIRES] days to accept or reject your offer.';
+$lang['team_trade_expires_message_from_next_sim'] = 'You have indicated that this trade offer expires when the next sim is processed.';
+$lang['team_trade_expires_message_from_none'] = 'This trade offer is good until accepted by the offering team or you retract it.';
 // OFFER CONFIRMAION
 $lang['team_trade_offer_confirm'] = 'To [USERNAME],
 <p>Your trade offer to the [ACCEPTING_TEAM_NAME] has been submitted. You can review the details of your trade and retract your offer if you feel necessary on the offers [TRADE_REVIEW_URL].</p>
