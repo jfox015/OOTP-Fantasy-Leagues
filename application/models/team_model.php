@@ -629,7 +629,7 @@ class team_model extends base_model {
 	public function getTradesForScoringPeriod($league_id = false, $scoring_period_id = -1, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $status = false, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
 		$trades = $this->getTradeData($league_id, $team_id, false, false, 100, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
-		$trades = $trades + $this->getTradeData($league_id, false, $team_id, 100, false, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
+		$trades = $trades + $this->getTradeData($league_id, false, $team_id, false, 100, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
         return $trades;
 	}
 	/**
@@ -723,7 +723,7 @@ class team_model extends base_model {
 			$this->db->where('status',$status);
 		} else {
 			if ($status != 100) {
-				$this->db->where('status = '.TRADE_OFFERED.' OR status = '.TRADE_PENDING_LEAGUE_APPROVAL.' OR status = '.TRADE_PENDING_COMMISH_APPROVAL);
+				$this->db->where('(status = '.TRADE_OFFERED.' OR status = '.TRADE_PENDING_LEAGUE_APPROVAL.' OR status = '.TRADE_PENDING_COMMISH_APPROVAL.")");
 			}
 		}
 		if ($exclude_team_id !== false) {

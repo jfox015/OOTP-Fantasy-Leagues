@@ -241,8 +241,8 @@ class player_model extends base_model {
 			for ($i = 1; $i < $count; $i++) {
 				$this->db->select('total, scoring_period_id');
 				$this->db->from('fantasy_players_scoring');	
-				$this->db->where('player_id',$player_id);
-				$this->db->where('league_id',$league_id);
+				$this->db->where('player_id',intval($player_id));
+				$this->db->where('league_id',intval($league_id));
 				$this->db->where('scoring_period_id',$i);
 				$query = $this->db->get();
 				if ($query->num_rows > 0) {

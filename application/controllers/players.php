@@ -309,8 +309,6 @@ class players extends MY_Controller {
 			}
 			$this->data['scoringPeriods'] = getScoringPeriodCount();
 			$this->data['currentScoringPeriod'] = $this->getScoringPeriod();
-			$this->data['playerPoints'] = $this->dataModel->getPlayerScoring(0,$pid);
-			$this->data['pointsMax'] = $this->dataModel->getHighestScoring(0,$pid);
 			
 			$yearList = $this->ootp_league_model->getAllSeasons();
 			$this->data['statYear'] = date('Y',strtotime($this->ootp_league_model->current_date));
@@ -339,7 +337,10 @@ class players extends MY_Controller {
 			//print($this->data['currentScoringPeriod']['id']."<br />");
 			$this->data['league_id'] = $league_id;
 			$this->data['current_team'] = array('id'=>-1);
+			
+			$league_for_query = $league_id;
 			if (isset($league_id) && !empty($league_id) && $league_id != -1) {
+				
 				// GET PLAYERS CURRENT TEAM
 				$this->data['current_team'] = $this->dataModel->getFantasyTeam($pid, $this->data['currentScoringPeriod']['id'],$league_id);
 				$this->data['league_name'] = $this->league_model->getLeagueName($league_id);
@@ -393,7 +394,12 @@ class players extends MY_Controller {
 					$this->data['waiverStatus'] = $this->dataModel->getWaiverStatus($league_id);
 					$this->data['waiverClaims'] = $this->dataModel->getWaiverClaims($league_id);
 				}
+			} else {
+				$league_for_query = 0;
 			}
+			$this->data['playerPoints'] = $this->dataModel->getPlayerScoring($league_for_query,$pid);
+			print($this->db->last_query()."<br />");
+			$this->data['pointsMax'] = $this->dataModel->getHighestScoring($league_for_query,$pid);
 			
 			$this->params['subTitle'] = "Player Details for ".$this->data['thisItem']['first_name']." ".$this->data['thisItem']['last_name'];
 			$this->params['content'] = $this->load->view($this->views['INFO'], $this->data, true);

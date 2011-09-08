@@ -80,6 +80,21 @@ class league_model extends base_model {
 	 *	@var $accept_requests:Int
 	 */
 	var $accept_requests = 0;
+	/**
+	 *	COMPILED STATS.
+	 *	@var $compiledStats:Array
+	 */
+	var $compiledStats = array();
+	/**
+	 *	STAT FIELD LIST.
+	 *	@var $columnList:Array
+	 */
+	var $columnList = array();
+	/**
+	 *	SQL COLUMN NAMES.
+	 *	@var $sqlColNames:Array
+	 */
+	var $sqlColNames = array();
 	
 	/*---------------------------------------------
 	/
@@ -107,6 +122,7 @@ class league_model extends base_model {
 		$this->tables['TEAM_TRADES'] = 'fantasy_teams_trades';
 		$this->tables['TRADES'] = 'fantasy_teams_trades';
 		$this->tables['TRADES_STATUS'] = 'fantasy_teams_trades_status';
+		$this->tables['PLAYERS'] = 'fantasy_players';
 		
 		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests');
 		$this->conditionList = array('avatarFile','new_commisioner');
@@ -291,6 +307,16 @@ class league_model extends base_model {
 	}
 	
 	// SPECIAL QUERIES
+	/**
+	* 	GET LEAGUE NAME.
+	* 	<p>
+	* 	Return the name of the league specified (or leaded).</p>
+	* 	@param	$league_id		{int}		The League Id
+	* 	@return					{String}	League Name
+	*
+	* 	@since	1.0
+	*  	@access	public
+	*/
 	public function getLeagueName($league_id = false) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
@@ -306,7 +332,15 @@ class league_model extends base_model {
 		$query->free_result();
 		return $league_name;
 	}
-	
+	/**
+	* 	HAS TEAMS.
+	* 	<p>Return true if the league contains teams and FALSE if not.</p>
+	* 	@param	$league_id		{int}		The League Id
+	* 	@return					{Boolean}	TRUE if teams exist, FALSE if no
+	*
+	* 	@since	1.0
+	*  	@access	public
+	*/
 	public function hasTeams($league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$this->db->select('id');
@@ -320,6 +354,16 @@ class league_model extends base_model {
 			return false;
 		}	
 	}
+	/**
+	* 	HAS VALID ROSTERS.
+	* 	<p>Simple test if teams in a legaue have players on rosters. it does not, howver, 
+    *	test if they are valid against a league roster rules.</p>
+	* 	@param	$league_id		{int}		The League Id
+	* 	@return					{Boolean}	TRUE if teams have rosters, FALSE if no
+	*
+	* 	@since	1.0
+	*  	@access	public
+	*/
 	public function hasValidRosters($league_id = false) {
 		
 		// VALIDATE ROSTER COUNTS
@@ -335,6 +379,15 @@ class league_model extends base_model {
 			return false;
 		}	
 	}
+	/**
+	* 	GET SCORING TYPE.
+	* 	<p>Returns the leagues scoring type.</p>
+	* 	@param	$league_id		{int}		The League Id
+	* 	@return					{int}		Scoring type ID
+	*
+	* 	@since	1.0.5
+	*  	@access	public
+	*/
 	public function getScoringType($league_id = false) {
 		if ($league_id === false && $this->id != -1) { 
 			return $this->league_type; 
@@ -352,14 +405,42 @@ class league_model extends base_model {
 			return $type;
 		}
 	}
-	protected function ownerCanBeCommish($userId) {
+	/**
+	* 	OWNER CAN BE COMMISSIONER.
+	* 	<p>Tests f the passed user ID can be commissioner of the specified (or leaded) league (I.E. if they are already 
+	*	commissioner or not).</p>
+	* 	@param	$userId			{int}			The user Id
+	* 	@param	$league_id		{int}			OPTIONAL - The League Id
+	* 	@return					{Boolean}		TRUE if user can be commissioner, FALSE if not
+	*
+	* 	@since	1.0
+	*  	@access	public
+	*/
+	protected function ownerCanBeCommish($userId = false, $league_id = false) {
+		
+		if ($userId === false) { return false; }
+		if ($league_id === false) { $league_id = $this->id; }
+		
 		if ($userId != $this->commissioner_id && !$this->userIsCommish($userId)) {
 			return true;
 		} else {
 			return false;
 		}
 	}
-	public function userIsCommish($userId, $league_id = false) {
+	/**
+	* 	USER IS COMMISSIONER.
+	* 	<p>Tests f the passed user ID is the leagues commissioner.</p>
+	* 	@param	$userId			{int}			The user Id
+	* 	@param	$league_id		{int}			OPTIONAL - The League Id
+	* 	@return					{Boolean}		TRUE if user is commissioner, FALSE if not
+	*
+	* 	@since	1.0
+	*  	@access	public
+	*/
+	public function userIsCommish($userId = false, $league_id = false) {
+		
+		if ($userId === false) { return false; }
+		
 		$this->db->select('id');
 		$this->db->from($this->tblName);
 		$this->db->where("commissioner_id",$userId);
@@ -373,10 +454,20 @@ class league_model extends base_model {
 			return false;
 		}	
 	}
+	/**
+	* 	GET OWNER IDS.
+	* 	<p>Returns a list of user ids who own teams in the passed (or loaded) league.</p>
+	* 	@param	$league_id		{int}			OPTIONAL - The League Id
+	* 	@return					{Boolean}		TRUE if user is commissioner, FALSE if not
+	*
+	* 	@since	1.0
+	*  	@access	public
+	*/
 	public function getOwnerIds($league_id = false) {
 		
 		$owners = array();
 		if ($league_id === false) { $league_id = $this->id; }
+		
 		$this->db->select('owner_id');
 		$this->db->from($this->tables['TEAMS']);
 		$this->db->where("league_id",$league_id);
@@ -389,6 +480,18 @@ class league_model extends base_model {
 		$query->free_result();
 		return $owners;
 	}
+	/**
+	 * 	GET OWNER INFO.
+	 * 	<p>Returns an array of owner details including the owners id, first and last name.</p>
+	 *	<p><b>NOTE:</b> The <code>$showTeam</code> arg can be used to return the team name instead of owner name. The owner ID is 
+	 *	returned regardless.</p>
+	 * 	@param	$league_id		{int}			OPTIONAL - The League Id
+	 * 	@param	$showTeam		{Boolean}		TRUE ot show the team name, FALSE to show owner name
+	 * 	@return					{Boolean}		TRUE if user is commissioner, FALSE if not
+	 *
+	 * 	@since	1.0
+	 *  @access	public
+	 */
 	public function getOwnerInfo($league_id = false, $showTeam = false) {
 		
 		$owners = array();
@@ -699,7 +802,9 @@ class league_model extends base_model {
 		$query->free_result();
 		return $teamNames;
 	}
-	public function loadGameData($game_id = false, $team_model, $excludeList = array()) {
+	public function loadGameData($game_id = false, $team_model, $excludeList = array(), $league_id = false) {
+		
+		if ($league_id === false) { $league_id = $this->id; }
 		if ($game_id === false) return false;
 		// FIRST GET THE TEAMS INVOLVED
 		$teams = array();
@@ -746,7 +851,7 @@ class league_model extends base_model {
 						}
 						// SUBQUERY FOR FANTASY TOTALS
 						$select .= ",(SELECT total FROM fantasy_players_scoring WHERE player_id = ".$player_data['id']." AND 
-									league_id = ".$scoring_rules['league_id']." AND scoring_period_id = ".$scoring_period['id']." AND 
+									league_id = ".$league_id." AND scoring_period_id = ".$scoring_period['id']." AND 
 									scoring_type = ".$scoring_rules['scoring_type'].") AS total ";
 						
 						// GET ALL PLAYERS SCORING FOR TEAMS ROSTER
@@ -1862,7 +1967,6 @@ class league_model extends base_model {
 		$league_name = $this->getLeagueName($league_id);
 		
 		$scoring_type = $this->getScoringType($league_id);
-		
 		/*--------------------------------------
 		/	1.1 LOAD LANGUAGE IF NOT ALREADY EXISTS
 		/-------------------------------------*/
@@ -1907,10 +2011,13 @@ class league_model extends base_model {
 			/*--------------------------------------
 			/	2.3 SCORING AND RECORDS
 			/-------------------------------------*/
+			$scoring_type = $this->getScoringType($league_id);
+			$scoring_rules = $this->getScoringRules($league_id,$scoring_type);
+			$this->loadPlayerScoring($scoring_period,$league_id, $scoring_rules, $scoring_type);
 			$summary .= $this->lang->line('sim_process_h2h');
 			// IF RUNNING ON THE FINAL DAY OF THE SIM 
-			$summary .= $this->updateTeamScoring($scoring_period, $league_id, $excludeList);
-			$summary .= $this->updateTeamRecords($scoring_period, $league_id, $excludeList);
+			$summary .= $this->updateTeamScoring($scoring_period, $league_id, $excludeList, $scoring_rules, $scoring_type);
+			$summary .= $this->updateTeamRecords($scoring_period, $league_id, $excludeList, $scoring_rules, $scoring_type);
 			
 			/*--------------------------------------
 			/	2.4 ROSTERS
@@ -1956,24 +2063,129 @@ class league_model extends base_model {
 		return $summary;
 	}
 	/**
+	 *	LOAD PLAYER SCORING.
+	 *	This function loads the compiled scoring results from the players copiled stats tables and stores them to local member 
+	 *	variables for use in later processing. This uses memory, but saves calling the stats from the DB for each subsequent 
+	 *	league being processed.
+	 *	
+	 *	This function will also compile head to head points for all active players across all head-to head leagues.
+	 *
+	 *	@param	$scoring_period	The scoring period to update against
+	 *	@param	$league_id		The league to process, defaults to $this->id if no value passed
+	 *	@param	$excludeList	A list of team IDs that are excempt from scoring updates due to an illegal roster
+	 *	@param	$scoring_rules	Array of scoring categories and values
+	 *	@param	$scoring_type	The leagues scoring type (rotisserie or head to head)
+	 *	@param	$debug			Trace debugging flag
+	 *	@return					Summary String
+	 *	@since					1.0.6
+	 *	@version				1.0
+	 *
+	 */
+	protected function loadPlayerScoring($scoring_period = false, $league_id = false, $scoring_rules = false, $scoring_type = false, $debug = false) {
+		
+		if ($league_id === false) { $league_id = $this->id; }
+		
+		if ($scoring_period === false) return false;
+		//------------------------------------
+		// 	2.2 LOAD COMPILED SCORING STATS
+		// 	EXACT STAT CATEGORIES TO LOAD IS
+		//	BASED ON LEAGUE SCORING RULES
+		//-----------------------------------
+		if (sizeof($this->compiledStats) == 0) {
+			$this->compiledStats = array('batting'=>array(),'pitching'=>array());
+		}
+		if (sizeof($this->columnList) == 0) {
+			$this->columnList = array('batting'=>array(),'pitching'=>array());
+		}
+		if (sizeof($this->sqlColNames) == 0) {
+			$this->sqlColNames = array('batting'=>array(),'pitching'=>array());
+		}
+		$playerTypes = array('batting','pitching');
+		foreach($playerTypes as $playerType) {
+			if (sizeof($this->compiledStats[$playerType]) == 0) {
+				$select = "*";
+				// GET ALL PLAYERS SCORING, LIMITED TO JUST ROSTER PLAYERS FOR ROTISSERIE
+				$player_stats = array();
+				$this->db->flush_cache();
+				$this->db->select($select);
+				$this->db->where("scoring_period_id",intval($scoring_period['id']));
+				$query = $this->db->get("fantasy_players_compiled_".$playerType);
+				if ($debug) {
+					echo($this->db->last_query()."<br />");
+				}
+				if ($query->num_rows() > 0) {
+					$this->columnList[$playerType] = $query->list_fields();
+					foreach($query->result() as $row) {
+						$this->compiledStats[$playerType][$row->player_id] = $row;
+					}
+				} // END if
+				$query->free_result();
+			}
+			if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+				foreach($this->compiledStats[$playerType] as $player_id => $statsRow) {
+					$totalVal = 0;
+					foreach($scoring_rules[$playerType] as $cat => $val) {	
+						$colName = strtolower(get_ll_cat($cat, true));	
+						if (isset($statsRow->$colName)) {
+							if (isset($score_vals[$cat])) {
+								$score_vals[$cat] += $statsRow->$colName;
+							} else {
+								$score_vals[$cat] = $statsRow->$colName;
+							} // END if
+							$totalVal += ($statsRow->$colName * $val);
+						} // END if
+					} // END foreach
+					// APPLY VALUES TO THE STATS AND SAVE THEM TO THE PLAYERS SCORING TABLE
+					$this->db->flush_cache();
+					$this->db->select('id');
+					$this->db->where('player_id',$player_id);
+					$this->db->where('scoring_period_id',$scoring_period['id']);
+					$this->db->where('league_id',$league_id);
+					$this->db->where('scoring_type',$scoring_type);
+					$tQuery = $this->db->get('fantasy_players_scoring');
+					$data = array();
+					$data['total'] = $totalVal;
+					if ($tQuery->num_rows() == 0) {
+						$this->db->flush_cache();
+						$data['player_id'] = $player_id;
+						$data['scoring_period_id'] = $scoring_period['id'];
+						$data['scoring_type'] = $scoring_type;
+						$data['league_id'] = $league_id;
+						$this->db->insert('fantasy_players_scoring',$data);
+					} else {
+						$this->db->flush_cache();
+						$this->db->where('player_id',$player_id);
+						$this->db->where('scoring_period_id',$scoring_period['id']);
+						$this->db->where('league_id',$league_id);
+						$this->db->where('scoring_type',$scoring_type);
+						$this->db->update('fantasy_players_scoring',$data);
+					} // END if
+					unset($data);
+					$tQuery->free_result();
+				}
+			}
+		}
+		return true;
+	}
+	/**
 	 *	UPDATE TEAM SCORING
 	 *
 	 *	@param	$scoring_period	The scoring period to update against
 	 *	@param	$league_id		The league to process, defaults to $this->id if no value passed
 	 *	@param	$excludeList	A list of team IDs that are excempt from scoring updates due to an illegal roster
+	 *	@param	$scoring_rules	Array of scoring categories and values
+	 *	@param	$scoring_type	The leagues scoring type (rotisserie or head to head)
+	 *	@param	$debug			Trace debugging flag
 	 *	@return					Summary String
 	 *	@since					1.0.4
 	 *	@version				1.0
 	 *
 	 */
-	public function updateTeamScoring($scoring_period, $league_id = false, $excludeList = array()) {
+	public function updateTeamScoring($scoring_period, $league_id = false, $excludeList = array(), $scoring_rules = false, $scoring_type = false, $debug = false) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
 		
 		$summary = $this->lang->line('sim_process_scoring');
-		
-		$scoring_type = $this->getScoringType($league_id);
-		$scoring_rules = $this->getScoringRules($league_id,$scoring_type);
 		$summary .= "League Scoring Type = ".$scoring_type."<br />";
 		/*---------------------------------------
 		/
@@ -1986,19 +2198,20 @@ class league_model extends base_model {
 			$summary = str_replace('[LEAGUE_ID]',$league_id,$summary);
 			/*---------------------------------------
 			/
-			/	2.0 TEAM LOOP
+			/	1.1 TEAM LOOP
 			/
 			/--------------------------------------*/
 			foreach($teams as $team_id) {
+				$teamRoster = array();
+				$team_score = 0;
+				$score_vals = array();
 				//echo("Team Id = ".$team_id."<br />");
+				$team_stats = array('batting'=>array(),'pitching'=>array());
 				//------------------------------------
-				// 2.1 GET PLAYERS FOR TEAM
+				// 1.1.1 GET PLAYERS FOR TEAM
 				//-----------------------------------
 				// DIVIDE ROSTER ARRAY INTO BATTERS AND PITCHERS
 				// REQUIRED FOR CONVERTING SCORING RULES TO SCORING RESULTS
-				$teamRoster = array('batting'=>array(),'pitching'=>array());
-				$team_score = 0;
-				$score_vals = array();
 				// ONLE GET ROSTERS AND CORES IF THIS TEAM IF IT HAS A VALID ROSTER
 				if (sizeof($excludeList) == 0 || (sizeof($excludeList) > 0  && !in_array($team_id, $excludeList))) {
 					$this->db->select("player_id,player_position");
@@ -2008,119 +2221,55 @@ class league_model extends base_model {
 					$query = $this->db->get("fantasy_rosters");
 					if ($query->num_rows() > 0) {
 						foreach($query->result() as $row) {
-								$listId = 'batting';
+							$type = "batting";
 							if ($row->player_position == 1) {
-								$listId = 'pitching';
+								$type = "pitching";
 							}
-							array_push($teamRoster[$listId],$row->player_id);
+							if (isset($this->compiledStats[$type][$row->player_id])) {
+								array_push($team_stats[$type],$this->compiledStats[$type][$row->player_id]);
+							}
 						} // END foreach
 					} // END if
 					$query->free_result();
-				
-					//if (sizeof($teamRoster) > 0) {
+				} // END if sizeof($excludeList)
+		
+				$playerTypes = array('batting','pitching');
+				foreach($playerTypes as $playerType) {
 					//------------------------------------
-					// 	2.2 LOAD COMPILED SCORING STATS
-					// 	EXACT STAT CATEGORIES TO LOAD IS
-					//	BASED ON LEAGUE SCORING RULES
+					// 	2.3 PROCESS STATS VS SCORING RULES
 					//-----------------------------------
-					$player_stats = array();
-					$sqlColNames = array();
-					//$statsObjs = array('batting'=>NULL,'pitching'=>NULL);
-					foreach($teamRoster as $playerType => $roster) {	
-						$select = "";
-						if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
-							$select = "player_id";
-							foreach($scoring_rules[$playerType] as $cat => $val) {	
-								if ($select != '') { $select.=","; } // END if
-								$sqlColNames[$cat] = strtolower(get_ll_cat($cat, true));
-								$select .= $sqlColNames[$cat];
-							}
-						} else {
-							$select = "*";
-						}
-						// GET ALL PLAYERS SCORING FOR TEAMS ROSTER
-						$fieldList = array();
-						$player_stats = array();
-						$this->db->flush_cache();
-						$this->db->select($select);
-						$this->db->where_in("player_id",$roster);
-						$this->db->where("scoring_period_id",intval($scoring_period['id']));
-						$query = $this->db->get("fantasy_players_compiled_".$playerType);
-						//echo($this->db->last_query()."<br />");
-						if ($query->num_rows() > 0) {
-							$fieldList = $query->list_fields();
-							$player_stats = $query->result();
-						} // END if
-						$query->free_result();
-						//------------------------------------
-						// 	2.3 PROCESS STATS VS SCORING RULES
-						//-----------------------------------
-						foreach($player_stats as $row) {
-							$totalVal = 0;
-							switch ($scoring_type) {
-								case LEAGUE_SCORING_ROTO:
-								case LEAGUE_SCORING_ROTO_5X5:
-								case LEAGUE_SCORING_ROTO_PLUS:
-									$fieldStr = "";
-									$fieldCount = 0;
-									foreach($fieldList as $field) {
-										if (!empty($fieldStr)) {  $fieldStr .= ","; }
-										$fieldStr .= $field;
-										if (isset($score_vals[$field])) {
-											$score_vals[$field] += $row->$field;
-										} else {
-											$score_vals[$field] = $row->$field;
-										} // END if
-									} // END foreach
-									//print("Field list = ".$fieldCount." fields, ".$fieldStr."<br />");
-									break;
-								case LEAGUE_SCORING_HEADTOHEAD:
-									default:
-									foreach($scoring_rules[$playerType] as $cat => $val) {	
-										$colName = strtolower(get_ll_cat($cat, true));	
-										if (isset($row->$colName)) {
-											if (isset($score_vals[$cat])) {
-												$score_vals[$cat] += $row->$colName;
-											} else {
-												$score_vals[$cat] = $row->$colName;
-											} // END if
-											// UPDATE THE PLAYERS SCORING TOTAL
-											$totalVal += $row->$colName * $val;
-										} // END if
-									} // END foreach
-									// APPLY VALUES TO THE STATS AND SAVE THEM TO THE PLAYERS SCORING TABLE
-									$this->db->flush_cache();
-									$this->db->select('id');
-									$this->db->where('player_id',$row->player_id);
-									$this->db->where('scoring_period_id',$scoring_period['id']);
-									$this->db->where('league_id',$scoring_rules['league_id']);
-									$this->db->where('scoring_type',$scoring_type);
-									$tQuery = $this->db->get('fantasy_players_scoring');
-									$data = array();
-									$data['total'] = $totalVal;
-									if ($tQuery->num_rows() == 0) {
-										$this->db->flush_cache();
-										$data['player_id'] = $row->player_id;
-										$data['scoring_period_id'] = $scoring_period['id'];
-										$data['scoring_type'] = $scoring_type;
-										$data['league_id'] = $scoring_rules['league_id'];
-										$this->db->insert('fantasy_players_scoring',$data);
+					foreach($team_stats[$playerType] as $row) {
+						//$totalVal = 0;
+						switch ($scoring_type) {
+							case LEAGUE_SCORING_ROTO:
+							case LEAGUE_SCORING_ROTO_5X5:
+							case LEAGUE_SCORING_ROTO_PLUS:
+								foreach($this->columnList[$playerType] as $field) {
+									if (isset($score_vals[$field])) {
+										$score_vals[$field] += $row->$field;
 									} else {
-										$this->db->flush_cache();
-										$this->db->where('player_id',$row->player_id);
-										$this->db->where('scoring_period_id',$scoring_period['id']);
-										$this->db->where('league_id',$scoring_rules['league_id']);
-										$this->db->where('scoring_type',$scoring_type);
-										$this->db->update('fantasy_players_scoring',$data);
+										$score_vals[$field] = $row->$field;
 									} // END if
-									unset($data);
-									$tQuery->free_result();
-									$team_score += $totalVal;
-									break;
-							} // END switch
-						} // END foreach $player_stats
-					} // END foreach $teamRoster
-				} // END if
+								} // END foreach
+								break;
+							case LEAGUE_SCORING_HEADTOHEAD:
+								default:
+								foreach($scoring_rules[$playerType] as $cat => $val) {	
+									$colName = strtolower(get_ll_cat($cat, true));	
+									if (isset($row->$colName)) {
+										if (isset($score_vals[$cat])) {
+											$score_vals[$cat] += $row->$colName;
+										} else {
+											$score_vals[$cat] = $row->$colName;
+										} // END if
+										// UPDATE THE PLAYERS SCORING TOTAL
+										$team_score += $row->$colName * $val;
+									} // END if
+								} // END foreach
+								break;
+						} // END switch
+					} // END foreach $player_stats
+				} // END foreach $playerTypes
 				//------------------------------------
 				// 	2.4 UPDATE TEAM SCORING RESULTS
 				//-----------------------------------
@@ -2128,7 +2277,6 @@ class league_model extends base_model {
 					case LEAGUE_SCORING_ROTO:
 					case LEAGUE_SCORING_ROTO_5X5:
 					case LEAGUE_SCORING_ROTO_PLUS:
-						
 						// EDIT - 1.0.6
 						$teamStatObj = new CompiledStats();
 						// FIRST LOAD EXISTING STATS, IF THEY EXIST
@@ -2223,8 +2371,7 @@ class league_model extends base_model {
 						} // END if
 						break;
 				} // END switch
-					
-			} // END foreach
+			} // END foreach teams
 		} // END if sizeof($teams) > 0
 		return $summary;
 	}
@@ -2234,18 +2381,18 @@ class league_model extends base_model {
 	 *	@param	$scoring_period	The scoring period to update against
 	 *	@param	$league_id		The league to process, defaults to $this->id if no value passed
 	 *	@param	$excludeList	A list of team IDs that are excempt from scoring updates due to an illegal roster
+	 *	@param	$scoring_rules	Array of scoring categories and values
+	 *	@param	$scoring_type	The leagues scoring type (rotisserie or head to head)
+	 *	@param	$debug			Trace debugging flag
 	 *	@return					Summary String
 	 *	@since					1.0.4
 	 *	@version				1.0
 	 *
 	 */
-	public function updateTeamRecords($scoring_period, $league_id = false, $excludeList = array()) {
+	public function updateTeamRecords($scoring_period, $league_id = false, $excludeList = array(), $scoring_rules = false, $scoring_type = false, $debug = falses) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
-		
-		$scoring_type = $this->getScoringType($league_id);
-		$scoring_rules = $this->getScoringRules($league_id,$scoring_type);
-		
+				
 		$summary = $this->lang->line('sim_process_records');
 		// GET ALL TEAMS
 		$teams = array();
@@ -2548,7 +2695,7 @@ class league_model extends base_model {
                         } // END switch
                         $msg = str_replace('[USERNAME]', $ownerData['username'], $msg);
                         $data['messageBody']= $msg;
-                        $data['leagueName'] = $this->league_model->league_name;
+                        $data['leagueName'] = $this->league_name;
                         $data['title'] = $this->lang->line('team_email_title_trade_response');
                         $message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
                         // SEND MESSAGES

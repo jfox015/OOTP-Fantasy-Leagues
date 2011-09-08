@@ -360,7 +360,7 @@ class team extends BaseEditor {
 			
 			// GET USER INITIATED TRADES AND OFFERED TRADES
 			$this->data['allowProtests'] = ($this->params['config']['approvalType'] == 2) ? true : false;
-            $tradeList = $this->dataModel->getTradesForScoringPeriod($this->data['league_id'],$periodForQuery, $this->data['team_id'], $this->data['team_id'], false,$this->data['allowProtests']);
+            $tradeList = $this->dataModel->getTradesForScoringPeriod($this->data['league_id'],$this->data['scoring_period']['id'], $this->data['team_id'], false, false,$this->data['allowProtests']);
             $trades = array('offered'=>array(),'incoming'=>array(),'approvals'=>array(),'completed'=>array(),'other'=>array());
 
             if (sizeof($tradeList) > 0) {
