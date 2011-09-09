@@ -23,7 +23,7 @@ class players extends MY_Controller {
 	/**
 	 *	Creates a new instance of players.
 	 */
-	public function players() { 
+	public function players() {
 		parent::MY_Controller();
 		$this->views['MESSAGE'] = 'player/player_message';
 		$this->views['INFO'] = 'player/player_info';
@@ -37,20 +37,20 @@ class players extends MY_Controller {
 	 *	INDEX.
 	 *	The default handler when the controller is called.
 	 *	Checks for an existing auth session, and if found,
-	 *	redirects to the dashboard. Otherwise, it redirects 
+	 *	redirects to the dashboard. Otherwise, it redirects
 	 *	to the login.
 	 */
 	public function index() {
 		$this->params['content'] = $this->load->view($this->views['PENDING'], $this->data, true);
 	    $this->displayView();
 	}
-	
+
 	public function stats() {
-		
+
 		$this->enqueScript(JS_JQUERY);
 		$this->getURIData();
 		$this->load->model('player_model','dataModel');
-		
+
 		//-----------------------------------------------------------------------
 		// UPDATE 1.0.3
 		// TEST TO ASSURE PLAYERS HAVE BEEN IMPORTED BEFORE DISPLAYING THE PAGE
@@ -72,28 +72,28 @@ class players extends MY_Controller {
 			$player_type = 1;
 			if(isset($this->uriVars['player_type'])) $player_type = $this->uriVars['player_type'];
 			$this->data['player_type'] = $player_type;
-			
+
 			$roster_status = -1;
 			if(isset($this->uriVars['roster_status'])) $roster_status = $this->uriVars['roster_status'];
 			$this->data['roster_status'] = $roster_status;
-			
+
 			$position_type = -1;
 			if(isset($this->uriVars['position_type'])) $position_type = $this->uriVars['position_type'];
 			$this->data['position_type'] = $position_type;
-			
-			$this->data['role_type'] = $role_type = (isset($this->uriVars['role_type'])) ? $this->uriVars['role_type'] : -1;	
-			
+
+			$this->data['role_type'] = $role_type = (isset($this->uriVars['role_type'])) ? $this->uriVars['role_type'] : -1;
+
 			$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : DEFAULT_RESULTS_COUNT;
-			
-			$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;	
-			
+
+			$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;
+
 			$startIdx = 0;
 			if ($limit != -1) {
 				$startIdx = ($limit * ($pageId - 1))-1;
 			}
 			if ($startIdx < 0) { $startIdx = 0; }
 			$this->data['startIdx'] = $startIdx;
-			
+
 			$league_id = -1;
 			if(isset($this->uriVars['league_id'])) {
 				$league_id = $this->uriVars['league_id'];
@@ -117,7 +117,7 @@ class players extends MY_Controller {
 				//}
 			}
 			$this->data['league_id'] = $league_id;
-			
+
 			// RAW Record Count total with no limit
 			$this->data['recCount'] = sizeof($this->dataModel->getFantasyStats(true,$this->params['config']['ootp_league_id'], $this->data['lgyear'], $this->data['player_type'], $this->data['position_type'],  $this->data['role_type'], $this->params['config']['current_period'], $this->data['roster_status'], -1, 0, $league_id, $this->params['config']['current_period'],$rules));
 			// Actual results with limit applied
@@ -136,12 +136,12 @@ class players extends MY_Controller {
 			$showRatings = (isset($scoring_type) && $scoring_type != LEAGUE_SCORING_HEADTOHEAD) ? true: false;
 			$this->data['colnames']=player_stat_column_headers($player_type, QUERY_STANDARD, $showPts, false, false, false, false,$showRatings);
 			$this->data['fields']=player_stat_fields_list($player_type, QUERY_STANDARD, $showPts, false, false, false, false,$showRatings);
-			
+
 			if (!function_exists('getSignedPlayerTeamIdsByLeague')) {
 				$this->load->helper('roster');
 			}
 			$this->data['player_teams'] = getSignedPlayerTeamIdsByLeague($league_id, $this->params['config']['current_period']);
-			
+
 			$this->data['player_stats'] = formatStatsForDisplay($player_stats, $this->data['fields'], $this->params['config'],$league_id,$this->data['player_teams'],$this->data['team_list']);
 			$this->data['formatted_stats'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 
@@ -151,13 +151,13 @@ class players extends MY_Controller {
 		} else {
 			$this->params['subTitle'] = $this->data['subTitle'] = "Player Stats Error";
 			$this->data['theContent'] = $this->lang->line('players_stats_no_players_error');
-			$this->params['content'] = $this->load->view($this->views['MESSAGE'], $this->data, true);	
+			$this->params['content'] = $this->load->view($this->views['MESSAGE'], $this->data, true);
 		}
 	   	$this->makeNav();
-		
+
 		$this->displayView();
 	}
-	
+
 	public function getInfo() {
 		$this->init();
 		$this->getURIData();
@@ -181,11 +181,11 @@ class players extends MY_Controller {
 			$result = '""';
 		}
 		$result = '{ "result": '.$result.',"code":"'.$code.'","status": "'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	public function loadPlayerInfo($player_id = false, $return = false) {
-		
+
 		$status = "";
 		$code = 0;
 		if (!isset($this->player_model)) {
@@ -258,7 +258,7 @@ class players extends MY_Controller {
 				$this->load->model('league_model');
 			}
 			$this->league_model->load($this->uriVars['league_id']);
-			
+
 			$league_id = $this->uriVars['league_id'];
 			$scoring_type = LEAGUE_SCORING_ROTO;
 			if ($this->league_model->id != -1) {
@@ -273,7 +273,7 @@ class players extends MY_Controller {
 			}
 			array_push($this->params['subNavSection'], league_nav($this->uriVars['league_id'], $league_name,$lg_admin,true,$scoring_type));
 		}
-		
+
 		array_push($this->params['subNavSection'],player_nav($league_id));
 	}
 	/**
@@ -288,7 +288,7 @@ class players extends MY_Controller {
 	public function info() {
 		$this->getURIData();
 		$this->load->model('player_model','dataModel');
-		
+
 		$pid = false;
 		if (isset($this->uriVars['player_id']) && !empty($this->uriVars['player_id'])) {
 			$pid = $this->uriVars['player_id'];
@@ -297,33 +297,33 @@ class players extends MY_Controller {
 		}
 		if (!$pid === false && $pid != -1) {
 			$this->dataModel->load($pid);
-			
+
 			$this->data['teamList'] = getOOTPTeams($this->params['config']['ootp_league_id'], false);
 			$this->data['thisItem'] = $this->dataModel->getPlayerDetails($pid);
-			
+
 			$this->load->model('news_model');
-			$this->data['playerNews'] = $this->news_model->getNewsByParams(NEWS_PLAYER,$pid,1);	
-			
+			$this->data['playerNews'] = $this->news_model->getNewsByParams(NEWS_PLAYER,$pid,1);
+
 			if (!function_exists('getScoringPeriodCount')) {
 				$this->load->helper('admin');
 			}
 			$this->data['scoringPeriods'] = getScoringPeriodCount();
 			$this->data['currentScoringPeriod'] = $this->getScoringPeriod();
-			
+
 			$yearList = $this->ootp_league_model->getAllSeasons();
 			$this->data['statYear'] = date('Y',strtotime($this->ootp_league_model->current_date));
 			$this->data['playerStats'] = $this->dataModel->getCurrentStats($this->params['config']['ootp_league_id'],$this->data['statYear']);
-			
+
 			$this->data['awards'] = $this->dataModel->getPlayerAwards($this->params['config']['ootp_league_id']);
 			$this->data['awardName'] = getLeagueAwardsNames($this->params['config']['ootp_league_id']);
 
 			$this->data['recentGames'] = $this->dataModel->getRecentGameStats($this->params['config']['ootp_league_id'],$this->ootp_league_model->current_date,date('Y',strtotime($this->ootp_league_model->current_date)));
 			$this->data['upcomingGames'] = getPlayerSchedules(array(0=>array($pid=>array('team_id'=>$this->data['thisItem']['team_id'],'position'=>$this->data['thisItem']['position'],'role'=>$this->data['thisItem']['role']))),$this->ootp_league_model->current_date, $this->params['config']['sim_length']);
-			
+
 			$this->data['careerStats'] = $this->dataModel->getCareerStats($this->params['config']['ootp_league_id']);
 			$this->data['teams'] = getOOTPTeamAbbrs($this->params['config']['ootp_league_id'],date('Y',strtotime($this->ootp_league_model->current_date)));
 			$this->data['year'] = date('Y',strtotime($this->ootp_league_model->current_date));
-			
+
 			// LEAGUE SPECIFIC INFO IF LEAGUE_ID EXISTS
 			$league_id = -1;
 			if(isset($this->uriVars['league_id'])) {
@@ -337,21 +337,21 @@ class players extends MY_Controller {
 			//print($this->data['currentScoringPeriod']['id']."<br />");
 			$this->data['league_id'] = $league_id;
 			$this->data['current_team'] = array('id'=>-1);
-			
+
 			$league_for_query = $league_id;
 			if (isset($league_id) && !empty($league_id) && $league_id != -1) {
-				
+
 				// GET PLAYERS CURRENT TEAM
 				$this->data['current_team'] = $this->dataModel->getFantasyTeam($pid, $this->data['currentScoringPeriod']['id'],$league_id);
 				$this->data['league_name'] = $this->league_model->getLeagueName($league_id);
 				if ($this->params['loggedIn']) {
 					$this->data['userTeamId'] = $this->user_meta_model->getUserTeamIds($league_id,$this->params['currUser']);
 				}
-				$this->data['isCommish'] = $this->league_model->userIsCommish($this->params['currUser'],$league_id); 
-				$this->data['isAdmin'] = $this->data['loggedIn'] && $this->data['accessLevel'] == ACCESS_ADMINISTRATE; 
-				
+				$this->data['isCommish'] = $this->league_model->userIsCommish($this->params['currUser'],$league_id);
+				$this->data['isAdmin'] = $this->data['loggedIn'] && $this->data['accessLevel'] == ACCESS_ADMINISTRATE;
+
 				$this->data['team_list'] = $this->league_model->getTeamDetails($league_id);
-				
+
 				$this->data['draftStatus'] =  -1;
 				$this->data['draftEligible'] = -1;
 				$this->data['listEligible'] = -1;
@@ -384,8 +384,8 @@ class players extends MY_Controller {
 				$this->data['pick_team_id'] = $pick_team_id;
 				//$this->data['current_team'] = $this->dataModel->getFantasyTeam($pid, $this->data['currentScoringPeriod']['id']);
 				$this->data['scoring_type'] = $this->league_model->getScoringType($league_id);
-				
-				
+
+
 				// UPDATE 1.0.16 - JF
 				// WAIVERS
 				// WAIVERS STATUS AND INFO
@@ -398,9 +398,9 @@ class players extends MY_Controller {
 				$league_for_query = 0;
 			}
 			$this->data['playerPoints'] = $this->dataModel->getPlayerScoring($league_for_query,$pid);
-			print($this->db->last_query()."<br />");
+			//print($this->db->last_query()."<br />");
 			$this->data['pointsMax'] = $this->dataModel->getHighestScoring($league_for_query,$pid);
-			
+
 			$this->params['subTitle'] = "Player Details for ".$this->data['thisItem']['first_name']." ".$this->data['thisItem']['last_name'];
 			$this->params['content'] = $this->load->view($this->views['INFO'], $this->data, true);
 		} else {

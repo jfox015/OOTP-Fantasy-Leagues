@@ -1302,7 +1302,7 @@ class league extends BaseEditor {
 		// EDIT 1.0.6, ONLY DO THIS IF IT IS A HEAD-TO-HEAD LEAGUE
 		$div1Id = -1;
 		$div2Id = -1;
-		if ($this->dataModel->$league_type == LEAGUE_SCORING_HEADTOHEAD) {
+		if ($this->dataModel->league_type == LEAGUE_SCORING_HEADTOHEAD) {
 			$divIds = $this->division_model->createDivisionsByArray(array(array("division_name"=>"Division A"),
 							array("division_name"=>"Division B")),$this->dataModel->id);
 			$div1Id = $divIds[0];
@@ -1319,7 +1319,7 @@ class league extends BaseEditor {
 		for ($i = 0; $i < $this->dataModel->max_teams; $i++) {
 			$divId = -1;
 			$teamData = array("teamname"=>"Team ".strtoupper(chr(64+($i+1))));
-			if ($this->dataModel->$league_type == LEAGUE_SCORING_HEADTOHEAD) {
+			if ($this->dataModel->league_type == LEAGUE_SCORING_HEADTOHEAD) {
 				if ($i < ($this->dataModel->max_teams / 2)) {
 					$divId = $div1Id;
 				} else {

@@ -11,11 +11,11 @@
 		if (val == 1) display = "block";
 		$('#tradeDetails').css('display',display);
 	}
-	</script>						   
+	</script>
     	<!-- BEGIN REGISTRATION FORM -->
     <div id="center-column">
         <?php include_once('admin_breadcrumb.php'); ?>
-        
+
         <h1><?php echo($subTitle); ?></h1>
         <br />
         <div class='textbox'>
@@ -25,7 +25,7 @@
         </tr>
         <tr>
             <td>
-			<?php 
+			<?php
             $errors = validation_errors();
             if ($errors) {
                 echo '<span class="error">The following errors were found with your submission:<br/ ><b>'.$errors.'</b><br clear="all" /></span><br /><br />';
@@ -48,7 +48,7 @@
             $form->select('default_scoring_periods|default_scoring_periods',array(27=>27,26=>26,25=>25,24=>24,23=>23,22=>22,21=>21,20=>20,19=>19,18=>18),'Default No. Scoring Periods',($this->input->post('default_scoring_periods')) ? $this->input->post('default_scoring_periods') : $config['default_scoring_periods'],'required');
 			$form->br();
            	$responses[] = array('1','Yes');
-			$responses[] = array('-1','No');       
+			$responses[] = array('-1','No');
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('useWaivers',$responses,'Waivers Enabled?',($this->input->post('useWaivers') ? $this->input->post('useWaivers') : $config['useWaivers']),'required');
 			$form->space();
@@ -82,12 +82,12 @@
             $form->nobr();
            	$form->text('min_game_last','Last Season','required|trim|number',($input->post('min_game_last') ? $input->post('min_game_last') : $config['min_game_last']),array('class'=>'shorttext'));
             $form->space();
-			
-			$form->fieldset('Trading');
-			$expireList = array(-1=>"Select One",100=>"Until Next Sim"); 
-			for($d = 1; $d < $config['sim_length'] + 1; $d++) { 
+			$expireList = array("X"=>"Select One",-1=>"No Expiration",500 =>"Next Sim Period");
+			for($d = 1; $d < TRADE_MAX_EXPIRATION_DAYS + 1; $d++) {
 				$expireList = $expireList  + array($d =>$d." Days");
 			}
+
+			$form->fieldset('Trading');
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('useTrades',$responses,'Trading Enabled?',($this->input->post('useTrades') ? $this->input->post('useTrades') : $config['useTrades']),'required');
 			$form->fieldset('');

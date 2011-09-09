@@ -19,7 +19,7 @@ class user_meta_model extends base_model {
 	 *	@var $_NAME:Text
 	 */
 	var $_NAME = 'user_meta_model';
-	
+
 	var $userId = -1;
 	var $firstName = '';
 	var $lastName = '';
@@ -42,7 +42,7 @@ class user_meta_model extends base_model {
 	*
 	*/
 	var $timezone = '';
-	
+
 	/*--------------------------------------
 	/	C'TOR
 	/	Creates a new instance of user_meta_model
@@ -61,17 +61,17 @@ class user_meta_model extends base_model {
 
 		$this->fieldList = array('firstName', 'lastName', 'nickName', 'city', 'state', 'country', 'zipCode', 'title', 'bio', 'gender','timezone');
 		$this->conditionList = array('birthDay','birthMonth','birthYear','avatarFile');
-		$this->readOnlyList = array('userId','dateOfBirth', 'avatar', 'custom');  
+		$this->readOnlyList = array('userId','dateOfBirth', 'avatar', 'custom');
 		$this->uniqueField = 'userId';
 		$this->joinCode = "M";
 		$this->textList = array('nickName');
-		
+
 		$this->columns_select = array($this->tblName.'.id','userId','firstName','lastName','nickName','dateOfBirth','gender','country');
 		$this->columns_text_search = array('firstName','lastName','nickName','bio','title');
 		$this->columns_alpha_search = array('lastName');
-		
+
 		$this->addSearchFilter('country','Country','cntryName','cntryName');
-		
+
 		parent::_init();
 	}
 	/*--------------------------------------------------
@@ -85,7 +85,7 @@ class user_meta_model extends base_model {
 	 * @param	$input		CodeIgniter input object
 	 * @param 	$userId 	The current user ID (OPTIONAL)
 	 * @return	TRUE on success, FALSE on error
-	 * 
+	 *
 	 */
 	public function applyData($input,$userId = -1) {
 		$success = parent::applyData($input,$userId);
@@ -94,16 +94,16 @@ class user_meta_model extends base_model {
 			if ($userId != -1) {
 				$this->lastModifiedBy = $userId;
 			} // END if
-			if ($input->post('birthMonth') && $input->post('birthDay') && $input->post('birthYear')) 
+			if ($input->post('birthMonth') && $input->post('birthDay') && $input->post('birthYear'))
 				$this->dateOfBirth = date('Y-m-d',strtotime($input->post('birthYear')."-".$input->post('birthMonth')."-".$input->post('birthDay')));  // END if
-			if (isset($_FILES['avatarFile']['name']) && !empty($_FILES['avatarFile']['name'])) { 
+			if (isset($_FILES['avatarFile']['name']) && !empty($_FILES['avatarFile']['name'])) {
 				$success = $this->uploadFile('avatar',PATH_USERS_AVATAR_WRITE,$input,'avatar',$this->userId.$this->lastName);
 			}
 		}
 		return $success;
 	}
 	public function getTimezone($userId = false) {
-		
+
 		if ($userId === false) { $userId = $this->userId; }
 		$query = $this->db->select('timezone')
                    	   ->where('userId', $userId)
@@ -120,20 +120,20 @@ class user_meta_model extends base_model {
 		}
 	}
 	public function getUserLeagueCount($userId = false) {
-		
+
 		if ($userId === false) $userId = $this->userId;
-		
+
 		$teamList = array();
 		$this->db->select('id');
 		$this->db->from($this->tables['LEAGUES']);
 		$this->db->where('commissioner_id', $userId);
 		return $this->db->count_all_results();
 	}
-	
+
 	public function getUserTeams($league_id = false, $userId = false, $scoring_period_id = false) {
-		
+
 		if ($userId === false) $userId = $this->userId;
-		
+
 		$teamList = array();
 		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, fantasy_teams.avatar, fantasy_teams.league_id, league_name, league_type, commissioner_id,w,l,pct,gb,fantasy_teams_scoring.total');
 		$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = fantasy_teams.league_id', 'left');
@@ -158,12 +158,12 @@ class user_meta_model extends base_model {
 		}
 		return $teamList;
 	}
-	
+
 	public function getUserTeamIds($league_id = false, $userId = false, $scoring_period_id = false) {
-		
+
 		if ($userId === false) $userId = $this->userId;
 		$teamIds = array();
-		
+
 		$teams = $this->getUserTeams($league_id,$userId,$scoring_period_id);
 		if (sizeof($teams) > 0) {
 			foreach($teams as $row) {
@@ -174,15 +174,15 @@ class user_meta_model extends base_model {
 		return $teamIds;
 	}
 	public function getTeamInvites($userId = false) {
-		
+
 		$invites = array();
 		if ($userId === false) { $userId = $this->userId; }
-		if ($userId == -1) { 
+		if ($userId == -1) {
 			$this->errorCode = 1;
 			$this->statusMess = "No user Id was found.";
 		} else {
 			$userEmail = getEmail($userId);
-			
+
 			$this->db->flush_cache();
 			$this->db->select($this->tables['INVITES'].'.id,'.$this->tables['INVITES'].'.league_id, league_name, avatar, username, team_id, confirm_str, confirm_key,send_date ');
 			$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = '.$this->tables['INVITES'].'.league_id', 'left');
@@ -190,7 +190,7 @@ class user_meta_model extends base_model {
 			$this->db->where('to_email',$userEmail);
 			$this->db->where('status_id',REQUEST_STATUS_PENDING);
 			$query = $this->db->get($this->tables['INVITES']);
-			
+
 			if ($query->num_rows() == 0) {
 				$this->errorCode = 1;
 				$this->statusMess = "No team invites were found.";
@@ -200,21 +200,21 @@ class user_meta_model extends base_model {
 											   'league_id'=>$row->league_id,'team_id'=>$row->team_id,
 											   'league_name'=>$row->league_name,'avatar'=>$row->avatar,
 											   'username'=>$row->username,'send_date '=>$row->send_date));
-					
+
 				}
 			}
 		}
 		return $invites;
 	}
 	public function getTeamRequests($userId = false) {
-		
+
 		$requests = array();
 		if ($userId === false) { $userId = $this->userId; }
-		if ($userId == -1) { 
+		if ($userId == -1) {
 			$this->errorCode = 1;
 			$this->statusMess = "No user Id was recieved.";
 		} else {
-			
+
 			$this->db->flush_cache();
 			$this->db->select($this->tables['REQUESTS'].'.id,'.$this->tables['REQUESTS'].'.league_id, date_requested, league_name, '.$this->tables['TEAMS'].'.avatar, team_id, teamname, teamnick');
 			$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = '.$this->tables['REQUESTS'].'.league_id', 'left');
@@ -222,7 +222,7 @@ class user_meta_model extends base_model {
 			$this->db->where('user_id',$userId);
 			$this->db->where('status_id',REQUEST_STATUS_PENDING);
 			$query = $this->db->get($this->tables['REQUESTS']);
-			
+
 			if ($query->num_rows() == 0) {
 				$this->errorCode = 1;
 				$this->statusMess = "No team requests were found.";
@@ -231,7 +231,7 @@ class user_meta_model extends base_model {
 					array_push($requests, array('id'=>$row->id,'league_id'=>$row->league_id,'league_name'=>$row->league_name,'team_id'=>$row->team_id,
 											   'team'=>$row->teamname.' '.$row->teamnick,
 											   'avatar'=>$row->avatar,'date_requested'=>$row->date_requested));
-					
+
 				}
 			}
 		}
@@ -265,44 +265,44 @@ class user_meta_model extends base_model {
             } else {
                 $team_list = $this->getUserTeamIds($league_id,$userId,$scoring_period_id);
             }
-            $this->db->select($this->tables['TRADES'].'.id, team_1_id, teamname, teamnick, team_2_id, status, 	tradeStatus, '.$this->tables['TRADES'].'.league_id, offer_date, expiration_days');
-            $this->db->join($this->tables['TEAMS'],$this->tables['TRADES'].'.team_1_id = '.$this->tables['TEAMS'].'.id','right outer');
-            $this->db->join('fantasy_teams_trades_status','fantasy_teams_trades_status.id = '.$this->tables['TRADES'].'.status','right outer');
-            $teamListStr = "(";
             if (sizeof($team_list) > 0) {
-                foreach ($team_list as $id) {
-                    if ($teamListStr != "(") { $teamListStr .= ","; }
-                    $teamListStr .= $id;
-                }
-            }
-            $teamListStr .= ")";
-            $this->db->where('team_2_id IN '.$teamListStr);
-            $this->db->where('('.$this->tables['TRADES'].'.status = 1 OR '.$this->tables['TRADES'].'.status = 13 OR '.$this->tables['TRADES'].'.status = 14)');
-            if ($scoring_period_id !== false) {
-                $this->db->where('in_period',$scoring_period_id+1);
-            }
-            $this->db->orderBy($this->tables['TRADES'].'.league_id','asc');
-            $query = $this->db->get($this->tables['TRADES']);
-            if ($debug === true) { print($this->db->last_query()."<br />"); }
-            if ($query->num_rows() > 0) {
-                $curr_league = -1;
-                $offers = array();
-                $itemCount = 0;
-                foreach($query->result() as $row) {
-                    if ($curr_league == -1 || ($curr_league != -1 && $curr_league != $row->league_id)) {
-                        if (sizeof($offers) > 0) { $tradeOfferList = $tradeOfferList + array($curr_league => $offers);  $offers = array(); }
-                        $curr_league = $row->league_id;
-                    }
-                    array_push($offers,array('trade_id'=>$row->id,'team_1_id'=>$row->team_1_id,'team_2_id'=>$row->team_2_id,'teamname'=>$row->teamname,'teamnick'=>$row->teamnick,
-                                                'offer_date'=>$row->offer_date,'status'=>$row->status,'tradeStatus'=>$row->tradeStatus, 'expiration_days'=>$row->expiration_days));
-                    if ($query->num_rows() == 1) { $tradeOfferList = $tradeOfferList + array($curr_league => $offers);  $offers = array(); }
-                } // END foreach
-            } // END if
-        }
+				$this->db->select($this->tables['TRADES'].'.id, team_1_id, teamname, teamnick, team_2_id, status, 	tradeStatus, '.$this->tables['TRADES'].'.league_id, offer_date, expiration_days');
+				$this->db->join($this->tables['TEAMS'],$this->tables['TRADES'].'.team_1_id = '.$this->tables['TEAMS'].'.id','right outer');
+				$this->db->join('fantasy_teams_trades_status','fantasy_teams_trades_status.id = '.$this->tables['TRADES'].'.status','right outer');
+				$teamListStr = "(";
+				foreach ($team_list as $id) {
+					if ($teamListStr != "(") { $teamListStr .= ","; }
+					$teamListStr .= $id;
+				}
+				$teamListStr .= ")";
+				$this->db->where('team_2_id IN '.$teamListStr);
+				$this->db->where('('.$this->tables['TRADES'].'.status = 1 OR '.$this->tables['TRADES'].'.status = 13 OR '.$this->tables['TRADES'].'.status = 14)');
+				if ($scoring_period_id !== false) {
+					$this->db->where('in_period',$scoring_period_id+1);
+				}
+				$this->db->orderBy($this->tables['TRADES'].'.league_id','asc');
+				$query = $this->db->get($this->tables['TRADES']);
+				if ($debug === true) { print($this->db->last_query()."<br />"); }
+				if ($query->num_rows() > 0) {
+					$curr_league = -1;
+					$offers = array();
+					$itemCount = 0;
+					foreach($query->result() as $row) {
+						if ($curr_league == -1 || ($curr_league != -1 && $curr_league != $row->league_id)) {
+							if (sizeof($offers) > 0) { $tradeOfferList = $tradeOfferList + array($curr_league => $offers);  $offers = array(); }
+							$curr_league = $row->league_id;
+						}
+						array_push($offers,array('trade_id'=>$row->id,'team_1_id'=>$row->team_1_id,'team_2_id'=>$row->team_2_id,'teamname'=>$row->teamname,'teamnick'=>$row->teamnick,
+													'offer_date'=>$row->offer_date,'status'=>$row->status,'tradeStatus'=>$row->tradeStatus, 'expiration_days'=>$row->expiration_days));
+						if ($query->num_rows() == 1) { $tradeOfferList = $tradeOfferList + array($curr_league => $offers);  $offers = array(); }
+					} // END foreach
+				} // END if
+			} // END if
+        } // END if
 		return $tradeOfferList;
 	}
 	public function getUserDrafts() {
-		
+
 		$draftList = array();
 		$this->db->select('league_id');
 		$this->db->where('owner_id', $this->userId);
@@ -348,5 +348,5 @@ class user_meta_model extends base_model {
 		}
 		return $draftList;
 	}
-	
+
 }

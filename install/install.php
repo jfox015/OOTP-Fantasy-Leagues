@@ -1,9 +1,9 @@
 <?php
 /**
  * 	OOTP Fantasy League Install Script
- *	This script handles installing the database tables and requires a number of 
+ *	This script handles installing the database tables and requires a number of
  *	base configuration settigns to get started.
- *	
+ *
  */
 /*----------------------------------------
 / 	COMMON FUNCTIONS
@@ -19,25 +19,25 @@ function display_setup_form( $error = null ) {
 	<table class="form-table">
 		<tr>
 			<th scope="row"><label for="site_name">Site Name</label></th>
-			<td><input name="site_name" type="text" id="site_name" size="25" 
+			<td><input name="site_name" type="text" id="site_name" size="25"
             value="<?php if (isset($_POST['site_name'])) { echo($_POST['site_name']); } else { echo("OOTP Fantasy League"); } ?>" /></td>
             <td></td>
 		</tr>
         <tr>
 			<th scope="row"><label for="ootp_league_name">OOTP League Name</label></th>
-			<td><input name="ootp_league_name" type="text" id="ootp_league_name" size="25" 
+			<td><input name="ootp_league_name" type="text" id="ootp_league_name" size="25"
 			value="<?php if (isset($_POST['ootp_league_name'])) { echo($_POST['ootp_league_name']); } else { echo(""); } ?>" /><br /></td>
             <td></td>
 		</tr>
 		<tr>
 			<th scope="row"><label for="ootp_league_abbr">OOTP League Abbreviation</label></th>
-			<td><input name="ootp_league_abbr" type="text" id="ootp_league_abbr" size="25" 
+			<td><input name="ootp_league_abbr" type="text" id="ootp_league_abbr" size="25"
 			value="<?php if (isset($_POST['ootp_league_abbr'])) { echo($_POST['ootp_league_abbr']); } else { echo(""); } ?>" /><br /></td>
             <td></td>
 		</tr>
 		<tr>
 			<th scope="row"><label for="ootp_league_id">OOTP League ID</label></th>
-			<td><input name="ootp_league_id" type="text" id="ootp_league_id" size="25" 
+			<td><input name="ootp_league_id" type="text" id="ootp_league_id" size="25"
 			value="<?php if (isset($_POST['ootp_league_id'])) { echo($_POST['ootp_league_id']); } else { echo("100"); } ?>" /></td>
             <td>Usually 100<br /></td>
 		</tr>
@@ -49,15 +49,15 @@ function display_setup_form( $error = null ) {
 			    $timezone_identifiers = DateTimeZone::listIdentifiers();
 			    foreach( $timezone_identifiers as $value ){
 			        if ( preg_match( '/^(America|Antartica|Arctic|Asia|Atlantic|Europe|Indian|Pacific)\//', $value ) ){
-			            $ex=explode("/",$value);//obtain continent,city   
+			            $ex=explode("/",$value);//obtain continent,city
 			            if ($continent!=$ex[0]){
 			                if ($continent!="") echo '</optgroup>';
 			                echo '<optgroup label="'.$ex[0].'">';
 			            }
-			   
+
 			            $city=$ex[1];
 			            $continent=$ex[0];
-			            echo '<option value="'.$value.'">'.$city.'</option>';               
+			            echo '<option value="'.$value.'">'.$city.'</option>';
 			        }
 			    }
 			    ?>
@@ -85,13 +85,13 @@ function display_setup_form( $error = null ) {
             <input type="hidden" name="site_url" value="<?php echo($basepath); ?>" />
             <input type="hidden" name="site_directory" value="<?php echo(str_replace("install/install.php","",$_SERVER['REQUEST_URI'])); ?>" /></td>
 		</tr>
-        
+
         <tr>
 			<th scope="row"><label for="ootp_html_report_path">OOTP HTML Report URL</label></th>
 			<td><input name="ootp_html_report_path" type="text" id="ootp_html_report_path" size="25" value="<?php echo("http://".$_SERVER['HTTP_HOST']."/");?>" /></td>
             <td>The web url for OOTP HTML report files<br /></td>
 		</tr>
-        
+
         <tr>
 			<th scope="row"><label for="sql_file_path">Fantasy Site Root</label></th>
 			<?php $filepath = pathinfo(__FILE__, PATHINFO_BASENAME);
@@ -129,19 +129,19 @@ function display_setup_form( $error = null ) {
 			<td><input name="admin_password" type="password" id="password" size="25" value="" /></td>
             <td>OPTIONAL.<br />Leave blank to have one created for you.</td>
 		</tr>
-        
+
 	</table>
 	<p class="step"><div id="waitDiv" style="display:none;"><img src="../images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...</div>
     <div id="buttonDiv"><input type="button" name="btnFinished" id="btnFinished" value="Complete Installtion" class="button" /></div></p>
 </form>
 <script src="../js/jquery.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-$(document).ready(function(){		   
+$(document).ready(function(){
 	$('#btnFinished').click(function(){
 		$('div#buttonDiv').css('display','none');
 		$('div#waitDiv').css('display','block');
 		$('form#setup').submit();
-	});	
+	});
 });
 </script>
 
@@ -175,7 +175,7 @@ $step = (isset($_GET['step'])) ? $_GET['step'] : 1;
 switch ($step) {
 	case 0:
 	case 1:
-	?>    
+	?>
 <p>Welcome to the OOTP Fantasy League installation process! Fill in the information below and you&#8217;ll be ready to create your own OOTP Fantasy Leagues based on your OOTP game!</p>
 <h2 class="step">Information needed</h2>
 <p>
@@ -185,57 +185,57 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 	display_setup_form();
 	break;
 	case 2:
-	
+
 		//include_once('../application/helpers/config_helper.php');
-		
+
 		$site_name = isset($_POST['site_name']) ? stripslashes($_POST['site_name']) : '';
 		$ootp_league_name = isset($_POST['ootp_league_name']) ? stripslashes($_POST['ootp_league_name']) : '';
 		$ootp_league_abbr = isset($_POST['ootp_league_abbr']) ? stripslashes($_POST['ootp_league_abbr']) : '';
 		$ootp_league_id = isset($_POST['ootp_league_id']) ? $_POST['ootp_league_id'] : '';
 		$timezone = isset($_POST['timezone']) ? $_POST['timezone'] : '';
-		
+
 		$ootp_html_report_path = isset($_POST['ootp_html_report_path']) ? stripslashes($_POST['ootp_html_report_path']) : '';
 		$html_root = isset($_POST['html_root']) ? $_POST['html_root'] : '';
 		$sql_file_path = isset($_POST['sql_file_path']) ? $_POST['sql_file_path'] : '';
 		$fantasy_web_root = isset($_POST['fantasy_web_root']) ? stripslashes($_POST['fantasy_web_root']) : '';
 		$ootp_html_report_root = isset($_POST['ootp_html_report_root']) ? $_POST['ootp_html_report_root'] : '';
-		
+
 		$admin_username = isset($_POST['admin_username']) ? $_POST['admin_username'] : '';
 		$admin_email = isset($_POST['admin_email']) ? $_POST['admin_email'] : '';
 		$admin_password = isset($_POST['admin_password']) ? $_POST['admin_password'] : '';
-		
-		
+
+
 		$site_url = isset($_POST['site_url']) ? $_POST['site_url'] : '';
 		$site_directory = isset($_POST['site_directory']) ? str_replace("/","",$_POST['site_directory']) : '';
-		
+
 		$errors = "";
 		$error = false;
-		
+
 		if (empty($site_name)) {
 			$errors .= '<li>you must provide a name for this web site.</li>';
 			$error = true;
 		} // END if
-		
+
 		if (empty($ootp_league_name)) {
 			$errors .= '<li>you must provide the name of your OOTP league.</li>';
 			$error = true;
 		} // END if
-		
+
 		if (empty($ootp_league_id)) {
 			$errors .= '<li>you must provide the ID number of your league, though it is usually 100.</li>';
 			$error = true;
 		} // END if
-		
+
 		if (empty($timezone)) {
 			$errors .= '<li>You select a default timezone for your league.</li>';
 			$error = true;
 		} // END if
-		
+
 		if (empty($ootp_html_report_path)) {
 			$errors .= '<li>you must provide a file path for the ootp html reports.</li>';
 			$error = true;
 		} // END if
-		
+
 		if (empty($html_root)) {
 			$errors .= '<li>you must provide a server file path to the fantasy league files.</li>';
 			$error = true;
@@ -252,12 +252,12 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 			$errors .= '<li>you must provide a web url for the fanbtasy site.</li>';
 			$error = true;
 		} // END if
-		
+
 		if (empty($ootp_html_report_root)) {
 			$errors .= '<li>you must provide a server file path to the OOTP HTML Reports.</li>';
 			$error = true;
 		} // END if
-		
+
 		if (empty($admin_username)) {
 			$errors .= '<li>you must provide a username for administrative access.</li>';
 			$error = true;
@@ -265,7 +265,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 			$errors .= '<li>we strongly recommend against using the username <b>admin</b> for security purposes.</li>';
 			$error = true;
 		} // END if
-		
+
 		if (empty($admin_email)) {
 			$errors .= '<li>you must provide an email address for administrative access.</li>';
 			$error = true;
@@ -282,7 +282,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 				}
 			}
 		} // END if
-		
+
 		if (!$error) {
 			// ------------------------------------
 			// UPDATE - 1.0.3
@@ -332,7 +332,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 			}
 			fclose($fr);
 			if ($errCnt>0) $errors .= "<strong>Database errors occured</strong>.<br />".$db_errors;
-			
+
 			//echo("errCnt = ".$errCnt."<br />");
 			if ($errCnt == 0) {
 				//$options = get_config_defaults();
@@ -345,7 +345,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 											'sql_file_path'=>$sql_file_path,
 											'fantasy_web_root'=>$fantasy_web_root,
 											'ootp_html_report_root'=>$ootp_html_report_root);
-				$insert = "";					
+				$insert = "";
 				foreach ( $options as $option => $value ) {
 					//echo($option." = ".$value."<br />");
 					$option = $option;
@@ -359,9 +359,9 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 						$insert .= ', ';
 					$insert .= "('$option', '$value')";
 				} // END if
-				
+
 				//echo("<br /><strong>Config insert sql</strong> = ".$insert."<br />");
-			
+
 				if ( !empty($insert) ) {
 					$sql = "INSERT INTO fantasy_config (cfg_key, cfg_value) VALUES " . $insert;
 					mysql_query($sql);
@@ -371,18 +371,19 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 						$errors .= "Error updating config table. Error: ".$err."<br />SQL = ".$sql."<br />";
 					} // END if
 				} // END if
-				
+
 				// ADD ADMIN ACCOUNT
 				include_once("../application/config/auth.php");
 				$pw = !empty($admin_password) ? $admin_password : substr(md5('admin'.time()),0,10);
-				$sql = "INSERT INTO `users_core` VALUES(1, '".$admin_username."', '".__hash($pw,$config['password_crypt'])."', '".$admin_email."', 4, 5, 6, '', '0', 0, 0, '".date('Y-m-d h:m:s')."', '".date('Y-m-d h:m:s')."', 0, 1, 0, 0)";
+				$salt = substr(md5('admin'.time()),0,10);
+				$sql = "INSERT INTO `users_core` VALUES(1, '".$admin_username."', '".__hash($pw,$salt)."', '".$salt."', '".$admin_email."', 4, 5, 6, '', '0', 0, 0, '".date('Y-m-d h:m:s')."', '".date('Y-m-d h:m:s')."', 0, 1, 0, 0)";
 				mysql_query($sql);
 				$err=mysql_error($db);
 				if ($err) {
 					$error = true;
 					$errors .= "Error adding admin user. Error: ".$err."<br />SQL = ".$sql."<br />";
 				} // END if
-				$sql = "INSERT INTO `users_meta` VALUES(1, 1, 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '0000-00-00', '', '', '','')";
+				$sql = "INSERT INTO `db70824_ootp11`.`users_meta` ( `id` , `userId` , `firstName` , `lastName` , `nickName` , `city` , `state` , `country` , `zipCode` , `title` , `bio` , `dateOfBirth` , `gender` , `avatar` , `custom` , `timezone` ) VALUES ( '1', '1', 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '0000-00-00', '', '', '', '' )";
 				mysql_query($sql);
 				$err=mysql_error($db);
 				if ($err) {
@@ -390,12 +391,12 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					$errors .= "Error adding admin meta data. Error: ".$err."<br />SQL = ".$sql."<br />";
 				} // END if
 				if (!$error) {
-						
-				
+
+
 					$folder = str_replace("install/install.php","",$_SERVER['REQUEST_URI']);
 					$basepath = "http://".$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 					$url = str_replace("install/install.php","",$basepath);
-					
+
 					if (is_writable('../')) {
 						$fht = file_get_contents("./htaccess_install.txt");
 						$fht = str_replace("[SITE_FOLDER]",$site_directory,$fht);
@@ -420,7 +421,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 						unset($fcs);
 						chmod('../application/config/constants.php', 0666);
 						unset($fh);
-						
+
 						$fcf = file_get_contents("./config_install.php");
 						$fcf = str_replace("[SITE_PATH]",$site_url,$fcf);
 						$fh = fopen('../application/config/config.php',"w");
@@ -429,7 +430,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 						unset($fcf);
 						chmod('../application/config/config.php', 0666);
 						unset($fh);
-						
+
 						$config_write = true;
 					} else {
 						$config_write = false;
@@ -443,12 +444,12 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 						unset($fcf);
 						chmod('../application/config/config.php', 0666);
 						unset($fh);
-						
+
 						$js_write = true;
 					} else {
 						$js_write = false;
 					}
-					
+
 					$sql_write = false;
 					if (file_exists($sql_file_path) && is_writable($sql_file_path)) {
 						copy('./'.DB_CONNECTION_FILE, $sql_file_path.'/'.DB_CONNECTION_FILE) or ($sql_write = false);
@@ -471,7 +472,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					if (file_exists($html_root."media/uploads")) {
 						chmod($html_root."media/uploads", 0775);
 					} // END if
-					
+
 					unlink('../index.html');
 					if (!$error) {
 					?>
@@ -487,15 +488,15 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
                         <ul>
                         <?php
 						if (!$htaccess_write) { ?>
-                        	<li><code><?php echo($html_root);?>.htaccess</code> - This file is critical for the site to 
+                        	<li><code><?php echo($html_root);?>.htaccess</code> - This file is critical for the site to
                             work. Copy and past the following onto line three of <code>install/htaccess_install.txt</code> and save it as <code>.htaccess</code> in your fantasy leagues root folder.
                             <p />
                             <code>RewriteRule ^(.*)$ /<?php echo($site_directory); ?>/index.php/$1 [L]</code>
                             </li>
                         <?php } // END if
 						if (!$config_write) { ?>
-                        	<li><code><?php echo($html_root);?>application/config/constants.php</code> - Copy and 
-                            paste the following into line three of <code>/install/constants_install.php</code> and save 
+                        	<li><code><?php echo($html_root);?>application/config/constants.php</code> - Copy and
+                            paste the following into line three of <code>/install/constants_install.php</code> and save
                             it to <code>/application/config/constants.php</code> from your fantasy leagues root folder.
                             <p />
                             <pre class="brush: php">define("SITE_URL",",<?php echo($site_url); ?>");
@@ -503,24 +504,24 @@ define("DIR_APP_ROOT","/<?php echo($site_directory); ?>/");
 define("DIR_APP_WRITE_ROOT","<?php echo($site_directory); ?>");
 define("DIR_WRITE_PATH","<?php echo($html_root); ?>");</pre>
                             </li>
-                            <li><code><?php echo($html_root);?>application/config/config.php</code> - Copy and 
-                            paste the following into line three of <code>install/config_install.php</code> and save 
+                            <li><code><?php echo($html_root);?>application/config/config.php</code> - Copy and
+                            paste the following into line three of <code>install/config_install.php</code> and save
                             it to <code>application/config/config.php</code> from your fantasy leagues root folder.
                             <p />
                             <pre class="brush: php">$config['base_url']	= "<?php echo($site_url); ?>";</pre>
                             </li>
-                        <?php 
+                        <?php
 						} // END if
 						if (!$js_write) { ?>
-                        	<li><code><?php echo($html_root);?>/js/nicEdit.js</code> - Copy and 
+                        	<li><code><?php echo($html_root);?>/js/nicEdit.js</code> - Copy and
                             paste the following into line 29 of <code>/js/nicEdit.js</code> from your fantasy leagues root folder.
                             <p />
                             <pre class="brush: JScript">iconsPath : '<?php echo($site_url); ?>/images/nicEditorIcons.gif',</pre>
                             </li>
                         <?php } // END if
-						
+
 						if (!$sql_write) { ?>
-                        	<li><code><?php echo($sql_file_path.DB_CONNECTION_FILE);?></code> - Copy and 
+                        	<li><code><?php echo($sql_file_path.DB_CONNECTION_FILE);?></code> - Copy and
                             paste the following into <code><?php echo($sql_file_path."/".DB_CONNECTION_FILE);?></code> from your fantasy leagues root folder.
                             <p />
                             <pre class="brush: php"><?php echo(file_get_contents("./".DB_CONNECTION_FILE)); ?></pre>
@@ -538,7 +539,7 @@ define("DIR_WRITE_PATH","<?php echo($html_root); ?>");</pre>
 						?>
                         Your administrator password is <strong><?php echo($pw);?></strong>. Write this password down as you will not be able to administrate the site without it.
                         <p />
-                        It is strongly recommended that you delete all files in the <code>install</code> directory 
+                        It is strongly recommended that you delete all files in the <code>install</code> directory
                         to avoid issues with your sites setup and configuration,
                         <p />
                         Head to the league <a href="../index.php">homepage now</a>.
@@ -552,14 +553,14 @@ define("DIR_WRITE_PATH","<?php echo($html_root); ?>");</pre>
 		if ($error) { ?>
         	<h1>An error occured.</h1>
             <p />
-            The following errors were encountered: 
+            The following errors were encountered:
             <ul>
             <?php echo($errors); ?>
             </ul>
-        <?php 
+        <?php
 			exit();
 		} // END if
-		
+
 	break;
 } // END switch
 ?>

@@ -12,7 +12,7 @@ class admin extends MY_Controller {
 	/*--------------------------------
 	/	VARIABLES
 	/-------------------------------*/
-	
+
 	var $_NAME = 'admin';
 	/*--------------------------------
 	/	C'TOR
@@ -21,7 +21,7 @@ class admin extends MY_Controller {
 	 *	Creates a new instance of admin.
 	 */
 	public function admin() {
-		parent::MY_Controller();	
+		parent::MY_Controller();
 		$this->views['PENDING'] = 'content_pending';
 		$this->views['DASHBOARD'] = 'admin/dashboard';
 		$this->views['LIST_FILES'] = 'admin/file_list';
@@ -41,11 +41,11 @@ class admin extends MY_Controller {
 		$this->views['FILE_UPLOADS'] = 'admin/config_uploads';
 		$this->views['ACTIVATE_USERS'] = 'admin/activate_user_list';
 		$this->views['MESSAGE'] = 'admin/admin_message';
-		
+
 		$this->load->helper('admin');
 		$this->lang->load('admin');
 		$this->enqueStyle('jquery.ui.css');
-		
+
 		$this->debug = false;
 	}
 	/*--------------------------------
@@ -55,7 +55,7 @@ class admin extends MY_Controller {
 	 *	INDEX.
 	 *	The default handler when the controller is called.
 	 *	Checks for an existing auth session, and if found,
-	 *	redirects to the dashboard. Otherwise, it redirects 
+	 *	redirects to the dashboard. Otherwise, it redirects
 	 *	to the login.
 	 */
 	public function index() {
@@ -83,40 +83,43 @@ class admin extends MY_Controller {
 					$this->data['message'] = "The server replied with the following status: ".$this->auth->get_status_message();
 				}
 			} // END if
-			
+
 			if (!isset($this->player_model)) {
 				$this->load->model('player_model');
 			}
 			$this->data['playerCount'] = $this->player_model->getPlayerCount();
-			
+
 			$this->data['missingTables'] = $this->ootp_league_model->getMissingTables();
-			
+
 			$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'], -1);
-			
+
 			$this->data['in_season'] = $this->ootp_league_model->in_season();
 
 			$this->data['currPeriod'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
 
             $this->data['currPeriodConfig'] = getScoringPeriod($this->params['config']['current_period']);
-			$this->data['configCurrPeriodStart'] = strtotime($this->data['currPeriodConfig']['date_start']." 00:00:00");
+            if (isset($this->data['configCurrPeriodStart'])) {
+				$this->data['configCurrPeriodStart'] = strtotime($this->data['currPeriodConfig']['date_start']." 00:00:00");
+			}
             $this->data['nextPeriodConfig'] = getScoringPeriod(($this->params['config']['current_period']+1));
-			$this->data['configCurrPeriodEnd'] = strtotime($this->data['nextPeriodConfig']['date_end']." 00:00:00");
-
+			if (isset($this->data['configCurrPeriodEnd'])) {
+				$this->data['configCurrPeriodEnd'] = strtotime($this->data['nextPeriodConfig']['date_end']." 00:00:00");
+			}
 			$this->data['periodCount'] = getScoringPeriodCount();
 			if (!function_exists('getSQLFileList')) {
 				$this->load->helper('config');
 			}
 			$fileList = getSQLFileList($this->params['config']['sql_file_path']);
 			$this->data['missingFiles'] = $this->ootp_league_model->validateLoadedSQLFiles($fileList);
-			
+
 			//-------------------------------------------------------------
 			// UPDATE VERSION 1.0.2
 			//-------------------------------------------------------------
 			// UPDATE CHECKING
-			// CHECKS IF UPDATE CONSTANTS ARE DEFINED AND IF UPDATED FILES ARE 
+			// CHECKS IF UPDATE CONSTANTS ARE DEFINED AND IF UPDATED FILES ARE
 			// IN THE INSTALL DIRECTORY FOR INSTALATION
 			$web_version = array();
-			if ((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development')) && 
+			if ((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development')) &&
 				  defined('PATH_INSTALL')) {
 				if (defined('MAIN_INSTALL_FILE') && file_exists(PATH_INSTALL.MAIN_INSTALL_FILE)) {
 					$this->data['installWarning'] = true;
@@ -125,12 +128,12 @@ class admin extends MY_Controller {
 				if (defined('DB_UPDATE_FILE') && file_exists(PATH_INSTALL.DB_UPDATE_FILE)) {
 					$this->data['dataUpdate'] = true;
 				}
-				// CHECK FOR DB CONNECTION FILE		
+				// CHECK FOR DB CONNECTION FILE
 				if (defined('DB_CONNECTION_FILE') && !file_exists($this->params['config']['sql_file_path']."/".DB_CONNECTION_FILE)) {
 					$this->data['db_file_update'] = true;
 				}
-				
-				if ((defined('CONFIG_UPDATE_FILE') && file_exists(PATH_INSTALL.CONFIG_UPDATE_FILE)) || 
+
+				if ((defined('CONFIG_UPDATE_FILE') && file_exists(PATH_INSTALL.CONFIG_UPDATE_FILE)) ||
 					(defined('CONSTANTS_UPDATE_FILE') && file_exists(PATH_INSTALL.CONSTANTS_UPDATE_FILE)) ||
 					(defined('DATA_CONFIG_UPDATE_FILE') && file_exists(DATA_CONFIG_UPDATE_FILE))) {
 					$this->data['configUpdate'] = true;
@@ -140,9 +143,9 @@ class admin extends MY_Controller {
 			//-------------------------------------------------------------
 			// UPDATE VERSION 1.0.3
 			//-------------------------------------------------------------
-			// VERSION CHECK AND VERIFICATION		
+			// VERSION CHECK AND VERIFICATION
 			$this->data['version_check'] = getLatestModVersion($this->debug);
-			
+
 			// TEST FOR FANTASY SET UP
 			// THIS IS REQUIRED FOR LEAGUE TO SCHEUDLE THEIR FANTASY DRAFT
 			if ((empty($this->params['config']['season_start']) || $this->params['config']['season_start'] == EMPTY_DATE_STR) || (empty($this->params['config']['draft_period']) || $this->params['config']['draft_period'] == EMPTY_DATE_STR.":".EMPTY_DATE_STR)) {
@@ -152,11 +155,11 @@ class admin extends MY_Controller {
 			//-------------------------------------------------------------
 			// UPDATE VERSION 1.0.4
 			//-------------------------------------------------------------
-			// VERSION CHECK AND VERIFICATION		
+			// VERSION CHECK AND VERIFICATION
 			$this->data['summary_size'] = getSimSummaries(true);
 			//  END 1.0.4 MODS
 
-			
+
 			$this->params['content'] = $this->load->view($this->views['DASHBOARD'], $this->data, true);
 			$this->params['subTitle'] = "Welcome to OOTP Fantasy Leagues";
 			$this->params['pageType'] = PAGE_FORM;
@@ -167,7 +170,7 @@ class admin extends MY_Controller {
 	}
 	function configInfo() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$fields = array('Fantasy Settings'=>array('seasonStart'=>'Season Start',
@@ -186,7 +189,7 @@ class admin extends MY_Controller {
 			'Roster Settings'=>array('min_game_current' => 'Eligibility: Games This Season',
 			'min_game_last' => 'Eligibility: Games Last Season'));
 			$this->data['fields'] = $fields;
-			
+
 			$gameStart = $this->params['config']['season_start'];
 			if ($gameStart == EMPTY_DATE_STR) {
 				$gameStart = date('Y-m-d',time()+(60*60*24*7));
@@ -203,7 +206,7 @@ class admin extends MY_Controller {
 			}
 			$this->data['draft_start'] = date('m/d/Y',strtotime($draftStart));
 			$this->data['draft_end'] = date('m/d/Y',strtotime($draftEnd));
-			
+
 			$this->data['subTitle'] = "Settings";
 			$this->params['content'] = $this->load->view($this->views['CONFIG_INFO'], $this->data, true);
 			$this->params['subTitle'] = "Review Settings";
@@ -217,7 +220,7 @@ class admin extends MY_Controller {
 	 */
 	function configGame() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$exceptions = array('google_analytics_tracking_id','stats_lab_url');
@@ -246,7 +249,7 @@ class admin extends MY_Controller {
 			}
 			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
 			if ($this->form_validation->run() == false) {
-				
+
 				$this->data['adminList'] = $this->user_auth_model->getAdmninUsers();
 				//echo("Form validation fail.<br />");
 				$this->data['outMess'] = '';
@@ -290,7 +293,7 @@ class admin extends MY_Controller {
 	 */
 	function configSocial() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$fields = array('sharing_enabled' =>  'Social Media Sharing Options',
@@ -342,10 +345,10 @@ class admin extends MY_Controller {
 	 */
 	function configOOTP() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
-			
+
 			$fields = array('start_date' =>  'League Start Date',
 			'current_date' => 'Current League Date',
 			'current_period' => 'Current Fantasy Scoring Period');
@@ -353,14 +356,14 @@ class admin extends MY_Controller {
 				$this->form_validation->set_rules($field, $label, 'required');
 			} // END foreach
 			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
-			
+
 			$start_date = $this->ootp_league_model->start_date;
 			$this->data['start_date'] = date('m/d/Y',strtotime($start_date));
 			$current_date = $this->ootp_league_model->current_date;
 			$this->data['current_date'] = date('m/d/Y',strtotime($current_date));
-				
+
 			if ($this->form_validation->run() == false) {
-				
+
 				$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
 				$this->data['subTitle'] = "OOTP Config Options";
@@ -371,7 +374,7 @@ class admin extends MY_Controller {
 			} else {
 				$message = "";
 				$change = update_config('current_period',$this->input->post('current_period'));
-				if ($change) { 
+				if ($change) {
 					$this->ootp_league_model->applyData($this->input);
 					$change = $this->ootp_league_model->writeConfigDates(date('Y-m-d',strtotime($this->input->post('start_date'))),date('Y-m-d',strtotime($this->input->post('current_date'))),
 																		 $this->params['accessLevel'] == ACCESS_ADMINISTRATE);
@@ -382,7 +385,7 @@ class admin extends MY_Controller {
 					$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
 					redirect('admin/dashboard');
 				} else {
-					if (empty($message)) { 
+					if (empty($message)) {
 						$message = '<span class="error">Settings update failed.</span>';
 					} else {
 						$message .= "<br />".$this->ootp_league_model->statusMess;
@@ -404,16 +407,16 @@ class admin extends MY_Controller {
 	 */
 	function configAbout() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
-			
+
 			$fields = array('aboutHTML' =>  'About HTML Content');
 			foreach($fields as $field => $label) {
 				$this->form_validation->set_rules($field, $label, 'required');
 			} // END foreach
 			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
-			
+
 			if (!function_exists('read_file')) {
 				$this->load->helper('file');
 			}
@@ -423,9 +426,9 @@ class admin extends MY_Controller {
 			try {
 				$aboutHTML = read_file(DIR_WRITE_PATH.URL_PATH_SEPERATOR."application".URL_PATH_SEPERATOR."views".URL_PATH_SEPERATOR.ABOUT_HTML_FILE);
 			}
-			catch (Exception $error) { }		
+			catch (Exception $error) { }
 			if (!$error && $this->form_validation->run() == false) {
-				
+
 				$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
 				$this->data['aboutHTML'] = $aboutHTML;
@@ -440,7 +443,7 @@ class admin extends MY_Controller {
 					$this->session->set_flashdata('message', '<span class="success">About page content successfully updated.</span>');
 					redirect('admin/dashboard');
 				} else {
-					if (empty($message)) { 
+					if (empty($message)) {
 						$message = '<span class="error">About content update failed.</span>';
 					} else {
 						$message .= "<br />".$this->ootp_league_model->statusMess;
@@ -463,7 +466,7 @@ class admin extends MY_Controller {
 	 */
 	function configFantasy() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->form_validation->set_rules('season_start', 'Season Start Date', 'required');
@@ -486,9 +489,9 @@ class admin extends MY_Controller {
 				$this->form_validation->set_rules($field, $label, 'required|trim|number');
 			}
 			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
-			
+
 			if ($this->form_validation->run() == false) {
-				
+
 				$gameStart = $this->params['config']['season_start'];
 				if ($gameStart == EMPTY_DATE_STR) {
 					$gameStart = date('Y-m-d',time()+(60*60*24*7));
@@ -540,7 +543,7 @@ class admin extends MY_Controller {
 			}
 		}
 	}
-	
+
 	/**
 	 *	SECURITY CONFIG.
 	 *	Updates the sites security and spam protection settings.
@@ -565,7 +568,7 @@ class admin extends MY_Controller {
 				$this->form_validation->set_rules($field, $label, 'trim');
 			}
 			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
-				
+
 			if ($this->form_validation->run() == false) {
 					$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
@@ -602,14 +605,14 @@ class admin extends MY_Controller {
 			}
 		}
 	}
-	
+
 	/**
 	 *	ROSTER CONFIG.
 	 *	Sets the game start date and drafting period dates.
 	 */
 	function configRosters() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->form_validation->set_rules('pos0', 'First Active Position', 'required');
@@ -619,7 +622,7 @@ class admin extends MY_Controller {
 			$this->load->model('league_model');
 			} // END if
 			$this->data['rosters'] = $this->league_model->getRosterRules();
-			
+
 			if ($this->form_validation->run() == false) {
 				$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
@@ -650,22 +653,22 @@ class admin extends MY_Controller {
 			} // END if
 		} // END if
 	} // END function
-	
+
 	/**
 	 *	SCORING RULES CONFIG.
 	 *	Sets the games scoring rules.
 	 */
 	function configScoringRules() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->getURIData();
-			
+
 			$this->form_validation->set_rules('batting_type_0', 'First Batting Category', 'required');
 			$this->form_validation->set_rules('pitching_type_0', 'First Pitching Category', 'required');
 			$this->form_validation->set_rules('scoring_type', 'Scoring Type', 'required');
-			
+
 			if (!isset($this->league_model)) {
 				$this->load->model('league_model');
 			}
@@ -681,12 +684,12 @@ class admin extends MY_Controller {
 			$scoringRules = $this->league_model->getScoringRules(0,$scoring_type);
 			if (isset($scoringRules['batting'])) {
 				$this->data['scoring_batting']=	$scoringRules['batting'];
-			} 
+			}
 			if (isset($scoringRules['pitching'])) {
 				$this->data['scoring_pitching'] = $scoringRules['pitching'];
-			} 
+			}
 			$scoring_types = loadSimpleDataList('leagueType','','ASC','Scoring Type');
-			
+
 			if ($this->form_validation->run() == false) {
 				$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
@@ -720,15 +723,15 @@ class admin extends MY_Controller {
 			}
 		}
 	}
-	
-	
-	/**	
+
+
+	/**
 	 *	SCORING PERIODS CONFIG.
 	 *	List the games scoring periods.
 	 */
 	function configScoringPeriods() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->data['scoring_edit'] = $this->ootp_league_model->current_date <= $this->ootp_league_model->start_date;
@@ -741,15 +744,15 @@ class admin extends MY_Controller {
 			$this->params['pageType'] = PAGE_FORM;
 			$this->displayView();
 		}
-		
-	}	
+
+	}
 	/**
 	 *	EDIT SCORING PERIODS CONFIG.
 	 *	Edits the games scoring periods.
 	 */
 	function configScoringPeriodsEdit() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->getURIData();
@@ -763,17 +766,17 @@ class admin extends MY_Controller {
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
 			} else {
-				
+
 				$this->data['period_id'] = $this->uriVars['period_id'];
 				$scoring_period = getScoringPeriod($this->uriVars['period_id']);
 				$this->data['date_start'] = date('m/d/Y',strtotime($scoring_period['date_start']));
 				$this->data['date_end'] = date('m/d/Y',strtotime($scoring_period['date_end']));
-				
+
 				$this->form_validation->set_rules('period_id', 'Scoring Period ID', 'required');
 				$this->form_validation->set_rules('date_start', 'Period Start Date', 'required');
 				$this->form_validation->set_rules('date_end', 'Period End Date', 'required');
 				$this->form_validation->set_rules('submitted', 'Form Submitted', 'required');
-				
+
 				if ($this->form_validation->run() == false) {
 					$this->data['outMess'] = '';
 					$this->data['input'] = $this->input;
@@ -811,7 +814,7 @@ class admin extends MY_Controller {
 	 */
 	public function uploadFiles() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->data['outMess'] = '';
@@ -835,7 +838,7 @@ class admin extends MY_Controller {
 	 */
 	public function activateUser() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->getURIData();
@@ -868,7 +871,7 @@ class admin extends MY_Controller {
 	 */
 	public function deactivateUser() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->getURIData();
@@ -901,7 +904,7 @@ class admin extends MY_Controller {
 	 */
 	public function setUserLockStatus() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->getURIData();
@@ -930,7 +933,7 @@ class admin extends MY_Controller {
 	 */
 	public function userActivations() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->data['activations'] = $this->user_auth_model->getAdminActivations();
@@ -946,7 +949,7 @@ class admin extends MY_Controller {
 	 */
 	public function uploadFile() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['dataFile']['name']))) {
@@ -963,7 +966,7 @@ class admin extends MY_Controller {
 			} else {
 				if (!(strpos($_FILES['dataFile']['name'],'.zip'))) {
 					$fv = & _get_validation_object();
-					$fv->setError('dataFile','The file selected is not a valid zip file.');  
+					$fv->setError('dataFile','The file selected is not a valid zip file.');
 					$this->data['subTitle'] = "Upload Files";
 					$this->params['subTitle'] =  "Admin Tools";
 					$this->params['content'] = $this->load->view($this->views['FILE_UPLOADS'], $this->data, true);
@@ -996,14 +999,14 @@ class admin extends MY_Controller {
 	}
 
 	public function configUploadFile() {
-		
+
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
-			
+
 			$this->form_validation->set_rules('deflate', 'Deflate After Upload', 'required');
-		
+
 			if ($this->form_validation->run() == false) {
 				$this->data['outMess'] = "Required fields were missing.";
 				$this->data['subTitle'] = "Upload Files";
@@ -1018,7 +1021,7 @@ class admin extends MY_Controller {
 				$this->data['outMess'] = '';
 				$uploadSuccess = false;
 				if (isset($_FILES['dataFiles']['name']) && !empty($_FILES['dataFiles']['name'])) {
-					
+
 					//ini_set('post_max_size','8M');
 					$maxinbytes = return_bytes(ini_get('post_max_size'));
 					//print($_FILES['dataFiles']['name']."<br />");
@@ -1040,15 +1043,15 @@ class admin extends MY_Controller {
 					//$this->upload->initialize($config);
 					//$uploadSuccess = $this->upload->do_upload('dataFiles');
 					//print ("upload path = ".PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name']."<br />");
-					
-					
+
+
 					//print ("uploaded file = ".$_FILES['dataFiles']['tmp_name']."<br />");
 					//print ("target file = ".$target_file_name."<br />");
-					
+
 						if (move_uploaded_file($_FILES['dataFiles']['tmp_name'], $target_file_name)) {
 							chmod($target_file_name,0755);
 							$this->data['outMess'] .= "File upload completed successfully.<br />";
-							
+
 							if ($this->input->post('deflate')) {
 								$def = $this->input->post('deflate');
 								if ($def == 1) {
@@ -1103,7 +1106,7 @@ class admin extends MY_Controller {
 		} else {
 			$total = -1;
 		}
-		$this->output->set_header('Content-type: text/plain'); 
+		$this->output->set_header('Content-type: text/plain');
 		$this->output->set_output($total);
 	}
 
@@ -1115,7 +1118,7 @@ class admin extends MY_Controller {
 	 */
 	public function simSummaries() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->data['summaries'] = getSimSummaries();;
@@ -1130,16 +1133,16 @@ class admin extends MY_Controller {
 		}
 	}
 	public function loadSummary() {
-		
+
 		$this->getURIData();
-		
+
 		$status = '';
 		$result = '';
 		$code = -1;
 
 		if (isset($this->uriVars['summary_id']) || $this->uriVars['summary_id'] != -1) {
 			$summary = loadSimSummary($this->uriVars['summary_id']);
-			
+
 			if (sizeof($summary) > 0) {
 				$result .= '{"id":"'.$summary->id.'","sim_date":"'.date('Y-m-d h-i-s-A',strtotime($summary->sim_date)).'","scoring_period_id":"'.$summary->scoring_period_id.'","sim_result":"'.$summary->sim_result;
 				$result .= '","process_time":"'.$summary->process_time.'","sim_summary":"'.urlencode($summary->sim_summary).'","comments":"'.urlencode($summary->comments).'"}';
@@ -1152,13 +1155,13 @@ class admin extends MY_Controller {
 			$code = 201;
 		}
 		$result = '{ "result": { "items": ['.$result.']},"code":"'.$code.'","status": "'.$status.'"}';
-		
-		$this->output->set_header('Content-type: application/json'); 
+
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	function listSQLFiles() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());	
+			$this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 		} else {
 			$this->getURIData();
@@ -1166,29 +1169,29 @@ class admin extends MY_Controller {
 				$this->load->helper('config');
 			}
 			$fileList = getSQLFileList($this->params['config']['sql_file_path']);
-			
+
 			//-------------------------------------------------------------
 			// UPDATE VERSION 1.0.3
 			//-------------------------------------------------------------
-			// CHECK FOR DB CONNECTION FILE		
+			// CHECK FOR DB CONNECTION FILE
 			if (defined('DB_CONNECTION_FILE') && !file_exists($this->params['config']['sql_file_path']."/".DB_CONNECTION_FILE)) {
 				if (!function_exists('read_file')) { $this->load->helper('file'); }
 				$this->data['db_file_update'] = updateDBFile((($this->params['config']['stats_lab_compatible'] == 1)?true:false),$this->params['config']['sql_file_path']);
 			}
 			// END 1.0.3 MODS
-			
+
 			$this->data['fileList'] = $fileList;
 			$this->data['missingFiles'] = $this->ootp_league_model->validateLoadedSQLFiles($fileList);
 			$this->data['requiredTables'] = $this->ootp_league_model->requiredTables;
 			$this->data['subTitle'] = "Load Individual SQL Tables";
 			$this->params['content'] = $this->load->view($this->views['LIST_FILES'], $this->data, true);
 			$this->params['subTitle'] = "Database Tools";
-			
+
 			$this->params['pageType'] = PAGE_FORM;
 			$this->displayView();
 		}
 	}
-	
+
 	function closeSeason() {
 		$this->params['subTitle'] = "Close out your season";
 		$this->params['content'] = $this->load->view($this->views['PENDING'], $this->data, true);
@@ -1209,14 +1212,14 @@ class admin extends MY_Controller {
 	public function configUpdate() {
 		$result = '';
 		$status = 'OK';
-		
+
 		$site_directory = str_replace("admin/configUpdate","",$_SERVER['REQUEST_URI']);
 		//echo("Site directory = ".$site_directory."<br />");
-        
+
 		if (!function_exists('read_file')) {
 			$this->load->helper('file');
 		}
-		
+
 		// SELECT THE FILES TO UPDATE
 		if (file_exists(PATH_INSTALL.CONFIG_UPDATE_FILE)) {
 			$fcf = read_file(PATH_INSTALL.CONFIG_UPDATE_FILE);
@@ -1249,11 +1252,11 @@ class admin extends MY_Controller {
 		$result = "success";
 		$status = "OK";
 		$result = '{"result":"'.$result.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
-	
-	// The following function are called from the dashboard and 
+
+	// The following function are called from the dashboard and
 	// perform specific tasks. Each returns a status as an AJAX
 	// response object
 	/**
@@ -1280,10 +1283,10 @@ class admin extends MY_Controller {
 			$result = "success";
 		}
 		$result = '{"result":"'.$result.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
-	
+
 	/**
 	 *	AVAILABLE PLAYERS.
 	 */
@@ -1303,7 +1306,7 @@ class admin extends MY_Controller {
 		$code = 200;
 
 		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	/**
@@ -1326,7 +1329,7 @@ class admin extends MY_Controller {
 		//$this->data['message'] = $status;
 		//$this->dashboard();
 		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	/**
@@ -1348,7 +1351,7 @@ class admin extends MY_Controller {
 		$code = 200;
 
 		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	/**
@@ -1360,11 +1363,11 @@ class admin extends MY_Controller {
 		// CHECK FOR DUPLICATE
 		$this->load->model('player_model');
 		$resp = $this->player_model->updatePlayerRatings(15,getCurrentScoringPeriod($this->ootp_league_model->current_date),$this->params['config']['ootp_league_id']);
-		
+
 		if (is_array($resp)) {
 			$rslt = $resp[0];
 			$mess = $resp[1];
-			
+
 		} else {
 			$rslt = $resp;
 			$mess = "";
@@ -1381,10 +1384,10 @@ class admin extends MY_Controller {
 		$code = 200;
 
 		$result = '{"result":"'.$outMess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
-	
+
 	/**
 	 *	CREATE SCORING SCHEDULE.
 	 */
@@ -1402,7 +1405,7 @@ class admin extends MY_Controller {
 		$code = 200;
 
 		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	/**
@@ -1438,7 +1441,7 @@ class admin extends MY_Controller {
 			$summary .= $this->league_model->statusMess."<br />";
 			$processCount++;
 		}
-		
+
 		if ($mess != "OK") {
 			$status = "error:".$mess;
 		} else {
@@ -1453,13 +1456,13 @@ class admin extends MY_Controller {
 		} // END if
 		write_file(PATH_MEDIA_WRITE.'/waiver_summary'.$score_period['id'].'.html',$summary);
 		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
-	
+
 	/**
 	 *	RESET SEASON DATA.
-	 *  CAUTION: THIS WILL WIPE OUT ALL SEASON WIDE DATA AND REST THE MOD BACK TO 
+	 *  CAUTION: THIS WILL WIPE OUT ALL SEASON WIDE DATA AND REST THE MOD BACK TO
 	 *	PRE_SEASON STATUS.
 	 */
 	function resetSeason() {
@@ -1483,12 +1486,12 @@ class admin extends MY_Controller {
 		}
 		$code = 200;
 		$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	/**
 	 *	RESET RECENT SIM DATA.
-	 *  CAUTION: THIS WILL WIPE OUT ALL SEASON WIDE DATA AND REST THE MOD BACK TO 
+	 *  CAUTION: THIS WILL WIPE OUT ALL SEASON WIDE DATA AND REST THE MOD BACK TO
 	 *	PRE_SEASON STATUS.
 	 */
 	function resetSim() {
@@ -1504,10 +1507,10 @@ class admin extends MY_Controller {
 		}
 		$code = 200;
 		$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
-	
+
 	/**
 	 *	GENERATE LEAGUE SCHEDULES.
 	 *	Creates game schedule for head to head scoring leagues.
@@ -1535,7 +1538,7 @@ class admin extends MY_Controller {
 		}
 		$code = 200;
 		$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	/**
@@ -1546,7 +1549,7 @@ class admin extends MY_Controller {
 		if (!function_exists('loadSQLFiles')) {
 			$this->load->helper('config');
 		}
-		
+
 		if (isset($this->uriVars['loadList']) && sizeof($this->uriVars['loadList']) > 0) {
 			$fileList = $this->uriVars['loadList'];
 		} else if (isset($this->uriVars['filename']) && !empty($this->uriVars['filename'])) {
@@ -1579,7 +1582,7 @@ class admin extends MY_Controller {
 		} else {
 			$code = 200;
 			$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-			$this->output->set_header('Content-type: application/json'); 
+			$this->output->set_header('Content-type: application/json');
 			$this->output->set_output($result);
 		}
 	}
@@ -1599,19 +1602,19 @@ class admin extends MY_Controller {
 		}
 		$code = 200;
 		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
 	/**
 	 *	PROCESS SIM RESULTS.
 	 */
 	function processSim() {
-		
+
 		$this->benchmark->mark('sim_start');
 		$comments = "";
 		$error = false;
 		$mess = '';
-		$warn = "";	
+		$warn = "";
 		$summary = str_replace('[TIME_START]',date('m/d/Y h:i:s A'),$this->lang->line('sim_process_start'));
 		//-------------------------------------
 		// ADVANCE SCORING PERIOD
@@ -1622,18 +1625,18 @@ class admin extends MY_Controller {
 			$score_period = getCurrentScoringPeriod(date('Y-m-d',strtotime($this->ootp_league_model->current_date) - (60*60*24)));
 		}
 		$summary .= str_replace('[PERIOD_ID]',$score_period['id'],$this->lang->line('sim_period_id'));
-		
+
 		/*------------------------------
 		/	UPDATE PLAYER SCORING
 		/---------------------------*/
 		$this->load->model('player_model');
 		$summary .= $this->player_model->updatePlayerScoring($score_period);
-		
+
 		/*------------------------------
 		/	LOAD LEAGUES
 		/---------------------------*/
 		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
-		
+
 		/*------------------------------
 		/	UPDATE LEAGUE SCORING
 		/-----------------------------*/
@@ -1675,9 +1678,9 @@ class admin extends MY_Controller {
 		/-----------------------------*/
 		save_sim_summary($score_period['id'],$simResult,$sim_time,$summary,$comments);
 		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json'); 
+		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
-	
+
 	}
 	/**
 	 *	GET URI DATA.

@@ -23,6 +23,7 @@ class user_auth_model extends base_model {
 	
 	var $username = '';
 	var $password = '';
+	var $password_salt = '';
 	var $newPassword = '';
 	var $email = '';
 	var $dateCreated = EMPTY_DATE_TIME_STR;
@@ -66,7 +67,7 @@ class user_auth_model extends base_model {
 
 		$this->fieldList = array('username','email','typeId','levelId','accessId');
 		$this->conditionList = array('newPassword','lockStatus','loginAttemptCount','newEmail');
-		$this->readOnlyList = array('password','dateCreated','dateModified','lastModifiedBy',
+		$this->readOnlyList = array('password','password_salt','dateCreated','dateModified','lastModifiedBy',
 									'locked','loginAttempts','loggedIn','active');  
 		
 		$this->columns_select = array($this->tblName.'.id','username','email','levelId','accessId','dateCreated','dateModified','lastModifiedBy',
@@ -179,10 +180,11 @@ class user_auth_model extends base_model {
 				$this->lastModifiedBy = $userId;
 			} // END if
 			if ($this->id == -1 && $input->post('password')) {
-				$this->password = $this->hashPassword($input->post('password'));
+				$this->password_salt = $this->salt();
+				$this->password = $this->hashPassword($input->post('password'),$this->password_salt);
 			} else {
 				if ($input->post('newPassword')) {
-					$this->password = $this->hashPassword($input->post('newPassword'));
+					$this->password = $this->hashPassword($input->post('newPassword'),$this->password_salt);
 				} // END if
 			} // END if
 			if ($input->post('newEmail') && !$this->checkEmail($input->post('newEmail')))
@@ -211,7 +213,7 @@ class user_auth_model extends base_model {
 	        return false;
 	    }
 
-	    $query  = $this->db->select('password')
+	    $query  = $this->db->select('password, password_salt')
                    	   ->where('id', $identity)
                    	   ->limit(1)
                    	   ->get($this->tblName);
@@ -220,8 +222,8 @@ class user_auth_model extends base_model {
 		if ($result) {
 			
 			$db_password = $result->password; 
-			$old         = $this->hashPassword($old);
-			$new         = $this->hashPassword($new);
+			$old         = $this->hashPassword($old,$result->password_salt);
+			$new         = $this->hashPassword($new,$result->password_salt);
 			
 			if ($db_password === $old) {
 				$data = array('password' => $new);
@@ -383,7 +385,7 @@ class user_auth_model extends base_model {
 	    if ($email === false) {
 	        return false;
 	    }
-	    $query = $this->db->select('passConfirmKey')
+	    $query = $this->db->select('passConfirmKey,password_salt')
                    	   ->where('email', $email)
                    	   ->limit(1)
                    	   ->get($this->tblName);
@@ -400,7 +402,7 @@ class user_auth_model extends base_model {
 		}
 		//echo('code = '.$code."<br />");
 		if (empty($code)) {
-			$key = substr($this->hashPassword(microtime().$email),0,16);
+			$key = substr($this->hashPassword(microtime().$email,$result->password_salt),0,16);
 			
 			$this->passConfirmKey = $key;
 		
@@ -437,8 +439,9 @@ class user_auth_model extends base_model {
         if ($query->num_rows() > 0) {
 			$this->load($result->id);
 			$clearPw = substr($this->hashPassword(microtime().$this->email),0,12);
-		    $password   = $this->hashPassword($clearPw);
-            $data = array('password' => $password,'passConfirmKey'=>'');
+		    $salt = $this->salt();
+			$password   = $this->hashPassword($clearPw,$salt);
+            $data = array('password' => $password,'passConfirmKey'=>'','password_salt'=>$salt);
             
 			$this->newPassword = $clearPw;
             $this->db->update($this->tblName, $data, array('id' => $result->id));
@@ -568,17 +571,13 @@ class user_auth_model extends base_model {
 		$success = false;
 		// Check the supplied email and password against database to see 
 		// if the user exists.
-		$this->db->select('id, password, active, locked');
+		$this->db->select('id, password, password_salt, active, locked');
 		$this->db->where($this->uniqueField,$login);
 		$rsLogin = $this->db->get($this->tblName);
 		if ($rsLogin->num_rows() > 0) {
 			$row = $rsLogin->row();
-			$hashPass = $this->hashPassword($password);
-			//echo($hashPass."<br />");
-			//echo($row->password."<br />");
-			//echo($row->password === $hashPass ? "true" : "false"."<br />");
+			$hashPass = $this->hashPassword($password,$row->password_salt);
 			if ($row->password === $hashPass) {
-				//echo("Password OK"."<br />");
 				if ($row->active == 1) {
 					if ($row->locked != 1) {
 						$success = $this->load($row->id);
@@ -719,14 +718,17 @@ class user_auth_model extends base_model {
 	 * 	@return	Hashed Password
 	 *
 	 **/
-	protected function hashPassword($password = false) {
+	protected function hashPassword($password = false, $salt = false) {
 	    if (!function_exists('__hash')) {
 			$this->load->helper('auth');
 		}
 		if ($password === false) {
 	        return false;
 	    }
-		return __hash($password,$this->config->item('password_crypt'));
+		if ($salt === false) {
+	        $salt = $this->config->item('password_crypt');
+	    }
+		return __hash($password,$salt);
 	}
 	
 	protected function logFailedAccess($username) {
