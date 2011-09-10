@@ -1,8 +1,8 @@
 <?php
 /**
  *	LEAGUE MODEL CLASS.
- *	
- *	The League Model is the powerhouse of the Fantasy process. It manages many of the 
+ *
+ *	The League Model is the powerhouse of the Fantasy process. It manages many of the
  *  admin functionality and provides tools and methods to run the league.
  *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
  *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
@@ -95,7 +95,7 @@ class league_model extends base_model {
 	 *	@var $sqlColNames:Array
 	 */
 	var $sqlColNames = array();
-	
+
 	/*---------------------------------------------
 	/
 	/	C'TOR
@@ -104,7 +104,7 @@ class league_model extends base_model {
 	/---------------------------------------------*/
 	function league_model() {
 		parent::__construct();
-		
+
 		$this->tblName = 'fantasy_leagues';
 		$this->tables['GAMES'] = 'fantasy_leagues_games';
 		$this->tables['TRANSACTIONS'] = 'fantasy_transactions';
@@ -123,17 +123,17 @@ class league_model extends base_model {
 		$this->tables['TRADES'] = 'fantasy_teams_trades';
 		$this->tables['TRADES_STATUS'] = 'fantasy_teams_trades_status';
 		$this->tables['PLAYERS'] = 'fantasy_players';
-		
+
 		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests');
 		$this->conditionList = array('avatarFile','new_commisioner');
-		$this->readOnlyList = array('avatar','commissioner_id');  
+		$this->readOnlyList = array('avatar','commissioner_id');
 		$this->textList = array('description');
-		
+
 		$this->columns_select = array('id','league_type','description','league_name','max_teams','access_type','avatar','commissioner_id');
-		
+
 		$this->addSearchFilter('league_type','Scoring Type','leagueType','leagueType');
 		$this->addSearchFilter('access_type','Public/Private','accessType','accessType');
-		
+
 		parent::_init();
 	}
 	/*--------------------------------------------------
@@ -144,7 +144,7 @@ class league_model extends base_model {
 	/**
 	 * 	APPLY DATA.
 	 *
-	 *	Applies custom data values to the object. 
+	 *	Applies custom data values to the object.
 	 *
 	 * 	@return 	TRUE on success, FALSE on failure
 	 *
@@ -157,7 +157,7 @@ class league_model extends base_model {
 					$this->commissioner_id = $input->post('new_commisioner');
 				}
 			}
-			if (isset($_FILES['avatarFile']['name']) && !empty($_FILES['avatarFile']['name'])) { 
+			if (isset($_FILES['avatarFile']['name']) && !empty($_FILES['avatarFile']['name'])) {
 				$success = $this->uploadFile('avatar',PATH_LEAGUES_AVATAR_WRITE,$input,'avatar',$this->league_name);
 			}
 		}
@@ -178,15 +178,15 @@ class league_model extends base_model {
 	*  	@see	application -> models -> team_model -> deleteRosters
 	*/
 	public function deleteRosters($league_id = false, $scoring_period_id = false) {
-	
+
 		if ($league_id === false) { $league_id = $this->id; }
-	
+
 		$this->db->where('league_id',$league_id);
-		if ($scoring_period_id !== false) { 
+		if ($scoring_period_id !== false) {
 			$this->db->where('scoring_period_id',$scoring_period_id);
 		}
 		$this->db->delete($this->tables['ROSTERS']);
-	
+
 		return true;
 	}
 	/**
@@ -204,17 +204,17 @@ class league_model extends base_model {
 	*  	@see	application -> models -> team_model -> deleteRecords
 	*/
 	public function deleteRecords($league_id = false) {
-	
+
 		return $this->deleteLeagueData($this->tables['TEAMS_RECORD'],$league_id);
-	
+
 	}
 	/**
 	* 	DELETE SCHEDULE.
 	* 	<p>
 	* 	Deletes all schedules for the specified league_id. If no id is passed, the current league id of the loaded object is used.
 	*	</p>
-	*	<p><b>NOTE:</b> Because scheduling involves more than one team per game, there is no equivilent function for removing scheduled 
-	*	games for individual teams in the team_model. 
+	*	<p><b>NOTE:</b> Because scheduling involves more than one team per game, there is no equivilent function for removing scheduled
+	*	games for individual teams in the team_model.
 	*	</p>
 	* 	@param	$league_id		{int}	The League Id
 	* 	@return					{Boolean}	TRUE on success
@@ -223,9 +223,9 @@ class league_model extends base_model {
 	*  	@access	public
 	*/
 	public function deleteSchedule($league_id = false) {
-	
+
 		return $this->deleteLeagueData($this->tables['GAMES'],$league_id);
-	
+
 	}
 	/**
 	* 	DELETE TEAM SCORING.
@@ -242,11 +242,11 @@ class league_model extends base_model {
 	*  	@see	application -> models -> team_model -> deleteRecords
 	*/
 	public function deleteScoring($league_id = false) {
-	
+
 		return $this->deleteLeagueData($this->tables['TEAMS_SCORING'],$league_id);
-	
+
 	}
-	
+
 	/**
 	* 	DELETE TRADES.
 	* 	<p>
@@ -262,11 +262,11 @@ class league_model extends base_model {
 	*  	@see	application -> models -> team_model -> deleteTrades
 	*/
 	public function deleteTrades($league_id = false) {
-	
+
 		return $this->deleteLeagueData($this->tables['TEAM_TRADES'],$league_id);
-	
+
 	}
-	
+
 	/**
 	* 	DELETE TRANSACTIONS.
 	* 	<p>
@@ -282,9 +282,9 @@ class league_model extends base_model {
 	*  	@see	application -> models -> team_model -> deleteTransactions
 	*/
 	public function deleteTransactions($league_id = false) {
-	
+
 		return $this->deleteLeagueData($this->tables['TRANSACTIONS'],$league_id);
-	
+
 	}
 	/**
 	* 	DELETE WAIVER CLAIMS.
@@ -301,11 +301,11 @@ class league_model extends base_model {
 	*  	@see	application -> models -> team_model -> deleteWaiverClaims
 	*/
 	public function deleteWaiverClaims($league_id = false) {
-	
+
 		return $this->deleteLeagueData($this->tables['WAIVER_CLAIMS'],$league_id);
-	
+
 	}
-	
+
 	// SPECIAL QUERIES
 	/**
 	* 	GET LEAGUE NAME.
@@ -318,7 +318,7 @@ class league_model extends base_model {
 	*  	@access	public
 	*/
 	public function getLeagueName($league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
 		$this->db->select('league_name');
 		$this->db->from($this->tblName);
@@ -352,11 +352,11 @@ class league_model extends base_model {
 			return true;
 		} else {
 			return false;
-		}	
+		}
 	}
 	/**
 	* 	HAS VALID ROSTERS.
-	* 	<p>Simple test if teams in a legaue have players on rosters. it does not, howver, 
+	* 	<p>Simple test if teams in a legaue have players on rosters. it does not, howver,
     *	test if they are valid against a league roster rules.</p>
 	* 	@param	$league_id		{int}		The League Id
 	* 	@return					{Boolean}	TRUE if teams have rosters, FALSE if no
@@ -365,7 +365,7 @@ class league_model extends base_model {
 	*  	@access	public
 	*/
 	public function hasValidRosters($league_id = false) {
-		
+
 		// VALIDATE ROSTER COUNTS
 		if ($league_id === false) { $league_id = $this->id; }
 		$this->db->select('fantasy_rosters.player_id');
@@ -377,7 +377,7 @@ class league_model extends base_model {
 			return true;
 		} else {
 			return false;
-		}	
+		}
 	}
 	/**
 	* 	GET SCORING TYPE.
@@ -389,8 +389,8 @@ class league_model extends base_model {
 	*  	@access	public
 	*/
 	public function getScoringType($league_id = false) {
-		if ($league_id === false && $this->id != -1) { 
-			return $this->league_type; 
+		if ($league_id === false && $this->id != -1) {
+			return $this->league_type;
 		} else {
 			$type = -1;
 			$this->db->select('league_type');
@@ -407,7 +407,7 @@ class league_model extends base_model {
 	}
 	/**
 	* 	OWNER CAN BE COMMISSIONER.
-	* 	<p>Tests f the passed user ID can be commissioner of the specified (or leaded) league (I.E. if they are already 
+	* 	<p>Tests f the passed user ID can be commissioner of the specified (or leaded) league (I.E. if they are already
 	*	commissioner or not).</p>
 	* 	@param	$userId			{int}			The user Id
 	* 	@param	$league_id		{int}			OPTIONAL - The League Id
@@ -417,10 +417,10 @@ class league_model extends base_model {
 	*  	@access	public
 	*/
 	protected function ownerCanBeCommish($userId = false, $league_id = false) {
-		
+
 		if ($userId === false) { return false; }
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		if ($userId != $this->commissioner_id && !$this->userIsCommish($userId)) {
 			return true;
 		} else {
@@ -438,9 +438,9 @@ class league_model extends base_model {
 	*  	@access	public
 	*/
 	public function userIsCommish($userId = false, $league_id = false) {
-		
+
 		if ($userId === false) { return false; }
-		
+
 		$this->db->select('id');
 		$this->db->from($this->tblName);
 		$this->db->where("commissioner_id",$userId);
@@ -452,7 +452,7 @@ class league_model extends base_model {
 			return true;
 		} else {
 			return false;
-		}	
+		}
 	}
 	/**
 	* 	GET OWNER IDS.
@@ -464,10 +464,10 @@ class league_model extends base_model {
 	*  	@access	public
 	*/
 	public function getOwnerIds($league_id = false) {
-		
+
 		$owners = array();
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$this->db->select('owner_id');
 		$this->db->from($this->tables['TEAMS']);
 		$this->db->where("league_id",$league_id);
@@ -483,7 +483,7 @@ class league_model extends base_model {
 	/**
 	 * 	GET OWNER INFO.
 	 * 	<p>Returns an array of owner details including the owners id, first and last name.</p>
-	 *	<p><b>NOTE:</b> The <code>$showTeam</code> arg can be used to return the team name instead of owner name. The owner ID is 
+	 *	<p><b>NOTE:</b> The <code>$showTeam</code> arg can be used to return the team name instead of owner name. The owner ID is
 	 *	returned regardless.</p>
 	 * 	@param	$league_id		{int}			OPTIONAL - The League Id
 	 * 	@param	$showTeam		{Boolean}		TRUE ot show the team name, FALSE to show owner name
@@ -493,7 +493,7 @@ class league_model extends base_model {
 	 *  @access	public
 	 */
 	public function getOwnerInfo($league_id = false, $showTeam = false) {
-		
+
 		$owners = array();
 		if ($league_id === false) { $league_id = $this->id; }
 		$this->db->select('fantasy_teams.id, teamname, teamnick, firstName, lastName');
@@ -514,7 +514,7 @@ class league_model extends base_model {
 		return $owners;
 	}
 	public function getDetailedOwnerInfo($league_id = false, $showTeam = false) {
-		
+
 		$owners = array();
 		if ($league_id === false) { $league_id = $this->id; }
 		$this->db->select('fantasy_teams.id as team_id, teamname, teamnick, users_core.id as owner_id, email, username');
@@ -524,7 +524,7 @@ class league_model extends base_model {
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
-				
+
 				$owners = $owners + array($row->team_id=>array('owner_id'=>$row->owner_id,'email'=>$row->email, 'username'=>$row->username,
                                                                'teamname'=>$row->teamname,'teamnick'=>$row->teamnick));
 			}
@@ -533,31 +533,31 @@ class league_model extends base_model {
 		return $owners;
 	}
 	public function userHasAccess($user_id = false, $league_id = false) {
-		
+
 		$access = false;
 		if ($user_id === false || $user_id == -1) { return false; }
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		//print "user id = ".$user_id."<ber />";
 		$ownerIds = $this->getOwnerIds($league_id);
 		//print "has access? = ".(in_array($user_id,$ownerIds) ? "yes":"no")."<ber />";
 		$access = (sizeof($ownerIds) > 0 && in_array($user_id,$ownerIds));
 		return $access;
-	
+
 	}
-	
+
 	/*----------------------------------------------------------------------
 	/
 	/	INVITES AND REQUESTS
 	/
 	/----------------------------------------------------------------------*/
-	
-	
+
+
 	public function getLeagueInvites($onlyPending = false, $league_id = false) {
-		
+
 		$invites = array();
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$this->db->select('to_email, send_date, team_id, teamname, teamnick, requestStatus');
 		$this->db->from($this->tables['TEAM_INVITES']);
 		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_invites.team_id','right outer');
@@ -577,10 +577,10 @@ class league_model extends base_model {
 		return $invites;
 	}
 	public function getLeagueRequests($onlyPending = false, $league_id = false, $request_id = false) {
-		
+
 		$requests = array();
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$this->db->select($this->tables['TEAM_REQUESTS'].'.id, user_id, username, date_requested, team_id, teamname, teamnick, requestStatus');
 		$this->db->from($this->tables['TEAM_REQUESTS']);
 		$this->db->join('users_core','users_core.id = fantasy_leagues_requests.user_id','right outer');
@@ -610,7 +610,7 @@ class league_model extends base_model {
 		if ($team_id === false || $user_id === false) {
 			return false;
 		}
-	
+
 		$this->lang->load('league');
 		$this->db->select('id, status_id');
 		//$this->db->where('team_id',$team_id);
@@ -644,20 +644,20 @@ class league_model extends base_model {
 		}
 		return true;
 	}
-	
+
 	public function updateRequest($request_id = false, $response = false, $league_id = false) {
-	
+
 		if ($league_id === false) {
 			$league_id = $this->id;
 		}
 		if ($request_id === false || $response === false) {
 		return false;
 		}
-	
+
 		$this->db->select('*');
 		$this->db->where('id',$request_id);
 		$query = $this->db->get($this->tables['TEAM_REQUESTS']);
-	
+
 		if ($query->num_rows() == 0) {
 			$this->errorCode = 1;
 			$this->statusMess = 'No request matching the passed ID was found in the system.';
@@ -717,7 +717,7 @@ class league_model extends base_model {
 	 */
 	public function deleteTeamRequests($league_id = false, $user_id = false, $team_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
-	
+
 		$this->db->where("league_id",$league_id);
 		if ($user_id !== false) {
 			$this->db->where("user_id",$user_id);
@@ -747,10 +747,10 @@ class league_model extends base_model {
 		if ($user_id !== false) {
 			$userMail = getEmail($user_id);
 		}
-		
+
 		$this->db->flush_cache();
 		$this->db->where("league_id",$league_id);
-		
+
 		if (!empty($userMail)) {
 			$this->db->where("to_email",$userMail);
 		}
@@ -791,7 +791,7 @@ class league_model extends base_model {
 	protected function loadLeagueTeams($league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$teamNames = array();
-		$this->db->select("id, teamname, teamnick"); 
+		$this->db->select("id, teamname, teamnick");
 		$this->db->where("league_id",$league_id);
 		$query = $this->db->get($this->tables['TEAMS']);
 		if ($query->num_rows() > 0) {
@@ -803,7 +803,7 @@ class league_model extends base_model {
 		return $teamNames;
 	}
 	public function loadGameData($game_id = false, $team_model, $excludeList = array(), $league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($game_id === false) return false;
 		// FIRST GET THE TEAMS INVOLVED
@@ -818,11 +818,11 @@ class league_model extends base_model {
 			$scoring_period = $row->scoring_period_id;
 		}
 		$query->free_result();
-		
-		
+
+
 		// LOAD RELEVANT SCORING CATEGORIES
 		$scoring_rules = $this->getScoringRules($this->id);
-			
+
 		// NOW GET EACH TEAMS ROSTERS
 		$rosters = array('home'=>array(),'away'=>array());
 		foreach ($teams as $key => $team_id) {
@@ -845,15 +845,15 @@ class league_model extends base_model {
 						}
 						// GET PLAYER DATA
 						$select = "";
-						foreach($scoring_rules[$type] as $cat => $val) {	
+						foreach($scoring_rules[$type] as $cat => $val) {
 							if ($select != '') { $select.=","; } // END if
 							$select .= strtolower(get_ll_cat($cat, true));
 						}
 						// SUBQUERY FOR FANTASY TOTALS
-						$select .= ",(SELECT total FROM fantasy_players_scoring WHERE player_id = ".$player_data['id']." AND 
-									league_id = ".$league_id." AND scoring_period_id = ".$scoring_period['id']." AND 
+						$select .= ",(SELECT total FROM fantasy_players_scoring WHERE player_id = ".$player_data['id']." AND
+									league_id = ".$league_id." AND scoring_period_id = ".$scoring_period['id']." AND
 									scoring_type = ".$scoring_rules['scoring_type'].") AS total ";
-						
+
 						// GET ALL PLAYERS SCORING FOR TEAMS ROSTER
 						$player_stats = array();
 						$this->db->flush_cache();
@@ -866,9 +866,9 @@ class league_model extends base_model {
 							$player_stats = $query->row();
 						} // END if
 						$query->free_result();
-						
+
 						//print ("Size of player stats = ".sizeof($player_stats)."<br />");
-						
+
 						//$this->db->select('*');
 						//$this->db->where('fantasy_players_scoring.player_id', $player_data['id']);
 						//$this->db->where('fantasy_players_scoring.league_id',$rules['league_id']);
@@ -893,8 +893,8 @@ class league_model extends base_model {
 								$this->db->from('fantasy_players_scoring');
 								$this->db->where("player_id",$player_data['id']);
 								$this->db->where("scoring_period_id",intval($scoring_period['id']));*/
-								
-								
+
+
 								$total = $player_stats->total;
 							}
 							//$pQuery->free_result();
@@ -905,15 +905,15 @@ class league_model extends base_model {
 																			  'injury_dl_left'=>$player_data['injury_dl_left'], 'injury_left'=>$player_data['injury_left'], 'injury_dtd_injury'=>$player_data['injury_dtd_injury'],
 																			  'injury_id'=>$player_data['injury_id'],'injury_career_ending'=>$player_data['injury_career_ending']));
 					}
-					if ($status == 1) $team_data['players_active'] = $player_list; 
-					else $team_data['players_reserve'] = $team_data['players_reserve'] + $player_list; 
+					if ($status == 1) $team_data['players_active'] = $player_list;
+					else $team_data['players_reserve'] = $team_data['players_reserve'] + $player_list;
 				}
 				$rosters[$key] = $team_data;
 			}
 		}
 		return $rosters;
 	}
-	
+
 	public function getMemberCount($league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$count = 0;
@@ -937,9 +937,9 @@ class league_model extends base_model {
 		return $divisions;
 	}
 	public function getTeamDetails($league_id = false,$selectBox = false, $noOwner = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, owner_id, firstName, lastName, email');
 		$this->db->join('users_core','users_core.id = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->join('users_meta','users_meta.userId = '.$this->tables['TEAMS'].'.owner_id','left');
@@ -954,7 +954,7 @@ class league_model extends base_model {
 		if ($query2->num_rows() > 0) {
 			//echo("Teams for league".$league_id." = <br/>");
 			foreach ($query2->result() as $trow) {
-				if ($selectBox != false) { 
+				if ($selectBox != false) {
 					$teams = $teams + array($trow->id=>$trow->teamname." ".$trow->teamnick);
 				} else {
 					$ownerName = $trow->firstName." ".$trow->lastName;
@@ -984,7 +984,7 @@ class league_model extends base_model {
 		$query2->free_result();
 		return $teams;
 	}
-		
+
 	public function getFullLeageDetails($league_id = false, $noOwner = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$divisions = array();
@@ -1026,12 +1026,12 @@ class league_model extends base_model {
 		$query->free_result();
 		return $divisions;
 	}
-	
+
 	public function getLeagueStandings($curr_period_id = false,$league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$scoring_type = $this->getScoringType();
-		
+
 		switch ($scoring_type) {
 			case LEAGUE_SCORING_ROTO:
 			case LEAGUE_SCORING_ROTO_5X5:
@@ -1039,7 +1039,7 @@ class league_model extends base_model {
 				$rules = $this->getScoringRules();
 				$teams = array();
 				$this->db->flush_cache();
-				$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, value_0 as val_0, value_1 as val_1, value_2 as val_2, value_3 as val_3, value_4 as val_4, 
+				$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, value_0 as val_0, value_1 as val_1, value_2 as val_2, value_3 as val_3, value_4 as val_4,
 				value_5 as val_5, value_6 as val_6, value_7 as val_7, value_8 as val_8, value_9 as val_9, value_10 as val_10, value_11 as val_11, total as total');
 				$this->db->join($this->tables['TEAMS'],'fantasy_teams_scoring.team_id = '.$this->tables['TEAMS'].'.id','right outer');
 				$this->db->where('fantasy_teams.league_id',$league_id);
@@ -1058,7 +1058,7 @@ class league_model extends base_model {
 							foreach($rules[$type] as $cat => $val) {
 								$colName = 'val_'.$catCount;
 								if (!isset($row->$colName)) {
-										   
+
 								}
 							}
 						}
@@ -1090,7 +1090,7 @@ class league_model extends base_model {
 						} // END if
 						$this->db->order_by('pct','desc');
 						$query2 = $this->db->get($this->tables['TEAMS']);
-						
+
 						$teams = array();
 						if ($query2->num_rows() > 0) {
 							foreach ($query2->result() as $trow) {
@@ -1107,21 +1107,21 @@ class league_model extends base_model {
 				break;
 		}
 	}
-	
+
 	/**
 	 *	CREATE LEAGUE SCHEDULE.
-	 *	Builds a scheudle for all teams based on the number of teams, number of scoring periods 
+	 *	Builds a scheudle for all teams based on the number of teams, number of scoring periods
 	 *	and the number of games per team.
 	 *  @param	$league_id - If not specified, no league filter is applied.
 	 *	@return	"OK" on success, false on failure
 	 */
 	public function createLeagueSchedule($league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		// GET ALL TEAMS
 		$teams = array();
-		$this->db->select("id"); 
+		$this->db->select("id");
 		$this->db->where("league_id",$league_id);
 		$query = $this->db->get($this->tables['TEAMS']);
 		if ($query->num_rows() > 0) {
@@ -1130,18 +1130,18 @@ class league_model extends base_model {
 			}
 		}
 		$query->free_result();
-		
+
 		// DELETE ALL GAMES FOR THIS LEAGUE IF THEY EXIST
 		$this->db->flush_cache();
 		$this->db->where('league_id',$league_id);
 		$this->db->delete('fantasy_leagues_games');
 
 		$matchups = sizeof($teams) * $this->games_per_team;
-			
+
 		//echo("matchups per period = ".$matchups."<br />");
-		
+
 		for ($s = 1; $s < ($this->regular_scoring_periods +1); $s++) {
-			
+
 			$data = array();
 			//echo("Scoring period ".$s."<br />");
 			$teamCount = 0;
@@ -1149,12 +1149,12 @@ class league_model extends base_model {
 			$gamesPerTeam = array();
 			$type = 0;
 			for ($p = 0; $p < $matchups; $p++) {
-				
-				
+
+
 				$team_id = $teams[intval(rand(0, (sizeof($teams)-1)))];
 				if (isset($gamesPerTeam[$team_id]) && $gamesPerTeam[$team_id] >= $this->games_per_team) { }
 				else {
-					
+
 					// PICK THREE RANDOM OPPONENTS FOR THE CURRENT TEAM
 					// ALTERNATE HOME AND AWAY
 					$type = ($type == 0) ? 1 : 0;
@@ -1172,23 +1172,23 @@ class league_model extends base_model {
 									$home_team_id = $opponent;
 									$away_team_id = $team_id;
 								} // END if
-								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id, 
+								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id,
 											  'away_team_id'=>$away_team_id,'scoring_period_id'=>$s));
-								
+
 								if (isset($gamesPerTeam[$opponent]))
 									$gamesPerTeam[$opponent] = $gamesPerTeam[$opponent] + 1;
-								else 
+								else
 									$gamesPerTeam[$opponent] = 1; // END if
-									
+
 								if (isset($gamesPerTeam[$team_id]))
 									$gamesPerTeam[$team_id] = $gamesPerTeam[$team_id] + 1;
-								else 
-									$gamesPerTeam[$team_id] = 1; // END if			
+								else
+									$gamesPerTeam[$team_id] = 1; // END if
 								break;
 							} // END if
 						} // END if
 						$tries++;
-						if ($tries > 500) { 
+						if ($tries > 500) {
 							//echo("In loop = true");
 							//echo("Current team id = ".$team_id."<br />");
 							//echo("Has any games? ".(isset($gamesPerTeam[$team_id]) ? "true" : "false")."<br />");
@@ -1206,15 +1206,15 @@ class league_model extends base_model {
 												$home_team_id = $team_id_val;
 												$away_team_id = $team_id;
 											} // END if
-											array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id, 
+											array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id,
 											 'away_team_id'=>$away_team_id,'scoring_period_id'=>$s));
 											if (isset($gamesPerTeam[$home_team_id]))
 												$gamesPerTeam[$home_team_id] = $gamesPerTeam[$home_team_id] + 1;
-											else 
+											else
 												$gamesPerTeam[$home_team_id] = 1; // END if
 											if (isset($gamesPerTeam[$away_team_id]))
 												$gamesPerTeam[$away_team_id] = $gamesPerTeam[$away_team_id] + 1;
-											else 
+											else
 												$gamesPerTeam[$away_team_id] = 1; // END if
 											break;
 										}
@@ -1231,16 +1231,16 @@ class league_model extends base_model {
 								$away_team_id = $gameData['away_team_id'];
 								//echo("home_team_id = ".$home_team_id."<br />");
 								//echo("away_team_id = ".$away_team_id."<br />");
-								
-								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$team_id, 
+
+								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$team_id,
 									  'away_team_id'=>$home_team_id,'scoring_period_id'=>$s));
-								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$away_team_id, 
+								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$away_team_id,
 											  'away_team_id'=>$team_id,'scoring_period_id'=>$s));
 								if (!isset($gamesPerTeam[$team_id]))
 									$gamesPerTeam[$team_id] = 2; // END if
 
 							}
-							$periodDone = true; break; 
+							$periodDone = true; break;
 						}
 					} // END while
 					if ($periodDone) { break; }
@@ -1272,7 +1272,7 @@ class league_model extends base_model {
 						foreach($gamesPerTeam as $team_id_val => $game_count) {
 							if ($team_id_val != $team1Id && $game_count < $this->games_per_team) {
 								//echo("second under the minimum ".$team_id_val." = ".$game_count."<br />");
-								
+
 								$type = ($type == 0) ? 1 : 0;
 								if ($type == 0) {
 									$home_team_id = $team1Id;
@@ -1281,7 +1281,7 @@ class league_model extends base_model {
 									$home_team_id = $team_id_val;
 									$away_team_id = $team1Id;
 								} // END if
-								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id, 
+								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id,
 								 'away_team_id'=>$away_team_id,'scoring_period_id'=>$s));
 								$gamesPerTeam[$home_team_id] = $gamesPerTeam[$home_team_id] + 1;
 								$gamesPerTeam[$away_team_id] = $gamesPerTeam[$away_team_id] + 1;
@@ -1307,13 +1307,13 @@ class league_model extends base_model {
 						$away_team_id = $gameData['away_team_id'];
 						//echo("home_team_id = ".$home_team_id."<br />");
 						//echo("away_team_id = ".$away_team_id."<br />");
-						array_push($data,array('league_id'=>$league_id,'home_team_id'=>$team1Id, 
+						array_push($data,array('league_id'=>$league_id,'home_team_id'=>$team1Id,
 									  'away_team_id'=>$home_team_id,'scoring_period_id'=>$s));
-						
-						array_push($data,array('league_id'=>$league_id,'home_team_id'=>$away_team_id, 
+
+						array_push($data,array('league_id'=>$league_id,'home_team_id'=>$away_team_id,
 									  'away_team_id'=>$team1Id,'scoring_period_id'=>$s));
 						if (!isset($gamesPerTeam[$team1Id]))
-							$gamesPerTeam[$team1Id] = 2; // END if	
+							$gamesPerTeam[$team1Id] = 2; // END if
 						$totalGames += 2;
 					}
 				} else {
@@ -1335,10 +1335,10 @@ class league_model extends base_model {
 		} // END for
 		return "OK";
 	} // END function
-	
+
 	/**
 	 *	GET LEAGUE SCHEDULE.
-	 *	Returns either the entire schdule for the specified league OR only games for a 
+	 *	Returns either the entire schdule for the specified league OR only games for a
 	 *	specific team (if specified).
 	 *  @param	$team_id - If not specified, the schedule for the entire league is returned.
 	 *  @param	$excludeScores - Set to TRUE to not return score information
@@ -1346,11 +1346,11 @@ class league_model extends base_model {
 	 *	@return	schedule array, false on failure
 	 */
 	public function getLeagueSchedule($team_id = false, $excludeScores = false, $league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$teamNames = $this->loadLeagueTeams($league_id);
-		
+
 		$schedule = array();
 		$score_period_id = 0;
 		$this->db->flush_cache();
@@ -1379,10 +1379,10 @@ class league_model extends base_model {
 		$query->free_result();
 		return $schedule;
 	}
-	
+
 	/**
 	 *	GET LEAGUE TRANSACTIONS.
-	 *	Returns either the entire schdule for the specified league OR only games for a 
+	 *	Returns either the entire schdule for the specified league OR only games for a
 	 *	specific team (if specified).
 	 *  @param	$team_id - If not specified, the schedule for the entire league is returned.
 	 *  @param	$excludeScores - Set to TRUE to not return score information
@@ -1390,13 +1390,13 @@ class league_model extends base_model {
 	 *	@return	schedule array, false on failure
 	 */
 	public function getLeagueTransactions($limit = -1, $startIndex = 0, $team_id = false, $league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$transactions = array();
 		$teamNames = $this->loadLeagueTeams($league_id);
-		
-		$this->db->select("trans_date, team_id, added, dropped, claimed, tradedTo, tradedFrom, trade_team_id, trans_owner, effective"); 
+
+		$this->db->select("trans_date, team_id, added, dropped, claimed, tradedTo, tradedFrom, trade_team_id, trans_owner, effective");
 		$this->db->where("league_id",$league_id);
 		if ($team_id !== false) {
 			$this->db->where('team_id',$team_id);
@@ -1410,7 +1410,7 @@ class league_model extends base_model {
 		$query = $this->db->get($this->tables['TRANSACTIONS']);
 		if ($query->num_rows() > 0) {
 			$transTypes = array('added','dropped','claimed','tradedTo','tradedFrom');
-            
+
 			if (!function_exists('getFantasyPlayersDetails')) {
 				$this->load->helper('roster');
 			}
@@ -1420,7 +1420,7 @@ class league_model extends base_model {
 					//echo($field."<br />");
 					$transArrays[$field] = array();
 					if (isset($row->$field) && !empty($row->$field) && strpos($row->$field,":")) {
-						$fieldData = unserialize($row->$field); 
+						$fieldData = unserialize($row->$field);
 						if (is_array($fieldData) && sizeof($fieldData) > 0) {
 							//echo("size of ".$field." data = ".sizeof($fieldData)."<br />");
 							$playerDetails = getFantasyPlayersDetails($fieldData);
@@ -1434,7 +1434,7 @@ class league_model extends base_model {
 									$transStr .= "&nbsp; ".anchor('/players/info/league_id/'.$league_id.'/player_id/'.$playerId,$playerDetails[$playerId]['first_name']." ".$playerDetails[$playerId]['last_name']);
 								} // END if
 								//echo($transStr."<br />");
-								if (!empty($transStr)) { array_push($transArrays[$field], $transStr); } 
+								if (!empty($transStr)) { array_push($transArrays[$field], $transStr); }
 							} // END foreach
 						} // END if
 					} // END if
@@ -1446,9 +1446,9 @@ class league_model extends base_model {
 				if ($row->trade_team_id > 0) {
 					$trade_team_name = $teamNames[$row->trade_team_id];
 				}
-				array_push($transactions,array('trans_date'=>$row->trans_date, 'team_id'=>$row->team_id, 
-													  'added'=>$transArrays['added'], 'dropped'=>$transArrays['dropped'], 
-													  'claimed'=>$transArrays['claimed'], 'tradedTo'=>$transArrays['tradedTo'], 'tradedFrom'=>$transArrays['tradedFrom'], 
+				array_push($transactions,array('trans_date'=>$row->trans_date, 'team_id'=>$row->team_id,
+													  'added'=>$transArrays['added'], 'dropped'=>$transArrays['dropped'],
+													  'claimed'=>$transArrays['claimed'], 'tradedTo'=>$transArrays['tradedTo'], 'tradedFrom'=>$transArrays['tradedFrom'],
 													  'trans_owner'=>$row->trans_owner, 'effective'=>$row->effective,
 													  'trade_team_id'=>$row->trade_team_id,'trade_team_name'=>$trade_team_name));
 			}
@@ -1465,7 +1465,7 @@ class league_model extends base_model {
 	 *	@return	schedule array, false on failure
 	 */
 	public function getOpenLeagues($user_id = false) {
-		
+
 		$leagues = array();
 		$select = $this->tblName.'.id,league_name,commissioner_id,username,leagueType, max_teams, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount';
 		if ($user_id !== false) {
@@ -1480,10 +1480,10 @@ class league_model extends base_model {
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				if ($row->openCount > 0 && ($user_id === false || ($user_id !== false && isset($row->teamsOwned) && $row->teamsOwned == 0))) {
-					array_push($leagues,array('id'=>$row->id,'league_name'=>$row->league_name, 'max_teams'=>$row->max_teams, 
-										 'leagueType'=>$row->leagueType, 'openings'=>$row->openCount, 
+					array_push($leagues,array('id'=>$row->id,'league_name'=>$row->league_name, 'max_teams'=>$row->max_teams,
+										 'leagueType'=>$row->leagueType, 'openings'=>$row->openCount,
 										 'commissioner_id'=>$row->commissioner_id,'commissioner_name'=>$row->username));
-					
+
 				} // END if
 			} // END foreach
 		} // END if
@@ -1499,11 +1499,11 @@ class league_model extends base_model {
 	 *	@return	schedule array, false on failure
 	 */
 	public function getWaiverClaims($limit = -1, $startIndex = 0, $team_id = false, $league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$claims = array();
-		$this->db->select($this->tables['WAIVER_CLAIMS'].".id, ".$this->tables['WAIVER_CLAIMS'].".team_id, teamname, teamnick, ".$this->tables['WAIVER_CLAIMS'].".player_id, first_name, last_name, waiver_period"); 
+		$this->db->select($this->tables['WAIVER_CLAIMS'].".id, ".$this->tables['WAIVER_CLAIMS'].".team_id, teamname, teamnick, ".$this->tables['WAIVER_CLAIMS'].".player_id, first_name, last_name, waiver_period");
 		$this->db->join("fantasy_teams","fantasy_teams.id = ".$this->tables['WAIVER_CLAIMS'].".team_id", "left");
 		$this->db->join("fantasy_players","fantasy_players.id = ".$this->tables['WAIVER_CLAIMS'].".player_id", "left");
 		$this->db->join("fantasy_players_waivers","fantasy_players_waivers.player_id = fantasy_players.id", "right outer");
@@ -1522,8 +1522,8 @@ class league_model extends base_model {
 		//echo($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
-				array_push($claims,array('id'=>$row->id,'team_id'=>$row->team_id, 'teamname'=>$row->teamname." ".$row->teamnick, 
-										 'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name, 
+				array_push($claims,array('id'=>$row->id,'team_id'=>$row->team_id, 'teamname'=>$row->teamname." ".$row->teamnick,
+										 'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name,
 										 'waiver_period'=>$row->waiver_period));
 			}
 		}
@@ -1533,16 +1533,16 @@ class league_model extends base_model {
 	}
 	/**
 	 *	GET SCORING RULES.
-	 *	Returns the scoring rules for a specific league (if they exist) or the 
+	 *	Returns the scoring rules for a specific league (if they exist) or the
 	 *	global scoring rules in they don't
 	 *  @param	$league_id - If not specified, no league filter is applied.
 	 *	@return	Rules array on success, false on failure
 	 */
 	public function getScoringRules($league_id = false, $scoring_type = false, $returnDefault = true) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; } // END if
 		if ($scoring_type === false) { $scoring_type = $this->league_type; } // END if
-		
+
 		$rules = array('batting'=>array(),'pitching'=>array());
 		$default = false;
 		foreach($rules as $key => $data) {
@@ -1580,25 +1580,25 @@ class league_model extends base_model {
 		$rules['scoring_type'] = $scoring_type;
 		return $rules;
 	}
-	
+
 	/**
 	 * SET SCORING RULES
-	 * This function accepts a form input object and applies the passed values to 
-	 * the scoring rules tables. 
+	 * This function accepts a form input object and applies the passed values to
+	 * the scoring rules tables.
 	 * @param	$input		CodeIgniter form input object
 	 * @param	$league_id 	Optional league ID. Defaults to "0" if no id is passed.
 	 */
 	public function setScoringRules($input, $league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = 0; }
-		
+
 		$this->db->where('league_id', $league_id);
 		$this->db->where('scoring_type', $input->post('scoring_type'));
 		$this->db->delete($this->tables['SCORING_RULES_BATTING']);
 		$this->db->where('league_id', $league_id);
 		$this->db->where('scoring_type', $input->post('scoring_type'));
 		$this->db->delete($this->tables['SCORING_RULES_PITCHING']);
-		
+
 		$types = array('batting','pitching');
 		foreach($types as $type) {
 			$lineCount = 0;
@@ -1615,13 +1615,13 @@ class league_model extends base_model {
 		}
 		return true;
 	}
-	
+
 	public function getAllScoringRulesforSim($league_id = false) {
-		
+
 		$scoring_rules = array();
 		$scoring_types = loadSimpleDataList('leagueType');
 		// ASSEMBLE UNIQUE SCORING RULES FOR LEAGUES
-		if ($league_id !== false) { 
+		if ($league_id !== false) {
 			$scoring_list = array();
 			foreach($scoring_types as $typeId => $typeName) {
 				$scoring_list[$typeId] = $this->getScoringRules($league_id,$typeId);
@@ -1648,7 +1648,7 @@ class league_model extends base_model {
 	}
 	/**
 	 *	GET Roster RULES.
-	 *	Returns the roster rules for a specific league (if they exist) or the 
+	 *	Returns the roster rules for a specific league (if they exist) or the
 	 *	global roster rules in they don't
 	 *  @param	$league_id - If not specified, no league filter is applied.
 	 *	@return	Rules array on success, false on failure
@@ -1672,24 +1672,24 @@ class league_model extends base_model {
 				//echo($row->position."<br />");
 				$rules = $rules + array($row->position=>array('position'=>$row->position,
 										'active_min'=>$row->active_min,'active_max'=>$row->active_max));
-				
+
 			}
 		}
 		return $rules;
 	}
 	/**
 	 * SET ROSTER RULES
-	 * This function accepts a form input object and applies the passed values to 
-	 * the roster rules table. 
+	 * This function accepts a form input object and applies the passed values to
+	 * the roster rules table.
 	 * @param	$input		CodeIgniter form input object
 	 * @param	$league_id 	Optional league ID. Defaults to "0" if no id is passed.
 	 */
 	public function setRosterRules($input, $league_id = false) {
 		if ($league_id === false) { $league_id = 0; }
-		
+
 		$this->db->where('league_id', $league_id);
 		$this->db->delete($this->tables['ROSTER_RULES']);
-		
+
 		$lineCount = 0;
 		while ($lineCount < 10) {
 			$data = array();
@@ -1708,19 +1708,19 @@ class league_model extends base_model {
 								  'position'=>$code,
 								  'active_min'=>$input->post('total_'.$label.'_min'),
 								  'active_max'=>$input->post('total_'.$label.'_max')));
-		}		
+		}
 		return true;
 	}
-	
+
 	public function validateRoster($roster,$league_id = false) {
-		
+
 		//echo("Validate Roser<br />");
 		$valid = true;
 		if ($league_id === false) { $league_id = $this->id; }
 		$errors = "";
-		
+
 		$rules = $this->getRosterRules($league_id);
-		
+
 		$activePos = array();
 		$activeCount = 0;
 		$reserveCount = 0;
@@ -1735,7 +1735,7 @@ class league_model extends base_model {
 					$pos = $player_info['player_role'];
 				}
 				//echo("Player pos = ".get_pos($pos)."<br />");
-			
+
 				if (!isset($activePos[$pos])) {
 					$activePos[$pos] = 1;
 				} else {
@@ -1795,15 +1795,15 @@ class league_model extends base_model {
 					}
 				}
 			}
-					
+
 		}
 		if (!$valid) $this->errorCode = 1;
 		$this->statusMess = $errors;
 		return $valid;
 	}
-	
+
 	public function getGamesForPeriod($period_id = false, $excludeList = array(), $league_id = false) {
-		
+
 		if ($period_id === false) { $period_id = 1; }
 		if ($league_id === false) { $league_id = $this->id; }
 		$games = array();
@@ -1826,7 +1826,7 @@ class league_model extends base_model {
 						$away_score = 0;
 					}
 				}
-				$games = $games + array($row->id=>array('home_team_id'=>$row->home_team_id, 'home_team_name'=>$homeTeamName, 'home_team_score'=>$home_score, 
+				$games = $games + array($row->id=>array('home_team_id'=>$row->home_team_id, 'home_team_name'=>$homeTeamName, 'home_team_score'=>$home_score,
 														'away_team_id'=>$row->away_team_id, 'away_team_name'=>$awayTeamName, 'away_team_score'=>$away_score));
 			}
 		}
@@ -1904,7 +1904,7 @@ class league_model extends base_model {
 		asort($periods);
 		return $periods;
 	}
-	
+
 	/*--------------------------------------------------------------------------------------------
 	/
 	/
@@ -1912,7 +1912,7 @@ class league_model extends base_model {
 	/
 	/
 	/--------------------------------------------------------------------------------------------*/
-	
+
 	/**
 	 *	COPY ROSTERS.
 	 *	Copies all rosters for a league from the current scoring period to a new one.
@@ -1927,9 +1927,9 @@ class league_model extends base_model {
 	 *
 	 */
 	public function copyRosters($old_scoring_period, $new_scoring_period, $league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; } // END if
-		
+
 		$this->db->select('*');
 		$this->db->from('fantasy_rosters');
 		$this->db->where('league_id',$league_id);
@@ -1937,7 +1937,7 @@ class league_model extends base_model {
 		$pQuery = $this->db->get();
 		if ($pQuery->num_rows() > 0) {
 			foreach($pQuery->result() as $row) {
-				$data = array('league_id'=>$league_id, 'team_id'=>$row->team_id, 'player_id'=>$row->player_id, 
+				$data = array('league_id'=>$league_id, 'team_id'=>$row->team_id, 'player_id'=>$row->player_id,
 							  'player_position'=>$row->player_position, 'scoring_period_id'=>$new_scoring_period, 'player_role'=>$row->player_role, 'player_status'=>$row->player_status);
 				$this->db->insert('fantasy_rosters',$data);
 			} // END foreach
@@ -1957,15 +1957,15 @@ class league_model extends base_model {
 	 *
 	 */
 	public function updateLeagueScoring($scoring_period, $league_id = false, $ootp_league_id = 100) {
-		
+
 		$error = false;
 		if ($league_id === false) { $id = $this->id; } // END if
-		
+
 		/*--------------------------------------
 		/	1.0 SET BASIC VARS
 		/-------------------------------------*/
 		$league_name = $this->getLeagueName($league_id);
-		
+
 		$scoring_type = $this->getScoringType($league_id);
 		/*--------------------------------------
 		/	1.1 LOAD LANGUAGE IF NOT ALREADY EXISTS
@@ -1975,20 +1975,20 @@ class league_model extends base_model {
 			$this->lang->load('admin');
 		} // END if
 		unset($noteam);
-		
+
 		$summary = str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_league_processing'));
 		/*------------------------------------------------
 		/	2.0 PROCEED IF THE LEAGUE IS POPULATED
 		/-----------------------------------------------*/
 		if ($this->hasTeams($league_id)) {
-			
+
 			/*----------------------------------------------------
 			/	2.1	GET TEAM LIST & DETAILS
 			/---------------------------------------------------*/
 			$teams = $this->getTeamDetails($league_id);
-			
+
 			$summary .= str_replace('[TEAM_COUNT]',sizeof($teams),$this->lang->line('sim_team_count'));
-		
+
 			/*----------------------------------------------------
 			/	2.2 VALIDATE ROSTERS AND GENERATE EXCLUSION LISTS
 			/---------------------------------------------------*/
@@ -2007,7 +2007,7 @@ class league_model extends base_model {
 			if (!empty($valSum)) {
 				$summary .= $this->lang->line('sim_roster_validation_title').$valSum.$this->lang->line('sim_roster_validation_postfix');
 			} // END if
-			
+
 			/*--------------------------------------
 			/	2.3 SCORING AND RECORDS
 			/-------------------------------------*/
@@ -2015,17 +2015,17 @@ class league_model extends base_model {
 			$scoring_rules = $this->getScoringRules($league_id,$scoring_type);
 			$this->loadPlayerScoring($scoring_period,$league_id, $scoring_rules, $scoring_type);
 			$summary .= $this->lang->line('sim_process_h2h');
-			// IF RUNNING ON THE FINAL DAY OF THE SIM 
+			// IF RUNNING ON THE FINAL DAY OF THE SIM
 			$summary .= $this->updateTeamScoring($scoring_period, $league_id, $excludeList, $scoring_rules, $scoring_type);
 			$summary .= $this->updateTeamRecords($scoring_period, $league_id, $excludeList, $scoring_rules, $scoring_type);
-			
+
 			/*--------------------------------------
 			/	2.4 ROSTERS
 			/-------------------------------------*/
 			// COPY CURRENT ROSTERS TO NEXT SCORING PERIOD
 			$summary .= $this->lang->line('sim_process_copy_rosters');
 			$this->copyRosters($scoring_period['id'], ($scoring_period['id'] + 1), $league_id);
-			
+
 			/*--------------------------------------
 			/	2.5 TRADES
 			/-------------------------------------*/
@@ -2037,7 +2037,7 @@ class league_model extends base_model {
 			// INCREMENT REMAINING OFFERED TRADES  FOR THE SCORING PERIOD TO THE NEXT ONE
 			$summary .= $this->lang->line('sim_increment_trades');
 			$summary .= $this->incrementTrades($scoring_period['id'], $league_id, 'same', $this->debug);
-			
+
 			/*--------------------------------------
 			/	2.6 WAIVERS
 			/-------------------------------------*/
@@ -2050,7 +2050,7 @@ class league_model extends base_model {
 			$this->errorCode = 1;
 			$summary .= $this->lang->line('sim_no_teams');
 		} // END if
-		
+
 		/*--------------------------------------
 		/	3.0	APPLY SUMMARY AND RETURN
 		/-------------------------------------*/
@@ -2064,10 +2064,10 @@ class league_model extends base_model {
 	}
 	/**
 	 *	LOAD PLAYER SCORING.
-	 *	This function loads the compiled scoring results from the players copiled stats tables and stores them to local member 
-	 *	variables for use in later processing. This uses memory, but saves calling the stats from the DB for each subsequent 
+	 *	This function loads the compiled scoring results from the players copiled stats tables and stores them to local member
+	 *	variables for use in later processing. This uses memory, but saves calling the stats from the DB for each subsequent
 	 *	league being processed.
-	 *	
+	 *
 	 *	This function will also compile head to head points for all active players across all head-to head leagues.
 	 *
 	 *	@param	$scoring_period	The scoring period to update against
@@ -2082,9 +2082,9 @@ class league_model extends base_model {
 	 *
 	 */
 	protected function loadPlayerScoring($scoring_period = false, $league_id = false, $scoring_rules = false, $scoring_type = false, $debug = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		if ($scoring_period === false) return false;
 		//------------------------------------
 		// 	2.2 LOAD COMPILED SCORING STATS
@@ -2124,8 +2124,8 @@ class league_model extends base_model {
 			if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
 				foreach($this->compiledStats[$playerType] as $player_id => $statsRow) {
 					$totalVal = 0;
-					foreach($scoring_rules[$playerType] as $cat => $val) {	
-						$colName = strtolower(get_ll_cat($cat, true));	
+					foreach($scoring_rules[$playerType] as $cat => $val) {
+						$colName = strtolower(get_ll_cat($cat, true));
 						if (isset($statsRow->$colName)) {
 							if (isset($score_vals[$cat])) {
 								$score_vals[$cat] += $statsRow->$colName;
@@ -2182,9 +2182,9 @@ class league_model extends base_model {
 	 *
 	 */
 	public function updateTeamScoring($scoring_period, $league_id = false, $excludeList = array(), $scoring_rules = false, $scoring_type = false, $debug = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$summary = $this->lang->line('sim_process_scoring');
 		$summary .= "League Scoring Type = ".$scoring_type."<br />";
 		/*---------------------------------------
@@ -2232,7 +2232,7 @@ class league_model extends base_model {
 					} // END if
 					$query->free_result();
 				} // END if sizeof($excludeList)
-		
+
 				$playerTypes = array('batting','pitching');
 				foreach($playerTypes as $playerType) {
 					//------------------------------------
@@ -2254,8 +2254,8 @@ class league_model extends base_model {
 								break;
 							case LEAGUE_SCORING_HEADTOHEAD:
 								default:
-								foreach($scoring_rules[$playerType] as $cat => $val) {	
-									$colName = strtolower(get_ll_cat($cat, true));	
+								foreach($scoring_rules[$playerType] as $cat => $val) {
+									$colName = strtolower(get_ll_cat($cat, true));
 									if (isset($row->$colName)) {
 										if (isset($score_vals[$cat])) {
 											$score_vals[$cat] += $row->$colName;
@@ -2298,7 +2298,7 @@ class league_model extends base_model {
 						$tQuery->free_result();
 						// SAVE COMPILED TEAM STATS TO A COMPILED STAT OBJECT FOR LATER USE
 						$teamStatObj->updateStats($score_vals);
-								
+
 						// APPLY VALUES TO THE STATS AND SAVE THEM TO THE TEAM SCORING TABLE
 						$colCount = 0;
 						$team_vals = array();
@@ -2389,10 +2389,10 @@ class league_model extends base_model {
 	 *	@version				1.0
 	 *
 	 */
-	public function updateTeamRecords($scoring_period, $league_id = false, $excludeList = array(), $scoring_rules = false, $scoring_type = false, $debug = falses) {
-		
+	public function updateTeamRecords($scoring_period, $league_id = false, $excludeList = array(), $scoring_rules = false, $scoring_type = false, $debug = false) {
+
 		if ($league_id === false) { $league_id = $this->id; }
-				
+
 		$summary = $this->lang->line('sim_process_records');
 		// GET ALL TEAMS
 		$teams = array();
@@ -2402,7 +2402,7 @@ class league_model extends base_model {
 			case LEAGUE_SCORING_ROTO_5X5:
 			case LEAGUE_SCORING_ROTO_PLUS:
 				$fields = array();
-				$this->db->select(); 
+				$this->db->select();
 				$this->db->where("league_id",$league_id);
 				$this->db->where("scoring_period_id",$scoring_period['id']);
 				$query = $this->db->get($this->tables['TEAMS_SCORING']);
@@ -2479,7 +2479,7 @@ class league_model extends base_model {
 				break;
 			case LEAGUE_SCORING_HEADTOHEAD:
 			default:
-				$this->db->select("fantasy_teams.id, g, w, l"); 
+				$this->db->select("fantasy_teams.id, g, w, l");
 				$this->db->join("fantasy_teams_record","fantasy_teams_record.team_id = fantasy_teams.id","left");
 				$this->db->where("fantasy_teams.league_id",$league_id);
 				$query = $this->db->get($this->tables['TEAMS']);
@@ -2520,7 +2520,7 @@ class league_model extends base_model {
 							$perc = ($wins/$games);
 						}
 						$data = array("w"=>$wins,"l"=>$losses,"g"=>$games,'pct'=>$perc);
-						
+
 						$this->db->flush_cache();
 						$this->db->select('id');
 						$this->db->where('team_id',$row->id);
@@ -2561,14 +2561,14 @@ class league_model extends base_model {
 	 *
 	 */
 	public function incrementTrades($period_id = false, $league_id = false, $rosterPeriod = 'same', $debug = false) {
-		
+
 		if ($period_id === false) { return false; }
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$error = false;
 		$summary = '';
 		// COLLECT TRADES THAT ARE IN OFFERED STATE FOR THIS SCORING PERIOD
-		$this->db->select($this->tables['TRADES'].".id"); 
+		$this->db->select($this->tables['TRADES'].".id");
 		$this->db->where($this->tables['TRADES'].".league_id",$league_id);
 		$this->db->where("(".$this->tables['TRADES'].".status = ".TRADE_OFFERED." OR ".$this->tables['TRADES'].".status =".TRADE_PENDING_COMMISH_APPROVAL
         ." OR ".$this->tables['TRADES'].".status =".TRADE_PENDING_LEAGUE_APPROVAL.")");
@@ -2620,7 +2620,7 @@ class league_model extends base_model {
 	 */
 	public function expireOldTrades($league_id = false, $debug = false) {
 		if ($league_id === false) { $league_id = $this->id; } // END if
-		
+
 		$error = false;
 		$summary = '';
 		// COLLECT TRADES THAT ARE IN OFFERED STATE FOR THIS SCORING PERIOD
@@ -2637,11 +2637,11 @@ class league_model extends base_model {
 		if ($query->num_rows() > 0) {
 
 			$ownersByTeam = $this->getDetailedOwnerInfo($league_id);
-			
+
 			$this->lang->load('team');
 			$trade_id_str = "(";
 			$owner_info = array('receiving'=>array(),'offering' => array());
-			
+
 			foreach ($query->result() as $row) {
                 $expireDate = strtotime(EMPTY_DATE_TIME_STR);
                 if ($row->expiration_days < 500) {
@@ -2728,34 +2728,34 @@ class league_model extends base_model {
      *	@access	public
 	 */
 	public function processWaivers($period_id = false, $league_id = false, $rosterPeriod = 'same', $debug = false) {
-		
+
 		if ($period_id === false) { return; }
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$summary = '';
 		// GET LEAGUE TEAM ID LIST
 		if (!function_exists('getPlayersOnWaivers')) {
-			$this->load->helper('roster');	
+			$this->load->helper('roster');
 		}
 		$playersOnWaivers = getPlayersOnWaivers($period_id, $league_id);
 		$claims = $this->getWaiverClaims(-1,0,false,$league_id);
 		$waiverOrder = getWaiverOrder($league_id, true);
-		
+
 		//if ($debug) {
 			$summary .= "# of players on waivers = ".sizeof($playersOnWaivers)."<br />";
 			$summary .= "# of claims by teams = ".sizeof($claims)."<br />";
 			$summary .= "waiver order = ".sizeof($waiverOrder)."<br />";
 		//}
-			
+
 		foreach($playersOnWaivers as $player) {
 			// SEE IF THERE IS A WAIVER CLAIM FOR THIS PLAYER
 			$numClaims = 0;
 			$claimList = array();
 			$claimCount = 1;
 			foreach($claims as $claim) {
-				
+
 				$summary .= "claim ".$claimCount." team = ".$claim['team_id'].", player = ".$claim['player_id']."<br />";
-				
+
 				if ($claim['player_id'] == $player['player_id']) {
 					// CLAIMS FOUND
 					$numClaims++;
@@ -2771,7 +2771,7 @@ class league_model extends base_model {
 						//if ($debug) {
 							$summary .= "claim found for player ".$player['player_id']." by team = ".$team_id."<br />";
 						//}
-						
+
 						// CLAIM THIS PLAYER FOR TEAM
 						$this->db->set('team_id',$team_id);
 						$this->db->set('player_id',$player['player_id']);
@@ -2785,7 +2785,7 @@ class league_model extends base_model {
 						} // END if
 						$this->db->set('scoring_period_id',$period_id);
 						$this->db->insert('fantasy_rosters');
-						
+
 						if (!function_exists('updateOwnership')) {
 							$this->load->helper('roster');
 						} // END if
@@ -2793,11 +2793,11 @@ class league_model extends base_model {
 						$pData = array('own'=>$ownership[0],'start'=>$ownership[1]);
 						$this->db->flush_cache();
 						$this->db->where('id',$claim['player_id']);
-						$this->db->update('fantasy_players',$pData); 
-						
+						$this->db->update('fantasy_players',$pData);
+
 						// LOG THE TRANSACTION
 						logTransaction(NULL, NULL, array($player['player_id']),NULL, NULL, -1,1, false,$period_id,$league_id,$team_id,-1);
-						
+
 						// REMOVE TEAM FROM WAIVER ORDER ARRAY AND PUT IT AT THE END
 						$waiveTeam = array_splice($waiverOrder,$index, 1);
 						array_push($waiverOrder,$waiveTeam[0]);
@@ -2839,17 +2839,17 @@ class league_model extends base_model {
 	/**
 	 *	DENY WAIVER CLAIM.
 	 *	Called when a league commissioner denies a wa9iver claim.
-	 *  
+	 *
 	 *	@param		$claim_id	(Integer)	The waiver claim ID. Function returns false if not passed.
 	 *	@return					{Array}		Claim object, false on failure
-	 *	
+	 *
 	 *	@since	1.0.5
 	 *	@access	public
 	 */
 	public function denyWaiverClaim($claim_id = false) {
 		if ($claim_id === false) { return false; }
 		$claim = false;
-		$this->db->select($this->tables['WAIVER_CLAIMS'].".id, ".$this->tables['WAIVER_CLAIMS'].".team_id, teamname, teamnick, ".$this->tables['WAIVER_CLAIMS'].".player_id, first_name, last_name, waiver_period"); 
+		$this->db->select($this->tables['WAIVER_CLAIMS'].".id, ".$this->tables['WAIVER_CLAIMS'].".team_id, teamname, teamnick, ".$this->tables['WAIVER_CLAIMS'].".player_id, first_name, last_name, waiver_period");
 		$this->db->join("fantasy_teams","fantasy_teams.id = ".$this->tables['WAIVER_CLAIMS'].".team_id", "left");
 		$this->db->join("fantasy_players","fantasy_players.id = ".$this->tables['WAIVER_CLAIMS'].".player_id", "left");
 		$this->db->join("fantasy_players_waivers","fantasy_players_waivers.player_id = fantasy_players.id", "right outer");
@@ -2858,8 +2858,8 @@ class league_model extends base_model {
 		$query = $this->db->get($this->tables['WAIVER_CLAIMS']);
 		if ($query->num_rows() > 0) {
 			$row = $query->row();
-			$claim = array('id'=>$row->id,'team_id'=>$row->team_id, 'teamname'=>$row->teamname." ".$row->teamnick, 
-										 'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name, 
+			$claim = array('id'=>$row->id,'team_id'=>$row->team_id, 'teamname'=>$row->teamname." ".$row->teamnick,
+										 'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name,
 										 'waiver_period'=>$row->waiver_period);
 			$query->free_result();
 			$this->db->where("id",$claim_id);
@@ -2876,13 +2876,13 @@ class league_model extends base_model {
 	/
 	/-----------------------------------------------------------------*/
 	protected function deleteLeagueData($table = false, $league_id = false) {
-		
+
 		if ($table === false) { return false; }
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$this->db->where('league_id',$league_id);
 		$this->db->delete($table);
-		
+
 		return true;
 	}
 	/*---------------------------------------
@@ -2901,10 +2901,10 @@ class league_model extends base_model {
 	public function _auto_draft($max_rounds,$curr_year, $league_id = false) {
 		$errors = "";
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		// GET ALL TEAMS
 		$teams = array();
-		$this->db->select("id"); 
+		$this->db->select("id");
 		$this->db->where("league_id",$league_id);
 		$query = $this->db->get($this->tables['TEAMS']);
 		if ($query->num_rows() > 0) {
@@ -2915,7 +2915,7 @@ class league_model extends base_model {
 				//echo("Roster rows deleted = ".$this->db->affected_rows()."<br />");
 			}
 		}
-		
+
 		$last_year = date('Y',strtotime($curr_year)-(60*60*24*365));
 		$query->free_result();
 		$pos_batters = array(2,3,4,5,6,7,8,9,25);
@@ -2924,7 +2924,7 @@ class league_model extends base_model {
 			if ($pos_batters[$i] == 25) {
 				$sqlPos = $pos_batters[rand(0,(sizeof($pos_batters)-2))];
 				$pickedBatters = array();
-				$this->db->select("player_id"); 
+				$this->db->select("player_id");
 				$this->db->where('league_id',$league_id);
 				$query = $this->db->get("fantasy_rosters");
 				if ($query->num_rows() > 0) {
@@ -2936,7 +2936,7 @@ class league_model extends base_model {
 			} else {
 				$sqlPos = $pos_batters[$i];
 			}
-			$this->db->select("fantasy_players.id"); 
+			$this->db->select("fantasy_players.id");
 			$this->db->join("players_career_batting_stats",'players_career_batting_stats.player_id = fantasy_players.player_id','left');
 			$this->db->join("players",'players.player_id = fantasy_players.player_id','left');
 			$this->db->where("(fantasy_players.player_status = 1 OR fantasy_players.player_status = 3)");
@@ -2946,7 +2946,7 @@ class league_model extends base_model {
 			if(isset($pickedBatters) && !empty($pickedBatters)) $this->db->where_not_in('fantasy_players.id',$pickedBatters);
 			$this->db->order_by("players_career_batting_stats.vorp",'desc');
 			$query = $this->db->get("fantasy_players");
-			
+
 			//echo("sql = ".$this->db->last_query()."<br />");
 			if ($query->num_rows() > 0) {
 				$count = 0;
@@ -2973,7 +2973,7 @@ class league_model extends base_model {
 		$pos_pitchers = array(11=>5,12=>2);
 		foreach ($pos_pitchers as $pos => $draftCount) {
 			$pitchers = array();
-			$this->db->select("fantasy_players.id"); 
+			$this->db->select("fantasy_players.id");
 			$this->db->join("players_career_pitching_stats",'players_career_pitching_stats.player_id = fantasy_players.player_id','left');
 			$this->db->join("players",'players.player_id = fantasy_players.player_id','left');
 			$this->db->where("fantasy_players.player_status",1);
@@ -3020,14 +3020,14 @@ class league_model extends base_model {
 	 *	@deprecated
 	 */
 	private function _updateLeagueScoring($scoring_period, $excludeList = array(), $league_id = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		// LOAD RELEVANT SCORING CATEGORIES
 		$rules = $this->getScoringRules($league_id);
-		
+
 		if (isset($rules) && sizeof($rules) > 0) {
-		
+
 			// UPDATE SCORING FOR ALL PLAYERS FOR THIS PERIOD
 			$player_list = array();
 			$this->db->flush_cache();
@@ -3062,7 +3062,7 @@ class league_model extends base_model {
 					//echo("Num of games found for player ".$row->player_id." = ".$gQuery->num_rows() .", status = ".$row->player_status."	<br/>");
 					//echo($this->db->last_query()."<br />");
 					if ($gQuery->num_rows() > 0) {
-						
+
 						$score_vals = array();
 						$totalVal = 0;
 						foreach ($gQuery->result() as $sRow) {
@@ -3115,7 +3115,7 @@ class league_model extends base_model {
 		}
 		// GET ALL TEAMS
 		$teams = array();
-		$this->db->select("id"); 
+		$this->db->select("id");
 		$this->db->where("league_id",$league_id);
 		$query = $this->db->get($this->tables['TEAMS']);
 		if ($query->num_rows() > 0) {
@@ -3126,7 +3126,7 @@ class league_model extends base_model {
 		$query->free_result();
 		foreach($teams as $team_id) {
 			//echo("Team Id = ".$team_id."<br />");
-			
+
 			// GET PLAYERS FOR TEAM
 			$teamRoster = array();
 			$team_score = 0;
@@ -3187,4 +3187,4 @@ class league_model extends base_model {
 		}
 		return false;
 	}
-}  
+}
