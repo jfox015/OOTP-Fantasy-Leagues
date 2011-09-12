@@ -383,7 +383,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					$error = true;
 					$errors .= "Error adding admin user. Error: ".$err."<br />SQL = ".$sql."<br />";
 				} // END if
-				$sql = "INSERT INTO `db70824_ootp11`.`users_meta` ( `id` , `userId` , `firstName` , `lastName` , `nickName` , `city` , `state` , `country` , `zipCode` , `title` , `bio` , `dateOfBirth` , `gender` , `avatar` , `custom` , `timezone` ) VALUES ( '1', '1', 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '0000-00-00', '', '', '', '' )";
+				$sql = "INSERT INTO `users_meta` ( `id` , `userId` , `firstName` , `lastName` , `nickName` , `city` , `state` , `country` , `zipCode` , `title` , `bio` , `dateOfBirth` , `gender` , `avatar` , `custom` , `timezone` ) VALUES ( '1', '1', 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '0000-00-00', '', '', '', '' )";
 				mysql_query($sql);
 				$err=mysql_error($db);
 				if ($err) {
