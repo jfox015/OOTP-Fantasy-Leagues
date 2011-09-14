@@ -100,10 +100,14 @@ class admin extends MY_Controller {
             $this->data['currPeriodConfig'] = getScoringPeriod($this->params['config']['current_period']);
             if (isset($this->data['configCurrPeriodStart'])) {
 				$this->data['configCurrPeriodStart'] = strtotime($this->data['currPeriodConfig']['date_start']." 00:00:00");
+			} else {
+				$this->data['configCurrPeriodStart'] = strtotime($this->ootp_league_model->current_date);
 			}
             $this->data['nextPeriodConfig'] = getScoringPeriod(($this->params['config']['current_period']+1));
 			if (isset($this->data['configCurrPeriodEnd'])) {
 				$this->data['configCurrPeriodEnd'] = strtotime($this->data['nextPeriodConfig']['date_end']." 00:00:00");
+			} else {
+				$this->data['configCurrPeriodEnd'] = strtotime($this->ootp_league_model->current_date);
 			}
 			$this->data['periodCount'] = getScoringPeriodCount();
 			if (!function_exists('getSQLFileList')) {
