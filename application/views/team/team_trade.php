@@ -73,7 +73,7 @@
 		});
 		$('input[rel=protestbtn]').live('click',function () {
 			if (confirm("Are you sure you want to log a protest to this trade? This action cannot be undone.")) {
-				document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeProtest/team_id/'+team_id+'/trade_id/'+this.id+cacheBuster();
+				document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeResponse/team_id/'+team_id+'/trade_id/'+this.id+cacheBuster();
 			}
 			return false;	   
 		});
@@ -89,7 +89,9 @@
 						document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeResponse/league_id/'+league_id+'/team_id/'+team_id+'/type/'+params[0]+'/trade_id/'+params[1];
 					}
 				}
-			}
+			} else if (params[0] == <?php print(TRADE_PROTEST); ?>) {
+				proceed = confirm("Are you sure you want to log a protest to this trade? This action cannot be undone.");
+            }
 			if (proceed) {
 				var url = "<?php echo($config['fantasy_web_root']); ?>team/tradeResponse/id/"+team_id+"/type/"+params[0]+"/trade_id/"+params[1]+cacheBuster();
 				$('div#tradeStatus').removeClass('error');
@@ -907,7 +909,7 @@
 				if (isset($teamTrades) && sizeof($teamTrades) > 0) { ?>
                 <div id="tradeStatusBox"><div id="tradeStatus"></div></div>
             	<?php
-                    $types = array('incoming','offered','approvals','completed','other');
+                    $types = array('incoming','offered','approvals','protests','completed','other');
                     foreach($types as $type) {
                        if (isset($teamTrades[$type]) && sizeof($teamTrades[$type]) > 0) {
                            $tradeList = $teamTrades[$type];
@@ -1065,7 +1067,8 @@
 						}
 						if ($showProtestBtn) {
 					?>
-	                	<input type='button' rel="protestbtn" id="<?php print($tradeData['trade_id']); ?>" class="button" value='Protest Trade' style="float:left;margin-right:8px;" />
+                        <input type='button' rel="responsebtn" id="<?php print(TRADE_PROTEST."|".$tradeData['trade_id']); ?>" class="button" value='Protest Trade' style="float:left;margin-right:8px;" />
+
 	                <?php }
 					} ?>
                 	</td>

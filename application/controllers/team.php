@@ -361,7 +361,7 @@ class team extends BaseEditor {
 			// GET USER INITIATED TRADES AND OFFERED TRADES
 			$this->data['allowProtests'] = ($this->params['config']['approvalType'] == 2) ? true : false;
             $tradeList = $this->dataModel->getTradesForScoringPeriod($this->data['league_id'],$this->data['scoring_period']['id'], $this->data['team_id'], false, false,$this->data['allowProtests']);
-            $trades = array('offered'=>array(),'incoming'=>array(),'approvals'=>array(),'completed'=>array(),'other'=>array());
+            $trades = array('offered'=>array(),'incoming'=>array(),'approvals'=>array(),'completed'=>array(),'protests'=>array(),'other'=>array());
 
             if (sizeof($tradeList) > 0) {
                 foreach ($tradeList as $tradeData) {
@@ -384,7 +384,13 @@ class team extends BaseEditor {
 			//$trades['incoming'] = $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$this->data['allowProtests']);
 			// GET PROTEST COUNT
 			if ($this->data['allowProtests']) {
-				if (sizeof($trades['approvals']) > 0) {
+                $protests = $this->dataModel->getTradesForScoringPeriod($this->data['league_id'],$this->data['scoring_period']['id'], false, false,$this->data['team_id'], $this->data['allowProtests']);
+                foreach($protests as $tradeData) {
+                    if ($tradeData['status'] == TRADE_PENDING_LEAGUE_APPROVAL) {
+                        array_push($trades['protests'], $tradeData);
+                    }
+                }
+                if (sizeof($trades['protests']) > 0) {
 					$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
 				}
 			}
@@ -568,7 +574,8 @@ class team extends BaseEditor {
 								$msg = $this->lang->line('team_trade_rejected_league');
 							} else {
 								$msg = $this->lang->line('team_trade_protest_logged');
-								$updateDb = false;
+								$this->data['type'] = TRADE_PENDING_LEAGUE_APPROVAL;
+                                $updateDb = false;
 							}
 						}
 						break;
