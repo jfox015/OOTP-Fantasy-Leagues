@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once('base_editor.php');
 /**
  *	Team.
@@ -50,7 +50,7 @@ class team extends BaseEditor {
 	 *	INDEX.
 	 *	The default handler when the controller is called.
 	 *	Checks for an existing auth session, and if found,
-	 *	redirects to the dashboard. Otherwise, it redirects
+	 *	redirects to the dashboard. Otherwise, it redirects 
 	 *	to the login.
 	 */
 	public function index() {
@@ -66,14 +66,14 @@ class team extends BaseEditor {
 	function init() {
 		parent::init();
 		$this->modelName = 'team_model';
-
+		
 		$this->getURIData();
 		if (!$this->isAjax() && isset($this->uriVars['id'])) {
 			$this->load->model($this->modelName,'dataModel');
 			$this->dataModel->load($this->uriVars['id']);
 			$this->load->model('league_model');
 			$this->league_model->load($this->dataModel->league_id);
-
+			
 			if ($this->league_model->id != -1 && $this->league_model->access_type == -1) {
 				$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 				$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
@@ -113,7 +113,7 @@ class team extends BaseEditor {
 		$this->data['league_id'] = $this->dataModel->league_id;
 		$this->makeNav();
 		$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
-	    $this->displayView();
+	    $this->displayView();	
 	}
 	/**
 	 *	AVATAR
@@ -128,7 +128,7 @@ class team extends BaseEditor {
 			$this->data['teamname'] = $this->dataModel->teamname;
 			$this->data['teamnick'] = $this->dataModel->teamnick;
 			$this->data['subTitle'] = 'Edit Team Avatar';
-
+			
 			if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name']))) {
 				if ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name'])) {
 					$fv = & _get_validation_object();
@@ -140,13 +140,13 @@ class team extends BaseEditor {
 			} else {
 				if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || !strpos($_FILES['avatarFile']['name'],'.jpeg') || !strpos($_FILES['avatarFile']['name'],'.gif') || !strpos($_FILES['avatarFile']['name'],'.png'))) {
 					$fv = & _get_validation_object();
-					$fv->setError('avatarFile','The file selected is not a valid image file.');
+					$fv->setError('avatarFile','The file selected is not a valid image file.');  
 					$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
 					$this->params['pageType'] = PAGE_FORM;
 					$this->displayView();
 				} else {
 					if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
-						$change = $this->dataModel->applyData($this->input, $this->params['currUser']);
+						$change = $this->dataModel->applyData($this->input, $this->params['currUser']); 
 						if ($change) {
 							$this->dataModel->save();
 							$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');
@@ -163,7 +163,7 @@ class team extends BaseEditor {
 				} // END if
 			} // END if
 		} else {
-	        $this->session->set_flashdata('loginRedirect',current_url());
+	        $this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
 	    } // END if
 	}
@@ -199,39 +199,47 @@ class team extends BaseEditor {
 	/**
 	 *	TRADE
 	 *	Main function to draw the trade page. This not only draws the normal trade
-	 *	editor screen, buit also access trade ID and URI Data vars to prepopulate
+	 *	editor screen, buit also access trade ID and URI Data vars to prepopulate 
 	 *	the trade fields with players
-	 *
+	 *	
 	 *	@since	1.0.4
 	 */
 	public function trade() {
 		$this->getURIData();
-
+		
 		$this->enqueStyle('list_picker.css');
-
+		
 		$this->load->model($this->modelName,'dataModel');
 		$this->dataModel->load($this->uriVars['id']);
 		$this->data['team_id'] = $this->uriVars['id'];
 		$this->data['team_id2'] = -1;
 		$this->data['league_id'] = $this->dataModel->league_id;
-
+		
 		$this->params['subTitle'] = "Trades";
 		$this->data['subTitle'] = "Trade";
 		// GET DRAFT STATUS
 		$this->load->model('draft_model');
 		$this->draft_model->load($this->dataModel->league_id,'league_id');
-
-		if ($this->draft_model->completed != 1) {
+		
+		if (!isset($this->league_model)) { $this->load->model('league_model'); }
+		$this->league_model->load($this->dataModel->league_id);
+		$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+		$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
+				
+		if (!$this->params['loggedIn'] || ($this->dataModel->owner_id != $this->params['currUser'] && (!$isAdmin && !$isCommish))) {
+			$this->data['theContent'] = "<b>ERROR</b><br /><br />This page is accessible only by the owner of this team.";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		} else if ($this->draft_model->completed != 1) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
-
+			
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
-
+			
 			$this->data['scoring_period'] = $this->getScoringPeriod();
 			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
-
+			
 			if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
 				$this->data['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
 			} // END if
@@ -244,7 +252,7 @@ class team extends BaseEditor {
 			if (isset($this->uriVars['tradeTo']) || isset($this->uriVars['tradeFrom'])) {
 				$sendList['all'] = (isset($this->uriVars['tradeTo'])) ? explode("&",$this->uriVars['tradeTo']) : array();
 				$receiveList['all'] = (isset($this->uriVars['tradeFrom'])) ? explode("&",$this->uriVars['tradeFrom']) : array();
-			} else if ((isset($this->uriVars['trade_id']) && $this->uriVars['trade_id'] != -1) ||
+			} else if ((isset($this->uriVars['trade_id']) && $this->uriVars['trade_id'] != -1) || 
 						(isset($this->uriVars['prev_trade_id']) && $this->uriVars['prev_trade_id'] != -1)) {
 				$use_trade_id = -1;
 				$trade_type = 1;
@@ -262,7 +270,7 @@ class team extends BaseEditor {
                             $this->dataModel->updateTrade($use_trade_id, TRADE_EXPIRED, $this->lang->line('team_trade_auto_expired'));
                         } // END if
                     } // END if
-					// PULL PLAYER LISTS FROM DATABASE
+					// PULL PLAYER LISTS FROM DATABASE	
 					$trade = $this->dataModel->getTrade($use_trade_id);
 					if (sizeof($trade) > 0) {
 						if ($trade_type == 1) {
@@ -276,7 +284,7 @@ class team extends BaseEditor {
 					} // END if
 				} // END if
 			} // END if
-
+			
 			if (isset($this->uriVars['team_id2']) && !empty($this->uriVars['team_id2']) && $this->uriVars['team_id2'] != -1) {
 				$this->data['team_id2'] = $this->uriVars['team_id2'];
 			} else {
@@ -298,7 +306,7 @@ class team extends BaseEditor {
 				$this->data['stats_range'] = $this->uriVars['stats_range'];
 			} // END if
 			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
-				$this->data['stats_range'] = 1;
+				$this->data['stats_range'] = 1;	
 			} // END if
 			if (!isset($this->uriVars['stats_source']) || !empty($this->uriVars['stats_source'])) {
 				$this->data['stats_source'] = "sp_all";
@@ -309,7 +317,7 @@ class team extends BaseEditor {
 			if ($this->data['stats_range'] != 0) {
 				$periodForQuery = -1;
 			} // END if
-
+			
 			if (!isset($this->uriVars['type']) || empty($this->uriVars['type'])) {
 				$this->data['type'] = 1;
 			} else {
@@ -337,9 +345,9 @@ class team extends BaseEditor {
 			$this->data['fields'] = player_stat_fields_list(1, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['player_stats'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
 			$this->data['formatted_stats']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
-
+			
 			$this->load->model('player_model');
-			if(isset($sendList['all']) && sizeof($sendList['all']) > 0) {
+			if(isset($sendList['all']) && sizeof($sendList['all']) > 0) { 
 				$sendList['players'] = array();
 				foreach($sendList['all'] as $data) {
 					$tmpPlayer = explode("_",$data);
@@ -349,7 +357,7 @@ class team extends BaseEditor {
 				$this->data['sendList'] = $sendList['players'];
 			}
 			if (isset($receiveList['all']) && sizeof($receiveList['all']) > 0) {
-				$receiveList['players'] = array();
+				$receiveList['players'] = array(); 
 				foreach($receiveList['all'] as $data) {
 					$tmpPlayer = explode("_",$data);
 					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
@@ -357,11 +365,11 @@ class team extends BaseEditor {
 				} // END foreach
 				$this->data['receiveList'] = $receiveList['players'];
 			} // END if
-
+			
 			// GET USER INITIATED TRADES AND OFFERED TRADES
 			$this->data['allowProtests'] = ($this->params['config']['approvalType'] == 2) ? true : false;
             $tradeList = $this->dataModel->getTradesForScoringPeriod($this->data['league_id'],$this->data['scoring_period']['id'], $this->data['team_id'], false, false,$this->data['allowProtests']);
-            $trades = array('offered'=>array(),'incoming'=>array(),'approvals'=>array(),'completed'=>array(),'protests'=>array(),'other'=>array());
+            $trades = array('offered'=>array(),'incoming'=>array(),'approvals'=>array(),'completed'=>array(),'other'=>array());
 
             if (sizeof($tradeList) > 0) {
                 foreach ($tradeList as $tradeData) {
@@ -384,20 +392,14 @@ class team extends BaseEditor {
 			//$trades['incoming'] = $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$this->data['allowProtests']);
 			// GET PROTEST COUNT
 			if ($this->data['allowProtests']) {
-                $protests = $this->dataModel->getTradesForScoringPeriod($this->data['league_id'],$this->data['scoring_period']['id'], false, false,$this->data['team_id'], $this->data['allowProtests']);
-                foreach($protests as $tradeData) {
-                    if ($tradeData['status'] == TRADE_PENDING_LEAGUE_APPROVAL) {
-                        array_push($trades['protests'], $tradeData);
-                    }
-                }
-                if (sizeof($trades['protests']) > 0) {
+				if (sizeof($trades['approvals']) > 0) {
 					$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
 				}
 			}
             $this->data['teamTrades'] = $trades;
 			$this->params['content'] = $this->load->view($this->views['TRADE'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
-
+			
 		} // END if
 		$this->makeNav();
 		$this->displayView();
@@ -410,11 +412,11 @@ class team extends BaseEditor {
 	 * 	@param	team_id			The ID of the team making the response
 	 * 	@param	display_page	(OPTIONAL) Resulting View page. Passed only from non-AJAX submissions
 	 * 	@param	comments		(OPTIONAL) Trade comments or reponse
-	 *
+	 *	
 	 *	@since	1.0.4
 	 */
 	public function tradeResponse() {
-
+		
 		$this->getURIData();
 		$outType = 1;
 		// DEFAULT VARS
@@ -425,7 +427,7 @@ class team extends BaseEditor {
 		$this->data['comments'] = "";
 		$this->data['prevTradeId'] = -1;
 		$this->data['display_page'] = $this->views['SUCCESS'];
-
+		
 		// CONVERT INPUT DATA TO DATA VARS
 		if ($this->input->post('submitted')) {
 			$this->data['trade_id'] = $this->input->post('trade_id') ? $this->input->post('trade_id') : -1;
@@ -442,7 +444,7 @@ class team extends BaseEditor {
 			$this->data['team_id'] = (isset($this->uriVars['id'])) ? $this->uriVars['id'] : -1;
 			$this->data['prevTradeId'] = (isset($this->uriVars['prev_trade_id'])) ? $this->uriVars['prev_trade_id'] : -1;
 		} // END if
-
+		
 		// VERIFY MINIMUM VARS HAVE VALUES
 		if ($this->data['trade_id'] != -1 && $this->data['type'] != -1 && $this->data['team_id'] != -1) {
             // LOAD MODELS
@@ -462,9 +464,9 @@ class team extends BaseEditor {
 				$this->load->model('league_model');
 			}
 			$this->league_model->load($this->data['league_id']);
-
+			
 			$this->data['scoring_period'] = $this->getScoringPeriod();
-
+			
 			$msg = "";
 			$trade = $this->dataModel->getTrade($this->data['trade_id']);
 
@@ -519,7 +521,7 @@ class team extends BaseEditor {
 			} else {
 				$updateDb = true;
 				$tradeApproved = false;
-				switch ($this->data['type']) {
+				switch ($this->data['type']) {		
 				// REJECTED BY OWNER
 					// REJECTED BUT WITH A COUNTER OFFER
 					case TRADE_REJECTED_COUNTER:
@@ -579,22 +581,23 @@ class team extends BaseEditor {
 								$this->data['type'] = TRADE_APPROVED;
 								$updateDb = false;
 							}
-                        }
+						}
 						break;
 					default:
-						break;
+						break;	
 				} // END switch
 				if ($tradeApproved) {
 					$processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments']);
 					if ($processResponse) {
 						$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'],
-											  $this->league_model->commissioner_id, $this->params['currUser'],
-											  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'],
-											  $this->dataModel->league_id, $trade['team_1_id'], $this->dataModel->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
+						$this->league_model->commissioner_id, $this->params['currUser'],
+						$this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'],
+						$this->dataModel->league_id, $trade['team_1_id'], $this->dataModel->getTeamOwnerId($trade['team_1_id']), $trade['team_2_id']);
+						
 						$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['receive_players'], $trade['send_players'],
-											  $this->league_model->commissioner_id, $this->params['currUser'],
-											  $this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'],
-											  $this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
+						$this->league_model->commissioner_id, $this->params['currUser'],
+						$this->params['accessLevel'] == ACCESS_ADMINISTRATE, $this->data['scoring_period']['id'],
+						$this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
 					}
 				}
 				if ($updateDb) {
@@ -639,10 +642,10 @@ class team extends BaseEditor {
 		if ($outType == 1) {
 			if ($error) { $status = "error:".$status; }
 			$result .= '"result":"OK","code":"'.$code.'","status":"'.$status.'"}';
-			$this->output->set_header('Content-type: application/json');
+			$this->output->set_header('Content-type: application/json'); 
 			$this->output->set_output($result);
 		} else {
-
+			
 			$this->data['message'] = $this->data['theContent'] = $status;
 			$this->params['subTitle'] = "Team Trades";
 			$this->data['subTitle'] = "Trade Response";
@@ -655,20 +658,20 @@ class team extends BaseEditor {
 	/**
 	 * 	TRADE OFFER
 	 * 	Submits a trade offer to the DB
-	 *
+	 *	
 	 *	@since	1.0.4
 	 */
 	public function tradeOffer() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
-
+		
 		$error = false;
 		$result = '{';
 		$code= -1;
 		$status = '';
 		$responseType = 1;
 		$displayPage = $this->views['TRADE'];
-
+		
 		$sendPlayers = array();
 		$team2Id = -1;
 		$recievePlayers = array();
@@ -678,11 +681,11 @@ class team extends BaseEditor {
 		$league_id = false;
 		$team_id = -1;
 		$message = "";
-
+		
 		$message_list_missing = "The listing of players to be exchanged is missing.";
-
+		
 		$this->data['scoring_period'] = $this->getScoringPeriod();
-
+		
 		if ($this->input->post('submitted')) {
 			$responseType = 2;
 			$displayPage = $this->views['TRADE_REVIEW'];
@@ -704,7 +707,7 @@ class team extends BaseEditor {
 				$prevTradeId = $this->input->post('prevTradeId');
 			}
 		} else {
-			if (isset($this->uriVars['team_id']) && isset($this->uriVars['team_id2']) &&(isset($this->uriVars['tradeTo'])
+			if (isset($this->uriVars['team_id']) && isset($this->uriVars['team_id2']) &&(isset($this->uriVars['tradeTo']) 
 			|| isset($this->uriVars['tradeFrom']))) {
 				$sendList = explode("&",$this->uriVars['tradeTo']);
 				$receiveList = explode("&",$this->uriVars['tradeFrom']);
@@ -720,7 +723,7 @@ class team extends BaseEditor {
 				$error = true;
 				$message = $message_list_missing;
 			}
-
+	
 		} // END if
 		if (!$error) {
 			$this->dataModel->load($team_id);
@@ -728,9 +731,9 @@ class team extends BaseEditor {
 			$rosterMessages = $this->verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $this->data['scoring_period']['id']);
 			if (empty($rosterMessages)) {
 				$trade_id = $this->dataModel->makeTradeOffer($sendList, $team2Id, $receiveList, $this->data['scoring_period']['id'], $comments, $prevTradeId,$expiresIn,$this->params['config']['defaultExpiration']);
-
+				
 				// SEND OFFER EMAILS
-
+				
 				if (!isset($this->player_model)) {
 					$this->load->model('player_model');
 				}
@@ -767,7 +770,7 @@ class team extends BaseEditor {
 					}
 					$recieve_player_str .= ", ".$pos;
                 }
-
+				
 				// RECIPIEHT MESSAGE
 				$msg = $this->lang->line('team_trade_offer');
 				$msg .= $this->lang->line('email_footer');
@@ -803,7 +806,7 @@ class team extends BaseEditor {
 				unset($data['messageBody']);
 				unset($emailMess);
 				unset($msg);
-
+				
 				// OFFER CONFIRMATION MESSAGE
 				$msg = $this->lang->line('team_trade_offer_confirm');
 				$msg .= $this->lang->line('email_footer');
@@ -832,7 +835,7 @@ class team extends BaseEditor {
 				$this->params['config']['site_name']." Administrator",$subject,$emailMess,'','/email_trd_confirm_');
 
 				$message .= str_replace('[ACCEPTING_TEAM_NAME]',$this->dataModel->getTeamName($team2Id),$this->lang->line('team_trade_offer_submitted'));
-
+				
 			} else {
 				$error = true;
 				$message = str_replace('[ROSTER_MESSAGES]',$rosterMessages,$this->lang->line('team_trade_offer_roster_error'));
@@ -847,7 +850,7 @@ class team extends BaseEditor {
 				$code = 301;
 			}
 			$result .= '"result":"OK","code":"'.$code.'","status":"'.$status.'"}';
-			$this->output->set_header('Content-type: application/json');
+			$this->output->set_header('Content-type: application/json'); 
 			$this->output->set_output($result);
 		} else {
 			$this->data['message'] = $message;
@@ -861,7 +864,7 @@ class team extends BaseEditor {
 	/**
 	 * 	TRADE REVIEW
 	 * 	Allows users to review trade details and, if status permits, take actions
-	 *
+	 *	
 	 *	@since	1.0.4
 	 */
 	public function tradeReview() {
@@ -869,20 +872,20 @@ class team extends BaseEditor {
 		$this->load->model($this->modelName,'dataModel');
 
 		$this->params['subTitle'] = "Team Trades";
-
-		if (isset($this->uriVars['team_id'])) {
-
+		
+		if (isset($this->uriVars['team_id'])) { 
+			
 			$this->dataModel->load($this->uriVars['team_id']);
 			$this->data['team_id'] = $this->uriVars['team_id'];
 			$this->data['league_id'] = $this->dataModel->league_id;
-
+			
 			$this->data['trade_id'] = (isset($this->uriVars['trade_id'])) ? $this->uriVars['trade_id'] : -1;
-
+			
 			$sendList = array();
 			$receiveList = array();
 			$this->data['tradeTo'] = array();
 			$this->data['tradeFrom'] = array();
-
+			
 			if ($this->data['trade_id'] != -1) {
                 // EXPIRATION CHECK FOR EXISTING TRADES ONLY
                 if ($this->params['config']['tradesExpire'] == 1) {
@@ -893,20 +896,20 @@ class team extends BaseEditor {
 				$trade = $this->dataModel->getTrade($this->data['trade_id']);
 				$sendList['all'] = $this->data['tradeTo'] = $trade['send_players'];
 				$receiveList['all'] = $this->data['tradeFrom'] = $trade['receive_players'];
-			} else {
+			} else { 
 				$this->data['tradeTo'] = (isset($this->uriVars['tradeTo'])) ? $this->uriVars['tradeTo'] : "";
 				$this->data['tradeFrom'] = (isset($this->uriVars['tradeFrom'])) ? $this->uriVars['tradeFrom'] : "";
 				$sendList['all'] = explode("&",$this->data['tradeTo']);
 				$receiveList['all'] = explode("&",$this->data['tradeFrom']);
 			}
-
+			
 			$this->dataModel->load($this->uriVars['team_id']);
 
 			if (!isset($this->params['currUser'])) {
 				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
 			}
 			$this->data['trans_type'] = (isset($this->uriVars['trans_type'])) ? $this->uriVars['trans_type'] : 1;
-
+			
 			$sendList['ids'] = array();
 			$receiveList['ids'] = array();
 			foreach($sendList['all'] as $data) {
@@ -919,10 +922,10 @@ class team extends BaseEditor {
 			}
 			// DETEMRINE WHICH PLAYERS FROM EACH LIST ARE PITCHERS AND BATTERS
 			$sendList['pitchers'] = array();
-			$receiveList['pitchers'] = array();
-			$sendList['batters'] = array();
-			$receiveList['batters'] = array();
-
+			$receiveList['pitchers'] = array(); 
+			$sendList['batters'] = array(); 
+			$receiveList['batters'] = array(); 
+			
 			$this->load->model('player_model');
 			foreach($sendList['ids'] as $playerId) {
 				$playerData = $this->player_model->getPlayerDetails($playerId);
@@ -933,7 +936,7 @@ class team extends BaseEditor {
 					$sendList['batters'] = $sendList['batters'] + array($playerData['player_id']=>array());
 				}
 			}
-
+			
 			foreach($receiveList['ids'] as $playerId) {
 				$playerData = $this->player_model->getPlayerDetails($playerId);
 				//echo("recieve player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
@@ -945,7 +948,7 @@ class team extends BaseEditor {
 			}
 			$this->data['scoring_period'] = $this->getScoringPeriod();
 			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
-
+			
 			// GET STATS FOR PLAYERS IN TRADE OFFER
 			$this->prepForQuery();
 			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
@@ -954,7 +957,7 @@ class team extends BaseEditor {
 				$this->data['stats_range'] = $this->uriVars['stats_range'];
 			}
 			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
-				$this->data['stats_range'] = 1;
+				$this->data['stats_range'] = 1;	
 			}
 			if (!isset($this->uriVars['stats_source']) || !empty($this->uriVars['stats_source'])) {
 				$this->data['stats_source'] = "sp_all";
@@ -965,7 +968,7 @@ class team extends BaseEditor {
 			if ($this->data['stats_range'] != 0) {
 				$periodForQuery = -1;
 			}
-
+			
 			// TEAM META DATA FOR DISPLAY
 			$this->data['team_id1'] = -1;
 			$this->data['team_name1'] = "";
@@ -991,7 +994,7 @@ class team extends BaseEditor {
                 $this->data['team_name2'] = $this->dataModel->getTeamName($trade['team_2_id']);
 				$this->data['team_avatar2'] = $this->dataModel->getAvatar($trade['team_2_id']);
 			}
-
+			
 			$this->data['limit'] = -1;
 			$this->data['startIdx'] = 0;
 			$this->data['showTeam'] = -1;
@@ -1012,7 +1015,7 @@ class team extends BaseEditor {
 			$this->data['title']['batters']  = "Batting";
 			$this->data['colnames']=player_stat_column_headers(1, QUERY_STANDARD, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['fields'] = player_stat_fields_list(1, QUERY_STANDARD, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
-
+			
 			if (sizeof($receiveList['batters']) > 0) {
 				$stats['team_id2']['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id1'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules,$receiveList['batters']);
 				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id2']['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
@@ -1024,7 +1027,7 @@ class team extends BaseEditor {
 				$this->data['player_stats'] = formatStatsForDisplay($stats['team_id1']['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
 				$this->data['formatted_stats']['team_id1']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			}
-
+			
 			if ($this->data['trans_type'] == 4) {
 				$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
 			}
@@ -1068,13 +1071,13 @@ class team extends BaseEditor {
 		$this->dataModel->load($team_id);
 		$this->league_model->load($this->dataModel->league_id);
 		$this->data['league_id'] = $this->dataModel->league_id;
-
+		
 		if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
 			$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->dataModel->league_id);
 		}
 		$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : 20;
-		$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;
-
+		$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;																			   
+		
 		$startIndex = 0;
 		if ($limit != -1) {
 			$startIndex = ($limit * ( - 1))-1;
@@ -1091,15 +1094,15 @@ class team extends BaseEditor {
 		}
 		if ($this->data['pageCount'] < 1) { $this->data['pageCount'] = 1; }
 		$this->params['subTitle'] = "Transactions";
-
+		
 		$this->data['thisItem']['subTitle'] = $this->dataModel->teamname." ".$this->dataModel->teamnick." Transactions";
-
-
+			
+		
 		$this->makeNav();
 		$this->data['transaction_summary'] = $this->load->view($this->views['TRANSACTION_SUMMARY'], $this->data, true);
 		$this->params['content'] = $this->load->view($this->views['TRANSACTIONS'], $this->data, true);
 	    $this->params['pageType'] = PAGE_FORM;
-		$this->displayView();
+		$this->displayView();	
 	}
 	/**
 	 * PROCESS TRANSACTION
@@ -1108,7 +1111,7 @@ class team extends BaseEditor {
 	public function processTransaction() {
 		$this->getURIData();
 		$this->load->model($this->modelName,'dataModel');
-
+		
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
 		}
@@ -1116,21 +1119,21 @@ class team extends BaseEditor {
 		$result = '{';
 		$code= -1;
 		$status = '';
-		if (isset($this->uriVars['team_id']) && (isset($this->uriVars['add'])
+		if (isset($this->uriVars['team_id']) && (isset($this->uriVars['add']) 
 			|| isset($this->uriVars['drop']))) {
-
+			
 			$this->dataModel->load($this->uriVars['team_id']);
-
+			
 			if (!isset($this->params['currUser'])) {
 				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
 			}
 			$addList = (isset($this->uriVars['add'])) ? explode("&",$this->uriVars['add']) : array();
 			$dropList = (isset($this->uriVars['drop'])) ? explode("&",$this->uriVars['drop']) : array();
-			//$tradeToList = isset($this->uriVars['tradeTo']) ? (strpos($this->uriVars['tradeTo'],"&") ? explode("&",$this->uriVars['tradeTo']) : array()) : '';
-			//$tradeFromList = isset($this->uriVars['tradeFrom']) ? (strpos($this->uriVars['tradeFrom'],"&") ? explode("&",$this->uriVars['tradeFrom']) : array()) : '';
-
+			//$tradeToList = isset($this->uriVars['tradeTo']) ? (strpos($this->uriVars['tradeTo'],"&") ? explode("&",$this->uriVars['tradeTo']) : array()) : '';	
+			//$tradeFromList = isset($this->uriVars['tradeFrom']) ? (strpos($this->uriVars['tradeFrom'],"&") ? explode("&",$this->uriVars['tradeFrom']) : array()) : '';																  
+																		  
 			$teamRoster = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
-
+			
 			$addSQL = array();
 			$waiverSQL = array();
 			$alreadyOnWaivers = array();
@@ -1170,11 +1173,11 @@ class team extends BaseEditor {
 							else if ($pos == 13) { $pos = 12; }
 							array_push($addSQL, array('player_id'=>$props[0],'league_id'=>$this->dataModel->league_id,
 													  'team_id'=>$this->dataModel->id,'scoring_period_id'=>$this->params['config']['current_period'],
-													  'player_position'=>$pos,'player_role'=>get_pos_num($props[2]),'player_status'=>-1));
+													  'player_position'=>$pos,'player_role'=>get_pos_num($props[2]),'player_status'=>-1));	
 						} else {
 							// CHECK FOR EXISTING CLAIM
 							if (sizeof($waiverClaims) == 0 || (sizeof($waiverClaims) > 0 && !in_array($this->dataModel->id,$waiverClaims))) {
-								// CREATE A WAIVER CLAIM
+								// CREATE A WAIVER CLAIM	
 								array_push($waiverSQL, array('player_id'=>$props[0],'league_id'=>$this->dataModel->league_id,
 														 'team_id'=>$this->dataModel->id,'owner_id'=>$this->params['currUser']));
 							} else {
@@ -1195,7 +1198,7 @@ class team extends BaseEditor {
 											   'scoring_period_id'=>$this->params['config']['current_period']));
 				} // END if
 			} // END foreach
-
+			
 			if (!function_exists('updateOwnership')) {
 				$this->load->helper('roster');
 			} // END if
@@ -1211,7 +1214,7 @@ class team extends BaseEditor {
 					$pData = array('own'=>$ownership[0],'start'=>$ownership[1]);
 					$this->db->flush_cache();
 					$this->db->where('id',$data['player_id']);
-					$this->db->update('fantasy_players',$pData);
+					$this->db->update('fantasy_players',$pData); 
 				} // END foreach
 				$waiverClaims = array();
 				foreach($waiverSQL as $data) {
@@ -1236,15 +1239,15 @@ class team extends BaseEditor {
 					$pData = array('own'=>$ownership[0],'start'=>$ownership[1]);
 					$this->db->flush_cache();
 					$this->db->where('id',$data['player_id']);
-					$this->db->update('fantasy_players',$pData);
+					$this->db->update('fantasy_players',$pData); 
 				}
-
+				
 				// LOG THE TRANSACTION
 				$this->league_model->load($this->dataModel->league_id);
-				$this->dataModel->logTransaction($playersAdded, $playersDropped, NULL, NULL, NULL, $this->league_model->commissioner_id,
+				$this->dataModel->logTransaction($playersAdded, $playersDropped, NULL, NULL, NULL, $this->league_model->commissioner_id, 
 												 $this->params['currUser'], $this->params['accessLevel'] == ACCESS_ADMINISTRATE,
 												 $this->params['config']['current_period']);
-
+				
 				if ($this->useWaivers) {
 					if (!isset($this->player_model)) {
 						$this->load->model('player_model');
@@ -1297,7 +1300,7 @@ class team extends BaseEditor {
 		$this->load->model($this->modelName,'dataModel');
 		$this->dataModel->load($this->uriVars['id']);
 		$this->data['league_id'] = $this->dataModel->league_id;
-
+		
 		$error = false;
 		$rosterError = false;
 		$roster = $this->dataModel->applyRosterChanges($this->input,$this->getScoringPeriod(),$this->dataModel->id);
@@ -1308,10 +1311,10 @@ class team extends BaseEditor {
 				$rosterError = $this->league_model->statusMess;
 			} // END if
 			$error = !$this->dataModel->saveRosterChanges($roster,$this->getScoringPeriod());
-
+			
 		} // END if
 		if ($error || $rosterError) {
-			if ($rosterError) { $error = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b>".$rosterError; }
+			if ($rosterError) { $error = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b>".$rosterError; } 
 			$this->data['message'] = $error;
 			$this->data['messageType'] = 'error';
 		} else {
@@ -1320,29 +1323,37 @@ class team extends BaseEditor {
 		} // END if
 		$this->showInfo();
 	}
-
+	
 	/**
 	 *	Add/DROP Page.
 	 *	Calls the add/drop page interface for teams.
 	 */
 	public function addDrop() {
 		$this->getURIData();
-
+		
 		$this->enqueStyle('list_picker.css');
-
+		
 		$this->load->model($this->modelName,'dataModel');
 		$this->dataModel->load($this->uriVars['id']);
 		$this->data['team_id'] = $this->uriVars['id'];
 		$this->data['league_id'] = $this->dataModel->league_id;
-
+		
 		// GET DRAFT STATUS
 		$this->load->model('draft_model');
 		$this->draft_model->load($this->dataModel->league_id,'league_id');
 		$this->data['subTitle'] = "Add/Drop Players";
-		if ($this->draft_model->completed != 1) {
+		
+		if (!isset($this->league_model)) { $this->load->model('league_model'); }
+		$this->league_model->load($this->dataModel->league_id);
+		$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+		$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
+		
+		if (!$this->params['loggedIn'] || (!in_array($this->data['team_id'],$this->params['userTeams']) && (!$isAdmin && !$isCommish))) {
+			$this->data['theContent'] = "<b>ERROR</b><br /><br />This page is accessible only by the owner of this team.";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		} else if ($this->draft_model->completed != 1) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-
 		} else {
 
 			if (!function_exists('getCurrentScoringPeriod')) {
@@ -1350,7 +1361,7 @@ class team extends BaseEditor {
 			} // END if
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
-
+			
 			$this->data['scoring_period'] = $this->getScoringPeriod();
 
             //print("Scoring Period id = ".$this->data['scoring_period']['id']."<br />")
@@ -1363,7 +1374,7 @@ class team extends BaseEditor {
 				$this->data['waiver_order'] = $this->dataModel->getWaiverOrder();
 				$this->data['waiver_claims'] = $this->dataModel->getWaiverClaims();
 			} // END if
-
+			
 			$this->data[$returnVar] = $this->pullList(true,$this->dataModel->league_id, $this->data['list_type']);
 			$this->data['league_id'] = $this->dataModel->league_id;
 			$this->params['pageType'] = PAGE_FORM;
@@ -1387,11 +1398,11 @@ class team extends BaseEditor {
 			$this->session->set_flashdata('message', $message);
 			redirect('team/addDrop/id/'.$this->uriVars['team_id']);
 		} else {
-	        $this->session->set_flashdata('loginRedirect',current_url());
+	        $this->session->set_flashdata('loginRedirect',current_url());	
 			redirect('user/login');
 	    }	 // END if
 	}
-
+	
 	public function administrativeAdd() {
 		$this->getURIData();
 		if (!function_exists('getCurrentScoringPeriod')) {
@@ -1400,14 +1411,14 @@ class team extends BaseEditor {
 		$result = '';
 		$code= -1;
 		$status = '';
-		if (!isset($this->uriVars['team_id']) || !isset($this->uriVars['player_id'])
+		if (!isset($this->uriVars['team_id']) || !isset($this->uriVars['player_id']) 
 			|| !isset($this->uriVars['curr_team']) || !isset($this->uriVars['league_id'])) {
 			$status = "error:Required params missing.";
 			$code = 501;
 		} else {
 			// LOG THE DROP TRANSACTION
 			if ($this->uriVars['curr_team'] != -1) {
-				$this->dataModel->logSingleTransaction($this->uriVars['player_id'], TRANS_TYPE_DROP, $this->league_model->commissioner_id,
+				$this->dataModel->logSingleTransaction($this->uriVars['player_id'], TRANS_TYPE_DROP, $this->league_model->commissioner_id, 
 											 $this->params['currUser'], $this->params['accessLevel'] == ACCESS_ADMINISTRATE,
 											 $this->uriVars['league_id'],$this->uriVars['curr_team']);
 			} // END if
@@ -1421,7 +1432,7 @@ class team extends BaseEditor {
 				 // END if$update = true;
 			}
 			$query->free_result();
-
+			
 			$this->db->flush_cache();
 			$this->db->set('team_id',$this->uriVars['team_id']);
 			if ($update) {
@@ -1440,7 +1451,7 @@ class team extends BaseEditor {
 			} // END if
 			if ($this->db->affected_rows() > 0) {
 				if ($this->uriVars['curr_team'] != -1) {
-					$this->dataModel->logSingleTransaction($this->uriVars['player_id'], TRANS_TYPE_ADD, $this->league_model->commissioner_id,
+					$this->dataModel->logSingleTransaction($this->uriVars['player_id'], TRANS_TYPE_ADD, $this->league_model->commissioner_id, 
 												 $this->params['currUser'], $this->params['accessLevel'] == ACCESS_ADMINISTRATE,
 												 $this->uriVars['league_id'],$this->uriVars['team_id']);
 				} // END if
@@ -1449,11 +1460,11 @@ class team extends BaseEditor {
 			$code = 200;
 			$result .= '"result":"OK","code":"'.$code.'","status":"'.$status.'"}';
 		}
-		$this->output->set_header('Content-type: application/json');
+		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
 	public function addAndDisplay() {
-
+		
 		$this->getURIData();
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
@@ -1461,8 +1472,8 @@ class team extends BaseEditor {
 		$result = '';
 		$code= -1;
 		$status = '';
-
-		if (!isset($this->uriVars['team_id']) || !isset($this->uriVars['player_id'])
+		
+		if (!isset($this->uriVars['team_id']) || !isset($this->uriVars['player_id']) 
 			|| !isset($this->uriVars['position'])|| !isset($this->uriVars['role'])) {
 			$status = "error:Required params missing";
 			$code = 501;
@@ -1481,7 +1492,7 @@ class team extends BaseEditor {
 				$waiverClaims = $this->player_model->getWaiverClaims($this->uriVars['league_id'],$this->uriVars['player_id']);
 			}
 			//echo("on waivers? ".$onWaivers."<br />");
-
+			
 			if ($this->useWaivers && $onWaivers != -1) {
 				// CHECK FOR EXISTING CLAIM
 				if (sizeof($waiverClaims) == 0 || (sizeof($waiverClaims) > 0 && !in_array($this->dataModel->id,$waiverClaims))) {
@@ -1520,7 +1531,7 @@ class team extends BaseEditor {
 					$this->db->set('player_role',$this->uriVars['role']);
 					$this->db->set('scoring_period_id',$this->params['config']['current_period']);
 					$this->db->insert('fantasy_rosters');
-
+					
 					if (!function_exists('updateOwnership')) {
 						$this->load->helper('roster');
 					}
@@ -1528,22 +1539,22 @@ class team extends BaseEditor {
 					$pData = array('own'=>$ownership[0],'start'=>$ownership[1]);
 					$this->db->flush_cache();
 					$this->db->where('id',$this->uriVars['player_id']);
-					$this->db->update('fantasy_players',$pData);
-
+					$this->db->update('fantasy_players',$pData); 
+					
 					// LOG THE TRANSACTION
 					$this->dataModel->load($this->uriVars['team_id']);
 					$this->league_model->load($this->dataModel->league_id);
-					$this->dataModel->logTransaction(array($this->uriVars['player_id']), NULL, NULL, NULL, NULL, $this->league_model->commissioner_id,
+					$this->dataModel->logTransaction(array($this->uriVars['player_id']), NULL, NULL, NULL, NULL, $this->league_model->commissioner_id, 
 													 $this->params['currUser'], $this->params['accessLevel'] == ACCESS_ADMINISTRATE,
 													 $this->params['config']['current_period']);
-
+					
 					$status = "OK";
 					$code = 200;
 				}
 				$result = $this->refreshPlayerList().',"code":"'.$code.'","status":"'.$status.'"}';
 			}
 		}
-		$this->output->set_header('Content-type: application/json');
+		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
 	public function removeAndDisplay() {
@@ -1562,7 +1573,7 @@ class team extends BaseEditor {
 			$this->db->where('player_id',$this->uriVars['player_id']);
 			$this->db->where('scoring_period_id',$this->params['config']['current_period']);
 			$this->db->delete('fantasy_rosters');
-
+			
 			// IF WAIVER ENABLED, PUT PLAYER ON WAIVERS
 			if ($this->useWaivers) {
 				$this->dataModel->load($this->uriVars['team_id']);
@@ -1570,7 +1581,7 @@ class team extends BaseEditor {
 									'waiver_period'=>$this->params['config']['current_period']+1);
 				$this->db->insert('fantasy_players_waivers',$waiverData);
 			}
-
+					
 			if (!function_exists('updateOwnership')) {
 				$this->load->helper('roster');
 			}
@@ -1579,20 +1590,20 @@ class team extends BaseEditor {
 			$this->db->flush_cache();
 			$this->db->where('id',$this->uriVars['player_id']);
 			$this->db->update('fantasy_players',$pData);
-
+			
 			// LOG THE TRANSACTION
 			$this->dataModel->load($this->uriVars['team_id']);
 			$this->league_model->load($this->dataModel->league_id);
-			$this->dataModel->logTransaction(NULL, array($this->uriVars['player_id']), NULL, NULL, NULL, $this->league_model->commissioner_id,
+			$this->dataModel->logTransaction(NULL, array($this->uriVars['player_id']), NULL, NULL, NULL, $this->league_model->commissioner_id, 
 												 $this->params['currUser'], $this->params['accessLevel'] == ACCESS_ADMINISTRATE,
 												 $this->params['config']['current_period']);
-
+					
 			$status = "OK";
 			$code = 200;
 		}
-
+		
 		$result = $this->refreshPlayerList().',"code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json');
+		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
 	}
 
@@ -1620,7 +1631,7 @@ class team extends BaseEditor {
 		if (!isset($this->uriVars['pageId']) || empty($this->uriVars['pageId'])) {
 			$this->uriVars['pageId'] = 1;
 		}
-
+		
 		$this->data['list_type'] = $this->uriVars['list_type'];
 		if (!function_exists('getFilteredFreeAgents')) {
 			$this->load->helper('roster');
@@ -1641,7 +1652,7 @@ class team extends BaseEditor {
 			$this->data['fields'] = player_stat_fields_list($player_type, QUERY_BASIC, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, true, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 		} else {
 			$this->data['fields'] = array('id','player_name','pos','position','role','injury_is_injured','injury_dl_left');
-		}
+		}		
 		$this->data['years'] = $this->ootp_league_model->getAllSeasons();
 		if (isset($this->uriVars['year'])) {
 			$this->data['lgyear'] = $this->uriVars['year'];
@@ -1654,11 +1665,11 @@ class team extends BaseEditor {
 				$this->data['lgyear'] = date('Y',$currDate);
 			}
 		}
-
-		$results = getFreeAgentList($this->uriVars['league_id'], $this->uriVars['type'],
-								   $this->uriVars['param'], $this->params['config']['current_period'],
+		
+		$results = getFreeAgentList($this->uriVars['league_id'], $this->uriVars['type'], 
+								   $this->uriVars['param'], $this->params['config']['current_period'], 
 								   $this->uriVars['list_type'],true,$this->scoring_period,$this->rules,
-								   $this->uriVars['limit'],$this->uriVars['startIndex'],
+								   $this->uriVars['limit'],$this->uriVars['startIndex'], 
 								   $this->params['config']['ootp_league_id'],$this->data['lgyear']);
 		//echo("size of resault = ".sizeof($results)."<br />");
 		if ($this->uriVars['list_type'] == 2) {
@@ -1674,8 +1685,8 @@ class team extends BaseEditor {
 			$stats_results = formatStatsForDisplay($results, $this->data['fields'], $this->params['config'],$this->uriVars['league_id'],NULL,NULL,$statsOnly, $showTrans);
 			if ($returnArray === true) {
 				$this->data['player_stats'] = $stats_results;
-				$this->data['recCount'] = sizeof(getFreeAgentList($this->uriVars['league_id'], $this->uriVars['type'],
-									   $this->uriVars['param'], $this->params['config']['current_period'],
+				$this->data['recCount'] = sizeof(getFreeAgentList($this->uriVars['league_id'], $this->uriVars['type'], 
+									   $this->uriVars['param'], $this->params['config']['current_period'], 
 									   $this->uriVars['list_type'],true,$this->scoring_period,$this->rules,
 									   -1,0,$this->params['config']['ootp_league_id'],true));
 				$this->data['pageCount'] = 1;
@@ -1685,7 +1696,7 @@ class team extends BaseEditor {
 				}
 				$this->data['league_id'] = $this->uriVars['league_id'];
 				$this->data['showTeam'] = -1;
-				$this->data['showTrans'] = 1;
+				$this->data['showTrans'] = 1;			
 				$stats_results = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			}
 		} else {
@@ -1717,7 +1728,7 @@ class team extends BaseEditor {
 					if (isset($row['injury_is_injured']) && $row['injury_is_injured'] == 1) {
 						$injStatus = makeInjuryStatusString($row);
 					}
-					$tmpResult .= ',"injStatus":"'.$injStatus.'"';
+					$tmpResult .= ',"injStatus":"'.$injStatus.'"';	   
 					$result .= $tmpResult.'}';
 				} // END foreach
 				if ($this->uriVars['list_type'] == 2) {
@@ -1733,36 +1744,36 @@ class team extends BaseEditor {
 				$code = 201;
 			} // END if
 			$result = '{ "result": { "items": ['.$result.']},"code":"'.$code.'","status": "'.$status.'"}';
-			$this->output->set_header('Content-type: application/json');
+			$this->output->set_header('Content-type: application/json'); 
 			$this->output->set_output($result);
 		}
 	}
 	/**
 	 *	PLAYER ELIGIBILITY.
-	 *	Pulls an array of player info and the number of games played per position.
+	 *	Pulls an array of player info and the number of games played per position. 
 	 *
 	 *	@since	1.0.6
 	 *	@access	public
 	 *
 	 */
 	public function eligibility() {
-
+		
 		$this->getURIData();
 		$this->data['subTitle'] = "Position Eligibility";
 		$this->load->model($this->modelName,'dataModel');
-
+		
 		$team_id = -1;
 		if (isset($this->uriVars['id']) && !empty($this->uriVars['id']) && $this->uriVars['id'] != -1) {
 			$team_id = $this->uriVars['id'];
 		} else if (isset($this->uriVars['team_id']) && !empty($this->uriVars['team_id']) && $this->uriVars['team_id'] != -1) {
 			$team_id = $this->uriVars['team_id'];
-		}
+		} 
 		$this->dataModel->load($team_id);
 		$this->data['team_id'] = $this->dataModel->id;
 		$this->data['teamname'] = $this->dataModel->teamname;
 		$this->data['teamnick'] = $this->dataModel->teamnick;
 		$this->data['avatar'] = $this->dataModel->avatar;
-		$this->data['team_id'] = $team_id;
+		$this->data['team_id'] = $team_id;	
 		$this->data['years'] = $this->ootp_league_model->getAllSeasons();
 		if (isset($this->uriVars['year'])) {
 			$this->data['lgyear'] = $this->uriVars['year'];
@@ -1776,7 +1787,7 @@ class team extends BaseEditor {
 			}
 		}
 		$this->data['league_id']  = $this->dataModel->league_id;
-
+		
 		if (!isset($this->league_model)) {
 			$this->load->model('league_model');
 		}
@@ -1796,7 +1807,7 @@ class team extends BaseEditor {
 		$this->data['scoring_period'] = $this->getScoringPeriod();
 		$this->data['player_eligibility'] = $this->dataModel->getGamesPlayedByRoster($this->data['team_id'],$this->data['scoring_period']['id'],$this->ootp_league_model->league_id,$this->data['lgyear']);
 		$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
-
+		
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;
 		$this->params['subTitle'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
@@ -1804,23 +1815,23 @@ class team extends BaseEditor {
 	    $this->displayView();
 	}
 	public function stats() {
-
+		
 		$this->getURIData();
 		$this->data['subTitle'] = "Set lineup";
 		$this->load->model($this->modelName,'dataModel');
-
+		
 		$team_id = -1;
 		if (isset($this->uriVars['id']) && !empty($this->uriVars['id']) && $this->uriVars['id'] != -1) {
 			$team_id = $this->uriVars['id'];
 		} else if (isset($this->uriVars['team_id']) && !empty($this->uriVars['team_id']) && $this->uriVars['team_id'] != -1) {
 			$team_id = $this->uriVars['team_id'];
-		}
+		} 
 		$this->dataModel->load($team_id);
 		$this->data['thisItem']['team_id'] = $this->dataModel->id;
 		$this->data['thisItem']['teamname'] = $this->dataModel->teamname;
 		$this->data['thisItem']['teamnick'] = $this->dataModel->teamnick;
 		$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
-		$this->data['team_id'] = $team_id;
+		$this->data['team_id'] = $team_id;	
 		if (isset($this->uriVars['year'])) {
 			$this->data['lgyear'] = $this->uriVars['year'];
 		} else {
@@ -1834,30 +1845,30 @@ class team extends BaseEditor {
 		}
 		$this->data['year'] = $this->data['lgyear'];
 		$this->data['league_id']  = $this->dataModel->league_id;
-
-
+		
+		
 		$this->prepForQuery();
-
+		
 		$this->data['batters'] = $this->dataModel->getBatters(-1, false, -999);
 		$this->data['pitchers'] = $this->dataModel->getPitchers(-1, false, -999);
-
+		
 		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
-
+		
 			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules,$this->data['batters']);
 			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules,$this->data['pitchers']);
-
+			
 			$this->data['title'] = array();
 			$this->data['formatted_stats'] = array();
 			$this->data['limit'] = -1;
 			$this->data['startIndex'] = 0;
-
+			
 			$this->data['title']['batters'] = "Batting";
 			$this->data['colnames']=player_stat_column_headers(1, QUERY_STANDARD, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['fields'] = player_stat_fields_list(1, QUERY_STANDARD, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['player_stats'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id']);
 			$this->data['showTeam'] = -1;
 			$this->data['formatted_stats']['batters'] = $this->load->view($this->views['STATS_TABLE'], $this->data, true);
-
+	
 			$this->data['title']['pitchers'] = "Pitching";
 			$this->data['colnames']=player_stat_column_headers(2, QUERY_STANDARD, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['fields'] = player_stat_fields_list(2, QUERY_STANDARD, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
@@ -1876,7 +1887,7 @@ class team extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['STATS'], $this->data, true);
 	    $this->displayView();
 	}
-
+	
 	/*--------------------------------------------
 	/
 	/	PROTECTED/PRIVATE FUNCTIONS
@@ -1891,12 +1902,12 @@ class team extends BaseEditor {
 	 *	@param	$team2Id		The second team in the trade ID
 	 *	@param	$receiveList	Array of players to be received
 	 *	@param	$scoring_period	Scoring period Array object
-	 *	@return	$return			Emptry String on success, Message string on error
+	 *	@return	$return			Emptry String on success, Message string on error	
 	 *	@since					1.0.4
 	 *	@see					tradeResponse
 	 */
 	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period) {
-
+		
 		$rosterMessages = "";
 		$sendIds = array();
 		foreach($sendList as $data) {
@@ -1924,7 +1935,7 @@ class team extends BaseEditor {
 	}
 	/**
 	 *	PREP FOR QUERY.
-	 *	Used during stat generation operations to gather required resource before submitting the
+	 *	Used during stat generation operations to gather required resource before submitting the 
 	 *	query to the DB.
 	 *
 	 */
@@ -1934,7 +1945,7 @@ class team extends BaseEditor {
 			$this->load->helper('admin');
 		}
 		$this->data['scoring_periods'] = getAvailableScoringPeriods();
-
+		
 		$scoring_period_id = -1;
 		if (isset($this->uriVars['scoring_period_id'])) {
 			$scoring_period_id = $this->uriVars['scoring_period_id'];
@@ -1955,7 +1966,7 @@ class team extends BaseEditor {
 		if (sizeof($this->rules) == 0) {
 			$this->rules = $this->league_model->getScoringRules(0);
 		}
-
+		
 		if (!isset($this->player_model)) {
 			$this->load->model('player_model');
 		}
@@ -1970,7 +1981,7 @@ class team extends BaseEditor {
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
 		}
-
+		
 		$this->load->model($this->modelName,'dataModel');
 		if ($this->dataModel->load($this->uriVars['team_id'])) {
 			$players = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
@@ -1978,9 +1989,9 @@ class team extends BaseEditor {
 				if (!empty($result)) { $result .= ','; }
 				$pos = '';
 				if ($player['player_position'] != 1) {
-					$pos = get_pos($player['player_position']);
+					$pos = get_pos($player['player_position']); 
 				} else {
-					$pos = get_pos($player['player_role']);
+					$pos = get_pos($player['player_role']); 
 				}
 				$result .= '{"id":"'.$player['id'].'","player_name":"'.$pos." ".$player['player_name'].'"}';
 			}
@@ -2070,16 +2081,16 @@ class team extends BaseEditor {
 		if ($this->input->post('expiresIn')) {
 			$this->uriVars['expiresIn'] = $this->input->post('expiresIn');
 		} // END if
-
+		
 	}
-
+	
 	protected function makeForm() {
 		$form = new Form();
-
+		
 		$form->open('/'.$this->_NAME.'/submit/','detailsForm|detailsForm');
-
+		
 		$form->fieldset('Team Details');
-
+		
 		$form->text('teamname','Team Name','required|trim',($this->input->post('teamname')) ? $this->input->post('teamname') : $this->dataModel->teamname,array('class','first'));
 		$form->br();
 		$form->text('teamnick','Nick Name','required|trim',($this->input->post('teamnick')) ? $this->input->post('teamnick') : $this->dataModel->teamnick,array('class','first'));
@@ -2115,11 +2126,11 @@ class team extends BaseEditor {
 		}
 		$this->form = $form;
 		$this->data['form'] = $form->get();
-
+		
 		$this->makeNav();
-
+		
 	}
-
+	
 	protected function showInfo() {
 
 		if (!function_exists('getScoringPeriod')) {
@@ -2133,19 +2144,19 @@ class team extends BaseEditor {
 		    $curr_period = $this->getScoringPeriod();
 		    $curr_period_id = $curr_period['id'];
         }
-
+		
 		$this->data['curr_period'] = $curr_period_id;
 
         //print("curr_period['id'] = ".$curr_period['id']."<br />");
         //print("params->config['current_period] = ".$this->params['config']['current_period']."<br />");
-
+		
 		if (!isset($this->league_model)) {
 			$this->load->model('league_model');
 			$this->league_model->load($this->dataModel->league_id);
 		}
 		$this->league_model->load($this->dataModel->league_id);
 		$this->data['avail_periods'] = $this->league_model->getAvailableRosterPeriods();
-
+		
 		// Setup header Data
 		$this->data['thisItem']['league_id'] = $this->dataModel->league_id;
 		$this->data['thisItem']['team_id'] = $this->dataModel->id;
@@ -2164,7 +2175,7 @@ class team extends BaseEditor {
 		$players = $this->dataModel->getCompleteRoster($curr_period_id);
 		if (isset($players[0])) {
 			$this->data['thisItem']['players_active'] =	$players[0];
-		}
+		} 
 		if (isset($players[1])) {
 			$this->data['thisItem']['players_reserve'] = $players[1];
 		}
@@ -2172,17 +2183,17 @@ class team extends BaseEditor {
 			$this->data['thisItem']['players_injured'] = $players[2];
 		}
 		$this->data['thisItem']['team_list'] = getOOTPTeams($this->params['config']['ootp_league_id'],false);
-
+		
 		if (isset($this->data['thisItem']['league_id']) && $this->data['thisItem']['league_id'] != -1) {
 			$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->data['thisItem']['league_id']);
 		}
 		$this->data['thisItem']['visible_week'] = getVisibleDays($curr_period['date_start'],$this->params['config']['sim_length']);
-
+		
 		$this->data['thisItem']['schedules'] = getPlayerSchedules($players,$curr_period['date_start'],$this->params['config']['sim_length']);
-
+		
 		$this->data['thisItem']['owner_name'] = resolveOwnerName($this->dataModel->owner_id);
 		$this->data['thisItem']['owner_id'] = $this->dataModel->owner_id;
-
+		
 		$divisionName = '';
 		$divisionsList = listLeagueDivisions($this->dataModel->id,false);
 		foreach($divisionsList as $key => $value) {
@@ -2191,15 +2202,15 @@ class team extends BaseEditor {
 				break;
 			}
 		}
-		$this->data['thisItem']['divisionName'] = $divisionName;
+		$this->data['thisItem']['divisionName'] = $divisionName;	
 
 		$this->params['subTitle'] = "Team Overview";
-
+		
 		$this->data['showAdmin'] = (($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $this->params['config']['current_period']) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
 
 		$this->makeNav();
-
-
+		
+		
 		parent::showInfo();
 	}
 	/**
@@ -2224,7 +2235,7 @@ class team extends BaseEditor {
 			$lg_admin = true;
 		}
 		array_push($this->params['subNavSection'], league_nav($this->dataModel->league_id, $league_name,$lg_admin,true,$scoring_type));
-
+		
 		$tm_admin = false;
 		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->dataModel->owner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 			$tm_admin = true;

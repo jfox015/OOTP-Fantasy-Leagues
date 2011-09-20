@@ -15,20 +15,41 @@ function getPlayersOnWaivers($period_id = false, $league_id = false) {
 }
 function getWaiverOrder($league_id = false, $idOnly = false) {
 	$ci =& get_instance();
-	$ci->load->model('team_model');
+	if (!isset($ci->team_model)) {
+		$ci->load->model('team_model');
+	}
 	return $ci->team_model->getWaiverOrder($league_id, $idOnly);
 }
 function logTransaction($added = array(), $dropped = array(), $claimed = array(), $tradedTo = array(), $tradedFrom = array(),
 									$commish_id = false, $currUser = false, $isAdmin = false, $effective = -1, 
 									$league_id = false, $team_id = false, $owner_id = false) {
 	$ci =& get_instance();
-	$ci->load->model('team_model');
+	if (!isset($ci->team_model)) {
+		$ci->load->model('team_model');
+	}
 	return $ci->team_model->logTransaction($added, $dropped, $claimed, $tradedTo, $tradedFrom,$commish_id, $currUser, 
 										   $isAdmin, $effective, $league_id, $team_id, $owner_id);
 }
+function getTeamOwnerId($team_id = false) {
+	$ci =& get_instance();
+	if (!isset($ci->team_model)) {
+		$ci->load->model('team_model');
+	}
+	return $ci->team_model->getTeamOwnerId($team_id);
+}
+function getTeamName($team_id = false) {
+	$ci =& get_instance();
+	if (!isset($ci->team_model)) {
+		$ci->load->model('team_model');
+	}
+	return $ci->team_model->getTeamName($team_id);
+}
+
 function getBasicRoster($team_id = false, $score_period = false) {
 	$ci =& get_instance();
-	$ci->load->model('team_model');
+	if (!isset($ci->team_model)) {
+		$ci->load->model('team_model');
+	}
 	return $ci->team_model->getBasicRoster($score_period['id'],$team_id);
 }
 	

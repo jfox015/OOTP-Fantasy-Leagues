@@ -455,6 +455,31 @@ class league_model extends base_model {
 		}
 	}
 	/**
+	* 	GET COMMISSIONER ID.
+	* 	<p>Returns a leagues commissioenr ID.</p>
+	* 	@param	$league_id		{int}		The League Id
+	* 	@return					{int}		Commissioenr ID, -1 if not found
+	*
+	* 	@since	1.0.6
+	*  	@access	public
+	*/
+	public function getCommissionerId($userId = false, $league_id = false) {
+
+		if ($league_id === false) { $league_id = $this->id; }
+		
+		$commishId = -1;
+		
+		$this->db->select('commissioner_id');
+		$this->db->where("league_id",$league_id);
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$commishId = $row->commissioner_id;
+		}
+		$query->free_result();
+		return $commishId;
+	}
+	/**
 	* 	GET OWNER IDS.
 	* 	<p>Returns a list of user ids who own teams in the passed (or loaded) league.</p>
 	* 	@param	$league_id		{int}			OPTIONAL - The League Id
@@ -2547,6 +2572,83 @@ class league_model extends base_model {
 		}
 		return $summary;
 	}
+	/**
+	 * GET TRADES IN LEAGUE REVIEW.
+	 */
+	public function getTradesInLeagueReview($period_id = false, $league_id = false, $expireDays = false, $rosterPeriod = 'same', $debug = false) {
+		
+		if ($period_id === false || $expireDays === false) { 
+			$this->errorCode = 1;
+            $this->statusMess = "Period ID or protest expiration days parameters were not received.";
+			return false; 
+		} // END if
+		if ($league_id === false) { $league_id = $this->id; } // END if
+
+		$tradeList = array();
+        $this->db->select('id, send_players, receive_players, team_1_id, team_2_id, response_date');
+        $this->db->where('league_id',$league_id);
+        $this->db->where('status',TRADE_PENDING_LEAGUE_APPROVAL);
+		$query = $this->db->get($this->tables['TRADES']);
+        if ($query->num_rows() > 0) {
+            $row = $query->row();
+            $expireDate = (strtotime($row->response_date) + ((60*60*24) * $expireDays));
+			if ($expireDate < time()) {
+				array_push($tradeList,$row);
+			} else {
+				$processResponse = processTrade($row->id, TRADE_APPROVED, $this->lang->line('league_protest_expired_trade_approved'),$league_id);
+				if ($processResponse) {
+					$this->load->helper('roster');
+					$offeringTeamOwner = getTeamOwnerId($row->team_1_id);
+					$receivingTeamOwner = getTeamOwnerId($row->team_2_id);
+					$commishId = $this->getCommissionerId($league_id);
+					logTransaction(NULL, NULL, NULL, $row->send_players, $row->receive_players,
+					$commishId, $offeringTeamOwner,false, $period_id,
+					$league_id, $row->team_1_id, $offeringTeamOwner, $row->team_2_id);
+					
+					logTransaction(NULL, NULL, NULL, $row->receive_players, $row->send_players,
+					$commishId, $offeringTeamOwner, false, $period_id,
+					$league_id, $row->team_2_id, $receivingTeamOwner, $row->team_1_id);
+					
+					$types = array('offering','receiving');
+					$tradeTypes = loadSimpleDataList('tradeStatus');
+					foreach($types as $type) {
+						if ($type == 'offering') {
+							$msg = $this->lang->line('league_trade_approved_league_offering_team');
+							$msg = str_replace('[ACCEPTING_TEAM_NAME]', getTeamName($row->team_2_id), $msg);
+							$msg = str_replace('[USERNAME]', getUsername($offeringTeamOwner), $msg);
+							$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$row->team_1_id,'adjust your lineup'),$msg);
+							$email = getEmail($offeringTeamOwner);
+						} else {
+							$msg = $this->lang->line('league_trade_approved_league_accepting_team');
+							$msg = str_replace('[OFFERING_TEAM_NAME]', getTeamName($row->team_1_id), $msg);
+							$msg = str_replace('[USERNAME]', getUsername($receivingTeamOwner), $msg);
+							$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$row->team_2_id,'adjust your lineup'),$msg);
+							$email = getEmail($receivingTeamOwner);
+						} // END if
+						$msg .= $this->lang->line('email_footer');
+						$msg = str_replace('[COMMENTS]', $this->lang->line('league_protest_expired_trade_approved'),$msg);
+						$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+						$data['messageBody']= $msg;
+						//print("email template path = ".$this->config->item('email_templates')."<br />");
+						$data['leagueName'] = $this->getLeagueName($league_id);
+						$data['title'] = $this->lang->line('league_email_title_trade_response');
+						$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+						// SEND MESSAGES
+						// SEND TO TEAM ONE
+						$error = !sendEmail($email,getEmail($this->params['config']['primary_contact']),
+						$this->params['config']['site_name']." Administrator",$this->getLeagueName($league_id).' Fantasy League - Trade Update - Offer '.$tradeTypes[TRADE_COMPLETED],
+						$message,'','email_trd_');
+					} // END foreach
+				} // END if
+			} // END if
+        } else {
+            $this->errorCode = 2;
+            $this->statusMess = "No trades under league review were found.";
+        } // END if
+        $query->free_result();
+        return $tradeList;
+	}
+	
 	/**
 	 *	INCREMENT TRADES.
 	 *	Sets all offered trades scoring period to +1.

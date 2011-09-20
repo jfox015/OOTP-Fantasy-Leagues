@@ -173,6 +173,19 @@ class user_meta_model extends base_model {
 		}
 		return $teamIds;
 	}
+	public function getUserLeagueIds($userId = false, $scoring_period_id = false) {
+
+		if ($userId === false) $userId = $this->userId;
+		$leagueIds = array();
+
+		$teams = $this->getUserTeams(false,$userId,$scoring_period_id);
+		if (sizeof($teams) > 0) {
+			foreach($teams as $row) {
+				array_push($leagueIds,$row['league_id']);
+			}
+		}
+		return $leagueIds;
+	}
 	public function getTeamInvites($userId = false) {
 
 		$invites = array();
@@ -276,7 +289,7 @@ class user_meta_model extends base_model {
 				}
 				$teamListStr .= ")";
 				$this->db->where('team_2_id IN '.$teamListStr);
-				$this->db->where('('.$this->tables['TRADES'].'.status = 1 OR '.$this->tables['TRADES'].'.status = 13 OR '.$this->tables['TRADES'].'.status = 14)');
+				$this->db->where('('.$this->tables['TRADES'].'.status = '.TRADE_OFFERED.' OR '.$this->tables['TRADES'].'.status = '.TRADE_PENDING_LEAGUE_APPROVAL.' OR '.$this->tables['TRADES'].'.status = '.TRADE_PENDING_COMMISH_APPROVAL.')');
 				if ($scoring_period_id !== false) {
 					$this->db->where('in_period',$scoring_period_id+1);
 				}
@@ -301,6 +314,90 @@ class user_meta_model extends base_model {
         } // END if
 		return $tradeOfferList;
 	}
+	/**
+     * GET LEAGUE TRADES FOR REVIEW.
+     * Retrieves a list of all trades awaiting league approval that the user can review.
+     *
+     * @param       bool    $userId
+     * @param       bool    $scoring_period_id
+     * @param       bool    $team_id
+     * @param       bool    $league_id
+     * @param       bool    $debug
+     * @return      array   List of offers index by ($league_id => $array($offers))
+     *
+     * @since       1.0.6
+     * @access      public
+     */
+    public function getTradesForReview($userId = false, $scoring_period_id = false, $team_id = false, $league_id = false, $debug = false) {
+		$tradeReviewList = array();
+        if ($userId === false) { $userId = $this->userId; }
+		if ($userId == -1) {
+			$this->errorCode = 1;
+			$this->statusMess = "No user Id was received.";
+		} else {
+            $team_list = array();
+			$league_list = array();
+            if ($league_id !== false) {
+                array_push($league_list,$league_id);
+            } else {
+                $league_list = $this->getUserLeagueIds($userId,$scoring_period_id);
+            }
+			$team_list = array();
+            if ($team_id !== false) {
+                array_push($team_list,$team_id);
+            } else {
+                $team_list = $this->getUserTeamIds(false,$userId,$scoring_period_id);
+            }
+            if (sizeof($league_list) > 0) {
+				$this->db->select($this->tables['TRADES'].'.id, team_1_id, teamname, teamnick, team_2_id, status, tradeStatus, '.$this->tables['TRADES'].'.league_id, offer_date, response_date, expiration_days');
+				$this->db->join($this->tables['TEAMS'],$this->tables['TRADES'].'.team_1_id = '.$this->tables['TEAMS'].'.id','right outer');
+				$this->db->join('fantasy_teams_trades_status','fantasy_teams_trades_status.id = '.$this->tables['TRADES'].'.status','right outer');
+				$leagueListStr = "(";
+				foreach ($league_list as $id) {
+					if ($leagueListStr != "(") { $leagueListStr .= ","; }
+					$leagueListStr .= $id;
+				}
+				$leagueListStr .= ")";
+				$this->db->where($this->tables['TRADES'].'.league_id IN '.$leagueListStr);
+				$teamListStr = "(";
+				foreach ($team_list as $id) {
+					if ($teamListStr != "(") { $teamListStr .= ","; }
+					$teamListStr .= $id;
+				}
+				$teamListStr .= ")";
+				$this->db->where('team_1_id NOT IN '.$teamListStr);
+				$this->db->where('team_2_id NOT IN '.$teamListStr);
+				$this->db->where($this->tables['TRADES'].'.status',TRADE_PENDING_LEAGUE_APPROVAL);
+				if ($scoring_period_id !== false) {
+					$this->db->where('in_period',$scoring_period_id+1);
+				}
+				$this->db->orderBy($this->tables['TRADES'].'.league_id','asc');
+				$query = $this->db->get($this->tables['TRADES']);
+				if (!function_exists('getTeamName')) {
+					$this->load->helper('roster');
+				}
+				
+				if ($debug === true) { print($this->db->last_query()."<br />"); }
+				if ($query->num_rows() > 0) {
+					$curr_league = -1;
+					$trades = array();
+					$itemCount = 0;
+					foreach($query->result() as $row) {
+						if ($curr_league == -1 || ($curr_league != -1 && $curr_league != $row->league_id)) {
+							if (sizeof($trades) > 0) { $tradeReviewList = $tradeReviewList + array($curr_league => $trades);  $trades = array(); }
+							$curr_league = $row->league_id;
+						}
+						array_push($trades,array('trade_id'=>$row->id,'team_1_id'=>$row->team_1_id,'team_2_id'=>$row->team_2_id,'team_1_name'=>getTeamName($row->team_1_id),'team_2_name'=>getTeamName($row->team_2_id),
+													'offer_date'=>$row->offer_date,'response_date'=>$row->response_date,'status'=>$row->status,'tradeStatus'=>$row->tradeStatus, 'expiration_days'=>$row->expiration_days));
+						if ($query->num_rows() == 1) { $tradeReviewList = $tradeReviewList + array($curr_league => $trades);  $trades = array(); }
+					} // END foreach
+				} // END if
+			} // END if
+        } // END if
+		return $tradeReviewList;
+		
+	}
+	
 	public function getUserDrafts() {
 
 		$draftList = array();

@@ -671,22 +671,21 @@ class user extends MY_Controller {
 		$func = "view";
 		if (isset($this->uriVars['mode'])) {
 			$func = $this->uriVars['mode'];
-		}
+		} // END if	
 		if (!isset($this->uriVars['mode']) && (isset($this->uriVars['id']) && ($this->uriVars['id'] == 'view' || $this->uriVars['id'] == 'edit'))) {
 			$func = $this->uriVars['id'];
-		}
+		} // END if	
 		$view = $this->views['PROFILE'];
         $userTeams = array();
         $currPeriod = false;
         if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
             $currPeriod = ($this->params['config']['current_period']-1);
-        }
+        } // END if	
         if (isset($this->params['userTeams'])) {
-        $userTeams = $this->params['userTeams'];
+			$userTeams = $this->params['userTeams'];
         } else {
-
             $userTeams = $this->user_meta_model->getUserTeams(false,false,$currPeriod);
-        }
+        } // END if	
 
 		if ($func == "view") {
 			$view = $this->views['PROFILE'];
@@ -703,7 +702,7 @@ class user extends MY_Controller {
 				$this->data['userId'] = $this->user_meta_model->userId;
 			} else {
 				redirect('user/login');
-			}
+			} // END if	
 			if (!isset($this->data['profile'])) {
 				$this->session->set_flashdata('message', '<span class="error">An error occured loading your profile information.</span>');
 			} else {
@@ -714,9 +713,9 @@ class user extends MY_Controller {
 						if ($this->data['profile']->country == $key) {
 							$countryStr = $value;
 							break;
-						}
-					}
-				}
+						} // END if	
+					} // END foreach	
+				} // END if	
 				$this->data['countryStr'] = $countryStr;
 				
 				$this->data['userTeams'] = $userTeams;
@@ -725,16 +724,34 @@ class user extends MY_Controller {
 				
 				if (!isset($this->draft_model)) {
 					$this->load->model('draft_model');
-				}
+				} // END if	
 				foreach($this->data['userTeams'] as $data) {
 					$userDrafts[$data['league_id']]['draftStatus'] = $this->draft_model->getDraftStatus($data['league_id']);
 					$userDrafts[$data['league_id']]['draftDate'] = $this->draft_model->getDraftDate($data['league_id']);
-				}
+				} // END foreach	
 				$this->data['userDrafts'] = $userDrafts;
-
-                $this->data['userTrades'] = $this->user_meta_model->getTradeOffers(false,$currPeriod);
-
-			}
+				
+				if ($this->params['config']['useTrades'] == 1) {
+					// EDIT 1.0.6 RC1
+					// TEST FOR TRADES UNDER LEAGUE REVIEW STATUS
+					// THIS BLOCK NOT ONLY RETRIEVES THE LIST OF TRADES IN REVIEW, BUT ALSO PSUEDO CRONS
+					// THEM AND APPROVES TRADES WHERE THE PROTEST PERIOD HAS EXPRIRED
+					$league_list = $this->user_meta_model->getUserLeagueIds(false,$currPeriod);
+					if (sizeof($league_list) > 0) {
+						foreach($league_list as $league_id) {
+							if ($this->params['config']['approvalType'] == 2) {
+								$this->league_model->getTradesInLeagueReview($currPeriod,$league_id,$this->params['config']['protestPeriodDays'], true);
+								$this->data['tradesForReview'] = $this->user_meta_model->getTradesForReview(false,$currPeriod);
+							} // END if	
+							// TRADES EXPIRATION
+							if ($this->params['config']['tradesExpire'] == 1) {
+								//$this->league_model->expireOldTrades($league_id);
+							} // END if	
+						} // END foreach		
+					} // END if
+					$this->data['userTrades'] = $this->user_meta_model->getTradeOffers(false,$currPeriod);
+				} // END if
+			} // END if	
 			$this->params['content'] = $this->load->view($view, $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
 			$this->makeNav();
@@ -770,13 +787,13 @@ class user extends MY_Controller {
 						$message .= '</p >';
 						$this->session->set_flashdata('message', $message);
 						redirect('/user/profile/edit');
-					}
-				}
+					} // END if	
+				} // END if	
 			} else {
 	       		$this->session->set_flashdata('loginRedirect',current_url());	
 				redirect('user/login');
-	   		}
-		}
+	   		} // END if	
+		} // END if	
 	}
 	/**
 	 * 	PUBLIC PROFILES.

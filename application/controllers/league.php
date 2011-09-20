@@ -18,6 +18,8 @@ class league extends BaseEditor {
 	 *	@var $_NAME:Text
 	 */
 	var $_NAME = 'league';
+	
+	var $tradeLists = array();
 	/*--------------------------------
 	/	C'TOR
 	/-------------------------------*/
@@ -80,6 +82,30 @@ class league extends BaseEditor {
 		$this->views['CONTACT_FORM'] = 'league/league_contact';
 
 		$this->lang->load('league');
+		
+		// EDIT 1.0.6
+		// TRADE PSUEDO CRON TASKS
+		// TEST FOR EXPIRING TRADES, EXPIRING LEAGUE PROTESTS AND ALERT COMMISSIONER TO TRADES REQUIRING
+		// COMMISSIONER APPROVAL
+		if ($this->params['config']['useTrades'] == 1 && isset($this->uriVars['id'])) {
+			if (!isset($this->dataModel)) {
+				$this->load->model($this->modelName,'dataModel');
+			}
+			// COMMISH APPROVAL ALERT
+			if ($this->params['loggedIn'] && $this->params['config']['approvalType'] == 1 && $this->params['currUser'] == $this->dataModel->getCommissionerId()) {
+				$this->load->model('team_model');
+				$this->tradeLists['forAppproval'] = $this->team_model->getTradesForScoringPeriod($this->uriVars['id'], $this->getScoringPeriod(), false, false, false, false, TRADE_PENDING_COMMISH_APPROVAL);
+			}
+			// LEAGUE APPROVAL
+			if ($this->params['config']['approvalType'] == 2 && $this->params['config']['protestPeriodDays'] > 0) {
+				$this->tradeLists['inLeagueReview'] = $this->dataModel->getTradesInLeagueReview($this->getScoringPeriod(),$this->uriVars['id'],$this->params['config']['protestPeriodDays']);
+			}
+			$this->data['tradeLists'] = $this->tradeLists;
+			// TRADES EXPIRATION
+			if ($this->params['config']['tradesExpire'] == 1) {
+				//$this->dataModel->expireOldTrades($this->uriVars['id']);
+			}
+		}
 
 		$this->debug = false;
 	}

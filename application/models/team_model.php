@@ -626,10 +626,10 @@ class team_model extends base_model {
 	 * @param $limit			The limit on rows to return. No limit if =1
 	 * @param $startIndex		The first row to return. Stars with first row if 0.
 	 */
-	public function getTradesForScoringPeriod($league_id = false, $scoring_period_id = -1, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $status = false, $limit = -1, $startIndex = 0) {
+	public function getTradesForScoringPeriod($league_id = false, $scoring_period_id = -1, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $status = 100, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
-		$trades = $this->getTradeData($league_id, $team_id, false, false, 100, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
-		$trades = $trades + $this->getTradeData($league_id, false, $team_id, false, 100, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
+		$trades = $this->getTradeData($league_id, $team_id, false, false, $status, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
+		$trades = $trades + $this->getTradeData($league_id, false, $team_id, false, $status, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
         return $trades;
 	}
 	/**

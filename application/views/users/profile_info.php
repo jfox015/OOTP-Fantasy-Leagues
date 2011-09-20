@@ -220,7 +220,10 @@
                         <?php } ?>
 					</tr>
                     <?php
-                        // GET AND DISPLAY USER DRAFTS
+                        /*----------------------------------------
+						/	USER DRAFTS INFORMATION
+						/---------------------------------------*/
+						// GET AND DISPLAY USER DRAFTS
                         if (isset($userDrafts) && isset($userDrafts[$data['league_id']])) {
 						$draftInfo = $userDrafts[$data['league_id']];
 						if ($draftInfo['draftStatus'] > 0 && $draftInfo['draftStatus'] < 5) {
@@ -266,7 +269,10 @@
                         $col_size_b_2 = 2;
                         $col_size_b_3 = 2;
                     }
-                    // GET AND DISPLAY USER TRADES
+                    /*----------------------------------------
+					/	USER TRADE OFFERS
+					/---------------------------------------*/
+					// GET AND DISPLAY USER TRADES
                     if (isset($userTrades) && isset($userTrades[$data['league_id']])) {
                         $tradeInfo = $userTrades[$data['league_id']];
                     ?>
@@ -309,6 +315,43 @@
 					    } // END foreach
 					    $rowcount++;
 					} // if (isset($userTrades)
+					/*----------------------------------------
+					/	TRADES FOR REVIEW
+					/	(If applicable)
+					/---------------------------------------*/
+					// GET AND DISPLAY LEAGUE TRADES FOR REVIEW
+                    if (isset($tradesForReview) && sizeof($tradesForReview) > 0 && isset($tradesForReview[$data['league_id']])) {
+                        $tradeInfo = $tradesForReview[$data['league_id']];
+                    ?>
+                    <tr style="background-color:#C9F0C7;">
+						<td class='hsc2_l' colspan="<?php print($col_size_a_1); ?>">
+                        <span style="color:#0C4A09;font-weight:bold;">There are <?php print(sizeof($tradeInfo)); ?> trades pending owner approval in your league!</span>
+                        </td>
+                    </tr>
+                    <?php
+                        foreach($tradeInfo as $tradeOffer) {
+					?>
+                    <tr style="background-color:#C9F0C7 ;" align="left" valign="top">
+						<td class='hsc2_l' colspan="<?php print($col_size_b_1); ?>">
+                        Trade between: <?php print(anchor('/team/info/'.$tradeOffer['team_1_id'],$tradeOffer['team_1_name'])); ?> and <?php print(anchor('/team/info/'.$tradeOffer['team_2_id'],$tradeOffer['team_2_name'])); ?>
+                        </td>
+						<td class='hsc2_l' colspan="<?php print($col_size_b_2); ?>">
+						<b>Accepted:</b> <?php print(date('m/d/Y h:i:s A',strtotime($tradeOffer['response_date'])));
+                        $expireStr = date('m/d/Y h:m A', (strtotime($tradeOffer['response_date']) + ((60*60*24) * $this->params['config']['protestPeriodDays'])));
+                        print(',<br /><b>Review Period Ends:</b> '.$expireStr);
+                        
+                        ?>
+						</td>
+                        <td class='hsc2_l' colspan="<?php print($col_size_b_3); ?>">
+                        <?php print anchor('/team/tradeReview/trade_id/'.$tradeOffer['trade_id'].'/league_id/'.$data['league_id'].'/team_id/'.$data['id'].'/trans_type/4','Review Offer');
+					?></td>
+					</tr>
+					<?php
+					    } // END foreach
+					    $rowcount++;
+					} // if (isset($userTrades)
+					
+
                     } // ENd foreach
 					?>
                     </table>
