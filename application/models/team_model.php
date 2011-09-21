@@ -9,7 +9,6 @@
  *
 */
 class team_model extends base_model {
-
 	/*--------------------------------
 	/	VARIABLES
 	/-------------------------------*/
@@ -668,7 +667,7 @@ class team_model extends base_model {
 
 		if ($trade_id === false) return false;
 
-		$this->db->select($this->tables['TRADES'].".id, offer_date, status, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_days, comments");
+		$this->db->select($this->tables['TRADES'].".id, offer_date, status, team_1_id, send_players, receive_players, team_2_id, tradeStatus, in_period, previous_trade_id, expiration_days, comments, response_date");
 		$this->db->join($this->tables['TRADES_STATUS'],$this->tables['TRADES_STATUS'].".id = ".$this->tables['TRADES'].".status", "right outer");
 		$this->db->where($this->tables['TRADES'].".id",$trade_id);
 		$query = $this->db->get($this->tables['TRADES']);
@@ -680,7 +679,8 @@ class team_model extends base_model {
 			$trade = array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id,
 													  'send_players'=>unserialize($row->send_players), 'receive_players'=>unserialize($row->receive_players),
 													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
-													  'status'=>$row->status,'tradeStatus'=>$row->tradeStatus,'comments'=>$row->comments,'expiration_days'=>$row->expiration_days);
+													  'status'=>$row->status,'tradeStatus'=>$row->tradeStatus,'comments'=>$row->comments,'expiration_days'=>$row->expiration_days,
+													  'response_date'=>$row->response_date);
 		}
 		$query->free_result();
 		return $trade;

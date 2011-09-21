@@ -264,9 +264,9 @@
                     $col_size_b_2 = 4;
                     $col_size_b_3 = 2;
                     if ($type == 'rot') {
-                        $col_size_a_1 = 5;
-                        $col_size_b_1 = 1;
-                        $col_size_b_2 = 2;
+                        $col_size_a_1 = 7;
+                        $col_size_b_1 = 2;
+                        $col_size_b_2 = 3;
                         $col_size_b_3 = 2;
                     }
                     /*----------------------------------------
@@ -289,7 +289,7 @@
                         <b>Offer from:</b> <?php print(anchor('/team/info/'.$tradeOffer['team_1_id'],$tradeOffer['teamname'].' '.$tradeOffer['teamnick'])); ?>
                          </td>
 						<td class='hsc2_l' colspan="<?php print($col_size_b_2); ?>">
-						<b>Received:</b> <?php print(date('m/d/Y h:i:s A',strtotime($tradeOffer['offer_date'])));
+						<b>Received:</b> <?php print(date('m/d/Y h:i A',strtotime($tradeOffer['offer_date'])));
                         if ($config['tradesExpire'] == 1 && (isset($tradeOffer['expiration_days']) && !empty($tradeOffer['expiration_days']))) {
                             $expireStr = "";
                                 switch(intval($tradeOffer['expiration_days'])) {
@@ -300,7 +300,7 @@
                                         $expireStr = "Next Sim";
                                         break;
                                     default:
-                                        $expireStr = date('m/d/Y h:m A', (strtotime($tradeOffer['offer_date']) + ((60*60*24) * $tradeOffer['expiration_days'])));
+                                        $expireStr = date('m/d/Y h:i A', (strtotime($tradeOffer['offer_date']) + ((60*60*24) * $tradeOffer['expiration_days'])));
                                         break;
                                 }
                             print(',<br /><b>Expires:</b> '.$expireStr);
@@ -336,14 +336,14 @@
                         Trade between: <?php print(anchor('/team/info/'.$tradeOffer['team_1_id'],$tradeOffer['team_1_name'])); ?> and <?php print(anchor('/team/info/'.$tradeOffer['team_2_id'],$tradeOffer['team_2_name'])); ?>
                         </td>
 						<td class='hsc2_l' colspan="<?php print($col_size_b_2); ?>">
-						<b>Accepted:</b> <?php print(date('m/d/Y h:i:s A',strtotime($tradeOffer['response_date'])));
+						<b>Accepted:</b> <?php print(date('m/d/Y h:i A',strtotime($tradeOffer['response_date'])));
                         $expireStr = date('m/d/Y h:m A', (strtotime($tradeOffer['response_date']) + ((60*60*24) * $this->params['config']['protestPeriodDays'])));
                         print(',<br /><b>Review Period Ends:</b> '.$expireStr);
                         
                         ?>
 						</td>
                         <td class='hsc2_l' colspan="<?php print($col_size_b_3); ?>">
-                        <?php print anchor('/team/tradeReview/trade_id/'.$tradeOffer['trade_id'].'/league_id/'.$data['league_id'].'/team_id/'.$data['id'].'/trans_type/4','Review Offer');
+                        <?php print anchor('/team/tradeReview/trade_id/'.$tradeOffer['trade_id'].'/league_id/'.$data['league_id'].'/team_id/'.$data['id'].'/trans_type/4','Review Trade');
 					?></td>
 					</tr>
 					<?php

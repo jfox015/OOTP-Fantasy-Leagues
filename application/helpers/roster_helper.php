@@ -30,6 +30,13 @@ function logTransaction($added = array(), $dropped = array(), $claimed = array()
 	return $ci->team_model->logTransaction($added, $dropped, $claimed, $tradedTo, $tradedFrom,$commish_id, $currUser, 
 										   $isAdmin, $effective, $league_id, $team_id, $owner_id);
 }
+function processTrade($trade_id = false, $status = false, $comments = "", $league_id = false) {
+	$ci =& get_instance();
+	if (!isset($ci->team_model)) {
+		$ci->load->model('team_model');
+	}
+	return $ci->team_model->processTrade($trade_id, $status, $comments, $league_id);
+}
 function getTeamOwnerId($team_id = false) {
 	$ci =& get_instance();
 	if (!isset($ci->team_model)) {

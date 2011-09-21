@@ -103,7 +103,7 @@ class league extends BaseEditor {
 			$this->data['tradeLists'] = $this->tradeLists;
 			// TRADES EXPIRATION
 			if ($this->params['config']['tradesExpire'] == 1) {
-				//$this->dataModel->expireOldTrades($this->uriVars['id']);
+				$this->league_model->expireOldTrades($this->uriVars['id'], false, $this->debug);
 			}
 		}
 

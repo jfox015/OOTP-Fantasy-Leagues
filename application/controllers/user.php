@@ -741,15 +741,17 @@ class user extends MY_Controller {
 						foreach($league_list as $league_id) {
 							if ($this->params['config']['approvalType'] == 2) {
 								$this->league_model->getTradesInLeagueReview($currPeriod,$league_id,$this->params['config']['protestPeriodDays'], true);
-								$this->data['tradesForReview'] = $this->user_meta_model->getTradesForReview(false,$currPeriod);
 							} // END if	
 							// TRADES EXPIRATION
 							if ($this->params['config']['tradesExpire'] == 1) {
-								//$this->league_model->expireOldTrades($league_id);
+								$this->league_model->expireOldTrades($league_id, false, $this->debug);
 							} // END if	
 						} // END foreach		
 					} // END if
 					$this->data['userTrades'] = $this->user_meta_model->getTradeOffers(false,$currPeriod);
+					if ($this->params['config']['approvalType'] == 2) {
+						$this->data['tradesForReview'] = $this->user_meta_model->getTradesForReview(false,$currPeriod);
+					}
 				} // END if
 			} // END if	
 			$this->params['content'] = $this->load->view($view, $this->data, true);

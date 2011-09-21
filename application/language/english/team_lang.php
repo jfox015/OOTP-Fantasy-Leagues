@@ -3,7 +3,6 @@
 /	TRADES
 /--------------------------------------*/
 $lang['team_lineup_adjust'] = 'adjust your lineup';
-
 //-------------------------------
 // TRADE WORKFLOW MESSAGING
 // OFFER SUBMITTED

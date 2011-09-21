@@ -470,7 +470,7 @@ class league_model extends base_model {
 		$commishId = -1;
 		
 		$this->db->select('commissioner_id');
-		$this->db->where("league_id",$league_id);
+		$this->db->where("id",$league_id);
 		$query = $this->db->get($this->tblName);
 		if ($query->num_rows() > 0) {
 			$row = $query->row();
@@ -2057,7 +2057,7 @@ class league_model extends base_model {
 			// IF TRADE EXPIRATIONS ARE ENABLED, PROCESS EXPIRING TRADES
 			if ((isset($this->params['config']['useTrades']) && $this->params['config']['useTrades'] == 1 && $this->params['config']['tradesExpire'] == 1)) {
 				$summary .= $this->lang->line('sim_process_trades');
-				$summary .= $this->expireOldTrades($league_id, $this->debug);
+				$summary .= $this->expireOldTrades($league_id, true, $this->debug);
 			} // END if
 			// INCREMENT REMAINING OFFERED TRADES  FOR THE SCORING PERIOD TO THE NEXT ONE
 			$summary .= $this->lang->line('sim_increment_trades');
@@ -2573,7 +2573,19 @@ class league_model extends base_model {
 		return $summary;
 	}
 	/**
-	 * GET TRADES IN LEAGUE REVIEW.
+	 * 	GET TRADES IN LEAGUE REVIEW.
+	 *	Retrieves a list of all trades under league review It retreives trades within their active review period 
+	 *	and approves all trade that have passed their review period deadline.
+	 *	@param	$period_id		{int}		The scoring period to process waivers for.
+	 *  @param	$league_id		{int}		If not specified, no league filter is applied.
+	 *	@param	$expireDays		{int}		Number of days in the league review period, tested vs the trade response date
+	 *	@param	$rosterPeriod	{int}		Whether to apply this function to the period specified in period_id or the next (period_id + 1)
+	 *  @param	$debug			{Boolean}	TRUE to enabled tracing, FALSE to disable
+	 *	@return					{Boolean}	TRUE on success, FALSE on error
+	 *
+	 *	@since	1.0.7
+     *	@access	public
+	 *
 	 */
 	public function getTradesInLeagueReview($period_id = false, $league_id = false, $expireDays = false, $rosterPeriod = 'same', $debug = false) {
 		
@@ -2590,57 +2602,59 @@ class league_model extends base_model {
         $this->db->where('status',TRADE_PENDING_LEAGUE_APPROVAL);
 		$query = $this->db->get($this->tables['TRADES']);
         if ($query->num_rows() > 0) {
-            $row = $query->row();
-            $expireDate = (strtotime($row->response_date) + ((60*60*24) * $expireDays));
-			if ($expireDate < time()) {
-				array_push($tradeList,$row);
-			} else {
-				$processResponse = processTrade($row->id, TRADE_APPROVED, $this->lang->line('league_protest_expired_trade_approved'),$league_id);
-				if ($processResponse) {
-					$this->load->helper('roster');
-					$offeringTeamOwner = getTeamOwnerId($row->team_1_id);
-					$receivingTeamOwner = getTeamOwnerId($row->team_2_id);
-					$commishId = $this->getCommissionerId($league_id);
-					logTransaction(NULL, NULL, NULL, $row->send_players, $row->receive_players,
-					$commishId, $offeringTeamOwner,false, $period_id,
-					$league_id, $row->team_1_id, $offeringTeamOwner, $row->team_2_id);
-					
-					logTransaction(NULL, NULL, NULL, $row->receive_players, $row->send_players,
-					$commishId, $offeringTeamOwner, false, $period_id,
-					$league_id, $row->team_2_id, $receivingTeamOwner, $row->team_1_id);
-					
-					$types = array('offering','receiving');
-					$tradeTypes = loadSimpleDataList('tradeStatus');
-					foreach($types as $type) {
-						if ($type == 'offering') {
-							$msg = $this->lang->line('league_trade_approved_league_offering_team');
-							$msg = str_replace('[ACCEPTING_TEAM_NAME]', getTeamName($row->team_2_id), $msg);
-							$msg = str_replace('[USERNAME]', getUsername($offeringTeamOwner), $msg);
-							$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$row->team_1_id,'adjust your lineup'),$msg);
-							$email = getEmail($offeringTeamOwner);
-						} else {
-							$msg = $this->lang->line('league_trade_approved_league_accepting_team');
-							$msg = str_replace('[OFFERING_TEAM_NAME]', getTeamName($row->team_1_id), $msg);
-							$msg = str_replace('[USERNAME]', getUsername($receivingTeamOwner), $msg);
-							$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$row->team_2_id,'adjust your lineup'),$msg);
-							$email = getEmail($receivingTeamOwner);
-						} // END if
-						$msg .= $this->lang->line('email_footer');
-						$msg = str_replace('[COMMENTS]', $this->lang->line('league_protest_expired_trade_approved'),$msg);
-						$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
-						$data['messageBody']= $msg;
-						//print("email template path = ".$this->config->item('email_templates')."<br />");
-						$data['leagueName'] = $this->getLeagueName($league_id);
-						$data['title'] = $this->lang->line('league_email_title_trade_response');
-						$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-						// SEND MESSAGES
-						// SEND TO TEAM ONE
-						$error = !sendEmail($email,getEmail($this->params['config']['primary_contact']),
-						$this->params['config']['site_name']." Administrator",$this->getLeagueName($league_id).' Fantasy League - Trade Update - Offer '.$tradeTypes[TRADE_COMPLETED],
-						$message,'','email_trd_');
-					} // END foreach
+            foreach ($query->result() as $row) {
+				$expireDate = (strtotime($row->response_date) + ((60*60*24) * $expireDays));
+				if (time() < $expireDate) {
+					array_push($tradeList,$row);
+				} else {
+					if (!function_exists('processTrade')) { $this->load->helper('roster'); }
+					$processResponse = processTrade($row->id, TRADE_APPROVED, $this->lang->line('league_protest_expired_trade_approved'),$league_id);
+					if ($processResponse) {
+						$offeringTeamOwner = getTeamOwnerId($row->team_1_id);
+						$receivingTeamOwner = getTeamOwnerId($row->team_2_id);
+						$commishId = $this->getCommissionerId($league_id);
+						
+						logTransaction(NULL, NULL, NULL, $row->send_players, $row->receive_players,
+									   $commishId, $offeringTeamOwner,false, $period_id,
+									   $league_id, $row->team_1_id, $offeringTeamOwner, $row->team_2_id);
+						
+						logTransaction(NULL, NULL, NULL, $row->receive_players, $row->send_players,
+									   $commishId, $receivingTeamOwner, false, $period_id,
+									   $league_id, $row->team_2_id, $offeringTeamOwner, $row->team_1_id);
+						
+						$types = array('offering','receiving');
+						$tradeTypes = loadSimpleDataList('tradeStatus');
+						foreach($types as $type) {
+							if ($type == 'offering') {
+								$msg = $this->lang->line('league_trade_approved_league_offering_team');
+								$msg = str_replace('[ACCEPTING_TEAM_NAME]', getTeamName($row->team_2_id), $msg);
+								$msg = str_replace('[USERNAME]', getUsername($offeringTeamOwner), $msg);
+								$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$row->team_1_id,'adjust your lineup'),$msg);
+								$email = getEmail($offeringTeamOwner);
+							} else {
+								$msg = $this->lang->line('league_trade_approved_league_accepting_team');
+								$msg = str_replace('[OFFERING_TEAM_NAME]', getTeamName($row->team_1_id), $msg);
+								$msg = str_replace('[USERNAME]', getUsername($receivingTeamOwner), $msg);
+								$msg = str_replace('[URL_LINEUP]', anchor('/team/info/'.$row->team_2_id,'adjust your lineup'),$msg);
+								$email = getEmail($receivingTeamOwner);
+							} // END if
+							$msg .= $this->lang->line('email_footer');
+							$msg = str_replace('[COMMENTS]', $this->lang->line('league_protest_expired_trade_approved'),$msg);
+							$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+							$data['messageBody']= $msg;
+							//print("email template path = ".$this->config->item('email_templates')."<br />");
+							$data['leagueName'] = $this->getLeagueName($league_id);
+							$data['title'] = $this->lang->line('league_email_title_trade_response');
+							$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+							// SEND MESSAGES
+							// SEND TO TEAM ONE
+							$error = !sendEmail($email,getEmail($this->params['config']['primary_contact']),
+							$this->params['config']['site_name']." Administrator",$this->getLeagueName($league_id).' Fantasy League - Trade Update - Offer '.$tradeTypes[TRADE_COMPLETED],
+							$message,'','email_trd_');
+						} // END foreach
+					} // END if
 				} // END if
-			} // END if
+			} // END foreach
         } else {
             $this->errorCode = 2;
             $this->statusMess = "No trades under league review were found.";
@@ -2720,7 +2734,8 @@ class league_model extends base_model {
      *	@access	public
 	 *
 	 */
-	public function expireOldTrades($league_id = false, $debug = false) {
+	public function expireOldTrades($league_id = false, $processSimExpirations = true, $debug = false) {
+		
 		if ($league_id === false) { $league_id = $this->id; } // END if
 
 		$error = false;
@@ -2730,7 +2745,10 @@ class league_model extends base_model {
 		$this->db->join($this->tables['TRADES_STATUS'],$this->tables['TRADES_STATUS'].".id = ".$this->tables['TRADES'].".status", "right outer");
 		$this->db->where($this->tables['TRADES'].".league_id",$league_id);
 		$this->db->where($this->tables['TRADES'].".status",TRADE_OFFERED);
-		$this->db->where($this->tables['TRADES'].".expiration_days > -1");
+		$this->db->where($this->tables['TRADES'].".expiration_days > -1"); // IGNORE TRADES MARKED AS NON-EXPIRING
+		if ($processSimExpirations === false) {
+			$this->db->where($this->tables['TRADES'].".expiration_days < 500"); // IGNORE NEXT SIM TRADES FOR CRON-ESQUE CHECKS
+		}
 		$query = $this->db->get($this->tables['TRADES']);
 		if ($debug) {
 			print($this->db->last_query()."<br />");

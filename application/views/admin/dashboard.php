@@ -80,7 +80,7 @@
 			event.preventDefault();
 		});
 		$('a[rel=sim]').click(function (event) {
-			//refreshAfterUpdate = true;
+			refreshAfterUpdate = true;
 			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/processSim"+cacheBuster());
 			event.preventDefault();
 		});
@@ -103,7 +103,7 @@
 				}
 				$('div#activeStatus').html(response);
 			} else {
-				$.colorbox.remove();
+				$.colorbox.close();
 				$('div#activeStatus').addClass('success');
 				$('div#activeStatus').html('Operation Completed Successfully');
 				$('div#activeStatusBox').fadeIn("slow");

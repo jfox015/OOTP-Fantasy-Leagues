@@ -1,5 +1,4 @@
-﻿<?php
-require_once('base_editor.php');
+<?php
 /**
  *	Team.
  *	The primary controller for Team manipulation and details.
@@ -9,6 +8,7 @@ require_once('base_editor.php');
  *	@lastModified	08/24/11
  *
  */
+require_once('base_editor.php');
 class team extends BaseEditor {
 
 	/*--------------------------------
@@ -369,7 +369,7 @@ class team extends BaseEditor {
 			// GET USER INITIATED TRADES AND OFFERED TRADES
 			$this->data['allowProtests'] = ($this->params['config']['approvalType'] == 2) ? true : false;
             $tradeList = $this->dataModel->getTradesForScoringPeriod($this->data['league_id'],$this->data['scoring_period']['id'], $this->data['team_id'], false, false,$this->data['allowProtests']);
-            $trades = array('offered'=>array(),'incoming'=>array(),'approvals'=>array(),'completed'=>array(),'other'=>array());
+            $trades = array('offered'=>array(),'incoming'=>array(),'approvals'=>array(),'completed'=>array(),'protests'=>array(),'other'=>array());
 
             if (sizeof($tradeList) > 0) {
                 foreach ($tradeList as $tradeData) {
@@ -392,7 +392,13 @@ class team extends BaseEditor {
 			//$trades['incoming'] = $this->dataModel->getPendingTrades($this->data['league_id'],false,$this->data['team_id'],false,$this->data['allowProtests']);
 			// GET PROTEST COUNT
 			if ($this->data['allowProtests']) {
-				if (sizeof($trades['approvals']) > 0) {
+				$protests = $this->dataModel->getTradesForScoringPeriod($this->data['league_id'],$this->data['scoring_period']['id'], false, false,$this->data['team_id'], $this->data['allowProtests']);
+				foreach($protests as $tradeData) {
+					if ($tradeData['status'] == TRADE_PENDING_LEAGUE_APPROVAL) {
+						array_push($trades['protests'], $tradeData);
+					}
+				}
+				if (sizeof($trades['protests']) > 0) {
 					$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
 				}
 			}
@@ -560,12 +566,12 @@ class team extends BaseEditor {
 					// TRADE PROTEST
 					case TRADE_PROTEST:
 						// TEST IF THE PROTEST PERIOD IS STILL ACTIVE
-                        $protestCount = $this->dataModel->getTradeProtests(false,$this->data['trade_id']);
                         $protestStart = strtotime($trade['response_date']);
                         $protestEnd = $protestStart + ((60*60*24) * $this->params['config']['protestPeriodDays']);
                         if (time() < $protestEnd) {
                             if ($this->dataModel->logTradeProtest($this->data['trade_id'],$this->data['team_id'], $this->data['comments'])) {
-                                if (sizeof($protestCount) >= $this->params['config']['minProtests']) {
+								$protestCount = $this->dataModel->getTradeProtests(false,$this->data['trade_id']);
+								if (sizeof($protestCount) >= $this->params['config']['minProtests']) {
                                     $this->data['type'] = TRADE_REJECTED_LEAGUE;
                                     $this->data['comments'] = "The trade was rejected by the league.";
                                     $msg = $this->lang->line('team_trade_rejected_league');
@@ -576,6 +582,7 @@ class team extends BaseEditor {
                                 }
                             }
                         } else {
+							$protestCount = $this->dataModel->getTradeProtests(false,$this->data['trade_id']);
 							if (sizeof($protestCount) < $this->params['config']['minProtests']) {
 								$tradeApproved = true;
 								$this->data['type'] = TRADE_APPROVED;
@@ -600,7 +607,7 @@ class team extends BaseEditor {
 						$this->dataModel->league_id, $trade['team_2_id'], $this->dataModel->getTeamOwnerId($trade['team_2_id']), $trade['team_1_id']);
 					}
 				}
-				if ($updateDb) {
+				if ($updateDb === true) {
 					$error = !$this->dataModel->updateTrade($this->data['trade_id'], $this->data['type'], $this->data['comments']);
 				}
 				if (!$error) {
