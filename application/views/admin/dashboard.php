@@ -259,7 +259,7 @@
 
 		// IN-SEASON FUNCTIONS
 
-		if ($in_season && isset($league_info) && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
+		if (isset($league_info) && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
         <h3>Regular Season Functions</h3>
 		<b class="error_txt"><i>NOTE:</i></b> Depending on the size of your league, some of the following functions may consume a good deal of time and server resources as all players in the OOTP game will be processed. Please be
 		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.

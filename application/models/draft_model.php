@@ -37,16 +37,6 @@ class draft_model extends base_model {
 	var $emailOwnersForPick = -1;
 	var $completed = -1;
 	
-	/* DEPRECATED */
-	var $dStartDt = EMPTY_DATE_TIME_STR; 	//deprecated, use draftDate
-	var $dStartTm = EMPTY_TIME_STR; 	//deprecated, use draftDate
-	var $rndSwitch = -1; 	//deprecated
-	var $timePick2 = EMPTY_TIME_STR; 	//deprecated
-	var $timeStart = EMPTY_TIME_STR; 	//deprecated, use draftDate
-	var $dispLimit = -1; 	//deprecated
-	var $emailList = '';	//deprecated
-	var $replyList = '';	//deprecated
-	
 	/*---------------------------------------------
 	/
 	/	C'TOR
@@ -154,6 +144,14 @@ class draft_model extends base_model {
 		}
 		return true;
 	}
+	/**
+	 *	DELETE DRAFT SETTINGS.
+	 *
+	 *	Deletes the settings record for the passed league. Used mainly for league deletion operations.
+	 *
+	 *	@param	$league_id	Optional league Id param. If not passed, the internal league id is used
+	 *	@return				TRUE on success, FALSE on error
+	 */
 	public function deleteDraftSettings($league_id = false) {
 		
 		if ($league_id === false) { $league_id = $this->league_id; }
@@ -214,6 +212,11 @@ class draft_model extends base_model {
 			}
 		}
 	}
+	/*-----------------------------------------------------------------------------
+	/
+	/	GET FUNCTIONS
+	/
+	/----------------------------------------------------------------------------*/
 	/**
 	 *	GET DRAFT ENABLED.
 	 *
@@ -427,6 +430,113 @@ class draft_model extends base_model {
 		}
 		return $pick;
 	}
+	/**
+	 *	GET TEAM DRAFT PICKS.
+	 *
+	 *	Returns the round ID and the team ID for a particular team.
+	 *
+	 *	@params	$round			the round ID
+	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
+	 *	@param	$year 			The draft year. If not specified, the current year is used.
+	 *	@return					Array with the round pick and team ID values.
+	 */
+	public function getTeamPicks($round = false, $league_id = false, $year = false) {
+		
+		if ($league_id === false) $league_id = $this->league_id;
+		if ($year === false) $year = date('Y');
+		if ($round === false) $curRound = 1;
+		
+		$picks = array();
+		$this->db->select('pick_round,team_id');
+		$this->db->from($this->tables['DRAFT']);
+		$this->db->where('league_id',$league_id);
+		$this->db->where('year',$year);
+		$this->db->where('round',$round);
+		$this->db->order_by('pick_round');
+		$query = $this->db->get();
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				$picks = $picks + array($row->pick_round=>$row->team_id);
+				
+			}
+		}
+		return $picks;
+	}	
+	/**
+	 *	GET TAKEN PICKS.
+	 *
+	 *	Returns all pick rows in which the player ID is not null or > 0.
+	 *
+	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
+	 *	@param	$year 			The draft year. If not specified, the current year is used.
+	 *	@return					Array with player and overall pick ID values.
+	 */
+	public function getTakenPicks($league_id = false, $year = false) {
+		
+		if ($league_id === false) $league_id = $this->league_id;
+		if ($year === false) $year = date('Y');
+		
+		$results = array();
+		$this->db->select('pick_overall, player_id');
+		$this->db->from($this->tables['DRAFT']);
+		$this->db->where('league_id',$league_id);
+		$this->db->where('year',$year);
+		$this->db->where('player_id > 0');
+		$query =  $this->db->get();
+		if ($query->num_rows() > 0) {
+			foreach($query->result_array() as $row) {
+				array_push($results, $row);
+			}
+		}
+		return $results;
+	}
+	/**
+	 *	GET DRAFT RESULTS.
+	 *
+	 *	Returns all pick information for a leagues draft. The range can be narrowed by passing in 
+	 *	a round or team ID.
+	 *
+	 *	@param	$round			Optional round parameter
+	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
+	 *	@param	$year 			Optional draft year. If not specified, the current year is used.
+	 *	@param	$team_id 		Optional team ID parameter.
+	 *	@return					Array with all draft result data.
+	 */
+	public function getDraftResults($round = false, $league_id = false, $year = false, $team_id = false) {
+		
+		if ($league_id === false) $league_id = $this->league_id;
+		if ($year === false) $year = date('Y');
+		
+		$results = array();
+		$this->db->select('round,pick_round,pick_overall,due_date,due_time,team_id,player_id');
+		$this->db->from($this->tables['DRAFT']);
+		$this->db->where('league_id',intval($league_id));
+		$this->db->where('year',intval($year));
+		if ($team_id !== false) {
+			$this->db->where('team_id',intval($team_id));
+		}
+		if ($round !== false) {
+			$this->db->where('round',intval($round));
+		}
+		$this->db->order_by('pick_overall');
+		$query =  $this->db->get();
+		//echo($this->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				array_push($results,array('round'=>$row->round,'pick_round'=>$row->pick_round,
+											'pick_overall'=>$row->pick_overall,'due_date'=>$row->due_date,
+											'due_time'=>$row->due_time,'team_id'=>$row->team_id,
+											'player_id'=>$row->player_id));
+			}
+		}
+		return $results;
+	}
+	
+	/*-----------------------------------------------------------------------------
+	/
+	/	DRAFT OPERATIONS
+	/
+	/----------------------------------------------------------------------------*/
 	/**
 	 *	SET WAIVER ORDER.
 	 *
@@ -701,107 +811,6 @@ class draft_model extends base_model {
 		}
 	}
 	/**
-	 *	GET TEAM DRAFT PICKS.
-	 *
-	 *	Returns the round ID and the team ID for a particular team.
-	 *
-	 *	@params	$round			the round ID
-	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
-	 *	@param	$year 			The draft year. If not specified, the current year is used.
-	 *	@return					Array with the round pick and team ID values.
-	 */
-	public function getTeamPicks($round = false, $league_id = false, $year = false) {
-		
-		if ($league_id === false) $league_id = $this->league_id;
-		if ($year === false) $year = date('Y');
-		if ($round === false) $curRound = 1;
-		
-		$picks = array();
-		$this->db->select('pick_round,team_id');
-		$this->db->from($this->tables['DRAFT']);
-		$this->db->where('league_id',$league_id);
-		$this->db->where('year',$year);
-		$this->db->where('round',$round);
-		$this->db->order_by('pick_round');
-		$query = $this->db->get();
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				$picks = $picks + array($row->pick_round=>$row->team_id);
-				
-			}
-		}
-		return $picks;
-	}	
-	/**
-	 *	GET TAKEN PICKS.
-	 *
-	 *	Returns all pick rows in which the player ID is not null or > 0.
-	 *
-	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
-	 *	@param	$year 			The draft year. If not specified, the current year is used.
-	 *	@return					Array with player and overall pick ID values.
-	 */
-	public function getTakenPicks($league_id = false, $year = false) {
-		
-		if ($league_id === false) $league_id = $this->league_id;
-		if ($year === false) $year = date('Y');
-		
-		$results = array();
-		$this->db->select('pick_overall, player_id');
-		$this->db->from($this->tables['DRAFT']);
-		$this->db->where('league_id',$league_id);
-		$this->db->where('year',$year);
-		$this->db->where('player_id > 0');
-		$query =  $this->db->get();
-		if ($query->num_rows() > 0) {
-			foreach($query->result_array() as $row) {
-				array_push($results, $row);
-			}
-		}
-		return $results;
-	}
-	/**
-	 *	GET DRAFT RESULTS.
-	 *
-	 *	Returns all pick information for a leagues draft. The range can be narrowed by passing in 
-	 *	a round or team ID.
-	 *
-	 *	@param	$round			Optional round parameter
-	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
-	 *	@param	$year 			Optional draft year. If not specified, the current year is used.
-	 *	@param	$team_id 		Optional team ID parameter.
-	 *	@return					Array with all draft result data.
-	 */
-	public function getDraftResults($round = false, $league_id = false, $year = false, $team_id = false) {
-		
-		if ($league_id === false) $league_id = $this->league_id;
-		if ($year === false) $year = date('Y');
-		
-		$results = array();
-		$this->db->select('round,pick_round,pick_overall,due_date,due_time,team_id,player_id');
-		$this->db->from($this->tables['DRAFT']);
-		$this->db->where('league_id',intval($league_id));
-		$this->db->where('year',intval($year));
-		if ($team_id !== false) {
-			$this->db->where('team_id',intval($team_id));
-		}
-		if ($round !== false) {
-			$this->db->where('round',intval($round));
-		}
-		$this->db->order_by('pick_overall');
-		$query =  $this->db->get();
-		//echo($this->db->last_query()."<br />");
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				array_push($results,array('round'=>$row->round,'pick_round'=>$row->pick_round,
-											'pick_overall'=>$row->pick_overall,'due_date'=>$row->due_date,
-											'due_time'=>$row->due_time,'team_id'=>$row->team_id,
-											'player_id'=>$row->player_id));
-			}
-		}
-		return $results;
-	}
-	/**
 	 *	DRAFT PLAYER.
 	 *	Submits a player to be drafted. This option can also be used to perform maintenance (such as voiding 
 	 *	picks, or managing pick due date/time) as well. 
@@ -847,7 +856,19 @@ class draft_model extends base_model {
 		return true;
 		
 	}
-	
+	/**
+	 *	ROLLBACK PICK.
+	 *
+	 *	Sets all player_id values to NULL from the highest pick made, back to and including the value of <code>pick_overall</code>.
+	 *
+	 *	@param		$pick_overall	{int}		Overall pick ID
+	 *	@param		$league_id		{int}		Optional league Id param. If not passed, the internal league id is used
+	 *	@param		$year			{int}		Draft year
+	 *	@return						{Boolean}	TRUE on success, FALSE on error
+	 *
+	 *	@since		1.0
+	 *	@access		public
+	 */
 	public function rollbackPick($pick_overall = false, $league_id = false, $year = false) {
 		
 		if ($pick_overall === false) { return; }
@@ -862,6 +883,19 @@ class draft_model extends base_model {
 		$this->db->update($this->tables['DRAFT']);
 		return true;
 	}
+	/**
+	 *	SKIP PICK.
+	 *
+	 *	Sets the player id for the passed pick to -999, which effectively by passes it in the draft..
+	 *
+	 *	@param		$pick_overall	{int}		Overall pick ID
+	 *	@param		$league_id		{int}		Optional league Id param. If not passed, the internal league id is used
+	 *	@param		$year			{int}		Draft year
+	 *	@return						{Boolean}	TRUE on success, FALSE on error
+	 *
+	 *	@since		1.0
+	 *	@access		public
+	 */
 	public function skipPick($pick_overall = false, $league_id = false, $year = false) {
 		
 		if ($pick_overall === false) { return; }
@@ -871,6 +905,20 @@ class draft_model extends base_model {
 		$this->resetPick($pick_overall,$league_id = false, $year = false, -999);
 		return true;
 	}	
+	/**
+	 *	RESET PICK.
+	 *
+	 *	Resets or overwrites an idividual picks player ID information. To reset a pick, pass NULL. To edit, pass a player_id value.
+	 *
+	 *	@param		$pick_overall	{int}		Overall pick ID
+	 *	@param		$league_id		{int}		Optional league Id param. If not passed, the internal league id is used
+	 *	@param		$year			{int}		Draft year
+	 *	@param		$player_id		{int}		The update player id. Pass reset to void pick
+	 *	@return						{Boolean}	TRUE on success, FALSE on error
+	 *
+	 *	@since		1.0
+	 *	@access		public
+	 */
 	public function resetPick($pick_overall = false, $league_id = false, $year = false, $player_id = false ) {
 		
 		if ($pick_overall === false) { return; }
@@ -888,6 +936,20 @@ class draft_model extends base_model {
 		$this->db->update($this->tables['DRAFT']);
 		return true;
 	}
+	/**
+	 *	RESET DRAFT.
+	 *
+	 *	Resets the draft to it's inital state wiping out all player picks. it does not destroy the structure of 
+	 *	schedule of a draft, however
+	 *
+	 *	@param		$league_id		{int}		Optional league Id param. If not passed, the internal league id is used
+	 *	@param		$year			{int}		Draft year
+	 *	@param		$team_id		{int}		Optional team Id param. If not passed, no team filtering is performed
+	 *	@return						{Boolean}	TRUE on success, FALSE on error
+	 *
+	 *	@since		1.0
+	 *	@access		public
+	 */
 	public function draftReset($league_id = false, $year = false, $team_id = false ) {
 		if ($league_id === false) $league_id = $this->league_id;
 		if ($year === false) $year = date('Y');
@@ -901,7 +963,18 @@ class draft_model extends base_model {
 		$this->db->update($this->tables['DRAFT']);
 		return true;
 	}
-	
+	/**
+	 *	GET USER RESULTS.
+	 *
+	 *	Returns a list of the passed users picks for the draft.
+	 *
+	 *	@param		$userId			{int}	The user ID
+	 *	@param		$league_id		{int}	Optional league Id param. If not passed, the internal league id is used
+	 *	@return					{Array}	Array of pick information
+	 *
+	 *	@since		1.0
+	 *	@access		public
+	 */
 	public function getUserResults($userId = false, $league_id = false) {
 		
 		if ($userId === false) return;
@@ -935,11 +1008,13 @@ class draft_model extends base_model {
 		}
 		return $picks;
 	}
-	/*---------------------------------------------
+	/*------------------------------------------------------------------------------
 	/
 	/	DRAFT LISTS
+	/	Revised in 1.0.5 Beta to allow users to make and arrange drfat list order 
+	/	on client side, then save, via AJAX, the draft list to the DB.
 	/
-	/--------------------------------------------*/
+	/-----------------------------------------------------------------------------*/
 	/**
 	 * GET USER PICKS.
 	 * Returns a list of draft list choices by the specified team owner for the specified league.
@@ -1058,7 +1133,6 @@ class draft_model extends base_model {
 	
 		return true;
 	}
-	
 	/**
 	 * REMOVE FROM DRAFT LISTS.
 	 * Removes a drafted player from all draft lists they appear on.
@@ -1495,9 +1569,20 @@ class draft_model extends base_model {
 		return $values;
 	}
 	
-	/*-----------------------------------------
-	 * DEPRECATED FUCNTIONS
-	 * --------------------------------------*/
+	/*---------------------------------------------------------------------
+	 *
+	 * DEPRECATED VARS AND FUCNTIONS
+	 *
+	 * ------------------------------------------------------------------*/
+	/* DEPRECATED */
+	var $dStartDt = EMPTY_DATE_TIME_STR; 	//deprecated, use draftDate
+	var $dStartTm = EMPTY_TIME_STR; 	//deprecated, use draftDate
+	var $rndSwitch = -1; 	//deprecated
+	var $timePick2 = EMPTY_TIME_STR; 	//deprecated
+	var $timeStart = EMPTY_TIME_STR; 	//deprecated, use draftDate
+	var $dispLimit = -1; 	//deprecated
+	var $emailList = '';	//deprecated
+	var $replyList = '';	//deprecated
 	/**
 	 * @deprecated
 	 */

@@ -1031,11 +1031,12 @@ class league extends BaseEditor {
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
 		}
-		if (isset($this->uriVars['period_id'])) {
-			$curr_period_id = 	$this->uriVars['period_id'];
-		} else {
-			$curr_period_id = $this->params['config']['current_period'];
-		}
+		//if (isset($this->uriVars['period_id'])) {
+		//	$curr_period_id = 	$this->uriVars['period_id'];
+		//} else {
+		//	$curr_period_id = $this->params['config']['current_period'];
+		//}
+		$curr_period_id = $this->getScoringPeriod();
 		$curr_period = getScoringPeriod($curr_period_id);
 
 		$this->data['curr_period'] = $curr_period_id;

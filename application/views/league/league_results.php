@@ -132,9 +132,14 @@
                 } // END if
 				?>
 				<tr>
-                	<td class="hsc2_l" colspan="3"><strong>Active Total</strong></td>
-                    <td class="hsc2_l"><?php echo($active_score); ?></td>
-                </tr>
+                	<td class="hsc2_l" colspan="2"><strong>Active Total</strong></td>
+                    <td class="hsc2_l"><?php 
+					if (isset($team_data['stats_active'])) { 
+					print($team_data['stats_active']); 
+					} ?>
+					</td>
+					<td class="hsc2_l"><?php echo($active_score); ?></td>
+                </tr>                
                 <tr class='headline'>
                     <td colspan='4'>Reserve Players</td>
                 </tr>
@@ -166,9 +171,15 @@
                 } // END if
 				?>
                 <tr>
-                	 <td class="hsc2_l" colspan="3"><strong>Reserve Total</strong></td>
-                    <td class="hsc2_l"><?php echo($reserve_score); ?></td>
+                	<td class="hsc2_l" colspan="2"><strong>Reserve Total</strong>
+					<td class="hsc2_l"><?php 
+					if (isset($team_data['stats_reserve'])) { 
+					print($team_data['stats_reserve']); 
+					} ?>
+					</td>
+					<td class="hsc2_l"><?php echo($reserve_score); ?></td>
                 </tr>
+				
                 </table>
                 <br clear="all" />
             </div>  <!-- end batting stat div -->

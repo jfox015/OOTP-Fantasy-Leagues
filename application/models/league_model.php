@@ -827,7 +827,7 @@ class league_model extends base_model {
 		$query->free_result();
 		return $teamNames;
 	}
-	public function loadGameData($game_id = false, $team_model, $excludeList = array(), $league_id = false) {
+	public function loadGameData($game_id = false, $team_model, $excludeList = array(), $league_id = false, $debug = false) {
 
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($game_id === false) return false;
@@ -844,17 +844,17 @@ class league_model extends base_model {
 		}
 		$query->free_result();
 
-
 		// LOAD RELEVANT SCORING CATEGORIES
 		$scoring_rules = $this->getScoringRules($this->id);
 
 		// NOW GET EACH TEAMS ROSTERS
 		$rosters = array('home'=>array(),'away'=>array());
 		foreach ($teams as $key => $team_id) {
+			$statsCompiled = array(1=>array(), -1=>array());
 			// GET ACTIVE BATTERS
 			if ($team_model->load($team_id)) {
 				$team_data = array('id'=>$team_id,'team_name'=>$team_model->teamname." ".$team_model->teamnick,
-								   'players_active'=>array(),'players_reserve'=>array());
+								   'players_active'=>array(),'players_reserve'=>array(),'stats_active'=>'','stats_reserve'=>'');
 				$statuses = array(1, -1,2);
 				foreach ($statuses as $status) {
 					$player_list = array();
@@ -875,30 +875,22 @@ class league_model extends base_model {
 							$select .= strtolower(get_ll_cat($cat, true));
 						}
 						// SUBQUERY FOR FANTASY TOTALS
-						$select .= ",(SELECT total FROM fantasy_players_scoring WHERE player_id = ".$player_data['id']." AND
-									league_id = ".$league_id." AND scoring_period_id = ".$scoring_period['id']." AND
+						$select .= ",(SELECT total FROM fantasy_players_scoring WHERE player_id = ".intval($player_data['id'])." AND
+									league_id = ".intval($league_id)." AND scoring_period_id = ".intval($scoring_period)." AND
 									scoring_type = ".$scoring_rules['scoring_type'].") AS total ";
 
 						// GET ALL PLAYERS SCORING FOR TEAMS ROSTER
 						$player_stats = array();
 						$this->db->flush_cache();
 						$this->db->select($select);
-						$this->db->where("player_id",$player_data['id']);
-						$this->db->where("scoring_period_id",intval($scoring_period['id']));
+						$this->db->where("player_id",intval($player_data['id']));
+						$this->db->where("scoring_period_id",intval($scoring_period));
 						$query = $this->db->get("fantasy_players_compiled_".$type);
 						//echo($this->db->last_query()."<br />");
 						if ($query->num_rows() > 0) {
 							$player_stats = $query->row();
 						} // END if
 						$query->free_result();
-
-						//print ("Size of player stats = ".sizeof($player_stats)."<br />");
-
-						//$this->db->select('*');
-						//$this->db->where('fantasy_players_scoring.player_id', $player_data['id']);
-						//$this->db->where('fantasy_players_scoring.league_id',$rules['league_id']);
-						//$this->db->where('fantasy_players_scoring.scoring_period_id',$scoring_period);
-						//$pQuery = $this->db->get('fantasy_players_scoring');
 						$pRow = false;
 						$stats = "";
 						$total = 0;
@@ -909,17 +901,21 @@ class league_model extends base_model {
 								foreach($scoring_rules[$type] as $cat => $val) {
 									$colName = strtolower(get_ll_cat($cat, true));
 									if ($player_stats->$colName != 0) {
+										if (!empty($stats)) $stats .= ", ";
 										$stats .= $player_stats->$colName." ".strtoupper(get_ll_cat($cat));
-										if (($colCount+1) != sizeof($scoring_rules[$type])) { $stats.=", "; }
+										//if (($colCount+1) != sizeof($scoring_rules[$type])) { $stats.=", "; }
+										$useStatus = $status;
+										if ($status == 2) {
+											$useStatus = -1;
+										}
+										if (isset($statsCompiled[$useStatus][$cat])) {
+											$statsCompiled[$useStatus][$cat] += $player_stats->$colName;
+										} else {
+											$statsCompiled[$useStatus][$cat] = $player_stats->$colName;
+										}
 									}
 									$colCount++;
 								}
-								/*$this->db->select('total');
-								$this->db->from('fantasy_players_scoring');
-								$this->db->where("player_id",$player_data['id']);
-								$this->db->where("scoring_period_id",intval($scoring_period['id']));*/
-
-
 								$total = $player_stats->total;
 							}
 							//$pQuery->free_result();
@@ -932,6 +928,15 @@ class league_model extends base_model {
 					}
 					if ($status == 1) $team_data['players_active'] = $player_list;
 					else $team_data['players_reserve'] = $team_data['players_reserve'] + $player_list;
+				}
+				foreach ($statsCompiled as $statusType => $compiled_stats) {
+					$statsStr = "";
+					foreach ($compiled_stats as $cat => $value) {
+						if (!empty($statsStr)) $statsStr .= ", ";
+						$statsStr .= $value." ".strtoupper(get_ll_cat($cat));
+					}
+					if ($statusType == 1) { $typeStr = 'stats_active'; } else { $typeStr = 'stats_reserve'; }
+					$team_data[$typeStr] = $statsStr;
 				}
 				$rosters[$key] = $team_data;
 			}
@@ -1833,9 +1838,10 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 		$games = array();
 		$this->db->select('id, home_team_id, home_team_score, away_team_id, away_team_score');
-		$this->db->where('league_id',$league_id);
-		$this->db->where('scoring_period_id',$period_id);
+		$this->db->where('league_id',intval($league_id));
+		$this->db->where('scoring_period_id',intval($period_id));
 		$query = $this->db->get('fantasy_leagues_games');
+		//print($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				// RESOLVE TEAM NAMES

@@ -1355,7 +1355,7 @@ class team extends BaseEditor {
 		$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 		$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
 		
-		if (!$this->params['loggedIn'] || (!in_array($this->data['team_id'],$this->params['userTeams']) && (!$isAdmin && !$isCommish))) {
+		if (!$this->params['loggedIn'] || ($this->dataModel->owner_id != $this->params['currUser'] && (!$isAdmin && !$isCommish))) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />This page is accessible only by the owner of this team.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else if ($this->draft_model->completed != 1) {
