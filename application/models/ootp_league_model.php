@@ -1,7 +1,7 @@
 <?php
 /**
  *	OOTP LEAGUE MODEL CLASS.
- *	
+ *
  *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
  *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
  *	@version		1.0
@@ -17,7 +17,7 @@ class ootp_league_model extends base_model {
 	 *	@var $_NAME:Text
 	 */
 	var $_NAME = 'ootp_league_model';
-	
+
 	var $league_id  = -1;
 	var $name = '';
 	var $abbr = '';
@@ -37,20 +37,20 @@ class ootp_league_model extends base_model {
 	/---------------------------------------------*/
 	function ootp_league_model() {
 		parent::__construct();
-		
+
 		$this->tblName = 'leagues';
 		$this->tables['LEAGUE_EVENTS'] = 'league_events';
-		
+
 		$this->fieldList = array();
 		$this->conditionList = array();
-		$this->readOnlyList = array('league_id', 'name', 'abbr', 'logo_file', 'start_date', 'current_date', 'league_state', 'league_level','background_color_id','text_color_id');  
-		
+		$this->readOnlyList = array('league_id', 'name', 'abbr', 'logo_file', 'start_date', 'current_date', 'league_state', 'league_level','background_color_id','text_color_id');
+
 		$this->requiredTables = array('cities','nations','games','league_events','leagues','players_awards','players',
 									  'players_batting','players_pitching','players_fielding','players_game_batting',
 									  'players_career_batting_stats','players_game_pitching_stats',
 									  'players_career_fielding_stats','players_career_pitching_stats','teams',
 									  'team_history');
-		
+
 		parent::_init();
 	}
 	/*--------------------------------------------------
@@ -101,8 +101,8 @@ class ootp_league_model extends base_model {
 	}
 	/**
 	 *	VALIDATE LOADED SQL FILES
-	 *	This function accepts an array of MySQL export files names and determines which if any of the 
-	 * 	required files are missing. Returns a list of required OOTP sql files that are not 
+	 *	This function accepts an array of MySQL export files names and determines which if any of the
+	 * 	required files are missing. Returns a list of required OOTP sql files that are not
 	 *	cfound in the passed file list.
 	 *	@param	$fileList	Array of SQL files
 	 *	@param	$extention	Custom file extension (if different form OOTP export defualt)
@@ -121,7 +121,7 @@ class ootp_league_model extends base_model {
 			}
 			array_push($loadedTables,$ex);
 		}
-		
+
 		if (sizeof($this->requiredTables) > 0) {
 			foreach ($this->requiredTables as $tableName) {
 				$found = false;
@@ -132,16 +132,16 @@ class ootp_league_model extends base_model {
 		}
 		return $missingTables;
 	}
-	
-	
-	
+
+
+
 	/**
 	 *	Returns a list of public leagues.
 	 *	@return	TRUE or FALSE
 	 */
 	public function in_season() {
 		if ($this->league_id != -1) {
-			if ($this->league_state > 1 && $this->league_state < 3) {
+			if ($this->league_state > 1 && $this->league_state < 4) {
 				return true;
 			} else {
 				return false;
@@ -206,12 +206,12 @@ class ootp_league_model extends base_model {
 			$this->statusMess = 'Required OOTP database tables have not been loaded.';
 		}
 		return $events;
-		
+
 	}
 	public function getAllSeasons() {
 		##### Get Seasons #####
 		$years = array();
-		
+
 		$sql="SELECT DISTINCT year FROM players_career_batting_stats WHERE league_id=".$this->league_id." GROUP BY year ORDER BY year DESC;";
 		$query = $this->db->query($sql);
 		if ($query->num_rows() > 0) {
@@ -222,7 +222,7 @@ class ootp_league_model extends base_model {
 		$query->free_result();
 		return $years;
 	}
-	
+
 	public function load($id,$field = 'id') {
 		// TEST IF OOTP DATA FILES HAVE BEEN UPLOADED OR NOT
 		$query = $this->db->query("SHOW TABLES LIKE '".$this->tblName."'");
@@ -231,7 +231,7 @@ class ootp_league_model extends base_model {
 			return parent::load($id,$field,false);
 		} else {
 			$this->errorCode = 1;
-			$this->statusMess = 'Required OOTP database tables have not been loaded.';	
+			$this->statusMess = 'Required OOTP database tables have not been loaded.';
 			return false;
 		}
 	}
@@ -239,4 +239,4 @@ class ootp_league_model extends base_model {
 	/	PRIVATE/PROTECTED FUNCTIONS
 	/--------------------------------------*/
 
-}  
+}

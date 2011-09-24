@@ -153,6 +153,90 @@
     <tr>
     	<td class="hsc2_l" style='padding:3px'>
 		<div id="activeStatusBox"><div id="activeStatus"></div></div>
+        <?php
+        // IN-SEASON FUNCTIONS
+         $currDate = strtotime($league_info->current_date);
+         $startDate = strtotime($league_info->start_date);
+
+		if ($in_season && isset($league_info) && $currDate > $startDate && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
+		<h3>Regular Season Functions</h3>
+		<b class="error_txt"><i>NOTE:</i></b> Depending on the size of your league, some of the following functions may consume a good deal of time and server resources as all players in the OOTP game will be processed. Please be
+		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.
+		<br clear="all" /><br />
+		<ul class="iconmenu">
+			<?php if ($config['last_process_time'] < $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && (isset($leagues) && sizeof($leagues) > 0)) { ?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" border="0" />',array('rel'=>'sim')); ?><br />
+			Process Current Sim Results</li><?php } ?>
+			<?php
+			// LEAGUE SETTINGS
+			if (isset($leagues) && sizeof($leagues) > 0) { ?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" border="0" />',array('rel'=>'upavail')); ?><br />
+			Update Players</li>
+			<?php
+			} else { ?>
+			<li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png"
+			width="24" height="24" border="0" align="left" alt="" title="" class="floated_icon" /><div
+			class="floated_caption"><?php print($this->lang->line('dash_seasonfuncs_pre_add_leagues')); ?></div>
+			</li>
+			<?php } // END if
+			?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
+			Update Player Elidgibility</li>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'rating')); ?><br />
+			Update Player Ratings</li>
+			<?php
+			 if ($config['last_process_time'] > $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && $summary_size > 0) { ?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'resetSim')); ?><br />
+			Undo last Sim</li>
+			<?php
+			}
+			if($currPeriod['manual_waivers'] == -1) { ?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/page_swap.png" width="48" height="48" border="0" />',array('rel'=>'runWaivers')); ?><br />
+			Process Waivers</li>
+			<?php
+			}
+			?>
+		</ul>
+        <br clear="all" /><br />
+		<?php }
+
+
+        if (isset($league_info) && $currDate <= $startDate) { ?>
+        <h3>Pre-Season Functions</h3>
+        <?php if ($playerCount == 0) {
+		echo('<br /><span class="error" style="margin:0px; width:90%;">'.$this->lang->line('dash_error_no_players').'</span><br />'); } ?>
+        <ul class="iconmenu">
+           	<?php
+			$hidden_funcs = false;
+			?>
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'reset')); ?><br />
+            Reset game to Pre-season</li>
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />',array('rel'=>'avail')); ?><br />
+            Import Available Players</li>
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar_empty.png" width="48" height="48" border="0" />',array('rel'=>'sched')); ?><br />
+            Generate Scoring Schedule</li>
+
+            <?php
+			// LEAGUE SETTINGS
+			if (isset($leagues) && sizeof($leagues) > 0) { ?>
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar.png" width="48" height="48" border="0" />',array('rel'=>'games')); ?><br />
+            Generate Head-to-Head Schedules</li>
+            <?php
+			} else { ?>
+            <li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png"
+            width="24" height="24" border="0" align="left" alt="" title="" class="floated_icon" /><div
+            class="floated_caption"><?php print($this->lang->line('dash_settings_pre_add_leagues')); ?></div>
+            </li>
+			<?php } // END if
+			?>
+        </ul>
+        <br clear="all" /><br />
+        <?php
+		}  // END if
+
+		// DATABASE FUNCTIONS
+        ?>
+
         <h3>File/Database Functions</h3>
         <?php
 		if (!file_exists($this->params['config']['sql_file_path']) || !is_readable($this->params['config']['sql_file_path'])) {
@@ -222,84 +306,7 @@
         </ul>
         <br clear="all" /><br />
         <?php
-        $currDate = strtotime($league_info->current_date);
-        $startDate = strtotime($league_info->start_date);
-        if (isset($league_info) && $currDate <= $startDate) { ?>
-        <h3>Pre-Season Functions</h3>
-        <?php if ($playerCount == 0) {
-		echo('<br /><span class="error" style="margin:0px; width:90%;">'.$this->lang->line('dash_error_no_players').'</span><br />'); } ?>
-        <ul class="iconmenu">
-           	<?php
-			$hidden_funcs = false;
-			?>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'reset')); ?><br />
-            Reset game to Pre-season</li>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />',array('rel'=>'avail')); ?><br />
-            Import Available Players</li>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar_empty.png" width="48" height="48" border="0" />',array('rel'=>'sched')); ?><br />
-            Generate Scoring Schedule</li>
-
-            <?php
-			// LEAGUE SETTINGS
-			if (isset($leagues) && sizeof($leagues) > 0) { ?>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar.png" width="48" height="48" border="0" />',array('rel'=>'games')); ?><br />
-            Generate Head-to-Head Schedules</li>
-            <?php
-			} else { ?>
-            <li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png"
-            width="24" height="24" border="0" align="left" alt="" title="" class="floated_icon" /><div
-            class="floated_caption"><?php print($this->lang->line('dash_settings_pre_add_leagues')); ?></div>
-            </li>
-			<?php } // END if
-			?>
-        </ul>
-        <br clear="all" /><br />
-        <?php
-		}  // END if
-
-		// IN-SEASON FUNCTIONS
-
-		if (isset($league_info) && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
-        <h3>Regular Season Functions</h3>
-		<b class="error_txt"><i>NOTE:</i></b> Depending on the size of your league, some of the following functions may consume a good deal of time and server resources as all players in the OOTP game will be processed. Please be
-		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.
-        <br clear="all" /><br />
-        <ul class="iconmenu">
-            <?php if ($config['last_process_time'] < $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && (isset($leagues) && sizeof($leagues) > 0)) { ?>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" border="0" />',array('rel'=>'sim')); ?><br />
-            Process Current Sim Results</li><?php } ?>
-			<?php
-			// LEAGUE SETTINGS
-			if (isset($leagues) && sizeof($leagues) > 0) { ?>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" border="0" />',array('rel'=>'upavail')); ?><br />
-            Update Players</li>
-			<?php
-			} else { ?>
-            <li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png"
-            width="24" height="24" border="0" align="left" alt="" title="" class="floated_icon" /><div
-            class="floated_caption"><?php print($this->lang->line('dash_seasonfuncs_pre_add_leagues')); ?></div>
-            </li>
-			<?php } // END if
-			?>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
-           	Update Player Elidgibility</li>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'rating')); ?><br />
-           	Update Player Ratings</li>
-            <?php
-		  	 if ($config['last_process_time'] > $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && $summary_size > 0) { ?>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'resetSim')); ?><br />
-            Undo last Sim</li>
-			<?php
-			}
-			if($currPeriod['manual_waivers'] == -1) { ?>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/page_swap.png" width="48" height="48" border="0" />',array('rel'=>'runWaivers')); ?><br />
-            Process Waivers</li>
-			<?php
-			}
-			?>
-        </ul>
-        <?php } ?>
-        <?php if (isset($config['bug_db'])) { ?>
+        if (isset($config['bug_db'])) { ?>
         <br clear="all" /><br />
         <h3>Project/Bug Tracking Database</h3>
         <ul class="iconmenu">
@@ -412,9 +419,9 @@
         <b>Current League Date:</b><br /> <?php echo(date('m/d/Y',strtotime($league_info->current_date))); ?><br />
 
         <br /><b>Current Scoring period:</b><br />
-		<?php if (isset($currPeriod['id']) && $currPeriod['id'] != -1) {
-		echo($currPeriod['id']." ".date('m/d',strtotime($currPeriod['date_start']))." - ".date('m/d',strtotime($currPeriod['date_end']))); ?><br />
-      	 <?php } else if (!isset($currPeriod['id']) && $league_info->current_date == $league_info->start_date) {
+		<?php if (isset($currPeriodConfig['id']) && $currPeriodConfig['id'] != -1) {
+		echo($currPeriodConfig['id']." ".date('m/d',strtotime($currPeriodConfig['date_start']))." - ".date('m/d',strtotime($currPeriodConfig['date_end']))); ?><br />
+      	 <?php } else if (!isset($currPeriodConfig['id']) && $league_info->current_date == $league_info->start_date) {
         echo("1 ".date('m/d',strtotime($league_info->current_date))); ?><br />
         <?php } else { ?>
         The current scoring period will appear once the OOTP season begins.<br />
