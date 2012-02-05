@@ -770,6 +770,34 @@ if ( ! function_exists('loadProjectsBugs')) {
 	}
 }
 // ------------------------------------------------------------------------
+if ( ! function_exists('loadOOTPVersions')) {
+	function loadOOTPVersions($selectBox = true) {
+
+		return array("10"=>"OOTP 10",
+					 "11"=>"OOTP 11",
+					 "12"=>"OOTP 12",
+					 "13"=>"OOTP 13"
+					 //,"14"=>OOTP 14" -- Future support
+					 );
+	}
+}
+// ------------------------------------------------------------------------
+if ( ! function_exists('getOOTPGameVersion')) {
+	function getOOTPGameVersion($version = -1) {
+		
+		$outVer = -1;
+		$versions = loadOOTPVersions();
+		foreach ($versions as $ver => $label) {
+			if ($ver == $version) {
+				$outVer = $label;
+				brek;
+			}
+		}
+		return $outVer;
+	}
+}
+
+// ------------------------------------------------------------------------
 if ( ! function_exists('loadSecurityClasses')) {
 	function loadSecurityClasses($selectBox = true) {
 

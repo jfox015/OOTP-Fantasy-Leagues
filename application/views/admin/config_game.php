@@ -32,6 +32,8 @@
             $form->space();
             $form->text('ootp_league_id','OOTP League ID','required',($input->post('ootp_league_id') ? $input->post('ootp_league_id') : $config['ootp_league_id']));
             $form->br();
+			$form->select('ootp_version|ootp_version',loadOOTPVersions(),'OOTP Version',($this->input->post('ootp_version') ? $this->input->post('ootp_version') : $config['ootp_version']));
+			$form->space();
 			$form->select('timezone|timezone',loadTimezones(),'Timezone',($this->input->post('timezone') ? $this->input->post('timezone') : $config['timezone']));
 			$form->space();
 			$responses[] = array('1','Enabled');

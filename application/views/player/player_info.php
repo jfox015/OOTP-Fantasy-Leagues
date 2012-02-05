@@ -216,7 +216,7 @@
 						} else {
 							$draftTeam = $teamList[$thisItem['draft_team_id']]['name'];
 						}
-						if ($thisItem['draft_year']==0) {echo $teamList[$thisItem['draft_team_id']]['ing'];} else {echo $draftTeam;}
+						if ($thisItem['draft_year']==0) {echo $teamList[$thisItem['draft_team_id']]['name'];} else {echo $draftTeam;}
 					}
 					?>
                     <?php 

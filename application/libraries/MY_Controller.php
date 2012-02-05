@@ -131,6 +131,10 @@ class MY_Controller extends Controller {
         if (!isset($this->ootp_league_model)) {
 			$this->load->model('ootp_league_model');
 		} // END if
+        if ($this->params['config']['ootp_version'] != OOTP_CURRENT_VERSION) {
+            $this->ootp_league_model->ootp_version = $this->params['config']['ootp_version'];
+        }
+        $this->ootp_league_model->init();
 		if ($this->ootp_league_model->load($this->params['config']['ootp_league_id'],'league_id')) {
 			$this->params['league_info'] = $this->ootp_league_model;
 			$this->data['league_info'] = $this->ootp_league_model;
@@ -140,6 +144,7 @@ class MY_Controller extends Controller {
         if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
             $currPeriod = $this->params['config']['current_period']-1;
         }
+
 		// GET USER DATA IF LOGGED IN
 		$this->params['loggedIn'] = $this->auth->logged_in();
 		$this->params['name'] = '';

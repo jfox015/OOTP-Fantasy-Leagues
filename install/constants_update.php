@@ -140,6 +140,8 @@ define('QUERY_STANDARD',2);
 define('QUERY_EXTENDED',3);
 
 define('SECURITY_RECAPTHCA',1);
+
+define('OOTP_CURRENT_VERSION',OOTP_VERSION_12);
 /*
 |--------------------------------------------------------------------------
 | File/Path Defaults
@@ -209,7 +211,7 @@ define("ACCESS_ADMINISTRATE",6);
 |--------------------------------------------------------------------------
 */
 define('SITE_NAME','OOTP Fantasy Leagues');
-define('SITE_VERSION','1.0.6 Beta');
+define('SITE_VERSION','1.0.1');
 define('MOD_SITE_URL','http://www.ootpfantasyleagues.com/');
 define("BUG_URL",'http://www.ootpfantasyleagues.com/fantasy/about/bug_report');
 define("UPDATE_URL",'http://www.ootpfantasyleagues.com/version/curr_version.txt');

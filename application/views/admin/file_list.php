@@ -31,7 +31,9 @@
 	?>
     
     <?php if (isset($fileList) && sizeof($fileList) > 0) { ?>
-    <b style="color:#c00; font-weight:bold;">NOTE:</b> File names that are <span class="hilight">highlighted</span> are required by the fantasy league mod to work correctly.
+    <b style="color:#c00; font-weight:bold;">NOTE:</b> File names that are required by the fantasy league mod to work correctly are highlighted.<br />
+    Files <span class="hilight">highlighted</span> red are required for all OOTP versions.<br />
+
     <form action='<?php echo($config['fantasy_web_root']); ?>admin/loadSQLFiles' method='post' name="fileList" id="fileList">    
    	<div id="activeStatusBox"><div id="activeStatus"></div></div>
     <div class='textbox'>
@@ -70,9 +72,9 @@
 			  } // END if
 		  } // END foreach
 	  } // END if
-	  if ($hilite == 1) { echo('<span class="hilight">'); } // END if
+	  if ($hilite == 1) { echo('<span class="hilight">'); } else if ($hilite == 2) { echo('<span class="hilight2">'); }// END if
 	  echo($file); 
-	  if ($hilite == 1) { echo('</span>'); } // END if
+	  if ($hilite == 1 || $hilite == 2) { echo('</span>'); } // END if
       if (isset($filesLoaded[$config['sql_file_path']."/".$file])) { echo("- <b>LOADED</b>"); } // END if
       $fsize=filesize($config['sql_file_path']."/".$file);
 	  ?>

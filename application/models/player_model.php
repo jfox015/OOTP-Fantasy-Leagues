@@ -1,29 +1,29 @@
 <?php
-/**
- *	PLAYER MODEL CLASS.
- *	
- *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
- *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
- *	@version		1.0
- *
-*/
+    /**
+     *	PLAYER MODEL CLASS.
+     *
+     *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
+     *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+     *	@version		1.0
+     *
+     */
 class player_model extends base_model {
 
-	/*--------------------------------
-	/	VARIABLES
-	/-------------------------------*/
-	/**
-	 *	SLUG.
-	 *	@var $_NAME:Text
-	 */
-	var $_NAME = 'player_model';
-	
-	/**
-	 *	PLAYER ID.
-	 *	@var $player_id:Int
-	 */
-	var $player_id = -1;
-	/**
+    /*--------------------------------
+     /	VARIABLES
+     /-------------------------------*/
+    /**
+     *	SLUG.
+     *	@var $_NAME:Text
+     */
+    var $_NAME = 'player_model';
+
+    /**
+     *	PLAYER ID.
+     *	@var $player_id:Int
+     */
+    var $player_id = -1;
+    /**
 	 *	PLAYER ROSTER STATUS.
 	 *	@var $player_status:Int
 	 */
@@ -71,7 +71,7 @@ class player_model extends base_model {
 		$count = $this->db->count_all_results();
 		return $count;
 	}
-	public function getPlayerDetails($player_id = false) {
+	public function getPlayerDetails($player_id = false, $ootp_ver = OOTP_v11_LESS) {
 		
 		if ($player_id === false) { return; }
 		$details = array();
@@ -92,8 +92,17 @@ class player_model extends base_model {
 			$birthNation = '';
 			
 			if (isset($details['city_of_birth_id']) && $details['city_of_birth_id'] != 0) {
-				$this->db->select('cities.name as birthCity, cities.region as birthRegion, nations.short_name as birthNation');
+                $select = 'cities.name as birthCity, nations.short_name as birthNation';
+                if ($ootp_ver < 12) {
+                    $select .= ',cities.region as birthRegion';
+                } else {
+                    $select .= ',states.name as birthRegion';
+                }
+				$this->db->select($select);
 				$this->db->join('nations','nations.nation_id = cities.nation_id','right outer');
+                if ($ootp_ver >= 12) {
+                    $this->db->join('states','states.state_id = cities.state_id','right outer');
+                }
 				$this->db->where('cities.city_id',$details['city_of_birth_id']);
 				$cQuery = $this->db->get('cities');
 				if ($cQuery->num_rows() > 0) {

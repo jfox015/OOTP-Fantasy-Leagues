@@ -299,7 +299,7 @@ class players extends MY_Controller {
 			$this->dataModel->load($pid);
 
 			$this->data['teamList'] = getOOTPTeams($this->params['config']['ootp_league_id'], false);
-			$this->data['thisItem'] = $this->dataModel->getPlayerDetails($pid);
+			$this->data['thisItem'] = $this->dataModel->getPlayerDetails($pid, intval($this->params['config']['ootp_version']));
 
 			$this->load->model('news_model');
 			$this->data['playerNews'] = $this->news_model->getNewsByParams(NEWS_PLAYER,$pid,1);
@@ -376,7 +376,9 @@ class players extends MY_Controller {
 					}
 					if ($this->params['loggedIn']) {
 						$userTeams = $this->user_meta_model->getUserTeamIds($this->draft_model->league_id,$this->params['currUser']);
-						$this->data['user_team_id'] = $userTeams[0];
+						if (sizeof($userTeams) > 0) {
+                            $this->data['user_team_id'] = $userTeams[0];
+                        }
 						$this->data['listEligible'] = ($this->draft_model->playerInUserList($pid, $this->draft_model->getUserPicks($this->params['currUser']))) ? -1 : 1;
 					}
 				}

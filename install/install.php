@@ -11,6 +11,7 @@
 define('OFL_INSTALLING', true);
 include_once('./common.php');
 include_once('./constants_install.php');
+include_once('../application/helpers/datalist_helper.php');
 include_once('../application/helpers/auth_helper.php');
 
 function display_setup_form( $error = null ) {
@@ -64,6 +65,23 @@ function display_setup_form( $error = null ) {
 		        </optgroup>
 		    </select></td>
             <td>Choose default timezone for site<br /></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="ootp_version">OOTP Game Version</label></th>
+			<td><select id="ootp_version" name="ootp_version">
+			<?php
+				$versions = loadOOTPVersions();
+			    foreach( $versions as $ver => $label){
+			        echo('<option value="'.$ver.'"');
+					if ($ver == OOTP_CURRENT_VERSION) {
+						echo(' selected="selected"');
+					}
+					echo('">'.$label.'</option>');
+			    } 
+			?>
+			</select>
+			</td>
+            <td>Versions 10 and higher supported<br /></td>
 		</tr>
         <tr>
 			<td colspan="3"><h2>Paths</h2></td>
@@ -193,6 +211,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 		$ootp_league_abbr = isset($_POST['ootp_league_abbr']) ? stripslashes($_POST['ootp_league_abbr']) : '';
 		$ootp_league_id = isset($_POST['ootp_league_id']) ? $_POST['ootp_league_id'] : '';
 		$timezone = isset($_POST['timezone']) ? $_POST['timezone'] : '';
+		$ootp_version = isset($_POST['ootp_version']) ? $_POST['ootp_version'] : '';
 
 		$ootp_html_report_path = isset($_POST['ootp_html_report_path']) ? stripslashes($_POST['ootp_html_report_path']) : '';
 		$html_root = isset($_POST['html_root']) ? $_POST['html_root'] : '';
@@ -228,6 +247,11 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 
 		if (empty($timezone)) {
 			$errors .= '<li>You select a default timezone for your league.</li>';
+			$error = true;
+		} // END if
+		
+		if (empty($ootp_version)) {
+			$errors .= '<li>You select the version number of your OOTP game.</li>';
 			$error = true;
 		} // END if
 
@@ -285,7 +309,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 
 		if (!$error) {
 			// ------------------------------------
-			// UPDATE - 1.0.3
+			// UPDATE - 0.3 beta
 			// TEST WRITE STATUS OF FILES BEFORE LOADING UP SQL AND WRITING CONFIGS
 			// -------------------------------------
 			$perm_head = "<h2>Error</h2><h3>Required Files could not be written</h3>";
@@ -340,6 +364,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 											'ootp_league_name'=>$ootp_league_name,
 											'ootp_league_id'=>$ootp_league_id,
 											'timezone'=>$timezone,
+											'ootp_version'=>$ootp_version,
 											'ootp_league_abbr'=>$ootp_league_abbr,
 											'ootp_html_report_path'=>$ootp_html_report_path,
 											'sql_file_path'=>$sql_file_path,

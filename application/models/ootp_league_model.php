@@ -29,6 +29,8 @@ class ootp_league_model extends base_model {
 	var $background_color_id = '#1E1E9E';
 	var $text_color_id = '#DD0101';
 	var $requiredTables = array();
+    // UPDATE 1.0.1 - Optional tables to determine v12 or earlier
+    var $ootp_version = OOTP_CURRENT_VERSION;
 	/*---------------------------------------------
 	/
 	/	C'TOR
@@ -45,19 +47,24 @@ class ootp_league_model extends base_model {
 		$this->conditionList = array();
 		$this->readOnlyList = array('league_id', 'name', 'abbr', 'logo_file', 'start_date', 'current_date', 'league_state', 'league_level','background_color_id','text_color_id');
 
-		$this->requiredTables = array('cities','nations','games','league_events','leagues','players_awards','players',
-									  'players_batting','players_pitching','players_fielding','players_game_batting',
-									  'players_career_batting_stats','players_game_pitching_stats',
-									  'players_career_fielding_stats','players_career_pitching_stats','teams',
-									  'team_history');
-
-		parent::_init();
 	}
 	/*--------------------------------------------------
 	/
 	/	PUBLIC FUNCTIONS
 	/
 	/-------------------------------------------------*/
+	public function init() {
+        $this->requiredTables = array('cities','nations','games','league_events','leagues','players_awards','players',
+            'players_batting','players_pitching','players_fielding','players_game_batting',
+            'players_career_batting_stats','players_game_pitching_stats',
+            'players_career_fielding_stats','players_career_pitching_stats','teams',
+            'team_history');
+        if (intval($this->ootp_version) >= 12) {
+            array_push($this->requiredTables,'states');
+        }
+        parent::_init();
+    }
+
 	// SPECIAL QUERIES
 	public function writeConfigDates($start_date,$current_date,$adminConfirm = false) {
 		if ((defined('ENVIRONMENT') && ENVIRONMENT != "production") && $adminConfirm) {
@@ -124,7 +131,7 @@ class ootp_league_model extends base_model {
 
 		if (sizeof($this->requiredTables) > 0) {
 			foreach ($this->requiredTables as $tableName) {
-				$found = false;
+                $found = false;
 				if (!in_array($tableName,$loadedTables)) {
 					array_push($missingTables,$tableName.$extension);
 				}
@@ -132,9 +139,6 @@ class ootp_league_model extends base_model {
 		}
 		return $missingTables;
 	}
-
-
-
 	/**
 	 *	Returns a list of public leagues.
 	 *	@return	TRUE or FALSE

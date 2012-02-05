@@ -232,6 +232,7 @@ class admin extends MY_Controller {
 			'ootp_league_name' => 'OOTP League Name',
 			'ootp_league_abbr' => 'OOTP League Abbreviation',
 			'ootp_league_id' => 'OOTP League ID',
+			'ootp_version' => 'OOTP Game Version',
 			'fantasy_web_root' => 'Fantasy League Root URL',
 			'ootp_html_report_path' => 'HTML Reports URL',
 			'ootp_html_report_links' => 'Show OOTP HTML Reports',
