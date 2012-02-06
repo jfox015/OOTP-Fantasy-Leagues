@@ -1,4 +1,4 @@
-<?
+<?php
 require_once('base_editor.php');
 /**
  *	Members.
