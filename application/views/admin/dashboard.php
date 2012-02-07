@@ -72,6 +72,14 @@
 			}
 			event.preventDefault();
 		});
+        $('a[rel=remove]').click(function (event) {
+            refreshAfterUpdate = true;
+            if (confirm("Are you sure you want to perform this operation? This will remove ALL the tables in the database and render the mod unusable unless you reinstall.")) {
+                if (confirm("Are you sure you want to do this? This operation will wipe out the entire set of fantasy database tables and CANNOT be undone."))
+                    runAjax("<?php echo($config['fantasy_web_root']); ?>admin/uninstall");
+            }
+            event.preventDefault();
+        });
 		$('a[rel=resetSim]').click(function (event) {
 			refreshAfterUpdate = true;
 			if (confirm("Are you sure you want to perform this operation? This will reset the entire season to it's starting point and wipe out ALL season stats, transactions and fantasy data.")) {
@@ -303,7 +311,13 @@
             <!-- PLACEHOLDER - PERMISSIONS -->
             <li><?php echo anchor('admin/configSecurity','<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
             Security Settings</li>
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'remove')); ?><br />
+            Uninstall Database</li>
+            <li></li>
+            <li></li>
+            <li></li>
         </ul>
+
         <br clear="all" /><br />
         <?php
         if (isset($config['bug_db'])) { ?>
