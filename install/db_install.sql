@@ -1,6 +1,7 @@
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 DROP TABLE IF EXISTS `countries`;
 DROP TABLE IF EXISTS `fantasy_config`;
+DROP TABLE IF EXISTS `fantasy_divisions`;
 DROP TABLE IF EXISTS `fantasy_draft`;
 DROP TABLE IF EXISTS `fantasy_draft_config`;
 DROP TABLE IF EXISTS `fantasy_draft_list`;

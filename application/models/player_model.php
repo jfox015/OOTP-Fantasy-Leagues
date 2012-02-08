@@ -71,7 +71,7 @@ class player_model extends base_model {
 		$count = $this->db->count_all_results();
 		return $count;
 	}
-	public function getPlayerDetails($player_id = false, $ootp_ver = OOTP_v11_LESS) {
+	public function getPlayerDetails($player_id = false, $ootp_ver = OOTP_CURRENT_VERSION) {
 		
 		if ($player_id === false) { return; }
 		$details = array();
@@ -93,7 +93,10 @@ class player_model extends base_model {
 			
 			if (isset($details['city_of_birth_id']) && $details['city_of_birth_id'] != 0) {
                 $select = 'cities.name as birthCity, nations.short_name as birthNation';
-                if ($ootp_ver < 12) {
+                /* UPDATE 1.0.1
+				 * 	OOTP 12 removed the cities.region column so use states.name for 12 or >
+				 */
+				if ($ootp_ver < 12) {
                     $select .= ',cities.region as birthRegion';
                 } else {
                     $select .= ',states.name as birthRegion';

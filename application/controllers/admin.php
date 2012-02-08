@@ -1551,13 +1551,9 @@ class admin extends MY_Controller {
      * @since   1.0.1
      */
     function uninstall() {
-        $mess = loadDataUpdate($this->params['config']['sql_file_path'],'application/config/db_uninstall.sql');
-        if (!is_array($mess) || (is_array($mess) && sizeof($mess) == 0)) {
-            if (is_array($mess)) {
-                $status = "An error occured processing the SQL files.";
-            } else {
-                $status = "error: ".$mess;
-            }
+        $mess = loadDataUpdate($this->params['config']['sql_file_path'],DIR_WRITE_PATH.'application/config/db_uninstall.sql');
+        if (strpos($mess,"error")) {
+            $status = $mess;
         } else {
             $status = "OK";
         }
