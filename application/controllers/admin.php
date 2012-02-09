@@ -4,7 +4,7 @@
  *	The primary controller for the Admin Section.
  *	@author			Jeff Fox
  *	@dateCreated	11/13/09
- *	@lastModified	08/16/10
+ *	@lastModified	02/07/12
  *
  */
 class admin extends MY_Controller {
@@ -117,7 +117,7 @@ class admin extends MY_Controller {
 			$this->data['missingFiles'] = $this->ootp_league_model->validateLoadedSQLFiles($fileList);
 
 			//-------------------------------------------------------------
-			// UPDATE VERSION 1.0.2
+			// UPDATE VERSION 0.2 beta
 			//-------------------------------------------------------------
 			// UPDATE CHECKING
 			// CHECKS IF UPDATE CONSTANTS ARE DEFINED AND IF UPDATED FILES ARE
@@ -143,9 +143,9 @@ class admin extends MY_Controller {
 					$this->data['configUpdate'] = true;
 				}
 			}
-			//  END 1.0.2 MODS
+			//  END 0.2 MODS
 			//-------------------------------------------------------------
-			// UPDATE VERSION 1.0.3
+			// UPDATE VERSION 0.3 beta
 			//-------------------------------------------------------------
 			// VERSION CHECK AND VERIFICATION
 			$this->data['version_check'] = getLatestModVersion($this->debug);
@@ -155,13 +155,13 @@ class admin extends MY_Controller {
 			if ((empty($this->params['config']['season_start']) || $this->params['config']['season_start'] == EMPTY_DATE_STR) || (empty($this->params['config']['draft_period']) || $this->params['config']['draft_period'] == EMPTY_DATE_STR.":".EMPTY_DATE_STR)) {
 				$this->data['settingsError'] = str_replace('[FANTASY_SETTINGS_URL]',$this->params['config']['fantasy_web_root'].'admin/configFantasy',$this->lang->line('admin_error_fantasy_settings'));
 			}
-			//  END 1.0.3 MODS
+			//  END 0.3 MODS
 			//-------------------------------------------------------------
-			// UPDATE VERSION 1.0.4
+			// UPDATE VERSION 0.4 beta
 			//-------------------------------------------------------------
 			// VERSION CHECK AND VERIFICATION
 			$this->data['summary_size'] = getSimSummaries(true);
-			//  END 1.0.4 MODS
+			//  END 0.4 MODS
 
 
 			$this->params['content'] = $this->load->view($this->views['DASHBOARD'], $this->data, true);
@@ -265,7 +265,6 @@ class admin extends MY_Controller {
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
 			} else {
-				//echo("Form validation pass.<br />");
 				$configArr = array();
 				foreach($fields as $field => $label) {
 					$value= ($this->input->post($field)) ? $this->input->post($field) : '';
@@ -273,7 +272,6 @@ class admin extends MY_Controller {
 						$value = stripslashes($value); // END if
 					} // END if
 					$configArr = $configArr + array($field=>$value);
-					//echo($field." = ".$value."<br />");
 				}
 				$change = update_config_by_array($configArr);
 				if ($change) {
@@ -312,7 +310,6 @@ class admin extends MY_Controller {
 			}
 			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
 			if ($this->form_validation->run() == false) {
-				//echo("Form validation fail.<br />");
 				$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
 				$this->data['subTitle'] = "Social Media Sharing Options";
@@ -321,7 +318,6 @@ class admin extends MY_Controller {
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
 			} else {
-				//echo("Form validation pass.<br />");
 				$configArr = array();
 				foreach($fields as $field => $label) {
 					$value= ($this->input->post($field)) ? $this->input->post($field) : '';
@@ -528,7 +524,6 @@ class admin extends MY_Controller {
 				foreach($fields as $field => $label) {
 					$value= ($this->input->post($field)) ? intval($this->input->post($field)) : 0;
 					$configArr = $configArr + array($field=>$value);
-					//echo($field." = ".$value."<br />");
 				}
 				$change = update_config_by_array($configArr);
 				if ($change) {
@@ -553,7 +548,7 @@ class admin extends MY_Controller {
 	 *	SECURITY CONFIG.
 	 *	Updates the sites security and spam protection settings.
 	 *
-	 *	@since 1.0.6
+	 *	@since 0.6
 	 *
 	 */
 	function configSecurity() {
@@ -839,7 +834,7 @@ class admin extends MY_Controller {
 	 *
 	 *	Redirects to userActivations()  on success
 	 *
-	 *	@since	1.0.5
+	 *	@since	0.5
 	 */
 	public function activateUser() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -872,7 +867,7 @@ class admin extends MY_Controller {
 	 *
 	 *	Redirects to userActivations()  on success
 	 *
-	 *	@since	1.0.5
+	 *	@since	0.5
 	 */
 	public function deactivateUser() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -905,7 +900,7 @@ class admin extends MY_Controller {
 	 *
 	 *	Redirects to dashboard()  on success
 	 *
-	 *	@since	1.0.6
+	 *	@since	0.6
 	 */
 	public function setUserLockStatus() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -934,7 +929,7 @@ class admin extends MY_Controller {
 	 *	USER ACTIVATIONS
 	 *	Lists all users awaiting activation.
 	 *
-	 *	@since	1.0.5
+	 *	@since	0.5
 	 */
 	public function userActivations() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -1027,31 +1022,12 @@ class admin extends MY_Controller {
 				$uploadSuccess = false;
 				if (isset($_FILES['dataFiles']['name']) && !empty($_FILES['dataFiles']['name'])) {
 
-					//ini_set('post_max_size','8M');
 					$maxinbytes = return_bytes(ini_get('post_max_size'));
-					//print($_FILES['dataFiles']['name']."<br />");
-					//print($_FILES['dataFiles']['size']."<br />");
-					//print_r($_FILES);
 					if ($_FILES['dataFiles']['size'] > $maxinbytes) {
 						$error = true;
 						$this->data['outMess'] .= 'The zip uploaded exceeds the allowable file size of '.$maxinbytes.'.<br />';
 					} else {
 						$target_file_name = DIR_WRITE_PATH.PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name'];
-					//$this->load->helper(array('form', 'url'));
-					//$config = array();
-					//$config['upload_path'] = PATH_ATTACHMENTS_WRITE;
-					//print ("upload path = ".PATH_ATTACHMENTS_WRITE."<br />");
-					//$config['allowed_types'] = 'zip';
-					//$config['max_size'] = $maxinbytes;
-					//$config['overwrite'] = true;
-					//$this->load->library('upload');
-					//$this->upload->initialize($config);
-					//$uploadSuccess = $this->upload->do_upload('dataFiles');
-					//print ("upload path = ".PATH_ATTACHMENTS_WRITE.$_FILES['dataFiles']['name']."<br />");
-
-
-					//print ("uploaded file = ".$_FILES['dataFiles']['tmp_name']."<br />");
-					//print ("target file = ".$target_file_name."<br />");
 
 						if (move_uploaded_file($_FILES['dataFiles']['tmp_name'], $target_file_name)) {
 							chmod($target_file_name,0755);
@@ -1119,7 +1095,7 @@ class admin extends MY_Controller {
 	 *	SIM SUMMARIES.
 	 *	List the games scoring periods.
 	 *
-	 *	@since 	1.0.4
+	 *	@since 	0.4
 	 */
 	public function simSummaries() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -1176,14 +1152,14 @@ class admin extends MY_Controller {
 			$fileList = getSQLFileList($this->params['config']['sql_file_path']);
 
 			//-------------------------------------------------------------
-			// UPDATE VERSION 1.0.3
+			// UPDATE VERSION 0.3
 			//-------------------------------------------------------------
 			// CHECK FOR DB CONNECTION FILE
 			if (defined('DB_CONNECTION_FILE') && !file_exists($this->params['config']['sql_file_path']."/".DB_CONNECTION_FILE)) {
 				if (!function_exists('read_file')) { $this->load->helper('file'); }
 				$this->data['db_file_update'] = updateDBFile((($this->params['config']['stats_lab_compatible'] == 1)?true:false),$this->params['config']['sql_file_path']);
 			}
-			// END 1.0.3 MODS
+			// END 0.3 MODS
 
 			$this->data['fileList'] = $fileList;
 			$this->data['missingFiles'] = $this->ootp_league_model->validateLoadedSQLFiles($fileList);

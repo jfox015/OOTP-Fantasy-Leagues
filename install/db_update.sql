@@ -1,7 +1,7 @@
 
 #----------------------------------------------------
 #	UPDATE SQL QUERY
-#	Version 1.0 and 1.0.1 TO 1.0.2
+#	Version 0.1  0.2
 #	REMOVE ALL COMMENTS FOR DIST
 
 ALTER TABLE `fantasy_leagues` ADD `playoff_rounds` TINYINT NOT NULL;
@@ -13,7 +13,7 @@ INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('share_stumble', '1
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('share_addtoany', '1');
 
 #	UPDATE SQL QUERY
-#	Version 1.0.2 to 1.0.3
+#	Version 0.2 to 0.3
 #	REMOVE ALL COMMENTS FOR DIST
 
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('google_analytics_enable', '-1');
@@ -25,7 +25,7 @@ INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('max_user_leagues',
 INSERT INTO `fantasy_config` (`cfg_key`, `cfg_value`) VALUES('primary_contact', '1');
 
 #	UPDATE SQL QUERY
-#	Version 1.0.3 to 1.0.5
+#	Version 0.3 to 0.5
 #	REMOVE ALL COMMENTS FOR DIST
 DROP TABLE IF EXISTS `fantasy_leagues_requests_status`;
 DROP TABLE IF EXISTS `fantasy_leagues_requests`;
@@ -62,7 +62,7 @@ INSERT INTO `fantasy_leagues_scoring_batting` (`id`, `league_id`, `scoring_type`
 INSERT INTO `fantasy_leagues_scoring_batting` (`id`, `league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(2, 0, 2, 18, 0, 8, 0, 11, 0, 9, 0, 10, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 INSERT INTO `fantasy_leagues_scoring_batting` (`id`, `league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(4, 0, 4, 3, 1, 6, 2, 7, 3, 8, 4, 10, 1, 11, 1, 12, 1, 9, 2, 4, -1, 14, 1, 58, -1, -1, -1);
 INSERT INTO `fantasy_leagues_scoring_batting` (`id`, `league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(3, 0, 3, 18, 0, 11, 0, 8, 0, 10, 0, 9, 0, 25, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
-TRUNCATE `fantasy_leagues_scoring_pitching`;
+TRUNCATE TABLE `fantasy_leagues_scoring_pitching`;
 INSERT INTO `fantasy_leagues_scoring_pitching` (`id`, `league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(1, 0, 1, 40, 0, 38, 0, 42, 0, 32, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 INSERT INTO `fantasy_leagues_scoring_pitching` (`id`, `league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(2, 0, 2, 40, 0, 38, 0, 42, 0, 32, 0, 42, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 INSERT INTO `fantasy_leagues_scoring_pitching` (`id`, `league_id`, `scoring_type`, `type_0`, `value_0`, `type_1`, `value_1`, `type_2`, `value_2`, `type_3`, `value_3`, `type_4`, `value_4`, `type_5`, `value_5`, `type_6`, `value_6`, `type_7`, `value_7`, `type_8`, `value_8`, `type_9`, `value_9`, `type_10`, `value_10`, `type_11`, `value_11`) VALUES(3, 0, 3, 40, 0, 29, 0, 38, 0, 32, 0, 42, 0, 52, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
@@ -115,8 +115,9 @@ INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(1, 'Email')
 INSERT INTO `users_activation_types` (`id`, `activationType`) VALUES(2, 'Administrator');
 
 #	UPDATE SQL QUERY
-#	Version 1.0.5 to 1.0.6
+#	Version 0.5 to 0.6
 #	REMOVE ALL COMMENTS FOR DIST
+ALTER TABLE `users_core` ADD `password_salt` varchar(50) NOT NULL AFTER `password`;
 ALTER TABLE `users_meta` ADD `timezone` TEXT NOT NULL DEFAULT '';
 ALTER TABLE `fantasy_teams_scoring` ADD `stats_compiled` TEXT NOT NULL AFTER `scoring_period_id`;
 ALTER TABLE `fantasy_teams_trades` CHANGE `expiration_date` `expiration_days` VARCHAR( 10 ) NOT NULL;
@@ -130,4 +131,8 @@ INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_theme',
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_lang', '');
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('recaptcha_compliant', '');
 UPDATE `fantasy_config` SET `cfg_value`= '500' WHERE `cfg_key` = 'defaultExpiration';
-ALTER TABLE `users_core` ADD `password_salt` varchar(50) NOT NULL AFTER `password`;
+
+#	UPDATE SQL QUERY
+#	Version 0.6 and 1.0 to 1.0.1
+#	REMOVE ALL COMMENTS FOR DIST
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('ootp_version', 12);

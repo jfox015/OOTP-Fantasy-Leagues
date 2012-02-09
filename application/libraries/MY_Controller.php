@@ -8,9 +8,9 @@
  *	checking.
  *	
  *	@author			Jeff Fox
- *	@version		1.0.2
- *	@dateCreated	10/4/09
- *	@lastModified	10/11/09
+ *	@version		1.0.8
+ *	@dateCreated	10/04/09
+ *	@lastModified	02/08/12
  *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
  */
 /*
@@ -125,99 +125,103 @@ class MY_Controller extends Controller {
 		$this->views['TRANSACTION_SUMMARY'] = 'transaction_summary';
 		$this->views['RECAPTCHA_JS'] = 'recaptcha';
         
-        $this->load->helper('config');
-        $this->params['config'] = $this->data['config'] = load_config();
+		// UPDATE 1.0.1
+		// TEST FOR DB TABLES
+		// REDIRECT TO ERROR PAGE IF NO TABLES FOUND
+        if (!$this->db->table_exists('fantasy_config')) {
+			redirect('media/nodb.php');
+		} else {
+			$this->load->helper('config');
+			$this->params['config'] = $this->data['config'] = load_config();
 
-        if (!isset($this->ootp_league_model)) {
-			$this->load->model('ootp_league_model');
-		} // END if
-        if ($this->params['config']['ootp_version'] != OOTP_CURRENT_VERSION) {
-            $this->ootp_league_model->ootp_version = $this->params['config']['ootp_version'];
-        }
-        $this->ootp_league_model->init();
-		if ($this->ootp_league_model->load($this->params['config']['ootp_league_id'],'league_id')) {
-			$this->params['league_info'] = $this->ootp_league_model;
-			$this->data['league_info'] = $this->ootp_league_model;
-		}  // END if//else {
+			if (!isset($this->ootp_league_model)) {
+				$this->load->model('ootp_league_model');
+			} // END if
+			if ($this->params['config']['ootp_version'] != OOTP_CURRENT_VERSION) {
+				$this->ootp_league_model->ootp_version = $this->params['config']['ootp_version'];
+			}
+			$this->ootp_league_model->init();
+			if ($this->ootp_league_model->load($this->params['config']['ootp_league_id'],'league_id')) {
+				$this->params['league_info'] = $this->ootp_league_model;
+				$this->data['league_info'] = $this->ootp_league_model;
+			}  // END if//else {
 
-        $currPeriod = false;
-        if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
-            $currPeriod = $this->params['config']['current_period']-1;
-        }
+			$currPeriod = false;
+			if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
+				$currPeriod = $this->params['config']['current_period']-1;
+			}
 
-		// GET USER DATA IF LOGGED IN
-		$this->params['loggedIn'] = $this->auth->logged_in();
-		$this->params['name'] = '';
-		$this->params['currUser'] = -1;
-		$this->params['accessLevel'] = 1;
-		$this->params['userTeams'] = array();
-		$this->params['userTimezone'] = '';
-		if ($this->params['loggedIn']) {
-			if ($this->auth->load_user()) {
-				$this->params['name'] = $this->user_auth_model->username;
-				$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
-				$this->params['accessLevel'] = $this->user_auth_model->accessId;
-				$this->params['userTeams'] = $this->user_meta_model->getUserTeams(false, $this->params['currUser'],$currPeriod  );
-				// EDIT 1.0.6, track and use member timezone preferences
-				$this->params['userTimezone'] = $this->user_meta_model->getTimezone($this->params['currUser']);
+			// GET USER DATA IF LOGGED IN
+			$this->params['loggedIn'] = $this->auth->logged_in();
+			$this->params['name'] = '';
+			$this->params['currUser'] = -1;
+			$this->params['accessLevel'] = 1;
+			$this->params['userTeams'] = array();
+			$this->params['userTimezone'] = '';
+			if ($this->params['loggedIn']) {
+				if ($this->auth->load_user()) {
+					$this->params['name'] = $this->user_auth_model->username;
+					$this->params['currUser'] = (!empty($this->user_auth_model->id)) ? $this->user_auth_model->id : -1;
+					$this->params['accessLevel'] = $this->user_auth_model->accessId;
+					$this->params['userTeams'] = $this->user_meta_model->getUserTeams(false, $this->params['currUser'],$currPeriod  );
+					// EDIT 0.6, track and use member timezone preferences
+					$this->params['userTimezone'] = $this->user_meta_model->getTimezone($this->params['currUser']);
+				} // END if
+			} // END if
+			// APPLY GLOBAL USER VARS TO VIEW DATA VARS
+			$this->data['name'] = $this->params['name'];
+			$this->data['accessLevel'] = $this->params['accessLevel'];
+			$this->data['loggedIn'] = $this->params['loggedIn'];
+			$this->data['currUser'] = $this->params['currUser'];
+			$this->data['userTeams'] = $this->params['userTeams'];
+			$this->data['userTimezone'] = $this->params['userTimezone'];
+			
+			// LOAD theme support -- Not used in current version
+			$this->themes = $this->config->item('themes');
+			$this->params['theme'] = $this->themes['current'];
+			
+			$this->data['message'] = '';
+			
+			$this->params['title'] = $this->lang->line('site_name');
+			$this->params['tag_line'] = $this->lang->line('tag_line');
+			
+			$this->params['subNavSection'] = array(top_nav($this->params['loggedIn'],$this->data['accessLevel'] == ACCESS_ADMINISTRATE,$this->params['userTeams']));
+			
+			$this->params['pageType'] = PAGE_NORMAL;
+			$this->params['update_message'] = '';
+			if (strpos(current_url(),'dashboard') === false) { 
+				if (((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development')) && 
+					defined('PATH_INSTALL')) && $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+					
+					if (defined('MAIN_INSTALL_FILE') && file_exists(PATH_INSTALL.MAIN_INSTALL_FILE)) {
+						$this->params['installWarning'] = true;
+						$this->params['install_message'] = $this->lang->line('install_warning');
+					} // END if
+					if (defined('DB_CONNECTION_FILE') && !file_exists($this->params['config']['sql_file_path']."/".DB_CONNECTION_FILE)) {
+						$this->params['dbConnectError'] = true;
+						$this->params['dbConnect_message'] = $this->lang->line('dbConnect_message');
+					} // END if
+					if (defined('DB_UPDATE_FILE') && file_exists(PATH_INSTALL.DB_UPDATE_FILE)) {
+						$this->params['dataUpdate'] = true;
+					} // END if
+					if ((defined('CONFIG_UPDATE_FILE') && file_exists(PATH_INSTALL.CONFIG_UPDATE_FILE)) || 
+						(defined('CONSTANTS_UPDATE_FILE') && file_exists(PATH_INSTALL.CONSTANTS_UPDATE_FILE)) ||
+						(defined('DATA_CONFIG_UPDATE_FILE') && file_exists(DATA_CONFIG_UPDATE_FILE))) {
+						$this->params['configUpdate'] = true;
+					} // END if
+					if (isset($this->params['$dataUpdate']) || isset($this->params['configUpdate'])) {
+						$this->params['update_message'] = $this->lang->line('update_required');
+					} // END if
+					
+				} // END if
 			} // END if
 		} // END if
-		// APPLY GLOBAL USER VARS TO VIEW DATA VARS
-		$this->data['name'] = $this->params['name'];
-		$this->data['accessLevel'] = $this->params['accessLevel'];
-		$this->data['loggedIn'] = $this->params['loggedIn'];
-		$this->data['currUser'] = $this->params['currUser'];
-		$this->data['userTeams'] = $this->params['userTeams'];
-		$this->data['userTimezone'] = $this->params['userTimezone'];
-		
-		// LOAD theme support
-		$this->themes = $this->config->item('themes');
-		$this->params['theme'] = $this->themes['current'];
-		
-		$this->data['message'] = '';
-		
-		$this->params['title'] = $this->lang->line('site_name');
-		$this->params['tag_line'] = $this->lang->line('tag_line');
-		
-
-			//$this->data['message'] = "OOTP League load error. Code: ".$this->ootp_league_model->errorCode.", ".$this->ootp_league_model->statusMess;
-		//}
-		$this->params['subNavSection'] = array(top_nav($this->params['loggedIn'],$this->data['accessLevel'] == ACCESS_ADMINISTRATE,$this->params['userTeams']));
-		
-		$this->params['pageType'] = PAGE_NORMAL;
-		$this->params['update_message'] = '';
-		if (strpos(current_url(),'dashboard') === false) { 
-			if (((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development')) && 
-				defined('PATH_INSTALL')) && $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
-				
-				if (defined('MAIN_INSTALL_FILE') && file_exists(PATH_INSTALL.MAIN_INSTALL_FILE)) {
-					$this->params['installWarning'] = true;
-					$this->params['install_message'] = $this->lang->line('install_warning');
-				} // END if
-				if (defined('DB_CONNECTION_FILE') && !file_exists($this->params['config']['sql_file_path']."/".DB_CONNECTION_FILE)) {
-					$this->params['dbConnectError'] = true;
-					$this->params['dbConnect_message'] = $this->lang->line('dbConnect_message');
-				} // END if
-				if (defined('DB_UPDATE_FILE') && file_exists(PATH_INSTALL.DB_UPDATE_FILE)) {
-					$this->params['dataUpdate'] = true;
-				} // END if
-				if ((defined('CONFIG_UPDATE_FILE') && file_exists(PATH_INSTALL.CONFIG_UPDATE_FILE)) || 
-					(defined('CONSTANTS_UPDATE_FILE') && file_exists(PATH_INSTALL.CONSTANTS_UPDATE_FILE)) ||
-					(defined('DATA_CONFIG_UPDATE_FILE') && file_exists(DATA_CONFIG_UPDATE_FILE))) {
-					$this->params['configUpdate'] = true;
-				} // END if
-				if (isset($this->params['$dataUpdate']) || isset($this->params['configUpdate'])) {
-					$this->params['update_message'] = $this->lang->line('update_required');
-				} // END if
-				
-			} // END if
-		} // END if
-	}
+	}	
 	/**
 	 *	GET SCORING PERIOD.
 	 *	Returns the current scoring period.
 	 *
-	 *	@since					1.0.4
+	 *	@since					0.4
 	 *	@see					trade
 	 *	@see					tradeResponse
 	 *	@see					tradeOffer

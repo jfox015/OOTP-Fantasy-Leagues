@@ -19,7 +19,7 @@ error_reporting(0);
 <head>
 <link rel="shortcut icon" href="../images/favicon.png" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>OOTP Fantasy League Upgrade Utility</title>
+<title>OOTP Fantasy Baseball Leagues Upgrade Utility</title>
 <link rel="stylesheet" href="install.css" type="text/css" />
 
 </head>
@@ -53,6 +53,25 @@ $(document).ready(function(){
 		include_once('../application/config/constants.php');
 		$db_err = $error = false;
 		$errors = '';
+		
+		if (file_exists('../application/config/') && file_exists("./constants_update.php")) {
+			if (is_writable('../application/config/')) {
+				$fcs = file_get_contents("./constants_update.php");
+				$fcs = str_replace("[WEB_SITE_URL]",SITE_URL,$fcs);
+				$fcs = str_replace("[SITE_DIRECTORY]","/".DIR_APP_ROOT."/",$fcs);
+				$fcs = str_replace("[HTML_ROOT]",DIR_WRITE_PATH,$fcs);
+				$fh = fopen('../application/config/constants.php',"w");
+				fwrite($fh, $fcs);
+				fclose($fh);
+				unset($fcs);
+				chmod('../application/config/constants.php', 0666);
+				unset($fh);
+				$config_write = true;
+			} else {
+				$config_write = false;
+			} // END if
+		} // END if file_exists()
+		
 		// -------------------------------
 		//	CONTINUE UPGRADE PROCEDURE BY LOADING THE DATABASE
 		// -------------------------------
@@ -68,7 +87,7 @@ $(document).ready(function(){
 			$errors .= "<li>No Database connection could be established.";
 		}
 		// END if
-		if (!$db_err) {
+		if (!$db_err && file_exists('./db_update.sql')) {
 			$fr = fopen('./db_update.sql',"r");
 			$db_errors = '';
 			$queries = '';
@@ -95,54 +114,36 @@ $(document).ready(function(){
 			
 			//echo("errCnt = ".$errCnt."<br />");
 			if ($errCnt == 0) {
-				if (file_exists('../application/config/')) {
-					if (is_writable('../application/config/')) {
-						$fcs = file_get_contents("./constants_update.php");
-						$fcs = str_replace("[WEB_SITE_URL]",SITE_URL,$fcs);
-						$fcs = str_replace("[SITE_DIRECTORY]","/".DIR_APP_ROOT."/",$fcs);
-						$fcs = str_replace("[HTML_ROOT]",DIR_WRITE_PATH,$fcs);
-						$fh = fopen('../application/config/constants.php',"w");
-						fwrite($fh, $fcs);
-						fclose($fh);
-						unset($fcs);
-						chmod('../application/config/constants.php', 0666);
-						unset($fh);
-		
-						$config_write = true;
-					} else {
-						$config_write = false;
-					} // END if
-				} // END if file_exists()
 				?>
 		        <h1>Upgrade Complete!</h1>
 		        <p />
-		        Your OOPT Fantasy Leagues mod has been successfully updated.
+		        Your OOTP Fantasy Baseball Leagues mod has been successfully updated.
 		         <ul>
-		                        <?php
-								if (!$config_write) { ?>
-		                        	<li><code><?php echo($html_root);?>application/config/constants.php</code> - Copy and 
-		                            paste the following code from <code>/install/constants_update.php</code> and save 
-		                            it to <code>/application/config/constants.php</code> from your fantasy leagues root folder overwritting
-		                            the existing fields.
-		                            <p />
-		                            <pre class="brush: php">define("SITE_URL",",<?php echo(SITE_URL); ?>");
-		define("DIR_APP_ROOT","/<?php echo(DIR_APP_ROOT); ?>/");
-		define("DIR_APP_WRITE_ROOT","<?php echo(DIR_APP_ROOT); ?>");
-		define("DIR_WRITE_PATH","<?php echo(DIR_WRITE_PATH); ?>");</pre>
-		                            </li>
-		                        <?php 
-								} // END if
-								?>
-		                        <script type="text/javascript" src="shighlight/shCore.js"></script>
-								<script type="text/javascript" src="shighlight/shBrushPhp.js"></script>
-		                        <?php if (!$config_write) { ?>
-								<script type="text/javascript">SyntaxHighlighter.all();</script>
-		                        <?php } ?>
-		                        </ul>
-		                        Complete your upgrade by deleting all files in the <code>install</code> directory BEFORE logging into the site again.
-		                        <p />
-		                        Head to the league <a href="../index.php">homepage</a> or <a href="../user/login/">login</a> now.
-		                	<?php
+				<?php
+				if (!$config_write) { ?>
+					<li><code><?php echo($html_root);?>application/config/constants.php</code> - Copy and 
+					paste the following code from <code>/install/constants_update.php</code> and save 
+					it to <code>/application/config/constants.php</code> from your fantasy leagues root folder overwritting
+					the existing fields.
+					<p />
+					<pre class="brush: php">define("SITE_URL",",<?php echo(SITE_URL); ?>");
+define("DIR_APP_ROOT","/<?php echo(DIR_APP_ROOT); ?>/");
+define("DIR_APP_WRITE_ROOT","<?php echo(DIR_APP_ROOT); ?>");
+define("DIR_WRITE_PATH","<?php echo(DIR_WRITE_PATH); ?>");</pre>
+					</li>
+				<?php 
+				} // END if
+				?>
+				<script type="text/javascript" src="shighlight/shCore.js"></script>
+				<script type="text/javascript" src="shighlight/shBrushPhp.js"></script>
+				<?php if (!$config_write) { ?>
+				<script type="text/javascript">SyntaxHighlighter.all();</script>
+				<?php } ?>
+				</ul>
+				Complete your upgrade by deleting all files in the <code>install</code> directory BEFORE logging into the site again.
+				<p />
+				Head to the league <a href="../index.php">homepage</a> or <a href="../user/login/">login</a> now.
+			<?php
 				
 			} else {
 				$error = true;
@@ -165,7 +166,7 @@ $(document).ready(function(){
 		?>
 		<h1>An error occured.</h1>
 		 <p />
-		A required configuration file could not be found. Assure that <code><?php print($basepath); ?>/application/config/constant.php</code> exists. You 
+		A required configuration file could not be found. Assure that <code><?php print($basepath); ?>/application/config/constants.php</code> exists. You 
 		may need to reinstall your fantasy leagues mod to correct this issue and upgrade your site.
 		<?php 
 	}

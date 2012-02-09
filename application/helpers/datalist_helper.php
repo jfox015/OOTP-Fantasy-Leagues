@@ -110,15 +110,17 @@ if ( ! function_exists('loadSimpleDataList')) {
 		$datalist = array(''=>'Choose '.$label);
 	
 		// ADD LIST RESULTS
-		if (!empty($table)) {
-   		$query = $ci->db->query('SELECT '.$identifier.', '.$list.' FROM '.$table.' ORDER BY '.$column .' '.$order);
-   		if ($query->num_rows() > 0) {
-   			foreach ($query->result() as $row) {
-   				$datalist = $datalist + array($row->$identifier=>$row->$list);
-   			} // END foreach
-   		} // END if
-   		$query->free_result();
-		}
+		if ($ci->db->table_exists($table) && !empty($table)) {
+            $query = $ci->db->query('SELECT '.$identifier.', '.$list.' FROM '.$table.' ORDER BY '.$column .' '.$order);
+            if ($query->num_rows() > 0) {
+                foreach ($query->result() as $row) {
+                    $datalist = $datalist + array($row->$identifier=>$row->$list);
+                } // END foreach
+            } // END if
+            $query->free_result();
+		} else {
+            redirect('media/nodb.php');
+        }
 		return $datalist;
 	} // END function
 } // END if
@@ -675,27 +677,27 @@ if ( ! function_exists('loadStates')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('loadCountries')) {
-	function loadCountries($selectBox = true) {
-		
-		if ($selectBox) {
-			$result = array(' '=>'Select Country');
-		} else {
-			$result = array();
-		}
-		$ci =& get_instance();
-		$ci->db->select('id, cntryName')
-						->from('countries')
-						->order_by('id','asc');
-		$query = $ci->db->get();
-		if ($query->num_rows() > 0) {
-			foreach ($query->result() as $row) {
-				$result = $result + array($row->id=>$row->cntryName);
-			}
-		}
-		$query->free_result();
-		return $result;
-					
-	}
+    function loadCountries($selectBox = true) {
+
+        if ($selectBox) {
+            $result = array(' '=>'Select Country');
+        } else {
+            $result = array();
+        }
+        $ci =& get_instance();
+        $ci->db->select('id, cntryName')
+            ->from('countries')
+            ->order_by('id','asc');
+        $query = $ci->db->get();
+        if ($query->num_rows() > 0) {
+            foreach ($query->result() as $row) {
+                $result = $result + array($row->id=>$row->cntryName);
+            }
+        }
+        $query->free_result();
+        return $result;
+
+    }
 }
 
 // ------------------------------------------------------------------------

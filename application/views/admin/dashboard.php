@@ -6,6 +6,8 @@
 	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
 	var fader = null;
 	var refreshAfterUpdate = false;
+	var redirectAfterUpdate = null;
+	var alertAfterUpdate = null;
 	var fileWarning = <?php print((isset($missingFiles) && sizeof($missingFiles) > 0) ? "true" : "false"); ?>;
 
 	$(document).ready(function(){
@@ -27,11 +29,11 @@
 			event.preventDefault();
 		});
 		$('a[rel=sched]').click(function (event) {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/scoringSchedule");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/scoringSchedule"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=games]').click(function (event) {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/generateSchedules");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/generateSchedules"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=runWaivers]').click(function (event) {
@@ -46,7 +48,7 @@
 			}
 			if (proceed) {
 				refreshAfterUpdate = true;
-				runAjax("<?php echo($config['fantasy_web_root']); ?>admin/loadSQLFiles");
+				runAjax("<?php echo($config['fantasy_web_root']); ?>admin/loadSQLFiles"+cacheBuster());
 			} else {
 				$('div#activeStatus').addClass('notice');
 				$('div#activeStatus').html('Operation Cancelled.');
@@ -56,27 +58,29 @@
 		});
 		$('a[rel=dataUpdate]').click(function (event) {
 			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/dataUpdate");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/dataUpdate"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=configUpdate]').click(function (event) {
 			refreshAfterUpdate = true;
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/configUpdate");
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/configUpdate"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=reset]').click(function (event) {
 			refreshAfterUpdate = true;
 			if (confirm("Are you sure you want to perform this operation? This will reset the entire season to it's starting point and wipe out ALL season stats, transactions and fantasy data.")) {
 				if (confirm("Are you sure you want to do this? This operation will wipe out your season and CANNOT be undone."))
-					runAjax("<?php echo($config['fantasy_web_root']); ?>admin/resetSeason");
+					runAjax("<?php echo($config['fantasy_web_root']); ?>admin/resetSeason"+cacheBuster());
 			}
 			event.preventDefault();
 		});
         $('a[rel=remove]').click(function (event) {
             refreshAfterUpdate = true;
-            if (confirm("Are you sure you want to perform this operation? This will remove ALL the tables in the database and render the mod unusable unless you reinstall.")) {
+			alertAfterUpdate = "All fantasy tables have been deleted. Thank you for using the mod. You will redirected to a new page in 5 second.";
+            redirectAfterUpdate = "<?php echo($config['fantasy_web_root']); ?>media/nodb.php";
+		    if (confirm("Are you sure you want to perform this operation? This will remove ALL the tables in the database and render the mod unusable unless you reinstall.")) {
                 if (confirm("Are you sure you want to do this? This operation will wipe out the entire set of fantasy database tables and CANNOT be undone."))
-                    runAjax("<?php echo($config['fantasy_web_root']); ?>admin/uninstall");
+                    runAjax("<?php echo($config['fantasy_web_root']); ?>admin/uninstall"+cacheBuster());
             }
             event.preventDefault();
         });
@@ -94,10 +98,6 @@
 		});
 	});
 	function runAjax (url) {
-		//clearTimeout(fader);
-		//$('div#activeStatus').removeClass('error');
-		//$('div#activeStatus').removeClass('success');
-		//$('div#activeStatus').html(ajaxWait);
 		$.colorbox({html:ajaxWait});
 		$.getJSON(url, function(data){
 			error = false;
@@ -116,10 +116,12 @@
 				$('div#activeStatus').html('Operation Completed Successfully');
 				$('div#activeStatusBox').fadeIn("slow");
 			}
-			if (!error && refreshAfterUpdate) {
-				setTimeout('refreshPage()',3000);
+			if (!error) {
+				if (alertAfterUpdate != null)
+					alert(alertAfterUpdate);
+				if (refreshAfterUpdate) 
+					setTimeout('refreshPage()',3000);
 			}
-			//setTimeout('fadeStatus("active")',15000);
 		});
 	}
 	function cacheBuster() {
@@ -131,7 +133,8 @@
 		$('div#'+type+'StatusBox').fadeOut("normal",function() { clearTimeout(fader); $('div#'+type+'StatusBox').hide(); });
 	}
 	function refreshPage() {
-		document.location.href = '<?php echo($_SERVER['PHP_SELF']); ?>';
+		if (redirectAfterUpdate == null) url = '<?php echo($_SERVER['PHP_SELF']); ?>'; else url = redirectAfterUpdate;
+		document.location.href = url;
 	}
 </script>
 <div id="single-column" class="dashboard">

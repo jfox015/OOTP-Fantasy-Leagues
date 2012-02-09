@@ -210,7 +210,7 @@ define("ACCESS_ADMINISTRATE",6);
 | MOD DETAILS
 |--------------------------------------------------------------------------
 */
-define('SITE_NAME','OOTP Fantasy Leagues');
+define('SITE_NAME','OOTP Fantasy Baseball Leagues');
 define('SITE_VERSION','1.0.1');
 define('MOD_SITE_URL','http://www.ootpfantasyleagues.com/');
 define("BUG_URL",'http://www.ootpfantasyleagues.com/fantasy/about/bug_report');
