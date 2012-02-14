@@ -84,7 +84,7 @@
       <td sorttable_customkey=1><?php echo(anchor('/admin/loadSQLFiles/returnPage/file_list/filename/'.$file,'Load')); ?>
       <?php 
 	  /*--------------------------------------
-	  /	UPDATE 1.0.3
+	  /	UPDATE 0.3
 	  / Identify files with splits and add them 
 	  /	to an array so the larger parent file
 	  / is skipped in favor of the splits.
