@@ -1,15 +1,15 @@
 /**
 *
 * OOTP Fantasy Leagues
-* © Copyright 2010 - 2012 Jeff Fox
-* http://www.ootpfantasyleagues.com
+* (c) Copyright 2010 - 2017 Jeff Fox
+* http://www.jfox015.com/code/ootp_fantasy/
 *
 * This program is free software: you can redistribute it and/or modify
 * it under the terms of both the MIT and GNU General Public Licenses.
 *
 */
 
-Creator/Lead Developer:	Jeff Fox (Github ID: OOTP ID:, OOTP ID: DesertFox07)
+Creator/Lead Developer:	Jeff Fox (@jfox015, Github ID: jfox015;  OOTP ID: ootpFox07)
 
 Contributions by:      	Frank Esselink (OOTP ID:fhommes) SQL Loading, Draft Engine, PLayer Stats, Stats Engine, Template Inspirpation
                        	getch (who inspired Frank)
@@ -17,7 +17,7 @@ Contributions by:      	Frank Esselink (OOTP ID:fhommes) SQL Loading, Draft Engi
 -- Copyrights --
 
 CodeIgniter				(C) 2010 Ellis Labs			http://www.codeigniter.com/
-StatsLab:   			(c) Frank Esselink (OOTP ID:fhommes) 	
+StatsLab:   			(c) Frank Esselink (OOTP ID:fhommes)
 
 OOTP Fantasy Leagues contains code from the following authors:
 
