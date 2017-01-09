@@ -466,9 +466,9 @@ class league_model extends base_model {
 	public function getCommissionerId($userId = false, $league_id = false) {
 
 		if ($league_id === false) { $league_id = $this->id; }
-		
+
 		$commishId = -1;
-		
+
 		$this->db->select('commissioner_id');
 		$this->db->where("id",$league_id);
 		$query = $this->db->get($this->tblName);
@@ -2580,7 +2580,7 @@ class league_model extends base_model {
 	}
 	/**
 	 * 	GET TRADES IN LEAGUE REVIEW.
-	 *	Retrieves a list of all trades under league review It retreives trades within their active review period 
+	 *	Retrieves a list of all trades under league review It retreives trades within their active review period
 	 *	and approves all trade that have passed their review period deadline.
 	 *	@param	$period_id		{int}		The scoring period to process waivers for.
 	 *  @param	$league_id		{int}		If not specified, no league filter is applied.
@@ -2594,11 +2594,11 @@ class league_model extends base_model {
 	 *
 	 */
 	public function getTradesInLeagueReview($period_id = false, $league_id = false, $expireDays = false, $rosterPeriod = 'same', $debug = false) {
-		
-		if ($period_id === false || $expireDays === false) { 
+
+		if ($period_id === false || $expireDays === false) {
 			$this->errorCode = 1;
             $this->statusMess = "Period ID or protest expiration days parameters were not received.";
-			return false; 
+			return false;
 		} // END if
 		if ($league_id === false) { $league_id = $this->id; } // END if
 
@@ -2619,15 +2619,15 @@ class league_model extends base_model {
 						$offeringTeamOwner = getTeamOwnerId($row->team_1_id);
 						$receivingTeamOwner = getTeamOwnerId($row->team_2_id);
 						$commishId = $this->getCommissionerId($league_id);
-						
+
 						logTransaction(NULL, NULL, NULL, $row->send_players, $row->receive_players,
 									   $commishId, $offeringTeamOwner,false, $period_id,
 									   $league_id, $row->team_1_id, $offeringTeamOwner, $row->team_2_id);
-						
+
 						logTransaction(NULL, NULL, NULL, $row->receive_players, $row->send_players,
 									   $commishId, $receivingTeamOwner, false, $period_id,
 									   $league_id, $row->team_2_id, $offeringTeamOwner, $row->team_1_id);
-						
+
 						$types = array('offering','receiving');
 						$tradeTypes = loadSimpleDataList('tradeStatus');
 						foreach($types as $type) {
@@ -2668,7 +2668,7 @@ class league_model extends base_model {
         $query->free_result();
         return $tradeList;
 	}
-	
+
 	/**
 	 *	INCREMENT TRADES.
 	 *	Sets all offered trades scoring period to +1.
@@ -2741,7 +2741,7 @@ class league_model extends base_model {
 	 *
 	 */
 	public function expireOldTrades($league_id = false, $processSimExpirations = true, $debug = false) {
-		
+
 		if ($league_id === false) { $league_id = $this->id; } // END if
 
 		$error = false;
@@ -3070,7 +3070,7 @@ class league_model extends base_model {
 			$this->db->where('players.retired',0);
 			$this->db->where('players_career_batting_stats.year',$last_year);
 			if(isset($pickedBatters) && !empty($pickedBatters)) $this->db->where_not_in('fantasy_players.id',$pickedBatters);
-			$this->db->order_by("players_career_batting_stats.vorp",'desc');
+			$this->db->order_by("players_career_batting_stats.war",'desc');
 			$query = $this->db->get("fantasy_players");
 
 			//echo("sql = ".$this->db->last_query()."<br />");
@@ -3111,7 +3111,7 @@ class league_model extends base_model {
 			}
 			$this->db->where('players.retired',0);
 			$this->db->where('players_career_pitching_stats.year',$last_year);
-			$this->db->order_by("players_career_pitching_stats.vorp",'desc');
+			$this->db->order_by("players_career_pitching_stats.war",'desc');
 			$query = $this->db->get("fantasy_players");
 			//echo("last query = ".$this->db->last_query()."<br />");
 			if ($query->num_rows() > 0) {

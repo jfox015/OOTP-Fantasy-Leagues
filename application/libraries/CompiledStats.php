@@ -3,7 +3,7 @@
 /   Filename: CompiledStats.php
 /   Date Created: 	08/29/11
 /   Last modified: 	08/29/11
-/   
+/
 /   Change Log:
 /-----------------------------------------------------------------------------------*/
 /**
@@ -14,10 +14,10 @@
  * 	@version     $Revision: 1.0 $
  * 	@since       1.0
  * 	@copyright   (c)2009-11 Jeff Fox/Aeolian Digital Studios
- * 
+ *
  */
 class CompiledStats {
-	
+
 	/*--------------------------------
 	/	VARIABLES
 	/-------------------------------*/
@@ -45,7 +45,7 @@ class CompiledStats {
 	function CompiledStats($type = false,$values = false) {
 		if ($type !== false && !empty($type) && $type != '') { $this->type = $type; }
 		$this->updateStats($values);
-	}	
+	}
 	/**
 	 *	UPDATE STATS.
 	 *	Updates the internal <code>values</code> array with the passed values.
@@ -57,7 +57,7 @@ class CompiledStats {
 	 *	@access		public
 	 */
 	public function updateStats($values) {
-		if ($values !== false && sizeof($values) > 0) { 
+		if ($values !== false && sizeof($values) > 0) {
 			$tmpVals = array();
 			foreach($values as $id => $value) {
 				if (preg_match('/^[0-9]*$/',trim(intval($id)))) {
@@ -87,7 +87,7 @@ class CompiledStats {
 	 */
 	public function getCompiledStats($cat = false) {
 		if ($cat === false) return false;
-		
+
 		$value = 0;
 		switch($cat) {
 			// AVG
@@ -106,7 +106,7 @@ class CompiledStats {
 			case 25:
 				$value = (($this->values['h']+$this->values['bb']+$this->values['hp']) / ($this->values['ab']+$this->values['bb']+$this->values['ab']+$this->values['hp']+$this->values['sf'])) + (($this->values['h']+($this->values['d']*2)+($this->values['t']*3)+$this->values['hr']) / $this->values['ab']);
 				break;
-			// SKIP ISO, TAVG and VORP
+			// SKIP ISO, TAVG and WAR
 			case 23:
 			case 24;
 			case 26;

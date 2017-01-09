@@ -12,7 +12,7 @@
 // ------------------------------------------------------------------------
 /**
  * loadSimpleDataList.
- * Provides a simple method for retrieving the index and values of the 
+ * Provides a simple method for retrieving the index and values of the
  * many basic data lists used by the site.
  * @param	$list	The list id. See <b>usage for tips</b>
  * @param	$column	(OPTIONAL) Specifiy a column (other than id) to sort the list on
@@ -30,10 +30,10 @@ if ( ! function_exists('loadSimpleDataList')) {
 				break;
 			case 'StateName':
 				$table = 'states_us';
-				break;	
+				break;
 			case 'cntryName':
 				$table = 'countries';
-				break;	
+				break;
 			case 'userLevel':
 				$table = 'list_user_levels';
 				break;
@@ -63,7 +63,7 @@ if ( ! function_exists('loadSimpleDataList')) {
 				break;
 			case 'leagueType':
 				$table = 'fantasy_leagues_types';
-				break;	
+				break;
 			case 'bugCategory':
 				$table = 'admin_list_bug_categories';
 				break;
@@ -94,21 +94,21 @@ if ( ! function_exists('loadSimpleDataList')) {
 				break;
 			case 'tradeApprovalType':
 				$table = 'fantasy_teams_trades_approvals';
-				break;	
+				break;
 			case 'activationType':
 				$table = 'users_activation_types';
-				break;	
+				break;
 			default:
 				break;
 		} // END switch
-		
+
 		// ADD Default FIRST ITEM
 		if (empty($identifier)) { $identifier = 'id'; }
 		if (empty($column)) { $column = $identifier; }
 		if (empty($label)) { $label = $list; }
-		
+
 		$datalist = array(''=>'Choose '.$label);
-	
+
 		// ADD LIST RESULTS
 		if ($ci->db->table_exists($table) && !empty($table)) {
             $query = $ci->db->query('SELECT '.$identifier.', '.$list.' FROM '.$table.' ORDER BY '.$column .' '.$order);
@@ -136,7 +136,7 @@ if ( ! function_exists('loadLimitedBugStatusList')) {
 				$retrunList = $retrunList + array($key => $value);
 			} // END if
 		} // END foreach
-		return $retrunList;	
+		return $retrunList;
 	} // END function
 } // END if
 
@@ -152,7 +152,7 @@ if ( ! function_exists('resolveUsername')) {
 	    foreach($userList as $key => $value) {
 	        if ($key == $userId) {
 	           $username = $value;
-	           break; 
+	           break;
 	        } // END if
 		} // END foreach
 	    return $username;
@@ -173,7 +173,7 @@ if ( ! function_exists('resolveOwnerName')) {
 			$ownerName = $row->firstName." ".$row->lastName;
 		} // END if
 		$query->free_result();
-		
+
 	    return $ownerName;
 	} // END function
 } // END if
@@ -192,7 +192,7 @@ if ( ! function_exists('getInjuryName')) {
 			$injuryName = $row->injury_text;
 		} // END if
 		$query->free_result();
-		
+
 	    return $injuryName;
 	} // END function
 } // END if
@@ -200,13 +200,13 @@ if ( ! function_exists('getInjuryName')) {
 
 if ( ! function_exists('getRandomTeamNickname')) {
 	function getRandomTeamNickname() {
-		
+
 		$nick = "";
 	    $ci =& get_instance();
 
 	    $query = $ci->db->query('SELECT nickname FROM list_team_nicknames');
 		if ($query->num_rows() > 0) {
-			
+
 			$randId = rand(1, $query->num_rows());
 			$query->free_result();
 			$query = $ci->db->query('SELECT nickname FROM list_team_nicknames WHERE id = '.$randId);
@@ -214,7 +214,7 @@ if ( ! function_exists('getRandomTeamNickname')) {
 			$nick = $row->nickname;
 		} // END if
 		$query->free_result();
-		
+
 	    return $nick;
 	} // END function
 } // END if
@@ -234,7 +234,7 @@ if ( ! function_exists('resolveTeamName')) {
 			$name = $row->teamname." ". $row->teamnick;
 		} // END if
 		$query->free_result();
-		
+
 	    return $name;
 	} // END function
 } // END if
@@ -245,9 +245,9 @@ if ( ! function_exists('listLeagueDivisions')) {
 	function listLeagueDivisions($league_id,$selectBox = true) {
 		if ($selectBox)
 			$result = array(' '=>'Select Division');
-		else 
+		else
 			$result = array();
-			
+
 		$ci =& get_instance();
 		// LOAD CHARACTERS
 		$ci->db->select('id, division_name')
@@ -264,7 +264,7 @@ if ( ! function_exists('listLeagueDivisions')) {
 		if (($selectBox && sizeof($result) == 1)) {
 			$result = $result + array(' '=>'No divisions found');
 		}
-		return $result;	
+		return $result;
 	}
 }
 // ------------------------------------------------------------------------
@@ -273,15 +273,15 @@ if ( ! function_exists('listLeagueTypes')) {
 	function listLeagueTypes($onlyActive = false, $selectBox = true) {
 		if ($selectBox)
 			$result = array(' '=>'Select Type');
-		else 
+		else
 			$result = array();
-			
+
 		$ci =& get_instance();
 		// LOAD CHARACTERS
 		$ci->db->select('id, leagueType');
 		$ci->db->from('fantasy_leagues_types');
 		if ($onlyActive) {
-			$ci->db->where('active',1); 
+			$ci->db->where('active',1);
 		}
 		$ci->db->order_by('id','asc');
 		$query = $ci->db->get();
@@ -294,7 +294,7 @@ if ( ! function_exists('listLeagueTypes')) {
 		if (($selectBox && sizeof($result) == 1)) {
 			$result = $result + array(' '=>'No league types found');
 		}
-		return $result;	
+		return $result;
 	}
 }
 // ------------------------------------------------------------------------
@@ -314,7 +314,7 @@ if ( ! function_exists('getOOTPLeagueDetails')) {
 			$details = $query->row();
 		} // END if
 		$query->free_result();
-		return $details;	
+		return $details;
 	}
 }
 
@@ -324,7 +324,7 @@ if ( ! function_exists('getLeagueStartDate')) {
 	function getLeagueStartDate($league_id = -1) {
 		//$date = date('Y-m-d');
 		if ($league_id == -1) return;
-		
+
 		$ci =& get_instance();
 		// LOAD CHARACTERS
 		$ci->db->select('start_date');
@@ -336,7 +336,7 @@ if ( ! function_exists('getLeagueStartDate')) {
 			$date = $row->start_date;
 		} // END if
 		$query->free_result();
-		return $date;	
+		return $date;
 	}
 }
 
@@ -344,7 +344,7 @@ if ( ! function_exists('getLeagueStartDate')) {
 
 if ( ! function_exists('getVisibleDays')) {
 	function getVisibleDays($league_date, $sim_length) {
-		
+
 		//echo("getVisibleDays: league_date = ".$league_date."<br />");
 		//echo("sim_length = ".$sim_length."<br />");
 		if (!isset($league_date)) return;
@@ -386,15 +386,15 @@ if ( ! function_exists('getOOTPTeamAbbrs')) {
 
 if ( ! function_exists('getLeagueAwardsNames')) {
 	function getLeagueAwardsNames($ootp_league_id) {
-		
+
 		$awardName = array();
 		$ci =& get_instance();
-		$ci->db->select('hitter_award_name,pitcher_award_name,rookie_award_name,defense_award_name');
+		$ci->db->select('mvp_award_name,pitcher_award_name,rookie_award_name,defense_award_name');
 		$ci->db->where("league_id",$ootp_league_id);
 		$query = $ci->db->get('leagues');
 		if ($query->num_rows() > 0) {
 			$row = $query->row_array();
-			$awardName[5]=$row['hitter_award_name'];
+			$awardName[5]=$row['mvp_award_name'];
 			$awardName[4]=$row['pitcher_award_name'];
 			$awardName[6]=$row['rookie_award_name'];
 			$awardName[7]=$row['defense_award_name'];
@@ -409,8 +409,8 @@ if ( ! function_exists('getLeagueAwardsNames')) {
 
 if ( ! function_exists('getPlayerSchedules')) {
 	function getPlayerSchedules($players,$start_date,$simLen) {
-			
-		$daysInPeriod = getVisibleDays($start_date,$simLen);     
+
+		$daysInPeriod = getVisibleDays($start_date,$simLen);
 		$schedules = array('players_active'=>array(),'players_reserve'=>array(),'players_injured'=>array());
 		$ci =& get_instance();
 		// LOAD PLAYERS
@@ -473,7 +473,7 @@ if ( ! function_exists('getPlayerSchedules')) {
 				} // END if
 			} // END foreach
 		} // END if
-		return $schedules;	
+		return $schedules;
 	}
 }
 // ------------------------------------------------------------------------
@@ -482,13 +482,13 @@ if ( ! function_exists('getOOTPTeams')) {
 	function getOOTPTeams($league_id,$selectBox = true) {
 		if ($selectBox)
 			$result = array(' '=>'Select Team');
-		else 
+		else
 			$result = array();
-			
+
 		$ci =& get_instance();
 		// LOAD TEAMS
 
-		$ci->db->select('team_id,abbr,name,nickname,logo_file')
+		$ci->db->select('team_id,abbr,name,nickname,logo_file_name')
 				 ->from('teams')
 				 ->where('league_id',$league_id)
 				 ->where('allstar_team',0)
@@ -500,7 +500,7 @@ if ( ! function_exists('getOOTPTeams')) {
       			$tname=str_replace(".","",$tname);
 				if (!$selectBox) {
 					$result = $result + array($row->team_id=>array('name'=>$tname,'nickname'=>$row->nickname,
-					'abbr'=>$row->abbr,'logo_file'=>$row->logo_file));
+					'abbr'=>$row->abbr,'logo_file_name'=>$row->logo_file_name));
 				} else {
 					$result = $result + array($row->team_id=>$tname);
 				}
@@ -510,7 +510,7 @@ if ( ! function_exists('getOOTPTeams')) {
 		if (($selectBox && sizeof($result) == 1)) {
 			$result = $result + array(' '=>'No teams found');
 		}
-		return $result;	
+		return $result;
 	}
 }
 // ------------------------------------------------------------------------
@@ -524,23 +524,23 @@ if ( ! function_exists('getDaysInBetween')) {
 		$eTime = strtotime($end); // End as time
 		$numDays = round(($eTime - $sTime) / $day) + 1;
 		$days = array();
-		
+
 		// Get days
 		for ($d = 0; $d < $numDays; $d++) {
 			$days[] = date($format, ($sTime + ($d * $day)));
 		}
-		
+
 		// Return days
 		return $days;
 	}
-} 
+}
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('getFantasyTeams')) {
 	function getFantasyTeams($league_id,$selectBox = true) {
 		if ($selectBox)
 			$result = array(' '=>'Select Team');
-		else 
+		else
 			$result = array();
 		$ci =& get_instance();
 		// LOAD TEAMS
@@ -560,7 +560,7 @@ if ( ! function_exists('getFantasyTeams')) {
 		if (($selectBox && sizeof($result) == 1)) {
 			$result = $result + array(' '=>'No teams found');
 		}
-		return $result;	
+		return $result;
 	}
 }
 // ------------------------------------------------------------------------
@@ -590,7 +590,7 @@ if ( ! function_exists('getDays')) {
 		$days = array('0'=>'Select Day');
 		for ($i = 1; $i < 32; $i++) {
 			$days = $days + array($i=>$i);
-		} 
+		}
 		return $days;
 	} // END function
 } // END if
@@ -607,7 +607,7 @@ if ( ! function_exists('getYears')) {
 		$years = array('0'=>'Select Year');
 		for ($j = $startYear ; $j >= $endYear; $j--) {
 			$years = $years + array($j=>$j);
-		} 
+		}
 		return $years;
 	} // END function
 } // END if
@@ -662,7 +662,7 @@ if ( ! function_exists('loadStates')) {
 		$ci->db->select('stateCode, stateName')
 						->from('states_us')
 						->order_by('stateName','asc');
-		
+
 		$query = $ci->db->get();
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
@@ -671,7 +671,7 @@ if ( ! function_exists('loadStates')) {
 		}
 		$query->free_result();
 		return $states;
-					
+
 	}
 }
 // ------------------------------------------------------------------------
@@ -704,14 +704,14 @@ if ( ! function_exists('loadCountries')) {
 /**
  * 	LOAD TIMEZONES.
  * 	Loads a list of timezone identifers for selection by the user.
- * 	
+ *
  * 	@param	$selectBox	(Boolean)	TRUE if the list will populate a select box, FALSE otherwise
  * 	@return				array		Array of timezones
  * 	@since				1.0.6
  */
 if ( ! function_exists('loadTimezones')) {
 	function loadTimezones($selectBox = true) {
-		
+
 		if ($selectBox) {
 			$result = array(' '=>'Select Timezone');
 		} else {
@@ -721,16 +721,16 @@ if ( ! function_exists('loadTimezones')) {
 	    $timezone_identifiers = DateTimeZone::listIdentifiers();
 	    foreach( $timezone_identifiers as $value ){
 	        if ( preg_match( '/^(America|Antartica|Arctic|Asia|Atlantic|Europe|Indian|Pacific)\//', $value ) ){
-	            $ex=explode("/",$value);//obtain continent,city   
+	            $ex=explode("/",$value);//obtain continent,city
 	            //if ($continent!=$ex[0]){
 	            //    $result = $result + array('X'=>$ex[0]);
 	           // }
 	            $city=$ex[1];
 	            $continent=$ex[0];
-	            $result = $result + array($value=>$continent."/".$city);             
+	            $result = $result + array($value=>$continent."/".$city);
 	        }
 	    }
-		return $result;		
+		return $result;
 	}
 }
 
@@ -739,9 +739,9 @@ if ( ! function_exists('loadProjectsBugs')) {
 	function loadProjectsBugs($projectId,$selectBox = true) {
 		if ($selectBox)
 			$result = array(' '=>'Select Bug');
-		else 
+		else
 			$result = array();
-			
+
 		$ci =& get_instance();
 		// LOAD CHARACTERS
 		//echo("Event ID = ".$eventId."<br />");
@@ -768,25 +768,24 @@ if ( ! function_exists('loadProjectsBugs')) {
 		if (($selectBox && sizeof($result) == 1)) {
 			$result = $result + array(' '=>'No bugs were found');
 		}
-		return $result;	
+		return $result;
 	}
 }
 // ------------------------------------------------------------------------
 if ( ! function_exists('loadOOTPVersions')) {
 	function loadOOTPVersions($selectBox = true) {
 
-		return array("10"=>"OOTP 10",
-					 "11"=>"OOTP 11",
-					 "12"=>"OOTP 12",
-					 "13"=>"OOTP 13"
-					 //,"14"=>OOTP 14" -- Future support
+		return array("15"=>"OOTP 15",
+					 "16"=>"OOTP 16",
+					 "17"=>"OOTP 17",
+					 "18"=>"OOTP 18"
 					 );
 	}
 }
 // ------------------------------------------------------------------------
 if ( ! function_exists('getOOTPGameVersion')) {
 	function getOOTPGameVersion($version = -1) {
-		
+
 		$outVer = -1;
 		$versions = loadOOTPVersions();
 		foreach ($versions as $ver => $label) {
@@ -812,7 +811,7 @@ if ( ! function_exists('loadSecurityClasses')) {
 // ------------------------------------------------------------------------
 if ( ! function_exists('loadRecaptchaThemes')) {
 	function loadRecaptchaThemes($selectBox = true) {
-		
+
 		return array("red"=>"Red",
 					 "white"=>"White",
 					 "blackglass"=>"Black Glass",
@@ -823,14 +822,14 @@ if ( ! function_exists('loadRecaptchaThemes')) {
 // ------------------------------------------------------------------------
 if ( ! function_exists('loadRecaptchaLangs')) {
 	function loadRecaptchaLangs($selectBox = true) {
-		
-		return array("en"=>"English", 
-					 "nl"=>"Dutch", 
-					 "fr"=>"French", 
-					 "de"=>"German", 
-					 "pt"=>"Portuguese", 
-					 "ru"=>"Russian", 
-					 "es"=>"Spanish", 
+
+		return array("en"=>"English",
+					 "nl"=>"Dutch",
+					 "fr"=>"French",
+					 "de"=>"German",
+					 "pt"=>"Portuguese",
+					 "ru"=>"Russian",
+					 "es"=>"Spanish",
 					 "tr"=>"Turkish");
 	}
 }

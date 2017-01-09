@@ -42,7 +42,7 @@ function load_config($table = FANTASY_CONFIG, $varType = false, $varId = false) 
 function update_config($key,$value,$table = FANTASY_CONFIG, $varType = false, $varId = false,$addIfNull = false) {
 	if (isset($key) && !empty($key)) {
 		$ci =& get_instance();
-		
+
 		// ASSURE KEY EXISTS BEFORE UPDATING
 		$ci->db->flush_cache();
 		$ci->db->select('id');
@@ -52,8 +52,8 @@ function update_config($key,$value,$table = FANTASY_CONFIG, $varType = false, $v
 			$ci->db->where($varType,$varId);
 		}
 		$count = $ci->db->count_all_results();
-		unset($query);		
-		
+		unset($query);
+
 		$ci->db->flush_cache();
 		if ($count == 0) {
 			if ($addIfNull) {
@@ -67,7 +67,7 @@ function update_config($key,$value,$table = FANTASY_CONFIG, $varType = false, $v
 		}
 		return true;
 	} else {
-		return false;	
+		return false;
 	}
 }
 /**
@@ -87,23 +87,23 @@ function update_config_by_array($configArray = array(),$table = FANTASY_CONFIG, 
 			$update = update_config($key,$value,$table,$varType,$varId,$addIfNull);
 		}
 	}
-	return true;	
+	return true;
 }
 
 function getSQLFileList($sqlLoadPath, $loadTime = false, $timeout = 120, $logPath = false, $max_file_size = false) {
-	
+
 	$fileList = array();
 	if ($loadTime == false) $loadTime = '1970-01-01';
 	if ($dir = opendir($sqlLoadPath)) {
    		$loadCnt = 0;
-		$now=time();    
+		$now=time();
    		while (false !== ($file = readdir($dir)))	{
-	
+
 			$ex = explode(".",$file);
       		$last = count($ex)-1;
       		$fileTime=filemtime($sqlLoadPath."/".$file);
       		$fileSize=filesize($sqlLoadPath."/".$file);
-      
+
       		if (($fileTime<$loadTime)||(($max_file_size!=false)&&($fileSize>$max_file_size))) {continue;}
 
       		if (($ex[$last]=="sql") && ($file!=".") && ($file!="..")) {
@@ -144,7 +144,7 @@ function loadDataUpdate($sqlLoadPath, $filepath) {
 	return $errStr;
 }
 
-function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 120, $logPath = false, $max_file_size = 500000000) {
+function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 500, $logPath = false, $max_file_size = 500000000) {
 	// Load SQL Files #####
 	$errors = "";
 	include($sqlLoadPath."/ootpfl_db.php");
@@ -155,7 +155,7 @@ function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 120
 		unlink($logPath."/sqlloadlog.txt");
 	}
 	if ($dir = opendir($sqlLoadPath)) {
-		$now=time();    
+		$now=time();
 		//echo("File load count = ".$loadCnt."<br />");
 		if ($loadCnt>0) {
 			$ci =& get_instance();
@@ -164,25 +164,25 @@ function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 120
 				$ex = explode(".",$file);
 				set_time_limit($timeout);
 				$fnow=time();
-				
+
 				$f = fopen($logPath."/sqlloadlog.txt","a");
 				fwrite($f,"LOADING: ".$file." ... ");
 				fclose($f);
 				//echo("LOADING: ".$file);
 				/*$pFile=fopen("./sqlprocess.txt","w");
-				
+
 				fclose($pFile);*/
 				$tableName=$ex[0];
 				$query="CREATE TABLE IF NOT EXISTS `$tableName';";
 				mysql_query($query,$db);
-				
+
 				## Import data
 				$file=$sqlLoadPath."/".$file;
 				//echo("File to load = ".$file."<br />");
 				$fr = fopen($file,"r");
 				//echo("File resource = ".$fr."<br />");
 				$errCnt=0;
-				if (isset($errors)) { 
+				if (isset($errors)) {
 					unset($errors);
 					unset($queries);
 				}
@@ -227,12 +227,12 @@ function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 120
 	return $errors;
 }
 function splitFiles($sqlLoadPath,$filename = false, $delete = false, $max_file_size = false, $timeout = 120 ) {
-	
+
 	$errors = '';
 	//echo("File name = ".$sqlLoadPath."/".$filename."<br />");
 	if ($filename!="ALL") {
 		$file=$sqlLoadPath."/".$filename;
-	
+
 		if (file_exists($file) && $delete == 1) {
 			unlink($file);
 			return "OK";
@@ -244,26 +244,26 @@ function splitFiles($sqlLoadPath,$filename = false, $delete = false, $max_file_s
 					$last = count($ex)-1;
 					$filename=$sqlLoadPath."/".$file;
 					$isSplit=substr_count($file,".mysql_");
-					
+
 					#echo "$file :: $filename :: $isSplit<br/>\n";
 					if (($ex[$last]=="sql") && ($file!=".") && ($file!="..") && ($isSplit>0)) {unlink($filename);}
 				} // END while
 			} // END if
 			return "OK";
 		} // END if
-	
+
 		if (($timeout<30) || ($timeout=="")) {$timeout=120;} // END if
-	
+
 		if (file_exists($file)) {
 			$e=explode(".",$filename);
 			$last = count($e)-1;
-	
+
 			$f = fopen($file,"r");
 			$cnt=0;
 			while (!feof($f)) {
 				$line=fgets($f);
 				if ($line=="") {continue;} // END if
-				$line=str_replace(", , );",",1,1);",$line); 
+				$line=str_replace(", , );",",1,1);",$line);
 				//$line=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$line);
 				$line=str_replace(", ,",",'',",$line);
 				$line=str_replace("#IND","0",$line);
@@ -274,7 +274,7 @@ function splitFiles($sqlLoadPath,$filename = false, $delete = false, $max_file_s
 		} else {
 			return "$file not found";
 		} // END if
-	
+
 		## Loop through queries, split to 5 files
 		$nlines=ceil($cnt/5);
 		$fcnt=1;
@@ -288,7 +288,7 @@ function splitFiles($sqlLoadPath,$filename = false, $delete = false, $max_file_s
 				} // END for
 				$newFile=$sqlLoadPath."/".$newFileNm;
 				$fcnt++;
-		
+
 				#echo $newFile."<br/>\n";
 				$f=fopen($newFile,"w");
 			} // END if
@@ -303,24 +303,24 @@ function splitFiles($sqlLoadPath,$filename = false, $delete = false, $max_file_s
 				$filename=$sqlLoadPath."/".$file;
 				$fileTime=filemtime($filename);
 				$fileSize=filesize($filename);
-				
+
 				#echo "$file :: $fileTime : $loadTime<br/>\n";
 				if ($fileSize<$max_file_size) {continue;} // END if
-	
+
 				$numSplits=ceil($fileSize/$max_file_size)+1;
 				unset($queries);
 				if (($ex[$last]=="sql") && ($file!=".") && ($file!="..")) {
 					$e=explode(".",$file);
 					$last = count($e)-1;
-	
+
 					#echo "Splitting $filename <br/>\n";
-					
+
 					$f = fopen($filename,"r");
 					$cnt=0;
 					while (!feof($f)) {
 						$line=fgets($f);
 						if ($line=="") {continue;}
-						$line=str_replace(", , );",",1,1);",$line); 
+						$line=str_replace(", , );",",1,1);",$line);
 						//$line=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$line);
 						$line=str_replace(", ,",",'',",$line);
 						$line=str_replace("#IND","0",$line);
@@ -342,7 +342,7 @@ function splitFiles($sqlLoadPath,$filename = false, $delete = false, $max_file_s
 						} // END for
 						$newFile=$sqlLoadPath."/".$newFileNm;
 						$fcnt++;
-		
+
 						#echo $newFile."<br/>\n";
 						$f=fopen($newFile,"w");
 					} // END if

@@ -19,7 +19,7 @@ function getFantasyStatus() {
 	} else if ($now >= $fantasyStart) {
 		$status = 2; // ACTIVE SEASON
 	} else {
-		
+
 	}
 	return $status;
 }
@@ -28,7 +28,7 @@ function getFantasyStatus() {
  *
  *	An alias for the UserAuthModel->getUsername function. Added so other models can call\
  *	this function.
- *	
+ *
  *	@param	userId			The site members ID
  *	@param	access			Confrimation the requester has access to make this request.
  *	@return					Username
@@ -47,7 +47,7 @@ function getUsername($userId, $access = false) {
  *
  *	An alias for the UserAuthModel->getEmail function. Added so other models can call\
  *	this function.
- *	
+ *
  *	@param	userId			The site members ID
  *	@param	access			Confrimation the requester has access to make this request.
  *	@return					Email Address
@@ -66,7 +66,7 @@ function getEmail($userId, $access = false) {
  *
  *	A standardized function to send emails. If we are in a development enivornment, this function backs down
  *	to saving the email as a .html in the media folder.
- *	
+ *
  *	@param	$to				The recipient email address
  *	@param	fromEmail		The sender email address
  *	@param	$fromName		The name of the sender
@@ -102,22 +102,22 @@ function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$fi
 /**
  * 	GET SECURITY CODE
  * 	Builds the code and vars needed by controllers to assign to their child views
- * 
+ *
  * 	@author	Jeff Fox
  * 	@since	1.0.6.
  */
 function getSecurityCode($viewJS = false) {
-	
+
 	$ci =& get_instance();
-	
+
 	$returnData = array();
 	$localData = array();
-	
+
 	$returnData['securityJS'] = '';
 	$returnData['security_enabled'] = $ci->params['config']['security_enabled'];
 	$returnData['security_type'] = $ci->params['config']['security_type'];
 	$returnData['security_class'] = $ci->params['config']['security_class'];
-	
+
 	switch ($ci->params['config']['security_type']) {
 		case SECURITY_RECAPTHCA:
 			$localData['recapthca_publickey'] = $ci->params['config']['recaptcha_key_public'];
@@ -130,7 +130,7 @@ function getSecurityCode($viewJS = false) {
 		default:
 			break;
 	} // END switch
-	
+
 	return $returnData;
 }
 /**
@@ -156,7 +156,7 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 				break;
 			case QUERY_STANDARD:
 			default:
-				$sql .= ''.$sqlOperator.'(g) as g,'.$sqlOperator.'(ab) as ab,'.$sqlOperator.'(r) as r,'.$sqlOperator.'(h) as h,'.$sqlOperator.'(d) as d,'.$sqlOperator.'(t) as t,'.$sqlOperator.'(hr) as hr,'.$sqlOperator.'(rbi) as rbi,'.$sqlOperator.'(bb) as bb,'.$sqlOperator.'(k) as k,'.$sqlOperator.'(sb) as sb,'.$sqlOperator.'(cs) as cs,if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(h)/'.$sqlOperator.'(ab)) as avg,if(('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp))/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))) as obp,if('.$sqlOperator.'(ab)=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(d)+2*'.$sqlOperator.'(t)+3*'.$sqlOperator.'(hr))/'.$sqlOperator.'(ab)) as slg,if(('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp))/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf)))+if('.$sqlOperator.'(ab)=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(d)+2*'.$sqlOperator.'(t)+3*'.$sqlOperator.'(hr))/'.$sqlOperator.'(ab)) as ops,if('.$sqlOperator.'(pa)=0,0,(0.72*'.$sqlOperator.'(bb)+0.75*'.$sqlOperator.'(hp)+0.9*('.$sqlOperator.'(h)-'.$sqlOperator.'(d)-'.$sqlOperator.'(t)-'.$sqlOperator.'(hr))+0.92*0+1.24*'.$sqlOperator.'(d)+1.56*'.$sqlOperator.'(t)+1.95*'.$sqlOperator.'(hr))/'.$sqlOperator.'(pa)) as wOBA, '.$sqlOperator.'(vorp) as vorp,'.$sqlOperator.'(pa) as pa, if (('.$sqlOperator.'(k)/'.$sqlOperator.'(ab))*100=0,0,'.$sqlOperator.'(k)/'.$sqlOperator.'(ab)*100) as wiff, if (('.$sqlOperator.'(bb)/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)))*100=0,0,'.$sqlOperator.'(bb)/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb))*100) as walk,'.$sqlOperator.'(hp) as hp,'.$sqlOperator.'(sf) as sf,('.$sqlOperator.'(d)+'.$sqlOperator.'(t)+'.$sqlOperator.'(hr)) as xbh';
+				$sql .= ''.$sqlOperator.'(g) as g,'.$sqlOperator.'(ab) as ab,'.$sqlOperator.'(r) as r,'.$sqlOperator.'(h) as h,'.$sqlOperator.'(d) as d,'.$sqlOperator.'(t) as t,'.$sqlOperator.'(hr) as hr,'.$sqlOperator.'(rbi) as rbi,'.$sqlOperator.'(bb) as bb,'.$sqlOperator.'(k) as k,'.$sqlOperator.'(sb) as sb,'.$sqlOperator.'(cs) as cs,if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(h)/'.$sqlOperator.'(ab)) as avg,if(('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp))/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))) as obp,if('.$sqlOperator.'(ab)=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(d)+2*'.$sqlOperator.'(t)+3*'.$sqlOperator.'(hr))/'.$sqlOperator.'(ab)) as slg,if(('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp))/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf)))+if('.$sqlOperator.'(ab)=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(d)+2*'.$sqlOperator.'(t)+3*'.$sqlOperator.'(hr))/'.$sqlOperator.'(ab)) as ops,if('.$sqlOperator.'(pa)=0,0,(0.72*'.$sqlOperator.'(bb)+0.75*'.$sqlOperator.'(hp)+0.9*('.$sqlOperator.'(h)-'.$sqlOperator.'(d)-'.$sqlOperator.'(t)-'.$sqlOperator.'(hr))+0.92*0+1.24*'.$sqlOperator.'(d)+1.56*'.$sqlOperator.'(t)+1.95*'.$sqlOperator.'(hr))/'.$sqlOperator.'(pa)) as wOBA, '.$sqlOperator.'(pa) as pa, if (('.$sqlOperator.'(k)/'.$sqlOperator.'(ab))*100=0,0,'.$sqlOperator.'(k)/'.$sqlOperator.'(ab)*100) as wiff, if (('.$sqlOperator.'(bb)/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)))*100=0,0,'.$sqlOperator.'(bb)/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb))*100) as walk,'.$sqlOperator.'(hp) as hp,'.$sqlOperator.'(sf) as sf,('.$sqlOperator.'(d)+'.$sqlOperator.'(t)+'.$sqlOperator.'(hr)) as xbh';
 				break;
 		} // END switch
 		$rulesType = 'batting';
@@ -171,7 +171,7 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 				break;
 			case QUERY_STANDARD:
 			default:
-				$sql .= ''.$sqlOperator.'(w) as w,'.$sqlOperator.'(l) as l,'.$sqlOperator.'(s) as s,'.$sqlOperator.'(cg) as cg,'.$sqlOperator.'(sho) as sho,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(g) as pg,'.$sqlOperator.'(gs) as gs,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(ha) as ha,'.$sqlOperator.'(r) as pr,'.$sqlOperator.'(er) as er,'.$sqlOperator.'(hra) as hra,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if (('.$sqlOperator.'(k)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(k)*9)/'.$sqlOperator.'(ip)) as k9, if (('.$sqlOperator.'(bb)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(bb)*9)/'.$sqlOperator.'(ip)) as bb9, if (('.$sqlOperator.'(hra)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(hra)*9)/'.$sqlOperator.'(ip)) as hr9,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip, '.$sqlOperator.'(vorp) as vorp';
+				$sql .= ''.$sqlOperator.'(w) as w,'.$sqlOperator.'(l) as l,'.$sqlOperator.'(s) as s,'.$sqlOperator.'(cg) as cg,'.$sqlOperator.'(sho) as sho,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(g) as pg,'.$sqlOperator.'(gs) as gs,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(ha) as ha,'.$sqlOperator.'(r) as pr,'.$sqlOperator.'(er) as er,'.$sqlOperator.'(hra) as hra,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if (('.$sqlOperator.'(k)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(k)*9)/'.$sqlOperator.'(ip)) as k9, if (('.$sqlOperator.'(bb)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(bb)*9)/'.$sqlOperator.'(ip)) as bb9, if (('.$sqlOperator.'(hra)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(hra)*9)/'.$sqlOperator.'(ip)) as hr9,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip';
 				break;
 		} // END switch
 		$rulesType = 'pitching';
@@ -473,7 +473,7 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 						$newRow[$col] = $val;
 						break;*/
 					case 'ip':
-					case 'vorp':
+					case 'war':
 						$val=sprintf("%.1f",$row[$col]);
 						$newRow[$col] = $val;
 						break;
@@ -505,8 +505,7 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 /**
  *	MAKE INJURY STATUS STRING
  *
- *	Converts standard OOTP injury data (found in the player profile data object and injuries
-										in the database) into a human readbale string.
+ *	Converts standard OOTP injury data (found in the player profile data object and injuries in the database) into a human readbale string.
  *
  * 	@author	Jeff Fox
  *	@since	1.0.2
@@ -938,7 +937,7 @@ function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 				//23=>"ISO",
 				//24=>"TAVG",
 				25=>"OPS"
-				//26=>"VORP"
+				//26=>"WAR"
 				);
 			}
 			break;
@@ -979,7 +978,7 @@ function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 				//46=>"H/9IP",
 				//47=>"BB/9IP",
 				//48=>"K/9IP",
-				//49=>"VORP",
+				//49=>"WAR",
 				//53=>"QS%",
 				//55=>"CG%",
 				//57=>"GB%"
@@ -1021,7 +1020,7 @@ function get_stats_for_ratings($type=1,$scoring_type = 1) {
 			//23=>"ISO",
 			//24=>"TAVG",
 			//25=>"OPS"
-			//26=>"VORP"
+			//26=>"WAR"
 			);
 			break;
 		case 2:
@@ -1057,7 +1056,7 @@ function get_stats_for_ratings($type=1,$scoring_type = 1) {
 			//46=>"H/9IP",
 			//47=>"BB/9IP",
 			//48=>"K/9IP",
-			//49=>"VORP",
+			//49=>"WAR",
 			//53=>"QS%",
 			//55=>"CG%",
 			//57=>"GB%"
@@ -1168,7 +1167,7 @@ function get_ll_cat($catID,$forSQL = false)
       case 23: $txt="ISO"; break;
       case 24: $txt="TAVG"; break;
       case 25: $txt="OPS"; break;
-      case 26: $txt="VORP"; break;
+      case 26: $txt="WAR"; break;
 
       ## Pitcher Stats
       case 27: $txt="G"; break;
@@ -1193,7 +1192,7 @@ function get_ll_cat($catID,$forSQL = false)
       case 46: $txt="H/9IP"; break;
       case 47: $txt="BB/9IP"; break;
       case 48: $txt="K/9IP"; break;
-      case 49: $txt="VORP"; break;
+      case 49: $txt="WAR"; break;
       case 50: $txt="RA"; break;
       case 51: $txt="GF"; break;
       case 52: $txt="QS"; break;

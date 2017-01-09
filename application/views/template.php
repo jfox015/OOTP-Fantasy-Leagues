@@ -1,5 +1,5 @@
 <?php if (isset($league_info)) {
-   $logo = $config['ootp_html_report_path']."images/".$league_info->logo_file;
+   $logo = $config['ootp_html_report_path']."images/".$league_info->logo_file_name;
    $theDate = date('m/d/Y',strtotime($league_info->current_date));
    $league_abbr = strtoupper($league_info->abbr);
    $header_bg = $league_info->background_color_id;
@@ -26,7 +26,7 @@
     <?php echo link_tag($config['ootp_html_report_path'].'styles.css'); ?>
 	<?php if (isset($styles) && sizeof($styles)) {
 		foreach($styles as $style) {
-			echo link_tag('css/'.$style)."\n"; 
+			echo link_tag('css/'.$style)."\n";
 		}
 	} ?>
     <?php if ($pageType == PAGE_SEARCH) { echo link_tag('css/search.css')."\n"; } ?>
@@ -38,7 +38,7 @@
 <?php  } ?>
 <?php if (isset($scripts) && sizeof($scripts)) {
 	foreach($scripts as $script) {
-		echo('<script type="text/javascript" src="'.$config['fantasy_web_root'].'js/'.$script.'"></script>'); 
+		echo('<script type="text/javascript" src="'.$config['fantasy_web_root'].'js/'.$script.'"></script>');
 	}
 } ?>
 </head>
@@ -48,13 +48,13 @@
     <div id='topbar'>
         <div style='clear:both;float:left;width:959px;padding:0;margin:0;border:0;'>
             <div style='clear:both;float:left;width:110px;height:110px;padding:10px 12px 10px 8px;margin:0;background-image:url(<?php echo($config['ootp_html_report_path']); ?>images/report_header_logo_left_bg.jpg); background-repeat:no-repeat;'>
-               
-                <a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_home.html'><img 
+
+                <a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_home.html'><img
                 src='<?php echo($logo); ?>' width="110" height="110" border=0></a></div>
                 <div style='clear:right;float:left;padding:0;margin:0;width:829px;height:130px;'>
                 <div style='clear:both;float:left;padding:0;margin:0;width:829px;height:36px;'>
                 <div style='clear:both;float:left;width:8px;height:36px;'><img src='<?php echo($config['ootp_html_report_path']); ?>images/report_header_banner_left.jpg' border=0></div>
-                <div style='float:left;width:410px;height:36px;padding:8px 0 0 0;background-image:url(<?php echo($config['ootp_html_report_path']); ?>images/report_header_banner_mid.jpg); background-repeat:repeat-x;'><span 
+                <div style='float:left;width:410px;height:36px;padding:8px 0 0 0;background-image:url(<?php echo($config['ootp_html_report_path']); ?>images/report_header_banner_mid.jpg); background-repeat:repeat-x;'><span
                 style='color:#FFFFFF; font-size:14px; font-weight:bold;'><?php echo($theDate); ?></span></div>
                 <div style='float:left;width:411px;height:36px;padding:0;margin:0;'><img src='<?php echo($config['ootp_html_report_path']); ?>images/report_header_banner_right.jpg' border=0></div>
             </div>
@@ -66,7 +66,7 @@
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_scores.html' class='menu'>Scores</a></li>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_standings.html' class='menu'>Standings</a></li>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_stats.html' class='menu'>Stats</a></li>
-                
+
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_teams.html' class='menu'>Teams</a></li>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_players.html' class='menu'>Players</a><li>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_transactions_0_0.html' class='menu'>Transactions</a></li>
@@ -77,7 +77,7 @@
                 </ul>
 				<?php } ?>
             </div>   <!-- END mainmenu DIV -->
-            
+
             <div style='float:left;width:821px;height:59px;background-color:<?php echo($header_bg); ?>;margin:0;padding:7px 0 0 8px;'>
                 <span style='color:<?php echo($header_txt); ?>; font-size:24px; font-weight:bold;'><?php echo($league_abbr); ?> Fantasy Leagues</span><br>
                 <span style='color:<?php echo($header_txt); ?>; font-size:18px; font-weight:bold;'><?php echo $subTitle; ?></span>
@@ -85,23 +85,23 @@
         </div>
     </div>
     <?php
-	if (isset($subNavSection) && sizeof($subNavSection) > 0) { 
-	foreach ($subNavSection as $id => $subNav) { 
+	if (isset($subNavSection) && sizeof($subNavSection) > 0) {
+	foreach ($subNavSection as $id => $subNav) {
 	?>
     <div id='subnav'>
         <ul>
-            <?php 
+            <?php
 			$itemCount = 0;
 			if (isset($subNav) && sizeof($subNav) > 0) {
-				foreach($subNav as $menuItem) { 
+				foreach($subNav as $menuItem) {
 					$xtraClass = '';
 					if ($itemCount == 0) {
 						$xtraClass = ' first';
 					} else if ($itemCount == (sizeof($subNav) - 1)) {
 						$xtraClass = ' last';
-					} // END if 
+					} // END if
 					$attr = array('class'=>'menu'.$xtraClass);
-					
+
 					if (isset($menuItem['url']) && !empty($menuItem['url'])) {
 						if (isset($menuItem['rel'])) {
 							$attr = $attr + array('rel'=>$menuItem['rel']);
@@ -109,23 +109,23 @@
 						if (isset($menuItem['id'])) {
 							$attr = $attr + array('id'=>$menuItem['id']);
 						}
-						echo '<li>'.anchor($menuItem['url'],$menuItem['label'],$attr); 
+						echo '<li>'.anchor($menuItem['url'],$menuItem['label'],$attr);
 					} else {
-						echo('<li class="label'.$xtraClass.'"'.$id.'>'.$menuItem['label']); 
-					} 
+						echo('<li class="label'.$xtraClass.'"'.$id.'>'.$menuItem['label']);
+					}
 					if (isset($menuItem['menu'])) {
 						echo($menuItem['menu']);
-					} 
+					}
 					echo('</li>');
-					
+
 					$itemCount++;
-				} // END foreach 
+				} // END foreach
 			} // END if
 			?>
         </ul>
     </div>   <!-- END subnav DIV -->
     <?php } // END foreach
-	} // END if 
+	} // END if
 	// EDIT 1.0.6, IF the site version contains the "beta" tag, show the bug report toolbar
 	if (strpos(SITE_VERSION,"Beta") !== false) {
 	?>
@@ -137,13 +137,13 @@
  	</div>   <!-- END topbar DIV -->
  <div id='contentpane'>
 	<?php echo "<p>".$this->session->flashdata('message')."<p />"; ?>
-    <?php 
+    <?php
 	$admin_message = '';
-	if (isset($installWarning) || isset($dbConnectError) || isset($dataUpdate) || isset($configUpdate)) { 
+	if (isset($installWarning) || isset($dbConnectError) || isset($dataUpdate) || isset($configUpdate)) {
 		if (isset($installWarning)) {
 			$admin_message .= str_replace("[SITE_URL]",site_url(),$install_message);
 		} // END if
-		if (isset($dbConnectError)) { 
+		if (isset($dbConnectError)) {
 			if (!empty($admin_message)) { $admin_message .= "<br />"; }
 			$admin_message .= str_replace("[OOTP_FANTASY_URL]",MOD_SITE_URL,$dbConnect_message);
 		} // END if
@@ -151,10 +151,10 @@
 			if (!empty($admin_message)) { $admin_message .= "<br />"; }
 			$admin_message .= str_replace("[ADMIN_URL]",$config['fantasy_web_root'].'/admin/dashboard',$update_message);
 		} // END if
-		if (!empty($admin_message)) { 
+		if (!empty($admin_message)) {
 		?>
 		<span class="error"><?php echo($admin_message); ?></span>
-		<?php 
+		<?php
 		} // END if
 	} // END if
 	?>
@@ -172,7 +172,7 @@
 
 </div>   <!-- END pagebody DIV -->
 
-<?php if (isset($config['google_analytics_enable']) && isset($config['google_analytics_tracking_id']) && 
+<?php if (isset($config['google_analytics_enable']) && isset($config['google_analytics_tracking_id']) &&
 		$config['google_analytics_enable'] != -1 && !empty($config['google_analytics_tracking_id'])) { ?>
 <script type="text/javascript">
   var _gaq = _gaq || [];

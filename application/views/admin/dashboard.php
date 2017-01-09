@@ -119,7 +119,7 @@
 			if (!error) {
 				if (alertAfterUpdate != null)
 					alert(alertAfterUpdate);
-				if (refreshAfterUpdate) 
+				if (refreshAfterUpdate)
 					setTimeout('refreshPage()',3000);
 			}
 		});
@@ -166,8 +166,10 @@
 		<div id="activeStatusBox"><div id="activeStatus"></div></div>
         <?php
         // IN-SEASON FUNCTIONS
+				if (isset($league_info)) {
          $currDate = strtotime($league_info->current_date);
          $startDate = strtotime($league_info->start_date);
+			 }
 
 		if ($in_season && isset($league_info) && $currDate > $startDate && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
 		<h3>Regular Season Functions</h3>

@@ -18,7 +18,7 @@ class league extends BaseEditor {
 	 *	@var $_NAME:Text
 	 */
 	var $_NAME = 'league';
-	
+
 	var $tradeLists = array();
 	/*--------------------------------
 	/	C'TOR
@@ -82,7 +82,7 @@ class league extends BaseEditor {
 		$this->views['CONTACT_FORM'] = 'league/league_contact';
 
 		$this->lang->load('league');
-		
+
 		// EDIT 1.0.6
 		// TRADE PSUEDO CRON TASKS
 		// TEST FOR EXPIRING TRADES, EXPIRING LEAGUE PROTESTS AND ALERT COMMISSIONER TO TRADES REQUIRING
@@ -1036,9 +1036,19 @@ class league extends BaseEditor {
 		//} else {
 		//	$curr_period_id = $this->params['config']['current_period'];
 		//}
-		$curr_period_id = $this->getScoringPeriod();
-		$curr_period = getScoringPeriod($curr_period_id);
+		//$curr_period_id = $this->getScoringPeriod();
+		//$curr_period = getScoringPeriod($curr_period_id);
 
+		if (isset($this->uriVars['period_id'])) {
+			$curr_period_id = $this->uriVars['period_id'];
+		} else {
+			if ($this->params['config']['current_period'] > 1) {
+                $curr_period_id = $this->params['config']['current_period']-1;
+            } else {
+                $curr_period_id = 1;
+            }
+		}
+		$curr_period = getScoringPeriod($curr_period_id);
 		$this->data['curr_period'] = $curr_period_id;
 
 		$teams = $this->dataModel->getTeamIdList();

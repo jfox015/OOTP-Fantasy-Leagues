@@ -5,8 +5,8 @@
 	//var team_id = <?php //$team_id ?>;
 	var league_id = <?php echo($league_id); ?>;
 	var fader = null;
-	$(document).ready(function(){	
-		$('input[rel=changeTeam]').live('click',function () {					   
+	$(document).ready(function(){
+		$('input[rel=changeTeam]').live('click',function () {
 			var params = this.id.split("|");
 			var currTeam = params[0];
 			var playerId = params[1];
@@ -42,9 +42,9 @@
 			}
 			return false;
 		});
-		
+
 		$('div#activeStatusBox').hide();
-		
+
 		$('input[rel=itemPick]').live('click',function () {
 			var params = this.id;
 			var url = "<?php echo($config['fantasy_web_root']); ?>draft/addPlayer/league_id/"+league_id+"/player_id/"+params;
@@ -70,10 +70,10 @@
 					$('div#activeStatus').append(outHTML);
 				}
 			});
-			return false;							
+			return false;
 		});
 		$('input[rel=draft]').live('click',function () {
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>draft/selection/league_id/'+league_id+'/player_id/'+this.id;									 
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>draft/selection/league_id/'+league_id+'/player_id/'+this.id;
 		});
 		$('input[rel=addPlayer]').live('click',function () {
 			var params = this.id.split("|");
@@ -97,7 +97,7 @@
 					$('div#roster_status').append('<div id="listColumn1" class="listcolumn"><ul> <li>No status was returned.</li> </ul> </div>');
 				}
 			});
-			return false;							
+			return false;
 		});
 		$('input[rel=dropPlayer]').live('click',function () {
 			if (confirm("Are you sure you want to drop this player?")) {
@@ -110,7 +110,7 @@
 						if (data.status.indexOf(":") != -1) {
 							var status = data.status.split(":");
 							$('div#activeStatus').addClass(status[0].toLowerCase());
-							$('div#activeStatus').html(status);	
+							$('div#activeStatus').html(status);
 						} else {
 							$('div#activeStatus').addClass('success');
 							$('div#activeStatus').html('Player Removed Successfully');
@@ -121,15 +121,15 @@
 					}
 				});
 			}
-			return false;							
+			return false;
 		});
 		$('input[rel=tradePlayer]').live('click',function () {
 			var params = this.id.split("|");
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/trade/league_id/'+league_id+'/id/'+params[0]+'/tradeTo/'+params[1];									 
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/trade/league_id/'+league_id+'/id/'+params[0]+'/tradeTo/'+params[1];
 		});
 		$('input[rel=tradeForPlayer]').live('click',function () {
 			var params = this.id.split("|");
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/trade/league_id/'+league_id+'/id/'+params[0]+'/team_id2/'+params[1]+'/tradeFrom/'+params[2];									 
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/trade/league_id/'+league_id+'/id/'+params[0]+'/team_id2/'+params[1]+'/tradeFrom/'+params[2];
 		});
 	});
 </script>
@@ -145,36 +145,36 @@
             <?php
         $htmlpath=$config['ootp_html_report_path'];
 		$filepath=$config['ootp_html_report_root'];
-        $imgpath=$filepath."/images/player_".$thisItem['player_id'].".png";           
+        $imgpath=$filepath."/images/person_pictures/player_".$thisItem['player_id'].".png";
 		## Check for photo by player ID
-        if (file_exists($imgpath)) {echo "<img src='".$htmlpath."/images/player_".$thisItem['player_id'].".png'>";}
+        if (file_exists($imgpath)) {echo "<img src='".$htmlpath."/images/person_pictures/player_".$thisItem['player_id'].".png'>";}
          else
          {
-           $imgpath=$htmlpath."images/".str_replace(" ","_",$name).".png";   ## Check for capitalized name PNG
-           if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/".str_replace(" ","_",$name).".png'>";}
+           $imgpath=$htmlpath."images/person_pictures/".str_replace(" ","_",$name).".png";   ## Check for capitalized name PNG
+           if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/".str_replace(" ","_",$name).".png'>";}
             else
             {
-              $imgpath=$htmlpath."images/".str_replace(" ","_",strtolower($name)).".png";   ## Check for lowercase name PNG
-              if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/".str_replace(" ","_",strtolower($name)).".png'>";}
+              $imgpath=$htmlpath."images/person_pictures/".str_replace(" ","_",strtolower($name)).".png";   ## Check for lowercase name PNG
+              if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/".str_replace(" ","_",strtolower($name)).".png'>";}
                else
                {
-                 $imgpath=$htmlpath."images/".str_replace(" ","_",$name).".jpg";   ## Check for capitalized name JPG
-                 if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/".str_replace(" ","_",$name).".jpg'>";}
+                 $imgpath=$htmlpath."images/person_pictures/".str_replace(" ","_",$name).".jpg";   ## Check for capitalized name JPG
+                 if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/".str_replace(" ","_",$name).".jpg'>";}
                   else
                   {
-                    $imgpath=$htmlpath."images/".str_replace(" ","_",strtolower($name)).".jpg";   ## Check for lowercase name JPG
-                if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/".str_replace(" ","_",strtolower($name)).".jpg'>";}
+                    $imgpath=$htmlpath."images/person_pictures/".str_replace(" ","_",strtolower($name)).".jpg";   ## Check for lowercase name JPG
+                if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/".str_replace(" ","_",strtolower($name)).".jpg'>";}
                      else
                      {
-                   $imgpath=$htmlpath."images/".str_replace(" ","_",$name).".bmp";   ## Check for capitalized name BMP
-                   if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/".str_replace(" ","_",$name).".bmp'>";}
+                   $imgpath=$htmlpath."images/person_pictures/".str_replace(" ","_",$name).".bmp";   ## Check for capitalized name BMP
+                   if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/".str_replace(" ","_",$name).".bmp'>";}
                     else
                         {
-                          $imgpath=$htmlpath."images/".str_replace(" ","_",strtolower($name)).".bmp";   ## Check for lowercase name bmp
-                  if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/".str_replace(" ","_",strtolower($name)).".bmp'>";}
+                          $imgpath=$htmlpath."images/person_pictures/".str_replace(" ","_",strtolower($name)).".bmp";   ## Check for lowercase name bmp
+                  if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/".str_replace(" ","_",strtolower($name)).".bmp'>";}
                    else
                        {
-                     echo "<img src='".$htmlpath."images/default_player_photo.jpg'>";   ## Show default
+                     echo "<img src='".$htmlpath."images/person_pictures/default_player_photo.jpg'>";   ## Show default
                        }
                 }
                  }
@@ -182,31 +182,31 @@
                }
             }
          } ?>
-            
+
             </div>
-	
-            </td>            
+
+            </td>
             <td width="705" height="100" valign="top">
 
                 <div class="player"><?php echo($name." ");
 				if ($thisItem['position'] != 1) {
-					echo(get_pos($thisItem['position'])); 
-				} else { 
-					echo(get_pos($thisItem['role'])); 
-				} 
+					echo(get_pos($thisItem['position']));
+				} else {
+					echo(get_pos($thisItem['role']));
+				}
 				 ?></div><br />
                 <div class="playerbio" height="105">
                     <strong>Team:</strong> <a href="<?php echo($htmlpath); ?>teams/team_<?php echo($thisItem['team_id']); ?>.html" target="_blank"><?php echo(" ".$thisItem['team_name']." ".$thisItem['teamNickname']); ?></a>
                     | <strong>Nickname:</strong> <?php echo($thisItem['playerNickname']); ?>
-                    <!--| <strong>MLB Experience:</strong> 
+                    <!--| <strong>MLB Experience:</strong>
                     | <strong>Salary:</strong> -->
-                    <br /> 
+                    <br />
                     <strong>Height/Weight:</strong> <?php echo(cm_to_ft_in($thisItem['height'])); ?>/<?php echo($thisItem['weight']); ?> lbs
                     | <strong>Bats/Throws:</strong> <?php echo(get_hand($thisItem['bats'])); ?>/<?php echo(get_hand($thisItem['throws'])); ?>
 					<br /><strong>Age:</strong> <?php echo($thisItem['age']); ?> | <strong>Birthdate:</strong> <?php echo(date("F j, Y",strtotime($thisItem['date_of_birth']))); ?>
                     | <strong>Birthplace: </strong> <?php echo($thisItem['birthCity'].", ".$thisItem['birthRegion']." ".$thisItem['birthNation']); ?>
                     <br />
-                    <strong> Drafted:</strong> <?php 
+                    <strong> Drafted:</strong> <?php
 					if ($thisItem['draft_team_id'] != 0) {
 						echo ordinal_suffix($thisItem['draft_pick'],1)." pick in the ".ordinal_suffix($thisItem['draft_round'],1)." round of the ";
 						if ($thisItem['draft_year']==0) {echo "inaugural";} else {echo $thisItem['draft_year'];}
@@ -219,10 +219,10 @@
 						if ($thisItem['draft_year']==0) {echo $teamList[$thisItem['draft_team_id']]['name'];} else {echo $draftTeam;}
 					}
 					?>
-                    <?php 
+                    <?php
 					if (isset($awards) && sizeof($awards) > 0) { ?>
                     <br />
-                    <strong>Awards:</strong> 
+                    <strong>Awards:</strong>
                     <?php
 					$awardsByYear = $awards['byYear'];
 					$awdDrawn = false;
@@ -231,29 +231,29 @@
 						$awCnt=explode(",",$val);
 						$awCnt=count($awCnt);
 						switch ($awid) {
-							case 4: 
-							case 5: 
-							case 6: 
-							case 7: 
+							case 4:
+							case 5:
+							case 6:
+							case 7:
 							case 9: echo $awardName[$awid]." ($awCnt): $val"; break;
 							default: break;
 						} // END switch
 						$count++;
 						if ($count < (sizeof($awardsByYear))) { echo("; "); }
 					}}
-					?>	
+					?>
                     <br />
                     <a href="<?php echo($config['ootp_html_report_path']); ?>players/player_<?php echo($thisItem['player_id']); ?>.html">OOTP Player Page</a>
                         </div>
 					</td>
 					<td width="160" height="120" align="center" valign="middle">
-					<?php echo anchor('/team/info/'.$thisItem['team_id'],'<img border="0" src="'.$htmlpath.'images/'.$thisItem['logo_file'].'">'); ?>
-					</td>  
+					<?php echo anchor('/team/info/'.$thisItem['team_id'],'<img border="0" src="'.$htmlpath.'images/team_logos/'.$thisItem['logo_file_name'].'">'); ?>
+					</td>
 					</tr>
 					</table>
 
                 <!-- BEGIN RIGHT COLUMN -->
-            <div id="metaColumn">  
+            <div id="metaColumn">
             <?php if (isset($league_id) && !empty($league_id) && $league_id != -1) { ?>
             <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" border="0" width="325">
@@ -270,16 +270,16 @@
                     <tr>
                         <td style="line-height:2.0;">
                         <b>Current Team:</b><br />
-                        <?php if (!empty($current_team['avatar'])) { echo('<img src="'.PATH_TEAMS_AVATARS.$current_team['avatar'].'"width="32" align="absmiddle" height="32" border="0" /> &nbsp;'); } 
+                        <?php if (!empty($current_team['avatar'])) { echo('<img src="'.PATH_TEAMS_AVATARS.$current_team['avatar'].'"width="32" align="absmiddle" height="32" border="0" /> &nbsp;'); }
 						if ($current_team['id'] != -1) {
-							echo(anchor('/team/info/'.$current_team['id'],$current_team['teamname'])); 
+							echo(anchor('/team/info/'.$current_team['id'],$current_team['teamname']));
 						} else {
 							echo($current_team['teamname']);
 							if (isset($useWaivers) && $useWaivers == 1 && isset($waiverStatus) && $waiverStatus != -1) {
 								echo('<br /><span class="notice">Currently on waivers until period '.$waiverStatus.'</span>');
 							}
 						}
-						if (($isCommish || $isAdmin) && isset($team_list) && sizeof($team_list) > 0) { 
+						if (($isCommish || $isAdmin) && isset($team_list) && sizeof($team_list) > 0) {
 							echo('<div style="position:relative;width:100%;">');
 							echo('<form name="updatePlayerRoster" id="updatePlayerRoster">');
 							echo('<b style="float:left;">Edit Team:</b> <select name="rosterTeamList" id="rosterTeamList">');
@@ -289,7 +289,7 @@
 								if (isset($current_team) && $current_team['id'] == $tmpid) {
 									echo(' selected="selected"');
 								}
-								echo('>'.$data['teamname'].' '.$data['teamnick'].'</option>');	
+								echo('>'.$data['teamname'].' '.$data['teamnick'].'</option>');
 							}
 							echo('</select>');
 							echo('<input type="button" class="button" id="'.((isset($current_team['id']))?$current_team['id']:"-1").'|'.$thisItem['id'].'" rel="changeTeam" name="rosterButton" value="Change" />');
@@ -315,7 +315,7 @@
                         	if (($draftEligible == 1 && $listEligible == 1) && ($draftStatus >= 1 && $draftStatus < 4)) {
 								echo('<input type="button" class="button" id="'.$thisItem['id'].'" rel="itemPick" name="addToList" value="Add To Draft List" />');
 								$action = 'addToList';
-							} 
+							}
 							if (isset($draftEligible) && isset($user_team_id) && isset($pick_team_id) && ($draftStatus >= 1 && $draftStatus < 4)) {
 								if ($draftEligible == 1 && ($pick_team_id == $user_team_id && ($draftStatus >= 2 && $draftStatus < 4)) || ($accessLevel == ACCESS_ADMINISTRATE || $isCommish)) {
 									echo('<input type="button" class="button" id="'.$thisItem['id'].'" rel="draft" name="draftPlayer" value="Draft This Player" />');
@@ -355,14 +355,14 @@
                     </td>
                 </tr>
 				</table>
-                </div> 
+                </div>
                 <div style="margin:6px 0 6px 0;min-height:12px;"><br clear="all" class="clear" /></div>
-                
-			<?php 
+
+			<?php
             } ?>
-            
-            
-              
+
+
+
             <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" border="0" width="325">
                 <tr class='title'>
@@ -371,8 +371,8 @@
                 <tr class='headline'>
                     <td>News/Analysis</td>
                 </tr>
-                <?php if (isset($playerNews) && sizeof($playerNews) > 0) { 
-						$news = $playerNews[0]; ?> 
+                <?php if (isset($playerNews) && sizeof($playerNews) > 0) {
+						$news = $playerNews[0]; ?>
                 <tr>
                     <td>
                     <b><?php if (isset($news['news_subject'])) { echo($news['news_subject']); } ?></b><br />
@@ -392,15 +392,15 @@
 				} else { ?>
                 <tr>
                 <td>No news was found for this player.</td></tr>
-                <?php } 
+                <?php }
 				if ($accessLevel == ACCESS_ADMINISTRATE) { ?>
                 <tr>
                     <td>
                     <?php if (isset($playerNews) && sizeof($playerNews) > 0) { ?>
-                    <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/stock_mail-compose.png" width="16" height="16" border="0" alt="Edit" title="Edit" align="absmiddle" /> 
+                    <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/stock_mail-compose.png" width="16" height="16" border="0" alt="Edit" title="Edit" align="absmiddle" />
 					<?php echo anchor('/news/submit/mode/edit/id/'.$news['id'], 'Edit This Article'); ?>&nbsp;
                     <?php } ?>
-                    <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="Add" align="absmiddle" /> 
+                    <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="Add" align="absmiddle" />
 					<?php echo anchor('/news/submit/mode/add/type_id/'.NEWS_PLAYER.'/var_id/'.$thisItem['id'], 'Add Player News'); ?>
                     <p /></td>
                 </tr>
@@ -410,8 +410,8 @@
                 </tr>
                  <tr>
                     <td>
-                    <?php 
-					if ($thisItem['injury_is_injured']) { 
+                    <?php
+					if ($thisItem['injury_is_injured']) {
 						$injStatus = "";
 						if (isset($thisItem['injury_dtd_injury']) && $thisItem['injury_dtd_injury'] == 1) {
 							$injStatus .= "Questionable - ";
@@ -433,11 +433,11 @@
 							$injStatus .= ", ".$thisItem['injury_left']." Total Days Left";
 						}
 						?>
-						<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/red_cross.gif" width="7" height="7" align="absmiddle" 
-						alt="<?php echo($injStatus); ?>" title="<?php echo($injStatus); ?>t" />&nbsp; 
-						<?php echo($injStatus);  
+						<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/red_cross.gif" width="7" height="7" align="absmiddle"
+						alt="<?php echo($injStatus); ?>" title="<?php echo($injStatus); ?>t" />&nbsp;
+						<?php echo($injStatus);
 					} else { ?>
-                    No information available at this time (<?php echo(date('m/d/Y')); ?>). 
+                    No information available at this time (<?php echo(date('m/d/Y')); ?>).
                     <?php } ?></td>
                 </tr>
                 <?php if (isset($playerNews['fantasy_analysis'])) { ?>
@@ -450,9 +450,9 @@
                 </tr>
                 <?php } ?>
                 </table>
-                </div> 
+                </div>
                 <div style="margin:6px 0 6px 0;min-height:12px;"><br clear="all" class="clear" /></div>
-                                
+
 					<!-- LAST 7 GAMES -->
                 <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" border="0" width="325">
@@ -473,12 +473,12 @@
                         <td><strong>BB</strong></td>
                         <td><strong>SB</strong></td>
                     </tr>
-                    <?php 
+                    <?php
 						if (isset($recentGames) && sizeof($recentGames) > 0) {
 							$rowCount = 0;
 							foreach($recentGames as $game) { ?>
                        <tr height="17" class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" align="center" valign="middle">
-                        
+
                         <td><?php echo(date('m/d',strtotime($game['date']))); ?></td>
                         <td><?php echo(strtoupper($game['opp'])); ?></td>
                         <td><?php echo($game['ab']); ?></td>
@@ -488,13 +488,13 @@
                         <td><?php echo($game['rbi']); ?></td>
                         <td><?php echo($game['bb']); ?></td>
                         <td><?php echo($game['sb']); ?></td>
-                        
+
                     </tr>
 					<?php 		$rowCount++;
-							} 
+							}
 						} ?>
-                    <?php 
-					} else { 
+                    <?php
+					} else {
 					?>
                     <tr align=center class=bg4>
                         <td><strong></strong></td>
@@ -508,15 +508,15 @@
                         <td><strong>BB</strong></td>
                         <td><strong>K</strong></td>
                     </tr>
-                    <?php 
+                    <?php
 						if (isset($recentGames) && sizeof($recentGames) > 0) {
 							$rowCount = 0;
-							foreach($recentGames as $game) { ?>	
+							foreach($recentGames as $game) { ?>
                      <tr  height=17  class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" align="center" valign="middle">
                         <?php
 							$ip = $game['ip'];
 							$er = $game['er'];
-							if ($ip==0) { 
+							if ($ip==0) {
 								$era=0;
 						  	} else {
 								$era=$er*9/$ip;
@@ -536,15 +536,15 @@
                         <td><?php echo($game['k']); ?></td>
                     </tr>
                         <?php $rowCount++;
-							} 
-						} 
+							}
+						}
 					}?>
                     </table>
                 	</td>
                 </tr>
                 </table>
                 </div>
-                
+
                 <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" border="0" width="325">
                 <tr class='title'>
@@ -557,7 +557,7 @@
                         <td><strong>Time</strong></td>
                         <td><strong>OPP</strong></td>
                     </tr>
-                    <?php 
+                    <?php
 					$games = $upcomingGames['players_active'][$thisItem['id']];
 					if (isset($games) && sizeof($games) > 0) {
 						$drawn = 0;
@@ -567,16 +567,16 @@
 						foreach ($games as $game_id => $game_data) { ?>
 							<tr  height=17  class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" align="center" valign="middle">
                             <td>
-							<?php if (isset($game_data['game_date'])) { 
-								$lastDate = $game_data['game_date']; 
-								$thisDate = strtotime($game_data['game_date']); 
+							<?php if (isset($game_data['game_date'])) {
+								$lastDate = $game_data['game_date'];
+								$thisDate = strtotime($game_data['game_date']);
 							} else {
 								if (!empty($lastDate)) {
 									$thisDate = $lastDate + strtotime($lastDate) + (60*60*24);
 								} else {
 									$thisDate = strtotime($league_info->current_date);
 								}
-							} 
+							}
 							echo(date('m/d',$thisDate)); ?> </td>
                             <td><?php if (isset($game_data['game_time'])) { echo(date('h:m A',strtotime($game_data['game_time']))); } else { echo(" - - "); } ?> </td>
                             <td><?php
@@ -595,7 +595,7 @@
 							$rowCount++;
 							if ($drawn == $limit) break;
 						} ?></td>
-						<?php 
+						<?php
 					} else {
 						for ($i = 0; $i < $config['sim_length']; $i++) {
 							echo("<tr  height=17  class=bg2 align=center valign=middle><td class='hsc2_l'></td></tr>\n");
@@ -607,10 +607,10 @@
                 </table>
                 </div>
             </div>
-           
+
                 <!-- BEGIN MAIN COLUMN -->
             <div id="detailColumn">
-            	
+
                 	<!-- OWN/START BOX -->
                 <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" border="0" width="575">
@@ -628,9 +628,9 @@
                     </tr>
                     <tr  height=17 align="center"  class="bg2" style="font-size:12px; font-weight:bold;" align="center" valign="middle">
                         <td><?php echo($thisItem['start']); ?></td>
-                        <td><span style="color:#<?php 
+                        <td><span style="color:#<?php
 						$change = 0;
-						$color = "000"; 
+						$color = "000";
 						$mark = "";
 						if ($thisItem['start'] > $thisItem['start_last']) {
 							$change = ((100-$thisItem['start_last'])-(100-$thisItem['start']));
@@ -641,9 +641,9 @@
 						else if ($change < 0) { $color = "C00";  }
 						echo($color.'">'.$mark.intval($change)); ?></span></td>
                         <td><?php echo($thisItem['own']); ?></td>
-                        <td><span style="color:#<?php 
+                        <td><span style="color:#<?php
 						$change = 0;
-						$color = "000"; 
+						$color = "000";
 						$mark = "";
 						if ($thisItem['own'] > $thisItem['own_last']) {
 							$change = ((100-$thisItem['own_last'])-(100-$thisItem['own']));
@@ -659,8 +659,8 @@
                 </tr>
                 </table>
                 </div>
-                
-                <?php 
+
+                <?php
 				if (!isset($scoring_type) || (isset($scoring_type) && $scoring_type == LEAGUE_SCORING_HEADTOHEAD)) {
 				?>
                 <div class='textbox'>
@@ -673,29 +673,29 @@
                 </tr>
                 <tr>
 					<td>
-                    <?php if (isset($scoringPeriods) && $scoringPeriods != 0 && 
+                    <?php if (isset($scoringPeriods) && $scoringPeriods != 0 &&
 						isset($playerPoints) && sizeof($playerPoints) > 0) {
 						?>
-                    
+
                     	<div id="playerbars" height="100%" class="bg2" style="position:relative; width:100%; border-left:0px; border-right:0px; border-bottom:0px;">
                 		<div class='fc' style='padding: 0px; border-top: 0px'>
                         <table width=96% border=0 cellpadding=0 cellspacing=0 class="player_points">
                         <tr align=center valign=bottom>
-                        <?php 
-						for($i = 1; $i < $scoringPeriods; $i++) { 
+                        <?php
+						for($i = 1; $i < $scoringPeriods; $i++) {
 							$height = 0;
 							if ($playerPoints[$i] != 0 && $pointsMax != 0 && $playerPoints[$i] < $pointsMax) {
 								$height = intval(($playerPoints[$i] / $pointsMax)*100);
 							} else if ($playerPoints[$i] != 0 && $playerPoints[$i] >= $pointsMax) {
 								$height = 100;
-							} ?>                        	
+							} ?>
                             <td><?php echo($playerPoints[$i]); ?><br /><img src="<?php echo($config['fantasy_web_root']); ?>images/dot_red.gif" width="12" height="<?php echo($height); ?>"></td>
                             <td><img src=<?php echo($config['fantasy_web_root']); ?>images/dot_clear.gif width="2" height="1"></td>
                         <?php } ?>
                         </tr>
                         <tr align=center>
-                        <?php 
-						for($i = 1; $i < $scoringPeriods; $i++) { 
+                        <?php
+						for($i = 1; $i < $scoringPeriods; $i++) {
 							$height = ($playerPoints[$i]['points'] < $pointsMax) ? intval($playerPoints[$i]['points'] / $pointsMax) : 100; ?>
                         	<td style="color:black;"><?php echo($i); ?></td>
                             <td></td>
@@ -704,8 +704,8 @@
                         </table>
                         <table width=96% border=0 cellspacing=1 cellpadding=2>
                         <tr bgcolor=#E8ECEE align=center>
-                        <td colspan=52>Fantasy Points by Week. &nbsp;  
-                        (<img src=<?php echo($config['fantasy_web_root']); ?>images/dot_red.gif width=10 height=10> Actual) 
+                        <td colspan=52>Fantasy Points by Week. &nbsp;
+                        (<img src=<?php echo($config['fantasy_web_root']); ?>images/dot_red.gif width=10 height=10> Actual)
                         &nbsp;&nbsp;&nbsp;Note: Points are rounded down.<br></td>
                         </tr>
                         </table>
@@ -716,7 +716,7 @@
                 </table>
                 </div>
                 <?php } ?>
-                
+
                 	<!-- CURRETN SEASON STATS -->
                 <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" border="0" width="575">
@@ -729,7 +729,7 @@
 					<td>
                     <table width="100%" cellpadding=2 cellspacing=1 border=0>
                     <tr align=center class=bg4>
-                    <?php  if ($thisItem['position'] != 1) { 
+                    <?php  if ($thisItem['position'] != 1) {
 						$ab = isset($playerStats['ab']) ? $playerStats['ab'] : 0;
 						$h = isset($playerStats['h']) ? $playerStats['h'] : 0;
 						$bb = isset($playerStats['bb']) ? $playerStats['bb'] : 0;
@@ -742,7 +742,7 @@
 						$sb = isset($playerStats['sb']) ? $playerStats['sb'] : 0;
 						if ($ab==0) {
 							$avg=0;
-							$wiff = 0;	
+							$wiff = 0;
 						} else {
 						  $avg=$h/$ab;
 						  $wiff = intval(($k/$ab)*100);
@@ -754,8 +754,8 @@
 						}
 					   if ($avg<1) {$avg=strstr(sprintf("%.3f",$avg),".");}
 						else {$avg=sprintf("%.3f",$avg);}
-						
-						
+
+
 						$xbh = ($d+$t+$hr);
 						if ($walk > 20) {
 						   $walk = '<span style="color:#060">'.$walk.'</span>';
@@ -798,7 +798,7 @@
                         <td><?php echo($walk); ?></td>
                         <td><?php echo($xbh); ?></td>
                     </tr>
-                    <?php } else { 
+                    <?php } else {
 							$w = isset($playerStats['w']) ? $playerStats['w'] : 0;
 							$l = isset($playerStats['l']) ? $playerStats['l'] : 0;
 							$s = isset($playerStats['s']) ? $playerStats['s'] : 0;
@@ -808,7 +808,7 @@
 							$ha = isset($playerStats['ha']) ? $playerStats['ha'] : 0;
 							$k =  isset($playerStats['k']) ? $playerStats['k'] : 0;
 							$hra = isset($playerStats['hra']) ? $playerStats['hra'] : 0;
-							if ($ip==0) { 
+							if ($ip==0) {
 							$era=0;$whip=0;$k9 = 0;$bb9 = 0;$hr9 = 0;
 						  } else {
 							  $era=$er*9/$ip;
@@ -821,8 +821,8 @@
 						   $ip=sprintf("%.1f",$ip);
 						   if ($ip<1) {$ip=strstr($ip,".");}
 						   $whip=sprintf("%.2f",$whip);
-						   
-						   
+
+
 						   $k9=sprintf("%.2f",$k9);
 						   if ($k9 > 6) {
 							   $k9 = '<span style="color:#060">'.$k9.'</span>';
@@ -831,7 +831,7 @@
 						   } else {
 							   $k9 = '<span style="color:#C00">'.$k9.'</span>';
 						   }
-						   
+
 						   $bb9=sprintf("%.2f",$bb9);
 						   if ($bb9 < 3) {
 							   $bb9 = '<span style="color:#060">'.$bb9.'</span>';
@@ -840,7 +840,7 @@
 						   } else {
 							   $bb9 = '<span style="color:#C00">'.$bb9.'</span>';
 						   }
-						   
+
 						   $hr9=sprintf("%.2f",$hr9);
 						   if ($hr9 <= 1) {
 							   $hr9 = '<span style="color:#060">'.$hr9.'</span>';
@@ -850,7 +850,7 @@
 							   $hr9 = '<span style="color:#C00">'.$hr9.'</span>';
 						   }
 						   if (!$rowsDrawn) $rowsDrawn = true;
-						?> 
+						?>
                         <td width="9%"><b>W</b></td>
                         <td width="9%"><b>L</b></td>
                         <td width="9%"><b>ERA</b></td>
@@ -878,7 +878,7 @@
                     </tr>
                     <?php } ?>
                     </tr>
-                   <?php 
+                   <?php
 					if (!$rowsDrawn) { ?>
                     <tr  height=17  class="bg2" align="right" valign="middle">
                     	<td colspan="8" align=center>No Stats Were Found</td>
@@ -889,7 +889,7 @@
                 </tr>
                 </table>
                 </div>
-                
+
                 	<!-- CURRETN ELIDIBILITY -->
                 <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" border="0" width="575">
@@ -924,7 +924,7 @@
                     </tr>
                     <tr  height=17  class="bg2" align="center" valign="middle">
                         <td  align=left>Eligible At:</td>
-                        <?php 
+                        <?php
 						$posToTest = array(2,3,4,5,6,20,25,11,12);
 						foreach($posToTest as $testPos) { ?>
                         	<td>
@@ -932,13 +932,13 @@
                             </td>
                         <?php } ?>
                     </tr>
-                    
+
                     </table>
                 	</td>
                 </tr>
                 </table>
                 </div>
-                
+
             </div>
         </div>
     </div>
@@ -964,8 +964,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	$expTable="";
 	$noWS = 1;
 	$noPSM = 1;
-	
-	if ($thisItem['position'] != 1) { 
+
+	if ($thisItem['position'] != 1) {
 	$Tg=0;
 	$Tab=0;
 	$Th=0;
@@ -985,7 +985,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	$Tbb=0;
 	$Tsf=0;
 	$Tk=0;
-	$Tvorp=0;
+	$Twar=0;
 	$Tpi=0;
    $playedFor = array();
    $teamStats = array();
@@ -1016,7 +1016,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "<td class='hsc2'>OBP</td>";
    echo "<td class='hsc2'>SLG</td>";
    echo "<td class='hsc2'>OPS</td>";
-   echo "<td class='hsc2'>VORP</td>";
+   echo "<td class='hsc2'>WAR</td>";
    echo "<td class='hsc2'>wOBA</td>";
   echo "</tr></thead>\n";
    $prevYr=-1;
@@ -1042,12 +1042,12 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $sb=$row['sb'];
       $cs=$row['cs'];
       $pa=$row['pa'];
-      $vorp=$row['vorp'];
+      $war=$row['war'];
       #Expanded
       $pi=$row['pitches_seen'];
       $ibb=$row['ibb'];
       $gdp=$row['gdp'];
-	  
+
 	  if (!isset($teamStats[$tid])) $teamStats[$tid] = array();
 
       $playedFor[$tid]=1;
@@ -1067,7 +1067,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $teamStats[$tid]['sb']=(isset($teamStats[$tid]['sb'])) ? $teamStats[$tid]['sb']+$sb : $sb;
       $teamStats[$tid]['cs']=(isset($teamStats[$tid]['cs'])) ? $teamStats[$tid]['cs']+$cs : $cs;
       $teamStats[$tid]['pa']=(isset($teamStats[$tid]['pa'])) ? $teamStats[$tid]['pa']+$pa : $pa;
-      $teamStats[$tid]['vorp']=(isset($teamStats[$tid]['vorp'])) ? $teamStats[$tid]['vorp']+$vorp : $vorp;
+      $teamStats[$tid]['war']=(isset($teamStats[$tid]['war'])) ? $teamStats[$tid]['war']+$war : $war;
       #Expanded
       $teamStats[$tid]['pi']=(isset($teamStats[$tid]['pi'])) ? $teamStats[$tid]['pi']+$pi : $pi;
       $teamStats[$tid]['ibb']=(isset($teamStats[$tid]['ibb'])) ? $teamStats[$tid]['ibb']+$ibb : $ibb;
@@ -1094,7 +1094,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $yearStats[$yr]['sb']= (isset($yearStats[$tid]['sb'])) ? $yearStats[$yr]['sb']+$sb : $sb;
       $yearStats[$yr]['cs']= (isset($yearStats[$tid]['cs'])) ? $yearStats[$yr]['cs']+$cs : $cs;
       $yearStats[$yr]['pa']= (isset($yearStats[$tid]['pa'])) ? $yearStats[$yr]['pa']+$pa : $pa;
-      $yearStats[$yr]['vorp']= (isset($yearStats[$tid]['vorp'])) ? $yearStats[$yr]['vorp']+$vorp : $vorp;
+      $yearStats[$yr]['war']= (isset($yearStats[$tid]['war'])) ? $yearStats[$yr]['war']+war : $war;
       #Expanded
       $yearStats[$yr]['pi']= (isset($yearStats[$tid]['pi'])) ? $yearStats[$yr]['pi']+$pi : $pi;
       $yearStats[$yr]['ibb']= (isset($yearStats[$tid]['ibb'])) ? $yearStats[$yr]['ibb']+$ibb : $ibb;
@@ -1116,13 +1116,13 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $Tsb+=$sb;
       $Tcs+=$cs;
       $Tpa+=$pa;
-      $Tvorp+=$vorp;
+      $Twar+=$war;
       #Expanded
       $Tpi+=$pi;
       if ($pi>0) {$TpiPA+=$pa;}
       $Tibb+=$ibb;
       $Tgdp+=$gdp;
-      
+
       if ($ab==0) {
 		  $avg=0;$slg=0;
 	  } else {
@@ -1131,9 +1131,9 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       }
       if (($ab+$bb+$hp+$sf)==0) {$obp=0;}
       else {$obp=($h+$bb+$hp)/($ab+$bb+$hp+$sf);}
-      
+
 	  if ($pa==0) {$wOBA=0;} else {$wOBA=(0.72*$bb+0.75*$hp+0.9*($h-$d-$t-$hr)+0.92*0+1.24*$d+1.56*$t+1.95*$hr)/$pa;}
-      
+
       $ops=$obp+$slg;
       $avg=sprintf("%.3f",$avg);
       $obp=sprintf("%.3f",$obp);
@@ -1145,7 +1145,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       if ($slg<1) {$slg=strstr($slg,".");}
       if ($ops<1) {$ops=strstr($ops,".");}
       if ($wOBA<1) {$wOBA=strstr($wOBA,".");}
-      $vorp=sprintf("%.1f",$vorp);
+      $war=sprintf("%.1f",$war);
       #Expanded
       if ($pa==0) {$piPerPA=0;} else {$piPerPA=$pi/$pa;}
       if ($hr==0) {$paPerHR=0;} else {$paPerHR=$pa/$hr;}
@@ -1179,7 +1179,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
        {
          if ((isset($roy[$prevYr])) || (isset($boy[$prevYr]))) {$cls='b'.($cnt%2+1);}
           else {$cls='s'.($cnt%2+1);}
-	 
+
          $Yab=$yearStats[$prevYr]['ab'];
  	 $Yh=$yearStats[$prevYr]['h'];
 	 $Yd=$yearStats[$prevYr]['d'];
@@ -1247,7 +1247,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	 if ($Yslg<1) {$Yslg=strstr($Yslg,".");}
 	 if ($Yops<1) {$Yops=strstr($Yops,".");}
 	 if ($YwOBA<1) {$YwOBA=strstr($YwOBA,".");}
-		      
+
          echo "     <tr class='$cls'>";
 	 echo "<td class='".$cls."_l'>$prevYr - Tot";
 	 if (isset($as[$yr])) {echo " (AS)";}
@@ -1272,7 +1272,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	 echo "<td>$Yobp</td>";
 	 echo "<td>$Yslg</td>";
 	 echo "<td>$Yops</td>";
-	 echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['vorp'])."</td>";
+	 echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
 	 echo "<td>$YwOBA</td>";
    	 if ($noWS!=1)
           {
@@ -1378,7 +1378,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       echo "<td>$obp</td>";
       echo "<td>$slg</td>";
       echo "<td>$ops</td>";
-      echo "<td>$vorp</td>";
+      echo "<td>$war</td>";
       echo "<td>$wOBA</td>";
       if ($noWS!=1)
        {
@@ -1449,7 +1449,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $expTable.="<td>$babip</td>";
       $expTable.="<td>$iso</td>";
       $expTable.="</tr>\n";
-      
+
       $prevYr=$yr;
       $cnt++;
     }
@@ -1487,7 +1487,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       if (($Yab+$Ybb+$Yhp+$Ysf)==0) {$Yobp=0;}
        else {$Yobp=($Yh+$Ybb+$Yhp)/($Yab+$Ybb+$Yhp+$Ysf);}
       if ($Ypa==0) {$YwOBA=0;} else {$YwOBA=(0.72*$Ybb+0.75*$Yhp+0.9*($Yh-$Yd-$Yt-$Yhr)+0.92*0+1.24*$Yd+1.56*$Yt+1.95*$Yhr)/$Ypa;}
-    
+
       $Yops=$Yobp+$Yslg;
       $Yavg=sprintf("%.3f",$Yavg);
       $Yobp=sprintf("%.3f",$Yobp);
@@ -1527,7 +1527,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $YbbPerK=sprintf("%.2f",$YbbPerK);
       if ($Ybabip<1) {$Ybabip=strstr($Ybabip,".");}
       if ($Yiso<1) {$Yiso=strstr($Yiso,".");}
-		      
+
       echo "     <tr class='$cls'>";
       echo "<td class='".$cls."_l'>$prevYr - Tot";
       if (isset($as[$yr])) {echo " (AS)";}
@@ -1552,7 +1552,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       echo "<td>$Yobp</td>";
       echo "<td>$Yslg</td>";
       echo "<td>$Yops</td>";
-      echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['vorp'])."</td>";
+      echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
       echo "<td>$YwOBA</td>";
       if ($noWS!=1)
        {
@@ -1601,7 +1601,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $expTable.="<td>$Yiso</td>";
       $expTable.="</tr>\n";
     }
-  
+
    ## Display Career Totals
    echo "     <tfoot>\n";
    $expTable.="     <tfoot>\n";
@@ -1624,7 +1624,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $sb=$teamStats[$tid]['sb'];
       $cs=$teamStats[$tid]['cs'];
       $pa=$teamStats[$tid]['pa'];
-      $vorp=$teamStats[$tid]['vorp'];
+      $war=$teamStats[$tid]['war'];
       #Expanded
       $pi=$teamStats[$tid]['pi'];
       $ibb=$teamStats[$tid]['ibb'];
@@ -1639,7 +1639,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       if (($ab+$bb+$hp+$sf)==0) {$obp=0;}
        else {$obp=($h+$bb+$hp)/($ab+$bb+$hp+$sf);}
       if ($pa==0) {$wOBA=0;} else {$wOBA=(0.72*$bb+0.75*$hp+0.9*($h-$d-$t-$hr)+0.92*0+1.24*$d+1.56*$t+1.95*$hr)/$pa;}
-      
+
       $ops=$obp+$slg;
       $avg=sprintf("%.3f",$avg);
       $obp=sprintf("%.3f",$obp);
@@ -1651,7 +1651,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       if ($slg<1) {$slg=strstr($slg,".");}
       if ($ops<1) {$ops=strstr($ops,".");}
       if ($wOBA<1) {$wOBA=strstr($wOBA,".");}
-      $vorp=sprintf("%.1f",$vorp);
+      $war=sprintf("%.1f",$war);
       #Expanded
       if ($pa==0) {$piPerPA=0;} else {$piPerPA=$pi/$pa;}
       if ($hr==0) {$paPerHR=0;} else {$paPerHR=$pa/$hr;}
@@ -1686,7 +1686,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $awTxt="";
       if ($boys>1) {$awTxt="$boys BOY's";}
       if ($boys==1) {$awTxt="$boys BOY";}
-      if (($asX>0) && ($awTxt!="")) {$awTxt.=", ";}	
+      if (($asX>0) && ($awTxt!="")) {$awTxt.=", ";}
       if ($asX>0) {$awTxt.=$asX."xAS";}
       if ($awTxt!="") {$awTxt=" (".$awTxt.")";}
 
@@ -1711,7 +1711,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       echo "<td class='hsc2'>$obp</td>";
       echo "<td class='hsc2'>$slg</td>";
       echo "<td class='hsc2'>$ops</td>";
-      echo "<td class='hsc2'>$vorp</td>";
+      echo "<td class='hsc2'>$war</td>";
       echo "<td class='hsc2'>$wOBA</td>";
       if ($noWS!=1)
        {
@@ -1734,8 +1734,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	  }
          echo "<td class='hsc2'>$opsP</td><td class='hsc2'>$EqAP</td>";
        }
-      echo "</tr>\n";    
-		
+      echo "</tr>\n";
+
       #Expanded
       $expTable.="     <tr class='headline'>";
       $expTable.="<td class='hsc2_l' colspan=2>w/ ".$teams[$tid][$year].$awTxt."</td>";
@@ -1755,10 +1755,10 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $expTable.="<td class='hsc2'>$rc27</td>";
       $expTable.="<td class='hsc2'>$babip</td>";
       $expTable.="<td class='hsc2'>$iso</td>";
-      echo "</tr>\n";    
+      echo "</tr>\n";
     }
    #for career
-   $Tvorp=sprintf("%.1f",$Tvorp);
+   $Twar=sprintf("%.1f",$Twar);
    if ($Tab==0) {$avg=0;$slg=0;}
     else
     {
@@ -1830,7 +1830,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "<td class='hsc2'>$obp</td>";
    echo "<td class='hsc2'>$slg</td>";
    echo "<td class='hsc2'>$ops</td>";
-   echo "<td class='hsc2'>$Tvorp</td>";
+   echo "<td class='hsc2'>$Twar</td>";
    echo "<td class='hsc2'>$TwOBA</td>";
    if ($noWS!=1)
     {
@@ -1915,7 +1915,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "  </tr></td>\n";
  } else {
 	 /*------------------------------------------------------------------------
-	 /	
+	 /
 	 /	PITCHING STATS DISPLAY
 	 /
 	 /-----------------------------------------------------------------------*/
@@ -1944,7 +1944,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "<td class='hsc2'>SHO</td>";
    echo "<td class='hsc2'>WHIP</td>";
    echo "<td class='hsc2'>BABIP</td>";
-   echo "<td class='hsc2'>VORP</td>";
+   echo "<td class='hsc2'>WAR</td>";
    if ($noWS!=1) {echo "<td class='hsc2'>WS</td>";}
    if (($noPSM!=1)&&($playerPos==1)) {echo "<td class='hsc2'>ERA+</td><td class='hsc2'>ERC</td>";}
    echo "</tr></thead>\n";
@@ -1967,8 +1967,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	$Tsho=0;
 	$Tab=0;
 	$Tsf=0;
-	$Tvorp=0;
-	
+	$Twar=0;
+
 	$Tbf=0;
 	$Tpi=0;
 	$Tqs=0;
@@ -2001,7 +2001,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $sho=$row['sho'];
       $ab=$row['ab'];
       $sf=$row['sf'];
-      $vorp=$row['vorp'];
+      $war=$row['war'];
       #Expanded
       $bf=$row['bf'];
       $pi=$row['pi'];
@@ -2013,9 +2013,9 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $bk=$row['bk'];
       $svo=$row['svo'];
       $bs=$row['bs'];
-	  
-	  
-	  
+
+
+
       $playedFor[$tid]=1;
       $teamStats[$tid]['g']=(isset($teamStats[$tid]['g'])) ? $teamStats[$tid]['g']+$g : $g;
 	  $teamStats[$tid]['gs']=(isset($teamStats[$tid]['gs'])) ? $teamStats[$tid]['gs']+$gs : $gs;
@@ -2034,7 +2034,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	  $teamStats[$tid]['sho']=(isset($teamStats[$tid]['sho'])) ? $teamStats[$tid]['sho']+$sho : $sho;
 	  $teamStats[$tid]['ab']=(isset($teamStats[$tid]['ab'])) ? $teamStats[$tid]['ab']+$ab : $ab;
 	  $teamStats[$tid]['sf']=(isset($teamStats[$tid]['sf'])) ? $teamStats[$tid]['sf']+$sf : $sf;
-	  $teamStats[$tid]['vorp']=(isset($teamStats[$tid]['vorp'])) ? $teamStats[$tid]['vorp']+$vorp : $vorp;
+	  $teamStats[$tid]['war']=(isset($teamStats[$tid]['war'])) ? $teamStats[$tid]['war']+$war : $war;
 	  #Expanded
 	  $teamStats[$tid]['bf']=(isset($teamStats[$tid]['bf'])) ? $teamStats[$tid]['bf']+$bf : $bf;
 	  $teamStats[$tid]['pi']=(isset($teamStats[$tid]['pi'])) ? $teamStats[$tid]['pi']+$pi : $pi;
@@ -2046,7 +2046,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	  $teamStats[$tid]['bk']=(isset($teamStats[$tid]['bk'])) ? $teamStats[$tid]['bk']+$bk : $bk;
 	  $teamStats[$tid]['svo']=(isset($teamStats[$tid]['svo'])) ? $teamStats[$tid]['svo']+$svo : $svo;
 	  $teamStats[$tid]['bs']=(isset($teamStats[$tid]['bs'])) ? $teamStats[$tid]['bs']+$bs : $bs;
-	  
+
 
       $yrDate=strtotime($yr."-7-1");
       $age=floor(($yrDate-strtotime($thisItem['date_of_birth']))/31536000);
@@ -2070,7 +2070,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	  $yearStats[$tid]['sho']=(isset($yearStats[$tid]['sho'])) ? $yearStats[$tid]['sho']+$sho : $sho;
 	  $yearStats[$tid]['ab']=(isset($yearStats[$tid]['ab'])) ? $yearStats[$tid]['ab']+$ab : $ab;
 	  $yearStats[$tid]['sf']=(isset($yearStats[$tid]['sf'])) ? $yearStats[$tid]['sf']+$sf : $sf;
-	  $yearStats[$tid]['vorp']=(isset($yearStats[$tid]['vorp'])) ? $yearStats[$tid]['vorp']+$vorp : $vorp;
+	  $yearStats[$tid]['war']=(isset($yearStats[$tid]['war'])) ? $yearStats[$tid]['war']+$war : $war;
 	  #Expanded
 	  $yearStats[$tid]['bf']=(isset($yearStats[$tid]['bf'])) ? $yearStats[$tid]['bf']+$bf : $bf;
 	  $yearStats[$tid]['pi']=(isset($yearStats[$tid]['pi'])) ? $yearStats[$tid]['pi']+$pi : $pi;
@@ -2100,7 +2100,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $Tsho+=$sho;
       $Tab+=$ab;
       $Tsf+=$sf;
-      $Tvorp+=$vorp;
+      $Twar+=$war;
       #Expanded
       $Tbf+=$bf;
       $Tpi+=$pi;
@@ -2122,13 +2122,13 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $bip=$ab-$k-$hra+$sf;
       if ($bip==0) {$babip=0;}
        else {$babip=($ha-$hra)/$bip;}
-      
+
       $era=sprintf("%.2f",$era);
       $whip=sprintf("%.2f",$whip);
       $babip=sprintf("%.3f",$babip);
       if ($whip<1) {$whip=strstr($whip,".");}
       if ($babip<1) {$babip=strstr($babip,".");}
-      $vorp=sprintf("%.1f",$vorp);
+      $war=sprintf("%.1f",$war);
       #Expanded
       if ($ip==0) {$rPer9=0;$hPer9=0;$kPer9=0;$bbPer9=0;$hrPer9=0;}
        {
@@ -2186,7 +2186,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
          $Ybip=$Yab-$Yk-$Yhra+$Ysf;
          if ($Ybip==0) {$Ybabip=0;}
           else {$Ybabip=($Yha-$Yhra)/$Ybip;}
-      
+
          $Yera=sprintf("%.2f",$Yera);
          $Ywhip=sprintf("%.2f",$Ywhip);
 	 $Ybabip=sprintf("%.3f",$Ybabip);
@@ -2239,7 +2239,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	 echo "<td>".$yearStats[$prevYr]['sho']."</td>";
 	 echo "<td>".$Ywhip."</td>";
 	 echo "<td>".$Ybabip."</td>";
-	 echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['vorp'])."</td>";
+	 echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
 	 if ($noWS!=1)
 	  {
 	    $pws=$yearStats[$prevYr]['pws'];
@@ -2290,8 +2290,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
  	 $expTable.="<td>$YsvPct</td>";
  	 $expTable.="<td>".$yearStats[$prevYr]['svo']."</td>";
 	 $expTable.="</tr>\n";
-	 
-         $cnt++;	 
+
+         $cnt++;
        }
 	   // ADD AWARDS TO RESULTS
 	  $awrdStr = "";
@@ -2347,7 +2347,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       echo "<td>$sho</td>";
       echo "<td>$whip</td>";
       echo "<td>$babip</td>";
-      echo "<td>$vorp</td>";
+      echo "<td>$war</td>";
       if ($noWS!=1)
        {
          $pws=$row['pws'];
@@ -2456,7 +2456,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $Ybip=$Yab-$Yk-$Yhra+$Ysf;
       if ($Ybip==0) {$Ybabip=0;}
        else {$Ybabip=($Yha-$Yhra)/$Ybip;}
-      
+
       $Yera=sprintf("%.2f",$Yera);
       $Ywhip=sprintf("%.2f",$Ywhip);
       $Ybabip=sprintf("%.3f",$Ybabip);
@@ -2509,7 +2509,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       echo "<td>".$yearStats[$prevYr]['sho']."</td>";
       echo "<td>".$Ywhip."</td>";
       echo "<td>".$Ybabip."</td>";
-      echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['vorp'])."</td>";
+      echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
       if ($noWS!=1)
        {
          $pws=$yearStats[$prevYr]['pws'];
@@ -2561,7 +2561,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $expTable.="<td>".$yearStats[$prevYr]['svo']."</td>";
       $expTable.="</tr>\n";
     }
-   
+
    ## Display Career Totals
    echo "     <tfoot>";
    $expTable.="     <tfoot>";
@@ -2585,7 +2585,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $sho=$teamStats[$tid]['sho'];
       $ab=$teamStats[$tid]['ab'];
       $sf=$teamStats[$tid]['sf'];
-      $vorp=$teamStats[$tid]['vorp'];
+      $war=$teamStats[$tid]['war'];
       #Expanded
       $bf=$teamStats[$tid]['bf'];
       $pi=$teamStats[$tid]['pi'];
@@ -2607,13 +2607,13 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $bip=$ab-$k-$hra+$sf;
       if ($bip==0) {$babip=0;}
        else {$babip=($ha-$hra)/$bip;}
-      
+
       $era=sprintf("%.2f",$era);
       $whip=sprintf("%.2f",$whip);
       $babip=sprintf("%.3f",$babip);
       if ($whip<1) {$whip=strstr($whip,".");}
       if ($babip<1) {$babip=strstr($babip,".");}
-      $vorp=sprintf("%.1f",$vorp);
+      $war=sprintf("%.1f",$war);
       #Expanded
       if ($ip==0) {$rPer9=0;$hPer9=0;$kPer9=0;$bbPer9=0;$hrPer9=0;}
        {
@@ -2644,7 +2644,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $awTxt="";
       if ($poys>1) {$awTxt="$poys POY's";}
       if ($poys==1) {$awTxt="$poys POY";}
-      if (($asX>0) && ($awTxt!="")) {$awTxt.=", ";}	
+      if (($asX>0) && ($awTxt!="")) {$awTxt.=", ";}
       if ($asX>0) {$awTxt.=$asX."xAS";}
       if ($awTxt!="") {$awTxt=" (".$awTxt.")";}
 
@@ -2668,7 +2668,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       echo "<td class='hsc2'>$sho</td>";
       echo "<td class='hsc2'>$whip</td>";
       echo "<td class='hsc2'>$babip</td>";
-      echo "<td class='hsc2'>$vorp</td>";
+      echo "<td class='hsc2'>$war</td>";
       if ($noWS!=1)
        {
          $pws=$teamStats[$tid]['pws'];
@@ -2721,7 +2721,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
     }
    #for career
-   $Tvorp=sprintf("%.1f",$Tvorp);
+   $Twar=sprintf("%.1f",$Twar);
    if ($Tip==0) {$era=0;$whip=0;}
     else
     {
@@ -2731,13 +2731,13 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    $bip=$Tab-$Tk-$Thra+$Tsf;
    if ($bip==0) {$babip=0;}
     else {$babip=($Tha-$Thra)/$bip;}
-    
+
    $era=sprintf("%.2f",$era);
    $whip=sprintf("%.2f",$whip);
    $babip=sprintf("%.3f",$babip);
    if ($whip<1) {$whip=strstr($whip,".");}
    if ($babip<1) {$babip=strstr($babip,".");}
-   $vorp=sprintf("%.1f",$vorp);
+   $war=sprintf("%.1f",$war);
    #Expanded
    if ($Tip==0) {$rPer9=0;$hPer9=0;$kPer9=0;$bbPer9=0;$hrPer9=0;}
     {
@@ -2784,8 +2784,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "<td class='hsc2'>$Tsho</td>";
    echo "<td class='hsc2'>$whip</td>";
    echo "<td class='hsc2'>$babip</td>";
-   echo "<td class='hsc2'>$Tvorp</td>";
-      
+   echo "<td class='hsc2'>$Twar</td>";
+
    if ($noWS!=1)
     {
       $Tpws=sprintf("%.1f",$Tpws);

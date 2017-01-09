@@ -21,7 +21,7 @@ class ootp_league_model extends base_model {
 	var $league_id  = -1;
 	var $name = '';
 	var $abbr = '';
-	var $logo_file = '';
+	var $logo_file_name = '';
 	var $start_date  = EMPTY_DATE_STR;
 	var $current_date  = EMPTY_DATE_STR;
 	var $league_state  = -1;
@@ -45,7 +45,7 @@ class ootp_league_model extends base_model {
 
 		$this->fieldList = array();
 		$this->conditionList = array();
-		$this->readOnlyList = array('league_id', 'name', 'abbr', 'logo_file', 'start_date', 'current_date', 'league_state', 'league_level','background_color_id','text_color_id');
+		$this->readOnlyList = array('league_id', 'name', 'abbr', 'logo_file_name', 'start_date', 'current_date', 'league_state', 'league_level','background_color_id','text_color_id');
 
 	}
 	/*--------------------------------------------------

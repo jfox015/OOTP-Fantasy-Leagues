@@ -11,12 +11,12 @@
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('getCurrentScoringPeriod')) {
-	function getCurrentScoringPeriod($league_date = false) { 
+	function getCurrentScoringPeriod($league_date = false) {
 		$period = "";
 		if ($league_date === false) {
 			$period= "error: No league date provided";
 		} else {
-			$ci =& get_instance(); 
+			$ci =& get_instance();
 			$ci->db->select("id, date_start, date_end, manual_waivers");
 			$ci->db->where("DATEDIFF('".$league_date."',date_start)>=",0);
 			$ci->db->where("DATEDIFF('".$league_date."',date_end)<=",0);
@@ -36,12 +36,12 @@ if ( ! function_exists('getCurrentScoringPeriod')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('getScoringPeriod')) {
-	function getScoringPeriod($scoring_period_id = false) { 
+	function getScoringPeriod($scoring_period_id = false) {
 		$period = "";
 		if ($scoring_period_id === false) {
 			$period= "error: No id was provided.";
 		} else {
-			$ci =& get_instance(); 
+			$ci =& get_instance();
 			$ci->db->select("id, date_start, date_end, manual_waivers");
 			$ci->db->where("id",$scoring_period_id);
 			$query = $ci->db->get("fantasy_scoring_periods");
@@ -57,12 +57,12 @@ if ( ! function_exists('getScoringPeriod')) {
 }
 
 if ( ! function_exists('getScoringPeriodByDate')) {
-	function getScoringPeriodByDate($date = false) { 
+	function getScoringPeriodByDate($date = false) {
 		$period = "";
 		if ($date === false) {
 			$period= "Error: No date was provided.";
 		} else {
-			$ci =& get_instance(); 
+			$ci =& get_instance();
 			$ci->db->select("id, date_start, date_end, manual_waivers");
 			$ci->db->where("DATEDIFF('".$date."',date_start)>=",0);
 			$ci->db->where("DATEDIFF('".$date."',date_end)<=",0);
@@ -80,9 +80,9 @@ if ( ! function_exists('getScoringPeriodByDate')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('getScoringPeriods')) {
-	function getScoringPeriods() { 
+	function getScoringPeriods() {
 		$periods = array();
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->select("id, date_start, date_end, manual_waivers");
 		$query = $ci->db->get("fantasy_scoring_periods");
 		if ($query->num_rows() > 0) {
@@ -98,13 +98,13 @@ if ( ! function_exists('getScoringPeriods')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('updateScoringPeriodWaivers')) {
-	function updateScoringPeriodWaivers($scoring_period_id) { 
-		$ci =& get_instance(); 
-		
+	function updateScoringPeriodWaivers($scoring_period_id) {
+		$ci =& get_instance();
+
 		$ci->db->flush_cache();
 		$ci->db->set('manual_waivers',1);
 		$ci->db->where('id',$scoring_period_id);
-		$ci->db->update('fantasy_scoring_periods'); 
+		$ci->db->update('fantasy_scoring_periods');
 		if ($ci->db->affected_rows() > 0) {
 			return true;
 		} else {
@@ -115,10 +115,10 @@ if ( ! function_exists('updateScoringPeriodWaivers')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('getAvailableScoringPeriods')) {
-	function getAvailableScoringPeriods($league_id = 0) { 
-		
+	function getAvailableScoringPeriods($league_id = 0) {
+
 		$periods = array();
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->select("scoring_period_id");
 		$ci->db->where("league_id", $league_id);
 		$ci->db->group_by("scoring_period_id");
@@ -138,10 +138,10 @@ if ( ! function_exists('getAvailableScoringPeriods')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('getSimSummaries')) {
-	function getSimSummaries($countOnly = false) { 
-		
+	function getSimSummaries($countOnly = false) {
+
 		$summaries = array();
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->select("id,scoring_period_id,sim_date,process_time,sim_result,sim_summary,comments");
 		$ci->db->from("fantasy_sim_summary");
 		if ($countOnly === false) {
@@ -163,12 +163,12 @@ if ( ! function_exists('getSimSummaries')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('loadSimSummary')) {
-	function loadSimSummary($sumId = false) { 
-		
+	function loadSimSummary($sumId = false) {
+
 		if ($sumId === false) { return false; }
-		
+
 		$summary = array();
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->select("id,scoring_period_id,sim_date,process_time,sim_result,sim_summary,comments");
 		$ci->db->where("id",$sumId);
 		$query = $ci->db->get("fantasy_sim_summary");
@@ -182,9 +182,9 @@ if ( ! function_exists('loadSimSummary')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('getScoringPeriodCount')) {
-	function getScoringPeriodCount() { 
+	function getScoringPeriodCount() {
 		$count = 0;
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->select("id");
 		$ci->db->from("fantasy_scoring_periods");
 		return $ci->db->count_all_results();
@@ -194,13 +194,13 @@ if ( ! function_exists('getScoringPeriodCount')) {
 
 if ( ! function_exists('createScoringSchedule')) {
 	function createScoringSchedule($league_id = false,$sim_length = 7) {
-		
+
 		if ($league_id === false) return false;
 		$errors = "";
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$start_date = '';
 		$league_games = 162;
-		
+
 		$ci->db->select("start_date, rules_schedule_games_per_team");
 		$ci->db->where("league_id",$league_id);
 		$query = $ci->db->get("leagues");
@@ -220,29 +220,29 @@ if ( ! function_exists('createScoringSchedule')) {
 		}
 		$query->free_result();
 		$periodCount = intval($league_games / ($sim_length-1));
-		
+
 		$ci->db->flush_cache();
-		$ci->db->query('TRUNCATE TABLE fantasy_scoring_periods'); 
-		
+		$ci->db->query('TRUNCATE TABLE fantasy_scoring_periods');
+
 		$periods = array();
 		$date_start = strtotime($league_start);
 		for ($i = 0; $i < $periodCount; $i++) {
 			$date_end = $date_start + (60*60*24*($sim_length-1));
-			
+
 			$ci->db->insert('fantasy_scoring_periods',array('id'=>($i+1),'date_start'=>date('Y-m-d',$date_start),'date_end'=>date('Y-m-d',$date_end)));
 			$date_start = $date_end + (60*60*24);
 		}
 		if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 		return $errors;
-	}	
+	}
 }
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('reset_league_data')) {
 	function reset_league_data() {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
-		$ci->db->query('TRUNCATE TABLE fantasy_leagues_games'); 
+		$ci->db->query('TRUNCATE TABLE fantasy_leagues_games');
 		return true;
 	}
 }
@@ -251,7 +251,7 @@ if ( ! function_exists('reset_league_data')) {
 
 if ( ! function_exists('reset_sim')) {
 	function reset_sim($scoring_period_id = 1) {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
 		$ci->db->query('DELETE FROM `fantasy_players_compiled_batting` WHERE scoring_period_id = '.$scoring_period_id);
 		$ci->db->query('DELETE FROM `fantasy_players_compiled_pitching` WHERE scoring_period_id = '.$scoring_period_id);
@@ -261,7 +261,7 @@ if ( ! function_exists('reset_sim')) {
 		$ci->db->query('DELETE FROM `fantasy_teams_scoring` WHERE scoring_period_id = '.$scoring_period_id);
 		$ci->db->query('DELETE FROM `fantasy_rosters` WHERE scoring_period_id = '.$scoring_period_id);
 		$ci->db->query('UPDATE `fantasy_leagues_games` SET `home_team_score` = 0, `away_team_score` = 0 WHERE scoring_period_id = '.$scoring_period_id);
-		
+
 		return true;
 	}
 }
@@ -270,7 +270,7 @@ if ( ! function_exists('reset_sim')) {
 
 if ( ! function_exists('reset_scoring')) {
 	function reset_scoring() {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_players_compiled_batting');
 		$ci->db->query('TRUNCATE TABLE fantasy_players_compiled_pitching');
@@ -285,13 +285,13 @@ if ( ! function_exists('reset_scoring')) {
 
 if ( ! function_exists('reset_draft')) {
 	function reset_draft() {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
-		$ci->db->query('TRUNCATE TABLE fantasy_draft'); 
-		$ci->db->query('TRUNCATE TABLE fantasy_draft_list'); 
+		$ci->db->query('TRUNCATE TABLE fantasy_draft');
+		$ci->db->query('TRUNCATE TABLE fantasy_draft_list');
 		$ci->db->flush_cache();
 		$ci->db->set('completed',-1);
-		$ci->db->update('fantasy_draft_config'); 
+		$ci->db->update('fantasy_draft_config');
 		if ($ci->db->affected_rows() > 0) {
 			return true;
 		} else {
@@ -303,11 +303,11 @@ if ( ! function_exists('reset_draft')) {
 
 if ( ! function_exists('reset_team_data')) {
 	function reset_team_data() {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
-		$ci->db->query('TRUNCATE TABLE fantasy_teams_record'); 
-		$ci->db->query('TRUNCATE TABLE fantasy_rosters'); 
-		$ci->db->query('TRUNCATE TABLE fantasy_teams_waiver_claims'); 
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_record');
+		$ci->db->query('TRUNCATE TABLE fantasy_rosters');
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_waiver_claims');
 		return true;
 	}
 }
@@ -315,11 +315,11 @@ if ( ! function_exists('reset_team_data')) {
 
 if ( ! function_exists('reset_player_data')) {
 	function reset_player_data() {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
-		$ci->db->query('TRUNCATE TABLE fantasy_players_scoring'); 
+		$ci->db->query('TRUNCATE TABLE fantasy_players_scoring');
 		$ci->db->query('TRUNCATE TABLE fantasy_players');
-		$ci->db->query('TRUNCATE TABLE fantasy_players_waivers'); 
+		$ci->db->query('TRUNCATE TABLE fantasy_players_waivers');
 		return true;
 	}
 }
@@ -328,10 +328,10 @@ if ( ! function_exists('reset_player_data')) {
 
 if ( ! function_exists('reset_transactions')) {
 	function reset_transactions() {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_transactions');
-		$ci->db->query('TRUNCATE TABLE fantasy_teams_trades'); 
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_trades');
 		$ci->db->query('TRUNCATE TABLE fantasy_teams_trade_protests');
 		return true;
 	}
@@ -340,7 +340,7 @@ if ( ! function_exists('reset_transactions')) {
 
 if ( ! function_exists('reset_sim_summary')) {
 	function reset_sim_summary() {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_sim_summary');
 		return true;
@@ -350,15 +350,15 @@ if ( ! function_exists('reset_sim_summary')) {
 
 if ( ! function_exists('save_sim_summary')) {
 	function save_sim_summary($scoring_period_id,$result,$process_time,$summary,$comments = "") {
-		
-		$ci =& get_instance(); 
-		
+
+		$ci =& get_instance();
+
 		$ci->db->flush_cache();
 		$ci->db->select('id');
-		$ci->db->from('fantasy_sim_summary'); 
+		$ci->db->from('fantasy_sim_summary');
 		$ci->db->where('scoring_period_id',$scoring_period_id);
-		$count = $ci->db->count_all_results(); 
-		
+		$count = $ci->db->count_all_results();
+
 		$ci->db->flush_cache();
 		$ci->db->set('sim_result',$result);
 		$ci->db->set('sim_summary',$summary);
@@ -366,10 +366,10 @@ if ( ! function_exists('save_sim_summary')) {
 		$ci->db->set('comments',$comments);
 		if ($count > 0) {
 			$ci->db->where('scoring_period_id',$scoring_period_id);
-			$ci->db->update('fantasy_sim_summary'); 
+			$ci->db->update('fantasy_sim_summary');
 		} else {
 			$ci->db->set('scoring_period_id',$scoring_period_id);
-			$ci->db->insert('fantasy_sim_summary'); 
+			$ci->db->insert('fantasy_sim_summary');
 		}
 		if ($ci->db->affected_rows() > 0) {
 			return true;
@@ -382,7 +382,7 @@ if ( ! function_exists('save_sim_summary')) {
 
 if ( ! function_exists('reset_ootp_league')) {
 	function reset_ootp_league($league_id) {
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		$ci->db->flush_cache();
 		$ci->db->select('start_date');
 		$ci->db->from('leagues');
@@ -396,7 +396,7 @@ if ( ! function_exists('reset_ootp_league')) {
 		$ci->db->flush_cache();
 		$ci->db->set('current_date',$start_date);
 		$ci->db->where('league_id',$league_id);
-		$ci->db->update('leagues'); 
+		$ci->db->update('leagues');
 		if ($ci->db->affected_rows() > 0) {
 			return true;
 		} else {
@@ -408,9 +408,9 @@ if ( ! function_exists('reset_ootp_league')) {
 
 if ( ! function_exists('createLeagueSchedules')) {
 	function createLeagueSchedules() {
-		
+
 		$errors = "";
-		$ci =& get_instance(); 
+		$ci =& get_instance();
 		// LOAD scoring period list
 		$s_periods = array();
 		$leagues = array();
@@ -446,11 +446,11 @@ if ( ! function_exists('createLeagueSchedules')) {
 			}
 		}
 		$query->free_result();
-		
+
 		if (sizeof($s_periods) > 0 && sizeof($leagues) > 0) {
 			$ci->db->flush_cache();
-			$ci->db->query('TRUNCATE TABLE fantasy_leagues_games'); 
-			
+			$ci->db->query('TRUNCATE TABLE fantasy_leagues_games');
+
 			foreach($leagues as $league_id => $data) {
 				$teamCount = sizeof($data['team_list']);
 				//echo("Teams in league ".$data['league_name']." = ".$teamCount."<br />");
@@ -458,33 +458,33 @@ if ( ! function_exists('createLeagueSchedules')) {
 					$errors = "The <b>".$data['league_name']."</b> league has an illegal number of teams. A schedule could not be generated for this league.";
 				} else {
 					// LOAD THE APPROPRIATE SCHEDULE TEMPLATE FOR THIS COUNT
-					
+
 					// LOOP THROUGH EACH SCORING PERIOD AND CREATE GAMES
 					foreach($s_periods as $pId) {
-						
+
 					}
 				}
 			}
 		}
 		if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 		return $errors;
-	}	
+	}
 }
 // ------------------------------------------------------------------------
 /**
  *	GET LATEST MOD VERSION
  *
- *	Opens a Curl connection to the internal UPDATE_URL value and downloads and 
+ *	Opens a Curl connection to the internal UPDATE_URL value and downloads and
  *	[arses the latest public mod version.
  *
  *	@param	$debug		TRUE to display debug messaging, FALSE to bypass
- @	return				(Array - CSS Class, Status Message)
+ *  @	return				(Array - CSS Class, Status Message)
  *
  *	@since	1.0.3
  */
 if ( ! function_exists('getLatestModVersion')) {
 	function getLatestModVersion($debug = false) {
-		
+
 		$version_check = array();
 		$ci =& get_instance();
 		$ci->load->library('curl');
@@ -511,11 +511,11 @@ if ( ! function_exists('getLatestModVersion')) {
 /**
  *	CHECK MOD VERSION
  *
- *	Tests the passed version against the mods local version constant and return 
+ *	Tests the passed version against the mods local version constant and return
  *	the appropriate status message.
  *
  *	@param	$version	The remote version string
- @	return				(Array - CSS Class, Status Message
+ *  @	return				(Array - CSS Class, Status Message
  *
  *	@since	1.0.3
  */
@@ -527,10 +527,10 @@ if ( ! function_exists('checkModVersion')) {
 			$current = true;
 			$local_version = str_replace(" Beta","",SITE_VERSION);
 			$version = str_replace(" Beta","",$version);
-			
+
 			$mod_version = explode(".",$local_version);
 			$web_version = explode(".",$version);
-			
+
 			if ($mod_version[0] < $web_version[0]) {
 				$current = false;
 			}
@@ -554,13 +554,13 @@ if ( ! function_exists('checkModVersion')) {
 /**
  *	UPDATE DB CONNECTION FILE
  *
- *	This function searches for an instance of the old statslab db connection 
- * 	file in the SQL uploads directory and if possibler, renames it to the new 
+ *	This function searches for an instance of the old statslab db connection
+ * 	file in the SQL uploads directory and if possibler, renames it to the new
  *	named used from 1.0.3 onwards.
  *
  *	@param	$statsLabIgnore	Bypass this function if this mod is being run alongside StatsLab
  *	@param	$sqlPath		Path to the MySQL Upload Directory
- @	return					TRUE on update, FALSE on no action
+ *  @	return					TRUE on update, FALSE on no action
  *
  *	@since	1.0.3
  */
@@ -577,11 +577,11 @@ if ( ! function_exists('updateDBFile')) {
 					$updated = true;
 				} else if (file_exists($sqlPath."/".SL_CONNECTION_FILE) && file_exists($sqlPath."/".DB_CONNECTION_FILE)) {
 					$delSLFile = true;
-				} // END if 
-			} // END if 
+				} // END if
+			} // END if
 			if ($delSLFile) {
 				unlink($sqlPath."/".SL_CONNECTION_FILE);
-			} // END if 
+			} // END if
 		}
 		return $updated;
 	}
