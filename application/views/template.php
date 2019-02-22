@@ -1,5 +1,5 @@
 <?php if (isset($league_info)) {
-   $logo = $config['ootp_html_report_path']."images/".$league_info->logo_file_name;
+   $logo = $config['ootp_html_report_path']."images/league_logos/".$league_info->logo_file_name;
    $theDate = date('m/d/Y',strtotime($league_info->current_date));
    $league_abbr = strtoupper($league_info->abbr);
    $header_bg = $league_info->background_color_id;
@@ -47,18 +47,18 @@
 <div id='pagebody'>
     <div id='topbar'>
         <div style='clear:both;float:left;width:959px;padding:0;margin:0;border:0;'>
-            <div style='clear:both;float:left;width:110px;height:110px;padding:10px 12px 10px 8px;margin:0;background-image:url(<?php echo($config['ootp_html_report_path']); ?>images/report_header_logo_left_bg.jpg); background-repeat:no-repeat;'>
+            <div style='clear:both;float:left;width:110px;height:110px;padding:10px 12px 10px 8px;margin:0;'>
 
                 <a href='<?php echo($config['ootp_html_report_path']); ?>leagues/league_<?php echo($config['ootp_league_id']); ?>_home.html'><img
                 src='<?php echo($logo); ?>' width="110" height="110" border=0></a></div>
                 <div style='clear:right;float:left;padding:0;margin:0;width:829px;height:130px;'>
                 <div style='clear:both;float:left;padding:0;margin:0;width:829px;height:36px;'>
-                <div style='clear:both;float:left;width:8px;height:36px;'><img src='<?php echo($config['ootp_html_report_path']); ?>images/report_header_banner_left.jpg' border=0></div>
-                <div style='float:left;width:410px;height:36px;padding:8px 0 0 0;background-image:url(<?php echo($config['ootp_html_report_path']); ?>images/report_header_banner_mid.jpg); background-repeat:repeat-x;'><span
+                <div style='clear:both;float:left;width:8px;height:36px;'></div>
+                <div style='float:left;width:410px;height:36px;padding:8px 0 0 0;'><span
                 style='color:#FFFFFF; font-size:14px; font-weight:bold;'><?php echo($theDate); ?></span></div>
-                <div style='float:left;width:411px;height:36px;padding:0;margin:0;'><img src='<?php echo($config['ootp_html_report_path']); ?>images/report_header_banner_right.jpg' border=0></div>
+                <div style='float:left;width:411px;height:36px;padding:0;margin:0;'></div>
             </div>
-            <div id='mainmenu' style='float:left;width:821px;height:21px;margin:0;padding:7px 8px 0 0;background-image:url(<?php echo($config['ootp_html_report_path']); ?>images/report_header_menu_bg.jpg); background-repeat:repeat-x;'>
+            <div id='mainmenu' style='float:left;width:821px;height:21px;margin:0;padding:7px 8px 0 0;'>
                 <?php if ($config['ootp_html_report_links'] == 1) { ?>
 				<ul style='float:right;'>
                 <li><a href='<?php echo($config['ootp_html_report_path']); ?>index.html' class='menu first' id='first'>BNN Home</a></li>

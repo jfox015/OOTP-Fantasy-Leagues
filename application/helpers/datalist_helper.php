@@ -778,7 +778,9 @@ if ( ! function_exists('loadOOTPVersions')) {
 		return array("15"=>"OOTP 15",
 					 "16"=>"OOTP 16",
 					 "17"=>"OOTP 17",
-					 "18"=>"OOTP 18"
+					 "18"=>"OOTP 18",
+					 "19"=>"OOTP 19",
+					 "20"=>"OOTP 20"
 					 );
 	}
 }
