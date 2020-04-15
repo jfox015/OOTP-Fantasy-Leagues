@@ -46,9 +46,8 @@ class MY_Form_validation extends CI_Form_validation {
 	 *	@author		wdm* - CodeIgnighter Forums
      */
     public function valid_short_date($str) {
-        if ( ereg("([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})", $str) ) 
-        {
-            $arr = split("/", $str);    // splitting the array
+        if (substr_count($str, '/') == 2) {
+            $arr = explode("/", $str);    // splitting the array
             $yyyy = $arr[2];            // first element of the array is year
             $mm = $arr[0];              // second element is month
             $dd = $arr[1];              // third element is days

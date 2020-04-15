@@ -170,7 +170,7 @@ $(document).ready(function(){
 
 $f = file_get_contents("../application/config/database.php");
 if (strpos($f, "[DB_USER]")) {
-	header('Location: congif.php');
+	header('Location: config.php');
 	exit();
 } // END if
 ?>

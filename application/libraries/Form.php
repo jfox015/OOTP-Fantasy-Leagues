@@ -805,12 +805,12 @@ class Form {
 			$array = array();
 			if ($atts) 
 			{
-				$splits = split($divider1, $atts);
+				$splits = explode($divider1, $atts);
 				foreach ($splits as $val)
 				{
 					if (!strstr($val, $divider2)) show_error(FGL_ERR.'attribute not well formed: \''.$val.'\' (\'attribute=\' missing)');
 					
-					$split = split($divider2, $val, 2);
+					$split = explode($divider2, $val, 2);
 					$array[trim($split[0])] = trim(str_replace('"', '', $split[1])); // strip double quotes
 				}
 			}
@@ -1598,7 +1598,7 @@ class Form {
 				
 				if (@$rules[$str]) 
 				{
-					foreach (split(',', $rules[$str]) as $rule) 
+					foreach (explode(',', $rules[$str]) as $rule) 
 					{
 						$values = $this->_postprocess[$rule]['values'];
 						$function = $this->_postprocess[$rule]['function'];

@@ -194,8 +194,8 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
     the next step.</p>
     <pre class="brush: php"><?php
 		echo("&lt;?php\n");
-		echo("\$db = mysql_pconnect('".DB_HOST."','".DB_USER."','".DB_PASSWORD."') or die('Could not connect: '.mysql_error());\n");
-		echo("mysql_select_db('".DB_NAME."');\n");
+		echo("\$db = new mysqli('".DB_HOST."','".DB_USER."','".DB_PASSWORD."','".DB_NAME."');\n");
+		echo("if (\$db->connect_errno) { echo 'Failed to connect to MySQL: (' . \$db->connect_errno . ') ' . \$db->connect_error; }\n");
 		echo("?&gt;");
 		?>
 		</pre>
@@ -215,8 +215,8 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
 		chmod('../application/config/database.php', 0666);
 		
 		$fdb = "<?php
-		\$db = mysql_pconnect('".DB_HOST."','".DB_USER."','".DB_PASSWORD."') or die('Could not connect: '.mysql_error());
-		mysql_select_db('".DB_NAME."');
+		\$db = new mysqli('".DB_HOST."','".DB_USER."','".DB_PASSWORD."','".DB_NAME."');\n
+		if (\$db->connect_errno) { echo 'Failed to connect to MySQL: (' . \$db->connect_errno . ') ' . \$db->connect_error; }\n
 		?>";
 		
 		$fh = fopen('./'.DB_CONNECTION_FILE,"w") or install_die("Could not open database config file for writing.");

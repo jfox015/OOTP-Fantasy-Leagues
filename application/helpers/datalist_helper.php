@@ -775,12 +775,11 @@ if ( ! function_exists('loadProjectsBugs')) {
 if ( ! function_exists('loadOOTPVersions')) {
 	function loadOOTPVersions($selectBox = true) {
 
-		return array("15"=>"OOTP 15",
-					 "16"=>"OOTP 16",
-					 "17"=>"OOTP 17",
+		return array("17"=>"OOTP 17",
 					 "18"=>"OOTP 18",
 					 "19"=>"OOTP 19",
-					 "20"=>"OOTP 20"
+					 "20"=>"OOTP 20",
+					 "21"=>"OOTP 21"
 					 );
 	}
 }
