@@ -4,9 +4,9 @@
  *
  *	The League Model is the powerhouse of the Fantasy process. It manages many of the
  *  admin functionality and provides tools and methods to run the league.
- *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
- *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@author			Jeff Fox (Github ID: jfox015)
  *	@version		1.0.4
+ *  @lastModified	04/17/20
  *
 */
 require_once('./application/libraries/CompiledStats.php');
@@ -3256,7 +3256,7 @@ class league_model extends base_model {
 			// GET PLAYERS FOR TEAM
 			$teamRoster = array();
 			$team_score = 0;
-			// ONLE GET ROSTERS AND CORES IF THJIS TEAM IF IT HAS VALID ROSTERS
+			// ONLY GET ROSTERS AND CORES IF THIS TEAM IF IT HAS VALID ROSTERS
 			if (sizeof($excludeList) == 0 || (sizeof($excludeList) > 0  && !in_array($team_id, $excludeList))) {
 				$this->db->select("player_id");
 				$this->db->where("team_id",intval($team_id));

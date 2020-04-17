@@ -1,10 +1,10 @@
 <?php
 /**
- *	Admin Access.
- *	The primary controller for the Admin Section.
- *	@author			Jeff Fox
+ *	PLAYERS.
+ *	The primary controller for the Players Section.
+ *	@author			Jeff Fox (Github ID: jfox015)
  *	@dateCreated	11/13/09
- *	@lastModified	08/07/10
+ *	@lastModified	04/16/20
  *
  */
 class players extends MY_Controller {
@@ -199,6 +199,32 @@ class players extends MY_Controller {
 		return $result;
 	}
 
+	public function starters() {
+		$this->init();
+		$this->getURIData();
+		if (isset($this->uriVars['league_id'])) {
+
+			$this->load->model('player_model');
+			$data = $this->player_model->getStartingPitchers($this->uriVars['league_id']);
+			$this->data['starters'] = $data;
+			$this->data['league_id'] = $this->params['config']['ootp_league_id'];
+			if (sizeof($data) > 0) {
+				$this->params['subTitle'] = $this->data['subTitle'] = "Projected Starting Pitchers";
+				$this->params['content'] = $this->load->view($this->views['STARTERS'], $this->data, true);
+			} else {
+				$this->params['subTitle'] = $this->data['subTitle'] = "Projected Starters Error";
+				$this->data['theContent'] = $this->lang->line('players_stats_no_players_error');
+				$this->params['content'] = $this->load->view($this->views['MESSAGE'], $this->data, true);
+			}
+		} else {
+			$this->params['subTitle'] = $this->data['subTitle'] = "League ID Error";
+			$this->data['theContent'] = $this->lang->line('league_finder_request_no_id');
+			$this->params['content'] = $this->load->view($this->views['MESSAGE'], $this->data, true);
+		}
+		
+		$this->makeNav();
+		$this->displayView();
+	}
 	/**
 	 *	GET URI DATA.
 	 *	Parses out an id or other parameters from the uri string

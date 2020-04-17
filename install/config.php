@@ -115,26 +115,28 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
 		$f = str_replace("[DB_PASSWORD]",DB_PASSWORD,$f);
 		$f = str_replace("[DB_HOST]",DB_HOST,$f);
 		
-		$db_link = mysql_connect(DB_HOST,DB_USER,DB_PASSWORD);
-		
-		if ($db_link === false){
+		// UPDATE PROD 1.0.3
+		// DB connection updated to MYSQLi
+		$conn = new mysqli($dbhost, $uname, $passwrd, $dbname);
+		if ($conn->connect_error) {
 			$html = "<h1>Error establishing a database connection</h1>
+			<p>Error Message: ".$conn->connect_error."</p>			
 			<p>This either means that the username and password information is incorrect or we can't 
-			contact the database server at <code>".DB_HOST."</code>. This could mean your host's 
+			contact the database server at <code>".$dbhost."</code>. This could mean your host's 
 			database server is down.</p>
 			<ul>
-				<li>Are you sure you have the correct username and password?</li>
+				<li>Are you sure you have the correct username and password? You entered <code>".$uname."</code> and <code>".$passwrd."</code></li>
 				<li>Are you sure that you have typed the correct hostname?</li>
 				<li>Are you sure that the database server is running?</li>
 			
 			</ul>
 			<p>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href='http://www.ootpdevelopments.com/board/ootp-mods/198634-out-park-baseball-online-fantasy-leagues.html'>OOTP Fantasy League Forum Page</a>.</p>
 			</p>";
-			install_die ($html);
+			install_die ($html);		
 		} else {
 			// UPDATE - VERSION 1.0.3
 			// RUN DB TEST SCRIPT
-			mysql_select_db(DB_NAME) or install_die("Could not connect to datababase named: ".DB_NAME.". Check the database name and try again.");
+			//mysql_select_db(DB_NAME) or install_die("Could not connect to datababase named: ".DB_NAME.". Check the database name and try again.");
 			$fr = fopen('./db_test.sql',"r");
 			$db = '';
 			$errCnt=0;
@@ -148,8 +150,10 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
 				//$query=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$query);
 				$query=str_replace(", ,",",'',",$query);
 				$query=str_replace("#IND",0,$query);
-				$result=mysql_query($query,$db_link);
-				$err=mysql_error($db_link);
+				//echo("SQL Test query = ".$query."<br/>");
+				if ($conn->query($sql) !== TRUE) {
+					$err=$conn->error;
+				}
 				if (($err!="") && ($query!="")) {
 					$db_errors .= $err.",query=".$query.",prevQuery=".$prevQuery."<br />";
 					$errCnt++;
@@ -158,6 +162,7 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
 				$prevQuery = $query;
 			} // END while
 			fclose($fr);
+			$conn->close();
 			if ($errCnt>0) {
 	        	$html = "<h3>The following errors were encountered:</h3> 
 	            <ul>
@@ -194,8 +199,8 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
     the next step.</p>
     <pre class="brush: php"><?php
 		echo("&lt;?php\n");
-		echo("\$db = new mysqli('".DB_HOST."','".DB_USER."','".DB_PASSWORD."','".DB_NAME."');\n");
-		echo("if (\$db->connect_errno) { echo 'Failed to connect to MySQL: (' . \$db->connect_errno . ') ' . \$db->connect_error; }\n");
+		echo("\$conn = new mysqli('".DB_HOST."','".DB_USER."','".DB_PASSWORD."','".DB_NAME."');\n");
+		echo("if (\$conn->connect_error) { echo 'Failed to connect to MySQL: (' . \$conn->connect_errno . ') ' . \$conn->connect_error; }\n");
 		echo("?&gt;");
 		?>
 		</pre>
@@ -215,8 +220,8 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
 		chmod('../application/config/database.php', 0666);
 		
 		$fdb = "<?php
-		\$db = new mysqli('".DB_HOST."','".DB_USER."','".DB_PASSWORD."','".DB_NAME."');\n
-		if (\$db->connect_errno) { echo 'Failed to connect to MySQL: (' . \$db->connect_errno . ') ' . \$db->connect_error; }\n
+		\$conn = new mysqli('".DB_HOST."','".DB_USER."','".DB_PASSWORD."','".DB_NAME."');\n
+		if (\$conn->connect_error) { echo 'Failed to connect to MySQL: (' . \$conn->connect_errno . ') ' . \$conn->connect_error; }\n
 		?>";
 		
 		$fh = fopen('./'.DB_CONNECTION_FILE,"w") or install_die("Could not open database config file for writing.");

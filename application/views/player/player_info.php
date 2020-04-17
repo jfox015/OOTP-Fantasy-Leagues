@@ -144,10 +144,10 @@
             <div class="playerpic" style="width:90px;">
             <?php
         $htmlpath=$config['ootp_html_report_path'];
-		$filepath=$config['ootp_html_report_root'];
-        $imgpath=$filepath."/images/person_pictures/player_".$thisItem['player_id'].".png";
-		## Check for photo by player ID
-        if (file_exists($imgpath)) {echo "<img src='".$htmlpath."/images/person_pictures/player_".$thisItem['player_id'].".png'>";}
+		    $filepath=$config['ootp_html_report_root'];
+        $imgpath=$filepath.URL_PATH_SEPERATOR."images".URL_PATH_SEPERATOR."person_pictures".URL_PATH_SEPERATOR."player_".$thisItem['player_id'].".png";
+		    ## Check for photo by player ID
+        if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/player_".$thisItem['player_id'].".png'>";}
          else
          {
            $imgpath=$htmlpath."images/person_pictures/".str_replace(" ","_",$name).".png";   ## Check for capitalized name PNG
@@ -696,7 +696,7 @@
                         <tr align=center>
                         <?php
 						for($i = 1; $i < $scoringPeriods; $i++) {
-							$height = ($playerPoints[$i]['points'] < $pointsMax) ? intval($playerPoints[$i]['points'] / $pointsMax) : 100; ?>
+							$height = ($playerPoints[$i] < $pointsMax) ? intval($playerPoints[$i] / $pointsMax) : 100; ?>
                         	<td style="color:black;"><?php echo($i); ?></td>
                             <td></td>
                         <?php } ?>

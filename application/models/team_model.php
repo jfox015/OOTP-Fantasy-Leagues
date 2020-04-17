@@ -2,8 +2,7 @@
 /**
  *	TEAM MODEL CLASS.
  *
- *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
- *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@author			Jeff Fox (Github ID: jfox015)
  *	@version		1.0.6.127
  *	@since			1.0
  *
@@ -1181,7 +1180,7 @@ class team_model extends base_model {
 	*  @since 	1.0.6
 	*  @access	public
 	*/
-	public function createTeam($teamname = false, $teamnick = false, $league_id = false, $division_id = false) {
+	public function createTeam($teamname = false, $teamnick = false, $league_id = false, $division_id = false, $owner_id = false) {
 
 		if ($teamname === false) {
 			$this->errorCode = 1;
@@ -1197,6 +1196,12 @@ class team_model extends base_model {
 
 		if ($division_id !== false) {
 			$data = $data + array('division_id'=>$division_id);
+		} // END if
+
+		if ($owner_id !== false) {
+			$data = $data + array('owner_id'=>$owner_id);
+		} else {
+			$data = $data + array('owner_id'=>-1);
 		} // END if
 
 		$this->db->insert($this->tblName,$data);
@@ -1239,7 +1244,7 @@ class team_model extends base_model {
 
 		if ($team_list === false) {
 			$this->errorCode = 1;
-			$this->statusMess = "No team list was recieved.";
+			$this->statusMess = "No team list was received.";
 			return false;
 		} // END if
 
@@ -1268,8 +1273,13 @@ class team_model extends base_model {
 			if (isset($team_array['division_id'])) {
 				$division_id = $team_array['division_id'];
 			} // END if
+			if (!isset($team_array['owner_id'])) {
+				$owner_id = -1;
+			} else {
+				$owner_id = $team_array['owner_id'];
+			}// END if
 
-			$thisTeamId = $this->createTeam($teamname,$teamnick,$league_id,$division_id);
+			$thisTeamId = $this->createTeam($teamname,$teamnick,$league_id,$division_id,$owner_id);
 			if ($thisTeamId && $thisTeamId != -1) {
 				array_push($teamIds, $thisTeamId);
 			} else {

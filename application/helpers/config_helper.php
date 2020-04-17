@@ -147,7 +147,9 @@ function loadDataUpdate($sqlLoadPath, $filepath) {
 function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 500, $logPath = false, $max_file_size = 500000000) {
 	// Load SQL Files #####
 	$errors = "";
-	include($sqlLoadPath."/ootpfl_db.php");
+	if (defined('DB_CONNECTION_FILE') && file_exists($sqlLoadPath.URL_PATH_SEPERATOR.DB_CONNECTION_FILE)) {
+		include_once($sqlLoadPath.URL_PATH_SEPERATOR.DB_CONNECTION_FILE);
+	} // END if
 	$loadCnt=sizeof($fileList);
 	$filesLoaded = array();
 	if ($logPath === false) $logPath = $sqlLoadPath;
@@ -173,11 +175,12 @@ function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 500
 
 				fclose($pFile);*/
 				$tableName=$ex[0];
-				$query="CREATE TABLE IF NOT EXISTS `$tableName';";
-				mysql_query($query,$db);
-
+				/*$query="CREATE TABLE IF NOT EXISTS `$tableName';";
+				if ($conn->query($query) !== TRUE) {
+					$err=$conn->error;
+				}*/
 				## Import data
-				$file=$sqlLoadPath."/".$file;
+				$file=$sqlLoadPath.URL_PATH_SEPERATOR.$file;
 				//echo("File to load = ".$file."<br />");
 				$fr = fopen($file,"r");
 				//echo("File resource = ".$fr."<br />");
@@ -196,24 +199,32 @@ function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 500
 					if (($tableName=='players_career_batting_stats')||($tableName=='players_career_pitching_stats')) {
 						$query=str_replace("insert into","insert ignore into",$query);
 					}
-					$result=mysql_query($query,$db);
-					$err=mysql_error($db);
+					$err = "";
+					if ($conn->query($query) !== TRUE) {
+						$err=$conn->error;
+					}
 					if (($err!="") && ($query!="")) {
 					$errors[$errCnt]=$err;
 					$queries[$errCnt]=$query;
 					$errCnt++;
-					if (!isset($_SESSION['sqlloaderr'])) {$_SESSION['sqlloaderr']=1;}}
+					/*if (!isset($_SESSION['sqlloaderr'])) {$_SESSION['sqlloaderr']=1;}}
 					if ((substr_count($query,"CREATE ")>0)&&(($tableName=='players_career_batting_stats')||($tableName=='players_career_pitching_stats'))) {
 						$query="ALTER TABLE $tableName ADD PRIMARY KEY (player_id,year,team_id,league_id,split_id);";
-						$result=mysql_query($query,$db);
+						$conn->query($query);
+					}*/
 					}
 				}
 				fclose($fr);
 				$f = fopen($logPath."/sqlloadlog.txt","a");
 				$fend=time();
-				 if ($errCnt==0) {
+				if ($errCnt==0) {
 					fwrite($f,"SUCCESSFUL! Processing took ".($fend-$fnow)." seconds\n");
 					$filesLoaded[$file]=1;
+				} else {
+					fwrite($f,"ERROR! There was an error loading the table ".$tableName.". Errors\n");
+					foreach($errors as $error) {
+						fwrite($f," --- ".$error."\n");
+					}
 				}
 				fclose($f);
 				if ($errCnt>0) break;

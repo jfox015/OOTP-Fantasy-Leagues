@@ -457,7 +457,7 @@
 		// 	EDIT 1.0.4
 		//	SIM SUMMARIES
 		if ($summary_size) { ?>
-        <br /><b>Sim Summaries:</b> <?php print($summary_size); ?> available.<br />
+        <br /><b>Sim Processing Summaries:</b> <?php print($summary_size); ?> available.<br />
         <?php echo anchor('admin/simSummaries','View Sim Summaries')."<br />";
 		} ?>
 

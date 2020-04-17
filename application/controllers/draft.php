@@ -12,7 +12,7 @@ require_once('base_editor.php');
  *	@author			Jeff Fox (Github ID: jfox015)
  *	@author			Frank Esslink (OOTP ID: fhommes)
  *	@dateCreated	03/23/10
- *	@lastModified	07/06/11
+ *	@lastModified	04/16/20
  *
  */
 class draft extends BaseEditor {
@@ -438,6 +438,7 @@ class draft extends BaseEditor {
 							 } // END if
 							 // GET DRAFT ELIDGIBLE PLAYERS
 							 $values = $this->dataModel->getPlayerValues();
+
 							 // DRAFT SETTINGS FROM CONFIG
 							 $draftEnable=$this->dataModel->draftEnable;
 							 $pauseAuto=$this->dataModel->pauseAuto;
@@ -562,7 +563,7 @@ class draft extends BaseEditor {
 								if ($teams[$dteam]['autoList']==1) {
 									$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
 									foreach ($pickList as $pid => $val) {
-										if (!isset($drafted[$val['player_id']])) {$dpick=intval($val['player_id']);break;} // END if
+										if (!isset($drafted[$val['player_id']])) { $dpick=intval($val['player_id']);break; } // END if
 									}
 								} // END if
 								
@@ -1066,11 +1067,14 @@ class draft extends BaseEditor {
         // $posMI = get_pos_num('MI');
         // $posCI = get_pos_num('CI');
         if ($this->debug) {
-            print("----------------MAKE AUTO PICK- -------");
-            if (isset($teamQuotas[$dteam][$posUtil])) {
-                print("teamQuotas[dteam][posUtil] =  ".$teamQuotas[$dteam][$posUtil]."<br/>");
+            echo("-----------------------------------------------<br/>");
+            echo("----------------MAKE AUTO PICK- ---------------<br/>");
+            echo("----------------\$draft->makeAutoPick ---------<br/>");
+			echo("-----------------------------------------------<br/>");
+			echo("League uses U position, hasUtil =  ".$hasUtil."<br/>");
+			if (isset($teamQuotas[$dteam][$posUtil])) {
+                echo("teamQuotas[dteam][posUtil] =  ".$teamQuotas[$dteam][$posUtil]."<br/>");
             }
-            print("hasUtil =  ".$hasUtil."<br/>");
         }
         foreach ($values as $pid => $val) {
 			if (!isset($drafted[$pid])) {
@@ -1099,14 +1103,18 @@ class draft extends BaseEditor {
 				}
 				// TEST THIS PLAYERS POSITION AGAINST TEAM QUOTA
 				if ($this->debug) {
-					echo("dteam= ".$dteam."<br />");
-                    echo("Player $pid position = ".get_pos($pos)."<br />");
+					echo("CHECKING POSITION<br />");
+					echo("Draft Team ID, dteam= ".$dteam."<br />");
+                    echo("Player $pid OOTP position = ".get_pos($pos)."<br />");
 				}
 				$draft = true;
                 if (isset($teamQuotas[$dteam][$pos])) {
                     if ($this->debug) {
-                        echo("teamQuotas[".$dteam."][".$pos."] = ".$teamQuotas[$dteam][$pos]."<br />");
+						echo("CHECKING QUOTAS<br />");
+						echo("teamQuotas[".$dteam."][".$pos."] = ".$teamQuotas[$dteam][$pos]."<br />");
                         echo("rules[".$pos."]['active_max'] = ".$rules[$pos]['active_max']."<br />");
+                        echo("teamQuotas[".$dteam."][".$pos."] >= rules[".$pos."]['active_max'] = ");
+                        echo((($teamQuotas[$dteam][$pos] >= $rules[$pos]['active_max']) ? "true" : "false")."<br />");
                     }
                     if ($teamQuotas[$dteam][$pos] >= $rules[$pos]['active_max']) {
                         $draft = false;
@@ -1129,7 +1137,7 @@ class draft extends BaseEditor {
 	public function selection() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
-			$this->loadModel();		
+			$this->loadModel();
 			$this->params['subTitle'] = "Draft";
 			
 			if ($this->dataModel->id != -1) {

@@ -24,8 +24,8 @@ function install_die($message, $title = '', $args = array()) {
 
 
 // MINIMUM SUPORT VARS
-$phpMinRequired = "4.3";
-$mySqlMinRequired = "4.0";
+$phpMinRequired = "5.6";
+$mySqlMinRequired = "5.0";
 /**
  * MINIMUM REQUIREMENTS CHECK
  * DO NOT PROCEED IF ANY OTHER THE BEASIC TECH REQUIREMENTS ARE NOT MET

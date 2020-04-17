@@ -107,7 +107,7 @@
 				draftListStr = 'empty';
 			}
 			var url = "<?php echo($config['fantasy_web_root']); ?>draft/saveDraftList/league_id/"+league_id+"/player_id_list/"+draftListStr;
-			<?php if ($team_override) { ?> url += '/user_id/<?php print($team_owner_id); ?>';<? } ?>
+			<?php if ($team_override) { ?> url += '/user_id/<?php echo($team_owner_id); ?>';<?php } ?>
 			url += cacheBuster();
 			$('div#activeList').html(ajaxWait);
 			$.getJSON(url, function(data){
@@ -384,7 +384,7 @@
 	}
 	function loadList(obj) {
 		var url = "<?php echo($config['fantasy_web_root']); ?>draft/getPicks/league_id/"+league_id;
-		<?php if ($team_override) { ?> url += '/user_id/<?php print($team_owner_id); ?>';<? } ?>
+		<?php if ($team_override) { ?> url += '/user_id/<?php echo($team_owner_id); ?>';<?php } ?>
 		url += cacheBuster();
 		$('div#activeList').html(ajaxWait);
 		$.getJSON(url, function(data){
@@ -406,7 +406,7 @@
 	}
 	function loadUserPicks(obj) {
 		var url = "<?php echo($config['fantasy_web_root']); ?>draft/getResults/league_id/"+league_id;
-		<?php if ($team_override) { ?> url += '/user_id/<?php print($team_owner_id); ?>';<? } ?>
+		<?php if ($team_override) { ?> url += '/user_id/<?php echo($team_owner_id); ?>';<?php } ?>
 		url += cacheBuster();
 		$('div#activeResults').html(ajaxWait);
 		$.getJSON(url, function(data){
@@ -428,7 +428,7 @@
 		var count = 0;
 		var item = data.result.items[0];
 		if (item.id != '' && item.player_name != '') {
-			outHTML += '<img src="<?php echo($config['ootp_html_report_path']); ?>images/player_'+item.player_id+'.png" border="0" align="left" /></td>';
+			outHTML += '<img src="<?php echo($config['ootp_html_report_path']); ?>images/person_pictures/player_'+item.player_id+'.png" border="0" align="left" /></td>';
 			outHTML += '<td width="65%"><b><a href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/<?php echo($league_id); ?>/player_id/'+item.id+'" style="font-weight:bold;font-size:larger;">'+item.player_name+'</a></b><br />';
 			outHTML += item.team_name+'<br />';
 				if (item.pos == 1) {
@@ -555,9 +555,11 @@
 		/-----------------------------------------------------------------------*/
 		if (isset($ownerList) && sizeof($ownerList) > 0) { ?>
         <div style="width:98%;text-align:right;float:left;">
-		<?php if (isset($team_override) && $team_override === true) { ?>
+		<?php 
+		if (isset($team_override) && $team_override === true && $user_team_id !== "X") { 
+		?>
         <div class="notice">
-        Currently Viewing Page as: <?php print($ownerList[$user_team_id]." - ".$team_list[$user_team_id]['teamname']." ".$team_list[$user_team_id]['teamnick']); ?>
+        Currently Viewing Page as: <?php echo($ownerList[$user_team_id]." - ".$team_list[$user_team_id]['teamname']." ".$team_list[$user_team_id]['teamnick']); ?>
         </div><br />
         <?php 
         } // END if (isset($team_override)
@@ -570,12 +572,14 @@
 				echo('<option value="'.$id.'"');
 				if ($id == $user_team_id) { echo(' selected="selected"'); }
 				echo('>'.$ownerName.'</option>');
-			}
+			} // END foreach
 			?>
         </select>
        	</div>
         <br />&nbsp;<br />
-        <?php } ?>
+		<?php 
+		} // END if (isset($ownerList)
+		?>
     </div>
     <div id="left-column-wide">
         <div class="textbox" style="width:245px;">
@@ -621,7 +625,7 @@
         <table cellspacing=0 cellpadding=3 width="375px">
         <tr align="left" valign="top">
         	<td width="35%">
-            <img src='<?php echo($config['ootp_html_report_path']); ?>images/default_player_photo.jpg' border="0" align="left" />
+            <img src='<?php echo($config['ootp_html_report_path']); ?>images/default_player_photo.png' border="0" align="left" />
             </td>
             <td width="65%">
             <b>No Player Selected.</b><br /><br />Click "draft" next to a player below to select to draft that player.
@@ -701,7 +705,8 @@
                     echo("<option value='$key'");
                     if ($key==$player_type) { echo(" selected");}
                     echo(">$val</option>");
-                } ?>
+				} 
+				?>
 		      </select>
 		     </td>
 		<script type="text/javascript">
@@ -801,7 +806,8 @@
                     echo("<option value='$key'");
                     if ($key==$stats_range) { echo(" selected");}
                     echo(">$val</option>");
-                } ?>
+				} 
+				?>
 		      </select>
 		     </td>
 			 <?php
@@ -829,7 +835,7 @@
 		 </table>
 		  
 		</div></form>
-        <?php
+		<?php
 		/*------------------------------------------------
 		/
 		/	BEGIN STATS TABLE
@@ -838,7 +844,7 @@
 		?>
 		<div class="textbox" width="95%">
 			<!-- HEADER -->
-		<table width="100%" cellpadding="0" cellspacing="0" border="0">
+		<table width="100%" cellpadding="0" cellspacing="0">
 		<tr class="title">
 			<td height="17" style="padding:6px;"><?php echo($title); ?> Stats
 			<?php
@@ -851,11 +857,11 @@
 		 </table>
 		 
 		<?php
-		if (isset($formatted_stats) && sizeof($formatted_stats)){
+		if (isset($formatted_stats) && sizeof($formatted_stats)) {
 			echo($formatted_stats);						 
 		}
 		?>
 		</div>
         <br clear="all" />
     </div>
-    <p /><br />
+    <p><br />

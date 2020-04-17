@@ -4,12 +4,11 @@
  *	This class interfaces with the draft config table specifically, but also 
  *	interacts with and manipulates the fantasy draft and draft list tables.
  *
- *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
- *	@authot 		Frank Esselink	(fhommes) Where noted
- *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
- *	@version		1.0.5
- *
-*/
+ *	@author			Jeff Fox (Github ID: jfox015)
+ *	@author			Frank Esselink	(fhommes) Where noted
+  *	@version		1.0.5
+ *  @lastModified	04/17/20
+  */
 class draft_model extends base_model {
 	/*--------------------------------
 	/	VARIABLES
@@ -36,6 +35,7 @@ class draft_model extends base_model {
 	var $emailDraftSummary = -1;
 	var $emailOwnersForPick = -1;
 	var $completed = -1;
+	var $debug = false;
 	
 	/*---------------------------------------------
 	/
@@ -791,7 +791,7 @@ class draft_model extends base_model {
 	/**
 	 *	SAVE DRAFT DEFAULTS.
 	 *
-	 *	RClones the default draft config settigns and applies them to a new league record.
+	 *	Clones the default draft config settigns and applies them to a new league record.
 	 *
 	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
 	 *	@param	$year 			The draft year. If not specified, the current year is used.
@@ -1011,7 +1011,7 @@ class draft_model extends base_model {
 	/*------------------------------------------------------------------------------
 	/
 	/	DRAFT LISTS
-	/	Revised in 1.0.5 Beta to allow users to make and arrange drfat list order 
+	/	Revised in 1.0.5 Beta to allow users to make and arrange draft list order 
 	/	on client side, then save, via AJAX, the draft list to the DB.
 	/
 	/-----------------------------------------------------------------------------*/
@@ -1421,7 +1421,7 @@ class draft_model extends base_model {
 		$sql.="3*p.running_ratings_speed+";
 		$sql.="3*p.running_ratings_stealing+";
 		$sql.="1*p.running_ratings_baserunning";
-		$sql.=")/93 as value FROM players as p,players_batting as pb, fantasy_players as fp ";
+		$sql.=")/68 as value FROM players as p,players_batting as pb, fantasy_players as fp ";
 		//$sql.="LEFT JOIN  ON  ";
 		$sql.="WHERE p.player_id=pb.player_id AND p.player_id = fp.player_id AND p.retired=0 AND p.league_id=$ootp_league_id ";
 		$sql.="AND p.team_id IN (".$teamStr.")";
@@ -1497,7 +1497,7 @@ class draft_model extends base_model {
 		$sql.="8*pp.pitching_ratings_talent_movement+";
 		$sql.="2*pp.pitching_ratings_misc_velocity+";
 		$sql.="2*pp.pitching_ratings_misc_stamina";
-		$sql.=")/32 as value FROM players as p,players_pitching as pp, fantasy_players as fp ";
+		$sql.=")/90 as value FROM players as p,players_pitching as pp, fantasy_players as fp ";
 		//$sql.="LEFT JOIN fantasy_players as fp ON p.player_id = fp.player_id ";
 		$sql.="WHERE p.player_id=pp.player_id AND p.player_id = fp.player_id AND p.position=1 AND p.retired=0 AND p.league_id=$ootp_league_id ";
 		//$sql.="AND fp.id NOT IN (".$taken.")";	
@@ -1565,7 +1565,15 @@ class draft_model extends base_model {
 		foreach ($pvalues as $pid => $val) {$values[$pid]=($pvalues[$pid]-$pavg)/$pstd;}
 		
 		arsort($values);
-		
+
+		if ($this->debug) {
+			echo("------------------------------------------<br/>");
+			echo("     PLAYER VALUE DUMP <br/>");
+			echo("------------------------------------------<br/>");
+			foreach ($values as $pid => $val) {
+				echo("player ".$pid.", value = ".$val."<br/>");
+			}
+		}
 		return $values;
 	}
 	

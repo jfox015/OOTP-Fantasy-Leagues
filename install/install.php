@@ -345,8 +345,9 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 				//$query=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$query);
 				$query=str_replace(", ,",",'',",$query);
 				$query=str_replace("#IND",0,$query);
-				$result=mysql_query($query,$db);
-				$err=mysql_error($db);
+				if ($conn->query($query) !== TRUE) {
+					$err=$conn->error;
+				}
 				if (($err!="") && ($query!="")) {
 					$db_errors .= $err.",query=".$query.",prevQuery=".$prevQuery."<br />";
 					$errCnt++;
@@ -376,21 +377,23 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					$option = $option;
 					if ( is_array($value) )
 						$value = serialize($value); // END if
-					$value = mysql_real_escape_string($value);
+					$value = $conn->real_escape_string($value);
 					if (strpos($value,"\\\\")) {
 						$value = stripslashes($value); // END if
 					} // END if
 					if ( !empty($insert) )
 						$insert .= ', ';
 					$insert .= "('$option', '$value')";
+					//echo("INSERT = ".$insert."<br />");
 				} // END if
 
 				//echo("<br /><strong>Config insert sql</strong> = ".$insert."<br />");
 
 				if ( !empty($insert) ) {
 					$sql = "INSERT INTO fantasy_config (cfg_key, cfg_value) VALUES " . $insert;
-					mysql_query($sql);
-					$err=mysql_error($db);
+					if ($conn->query($sql) !== TRUE) {
+						$err=$conn->error;
+					}
 					if ($err) {
 						$error = true;
 						$errors .= "Error updating config table. Error: ".$err."<br />SQL = ".$sql."<br />";
@@ -402,15 +405,17 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 				$pw = !empty($admin_password) ? $admin_password : substr(md5('admin'.time()),0,10);
 				$salt = substr(md5('admin'.time()),0,10);
 				$sql = "INSERT INTO `users_core` VALUES(1, '".$admin_username."', '".__hash($pw,$salt)."', '".$salt."', '".$admin_email."', 4, 5, 6, '', '0', 0, 0, '".date('Y-m-d h:m:s')."', '".date('Y-m-d h:m:s')."', 0, 1, 0, 0)";
-				mysql_query($sql);
-				$err=mysql_error($db);
+				if ($conn->query($sql) !== TRUE) {
+					$err=$conn->error;
+				}
 				if ($err) {
 					$error = true;
 					$errors .= "Error adding admin user. Error: ".$err."<br />SQL = ".$sql."<br />";
 				} // END if
 				$sql = "INSERT INTO `users_meta` ( `id` , `userId` , `firstName` , `lastName` , `nickName` , `city` , `state` , `country` , `zipCode` , `title` , `bio` , `dateOfBirth` , `gender` , `avatar` , `custom` , `timezone` ) VALUES ( '1', '1', 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '0000-00-00', '', '', '', '' )";
-				mysql_query($sql);
-				$err=mysql_error($db);
+				if ($conn->query($sql) !== TRUE) {
+					$err=$conn->error;
+				}
 				if ($err) {
 					$error = true;
 					$errors .= "Error adding admin meta data. Error: ".$err."<br />SQL = ".$sql."<br />";
@@ -571,6 +576,7 @@ define("DIR_WRITE_PATH","<?php echo($html_root); ?>");</pre>
                 	<?php
 					} // END if
 				} // END if
+				$conn->close();
 			} else {
 				$error = true;
 			} // END if
