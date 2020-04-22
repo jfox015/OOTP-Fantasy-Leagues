@@ -2,7 +2,6 @@
 if (!defined('OFL_INSTALLING')) die("An illegal include operation was attempted. The operation was cancelled.");
 define('BASEPATH', pathinfo(__FILE__, PATHINFO_BASENAME));
 define('ABSPATH', dirname(dirname(__FILE__)).'/');
-error_reporting(E_ALL);
 function install_die($message, $title = '', $args = array()) {
 	?>
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">

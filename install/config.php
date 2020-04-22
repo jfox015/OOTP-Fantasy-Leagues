@@ -5,6 +5,7 @@
  *	database information and creating the database connection files.
  *	
  */
+error_reporting(0);
 define('OFL_INSTALLING', true);
 include_once('./common.php');
 include_once('./constants_install.php');
