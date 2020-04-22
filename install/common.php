@@ -2,7 +2,7 @@
 if (!defined('OFL_INSTALLING')) die("An illegal include operation was attempted. The operation was cancelled.");
 define('BASEPATH', pathinfo(__FILE__, PATHINFO_BASENAME));
 define('ABSPATH', dirname(dirname(__FILE__)).'/');
-error_reporting(0);
+error_reporting(E_ALL);
 function install_die($message, $title = '', $args = array()) {
 	?>
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -24,31 +24,49 @@ function install_die($message, $title = '', $args = array()) {
 
 
 // MINIMUM SUPORT VARS
-$phpMinRequired = "5.6";
-$mySqlMinRequired = "5.0";
+
 /**
- * MINIMUM REQUIREMENTS CHECK
+ * UPDATE PROD 1.0.3
+ * UPDATED MINIMUM REQUIREMENTS CHECK
  * DO NOT PROCEED IF ANY OTHER THE BEASIC TECH REQUIREMENTS ARE NOT MET
  */
 // CHECK PHP VERSION
-$php_compatible = version_compare(phpversion() ,$phpMinRequired, '>');
+$phpMinRequired = "5.6";
+$php_version   = phpversion();
+$php_compatible    = version_compare( $php_version, $phpMinRequired, '>=' );
 if ( !$php_compatible )
-	install_die( sprintf( /*WP_I18N_OLD_PHP*/'Your server is running <strong>PHP</strong> version %s but OOTP Fantasy Leagues requires at least '.$phpMinRequired.'.'/*/WP_I18N_OLD_PHP*/, phpversion() ) );
+	install_die( sprintf('Your server is running <strong>PHP</strong> version %s but OOTP Fantasy Leagues requires at least '.$phpMinRequired, phpversion() ) );  //END if
+
+$mySqlMinRequired = "5.0";
+$mysql_version = "0";
+$use_mysql = version_compare( $php_version, "7.0", '<' );
 // CHECK MYSSQL EXTENSION STATUS
-$mysql_compatible = extension_loaded('mysql');
-if ( !$mysql_compatible )
-	install_die( /*WP_I18N_OLD_MYSQL*/'Your server appears to be missing the <strong>MySQL extension</strong>. MySQl '.$mySqlMinRequired.' or higher required by the OOTP Fantasy Leagues.'/*/WP_I18N_OLD_MYSQL*/ );
-// CHECK MYSSQL VERSION
-ob_start();
-phpinfo(INFO_MODULES);
-$info = ob_get_contents();
-ob_end_clean();
-$info = stristr($info, 'Client API version');
-preg_match('/[1-9].[0-9].[1-9][0-9]/', $info, $match);
-$gd = $match[0]; 
-$mysql_version = version_compare($gd, $mySqlMinRequired, '>=');
+
+// IS MYSQL Loaded on the server?
+$mysql_available = extension_loaded( 'mysql' ) || extension_loaded( 'mysqli' ) || extension_loaded( 'mysqlnd' );
+if ( !$mysql_available )
+	install_die( 'Your server appears to be missing the <strong>MySQL extension</strong>.');  //END if
+
+// CHECK VERSION COMPATIBILITY
+if ( $use_mysql ) {
+	$mysql_version = mysql_get_server_info();
+	$mysql_compat  = version_compare( $mysql_version, $required_mysql_version, '>=' );
+} else {
+	ob_start();
+	phpinfo(INFO_MODULES);
+	$info = ob_get_contents();
+	ob_end_clean();
+	$info = stristr($info, 'Client API version');
+	preg_match('/[1-9].[0-9].[1-9][0-9]/', $info, $match);
+	$mysql_version = $match[0]; 
+	$mysql_compat = version_compare($mysql_version, $mySqlMinRequired, '>=');
+} //END if
+
 if ( !$mysql_version )	
-	install_die( sprintf( /*WP_I18N_OLD_PHP*/'Your server is running <strong>MySQL</strong> version %s but OOTP Fantasy Leagues requires at least '.$mySqlMinRequired/*/WP_I18N_OLD_PHP*/, $gd ) );
+	install_die( sprintf( 'Your server is running <strong>MySQL</strong> version %s but OOTP Fantasy Leagues requires at least '.$mySqlMinRequired, $mysql_version ) );
+
+
+
 $install_writable = is_writable(ABSPATH);
 $root_writable = is_writable("../");
 $config_writable = is_writable("../application/config/");

@@ -32,7 +32,7 @@
             /	BEGIN FILTER BAR
             /
             /---------------------------------------------*/
-            echo "<div class='textbox'>";
+            echo "<div class='textbox filterbar'>";
             echo ' <table cellspacing="0" cellpadding="2" border="0">';
             echo "  <tr class='title'><td colspan=11  height='17'>Filters</td></tr>";
             echo "  <form method='post' id='filterform' action='".$config['fantasy_web_root']."league/transactions/' class='inline'>";

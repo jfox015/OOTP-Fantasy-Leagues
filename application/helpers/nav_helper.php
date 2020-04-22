@@ -87,11 +87,11 @@ function league_nav($league_id = false, $league_name = false, $show_admin = fals
 function team_nav($team_id = false, $teamName = false, $show_admin = false, $showTrades = false) {
     
 	if ($team_id === false || $team_id == -1) { return; }
-	$nav = array(array('url'=>'','label'=>$teamName));
+	$nav = array(array('url'=>'/team/info/'.$team_id,'label'=>$teamName));
 	if ($show_admin) {
 		array_push($nav,array('url'=>'/team/admin/id/'.$team_id,'label'=>'Admin'));
 	}
-	array_push($nav,array('url'=>'/team/info/'.$team_id,'label'=>'Lineup'));
+	array_push($nav,array('url'=>'/team/lineup/'.$team_id,'label'=>'Lineup'));
 	array_push($nav,array('url'=>'/team/eligibility/'.$team_id,'label'=>'Eligibility'));
 	array_push($nav,array('url'=>'/team/stats/'.$team_id,'label'=>'Stats'));
 	if ($show_admin) {

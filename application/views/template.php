@@ -160,7 +160,7 @@
 	?>
     <?php //echo set_breadcrumb(); ?>
     <?php echo $content."\n" ?>
-    <p />&nbsp;<br class="clear" clear="all" />
+    <p>&nbsp;<br class="clear" clear="all" />
  </div>   <!-- END contentpane DIV -->
  <div id='bottombar'>
   <a href='http://www.ootpdevelopments.com'><img src='<?php echo($config['ootp_html_report_path']); ?>images/bnn_logo_bottom.jpg' /></a>

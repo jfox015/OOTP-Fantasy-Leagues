@@ -29,8 +29,6 @@ class draft_model extends base_model {
 	var $timerEnable = -1;
 	var $flexTimer = -1;
 	var $timePick1 = EMPTY_TIME_STR;
-	var $timeStop = EMPTY_TIME_STR;
-	var $pauseWkEnd = -1;
 	var $enforceTimer = -1;
 	var $emailDraftSummary = -1;
 	var $emailOwnersForPick = -1;
@@ -51,7 +49,7 @@ class draft_model extends base_model {
 		$this->tables['DRAFT'] = 'fantasy_draft';
 		$this->tables['TEAMS'] = 'fantasy_teams';
 		
-		$this->fieldList = array('league_id','draftEnable','nRounds','dispLimit','pauseAuto','setAuto','autoOpen','timerEnable','flexTimer','enforceTimer','dStartDt','timePick1','timePick2','rndSwitch','timeStart','timeStop','pauseWkEnd','emailDraftSummary','emailOwnersForPick');
+		$this->fieldList = array('league_id','draftEnable','nRounds','dispLimit','pauseAuto','setAuto','autoOpen','timerEnable','flexTimer','enforceTimer','dStartDt','timePick1','timePick2','rndSwitch','timeStart','timeStop','pauseWkEnd','emailDraftSummary','emailOwnersForPick','draftInjured');
 		$this->conditionList = array('whenDraft');
 		$this->readOnlyList = array('draftDate','completed','dStartTm');  
 		
@@ -78,12 +76,12 @@ class draft_model extends base_model {
 				if ($input->post('startTimeA') != "AM" && $input->post('startTimeH') < 12) { $timeStart = $input->post('startTimeH') + 12; }
 				$this->draftDate .= " ".$timeStart.':'.$input->post('startTimeM').':00';
 			}
-			$this->timeStop = EMPTY_DATE_STR;
+			/*$this->timeStop = EMPTY_DATE_STR;
 			if ($input->post('stopTimeH') && $input->post('stopTimeM') && $input->post('stopTimeA')) {
 				$timeStop = $input->post('startTimeH');
 				if ($input->post('stopTimeA') != "AM" && $input->post('stopTimeH') < 12) { $timeStart = $input->post('stopTimeH') + 12; }
 				$this->timeStop .= " ".$timeStop.':'.$input->post('stopTimeM').':00';
-			}
+			}*/
 			return true;
 		} else {
 			return false;
@@ -149,16 +147,23 @@ class draft_model extends base_model {
 	 *
 	 *	Deletes the settings record for the passed league. Used mainly for league deletion operations.
 	 *
+	 *  Rewritten for PROD 1.0.3 due to issues with the query builder deleting the record and causing an error.
+	 *
 	 *	@param	$league_id	Optional league Id param. If not passed, the internal league id is used
 	 *	@return				TRUE on success, FALSE on error
 	 */
 	public function deleteDraftSettings($league_id = false) {
 		
-		if ($league_id === false) { $league_id = $this->league_id; }
-		
-		$this->db->where('league_id',$league_id);
-		$this->db->delete($this->tblName);
-		
+		if ($league_id === false) { $league_id = $this->league_id; };
+		$sql = "SELECT id FROM ".$this->tblName." WHERE league_id = ".$league_id;
+		$query = $this->db->query($sql);
+		$id = -1;
+		if ($query->num_rows() > 0) {
+			$row = $query->result();
+			$id = $row[0]->id;
+		}
+		$sql2 = "DELETE FROM ".$this->tblName." WHERE id = ".$id;
+		$this->db->query($sql2);
 		return true;
 	}
 	/**
@@ -180,11 +185,11 @@ class draft_model extends base_model {
 		$this->db->where('year',$year);
 		$this->db->delete($this->tables['DRAFT']);
 		
-		if ($this->id == -1) {
-			$this->load($league_id,'league_id');
-		}
-		$this->completed = -1;
-		$this->save();
+		//if ($this->id == -1) {
+		//	$this->load($league_id,'league_id');
+		//}
+		//$this->completed = -1;
+		//$this->save();
 		
 		return true;
 	}
@@ -791,19 +796,23 @@ class draft_model extends base_model {
 	/**
 	 *	SAVE DRAFT DEFAULTS.
 	 *
-	 *	Clones the default draft config settigns and applies them to a new league record.
+	 *	Clones the default draft config settings and applies them to a new league record.
 	 *
 	 *	@param	$league_id		Optional league Id param. If not passed, the internal league id is used
 	 *	@param	$year 			The draft year. If not specified, the current year is used.
 	 *	@return					TRUE on success, FALSE on error.
 	 */
 	public function setDraftDefaults($league_id = false, $year = false) {
+				
 		if ($league_id === false) $league_id = $this->league_id;
+		
 		if ($year === false) $year = date('Y');
 		
 		$this->load(1);
 		$this->id = -1;
 		$this->league_id = $league_id;
+		$this->draftDate = date("Y-m-d h:i:s");
+
 		if ($this->save()) {
 			return true;
 		} else {
@@ -1382,9 +1391,10 @@ class draft_model extends base_model {
 	 *  @author						fhommes, Adapted from StatsLab X
 	 *  @author 					jfox015
 	 */
-	public function getPlayerValues($ootp_league_id = 100, $league_id = false) {
+	public function getPlayerValues($ootp_league_id = 100, $league_id = false, $draftInjured = false) {
 		
 		if ($league_id === false) $league_id = $this->league_id;
+		if ($draftInjured === false) $draftInjured = $this->draftInjured;
 		
 		if (!function_exists('getDraftedPlayersByLeague')) {
 			$this->load->helper('roster');
@@ -1424,10 +1434,12 @@ class draft_model extends base_model {
 		$sql.=")/68 as value FROM players as p,players_batting as pb, fantasy_players as fp ";
 		//$sql.="LEFT JOIN  ON  ";
 		$sql.="WHERE p.player_id=pb.player_id AND p.player_id = fp.player_id AND p.retired=0 AND p.league_id=$ootp_league_id ";
+		if ($draftInjured == -1) {
+			$sql.="AND p.injury_is_injured=0 ";
+		}
 		$sql.="AND p.team_id IN (".$teamStr.")";
-		//$sql.="AND fp.id NOT IN (".$taken.")";		
+		//$sql.="AND fp.id NOT IN (".$taken.")";
 		$query = $this->db->query($sql);
-		//echo($this->db->last_query()."<br />");
 		foreach($query->result_array() as $row) {
 			$pid=$row['id'];
 			$value=$row['value'];
@@ -1449,6 +1461,9 @@ class draft_model extends base_model {
 		$sql.=" FROM players as p,players_fielding as pf, fantasy_players as fp ";
 		//$sql.="LEFT JOIN fantasy_players as fp ON p.player_id = fp.player_id ";
 		$sql.="WHERE p.player_id=pf.player_id AND p.player_id = fp.player_id AND p.retired=0 AND p.league_id=$ootp_league_id ";
+		if ($draftInjured == -1) {
+			$sql.="AND p.injury_is_injured=0 ";
+		}
 		//$sql.="AND fp.id NOT IN (".$taken.")";	
 		$sql.="AND p.team_id IN (".$teamStr.")";
 		$query = $this->db->query($sql);
@@ -1500,6 +1515,9 @@ class draft_model extends base_model {
 		$sql.=")/90 as value FROM players as p,players_pitching as pp, fantasy_players as fp ";
 		//$sql.="LEFT JOIN fantasy_players as fp ON p.player_id = fp.player_id ";
 		$sql.="WHERE p.player_id=pp.player_id AND p.player_id = fp.player_id AND p.position=1 AND p.retired=0 AND p.league_id=$ootp_league_id ";
+		if ($draftInjured == -1) {
+			$sql.="AND p.injury_is_injured=0 ";
+		}
 		//$sql.="AND fp.id NOT IN (".$taken.")";	
 		$sql.="AND p.team_id IN (".$teamStr.")";
 		$query = $this->db->query($sql);
@@ -1584,13 +1602,16 @@ class draft_model extends base_model {
 	 * ------------------------------------------------------------------*/
 	/* DEPRECATED */
 	var $dStartDt = EMPTY_DATE_TIME_STR; 	//deprecated, use draftDate
-	var $dStartTm = EMPTY_TIME_STR; 	//deprecated, use draftDate
-	var $rndSwitch = -1; 	//deprecated
-	var $timePick2 = EMPTY_TIME_STR; 	//deprecated
-	var $timeStart = EMPTY_TIME_STR; 	//deprecated, use draftDate
+	var $dStartTm = EMPTY_TIME_STR; 		//deprecated, use draftDate
+	var $rndSwitch = -1; 					//deprecated
+	var $timePick2 = EMPTY_TIME_STR; 		//deprecated
+	var $timeStart = EMPTY_DATE_TIME_STR; 	//deprecated, use draftDate
+	var $timeStop = EMPTY_DATE_TIME_STR; 	//deprecated
 	var $dispLimit = -1; 	//deprecated
 	var $emailList = '';	//deprecated
 	var $replyList = '';	//deprecated
+	var $pauseWkEnd = -1;   //deprecated
+	var $timePerPick = 0;   //deprecated
 	/**
 	 * @deprecated
 	 */

@@ -9,8 +9,8 @@
                 <!-- BEGIN RIGHT COLUMN -->
             <div id="metaColumn"> 
 				<?php if (isset($rosters) && sizeof($rosters) > 0) { ?>
-				<div class='textbox'>
-			    <table cellpadding="0" cellspacing="0" border="0" style="width:255px;">
+                <div class='textbox right-column'>
+                <table cellpadding="5" cellspacing="0" border="0">
 			    <tr class='title'>
 			    	<td style='padding:6px' colspan="2">Roster Restrictions</td>
 			    </tr>
@@ -79,8 +79,8 @@
 				<div style="margin:6px 0 6px 0;min-height:12px;"><br clear="all" class="clear" /></div>
               	<?php } ?>
 				
-				<div class='textbox'>
-			    <table cellpadding="0" cellspacing="0" border="0" style="width:255px;">
+				<div class='textbox right-column'>
+                <table cellpadding="5" cellspacing="0" border="0">  
 			    <tr class='title'>
 			    	<td style='padding:6px' colspan="2">Point Scoring Values</td>
 			    </tr>

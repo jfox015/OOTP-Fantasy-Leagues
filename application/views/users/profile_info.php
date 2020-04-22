@@ -17,8 +17,8 @@
 					<?php if ($loggedIn && $currUser == $profile->userId) { ?>
                    	<!-- LEAGUE INVITATIONS BOX -->
                     <?php if (isset($invites) && sizeof($invites) > 0) { ?>
-                    <div class='textbox'>
-                    <table cellpadding="0" cellspacing="0" border="0" style="width:325px;" class="dashboard">
+                    <div class='textbox right-column'>
+                    <table cellpadding="0" cellspacing="0" class="dashboard">
                     <tr class='title'>
                         <td style="padding:3px">League Invitations</td>
                     </tr>
@@ -49,8 +49,8 @@
 					} // END if
 					?>
                     <?php if (isset($requests) && sizeof($requests) > 0) { ?>
-                    <div class='textbox'>
-                    <table cellpadding="0" cellspacing="0" border="0" style="width:325px;" class="dashboard">
+                    <div class='textbox right-column'>
+                    <table cellpadding="0" cellspacing="0" class="dashboard">
                     <tr class='title'>
                         <td style="padding:3px">Team Requests</td>
                     </tr>
@@ -86,8 +86,8 @@
 					} // END if
 					?>
                     <!-- Tool Box -->
-                    <div class='textbox'>
-                    <table cellpadding="0" cellspacing="0" border="0" style="width:325px;" class="dashboard">
+                    <div class='textbox right-column'>
+                    <table cellpadding="0" cellspacing="0" class="dashboard">
                     <tr class='title'>
                         <td style="padding:3px">My Options</td>
                     </tr>

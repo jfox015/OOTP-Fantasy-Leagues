@@ -97,6 +97,8 @@ class team extends BaseEditor {
 		$this->views['TRADE_REVIEW'] = 'team/team_trade_review';
 		$this->views['TRADE_HISTORY'] = 'team/team_trade_history';
 		$this->views['ELIGIBILITY'] = 'team/team_eligibility';
+		$this->views['LINEUP'] = 'team/team_lineup';
+		//$this->views['STARTERS'] = 'team/team_starters';
 		$this->debug = false;
 		$this->useWaivers = (isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) ? true : false;
 	}
@@ -146,7 +148,7 @@ class team extends BaseEditor {
 					$this->displayView();
 				} else {
 					if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
-						$change = $this->dataModel->applyData($this->input, $this->params['currUser']); 
+						$change = $this->dataModel->applyData($this->input, $this->data['team_id']); 
 						if ($change) {
 							$this->dataModel->save();
 							$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');
@@ -190,6 +192,102 @@ class team extends BaseEditor {
 			}
 		}
 	}
+	/*-----------------------------------------------------------
+	/
+	/	LINEUP
+	/
+	/ 	@since 1.0
+	/	Moved from /team/info/  to new function in PROD 1.0.3
+	/-----------------------------------------------------------*/
+	public function lineup() {
+		
+		$this->getURIData();
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		$this->data['team_id'] = $this->uriVars['id'];
+		$this->data['league_id'] = $this->dataModel->league_id;
+		
+		if (isset($this->data['team_id'])) { 
+		
+			if (!function_exists('getScoringPeriod')) {
+				$this->load->helper('admin');
+			}
+
+			if (isset($this->uriVars['period_id'])) {
+				$curr_period_id = $this->uriVars['period_id'];
+				$curr_period = getScoringPeriod($curr_period_id);
+			} else {
+				$curr_period = $this->getScoringPeriod();
+				$curr_period_id = $curr_period['id'];
+			}
+			
+			$this->data['curr_period'] = $curr_period_id;
+			
+			if (!isset($this->league_model)) {
+				$this->load->model('league_model');
+				$this->league_model->load($this->dataModel->league_id);
+			}
+			$this->league_model->load($this->dataModel->league_id);
+			$this->data['avail_periods'] = $this->league_model->getAvailableRosterPeriods();
+			
+			// Setup header Data
+			$this->data['thisItem']['league_id'] = $this->dataModel->league_id;
+			$this->data['thisItem']['team_id'] = $this->dataModel->id;
+			$this->data['thisItem']['teamname'] = $this->dataModel->teamname;
+			$this->data['thisItem']['teamnick'] = $this->dataModel->teamnick;
+			$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
+			
+			if (!$this->league_model->validateRoster($this->dataModel->getBasicRoster($curr_period_id))) {
+				$this->data['message'] = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b>".$this->league_model->statusMess;
+				$this->data['messageType'] = 'error';
+			}
+			if ($this->params['loggedIn']) {
+				$this->data['thisItem']['userTeamId'] = $this->user_meta_model->getUserTeamIds($this->dataModel->league_id,$this->params['currUser']);
+			}
+			$players = $this->dataModel->getCompleteRoster($curr_period_id);
+			if (isset($players[0])) {
+				$this->data['thisItem']['players_active'] =	$players[0];
+			} 
+			if (isset($players[1])) {
+				$this->data['thisItem']['players_reserve'] = $players[1];
+			}
+			if (isset($players[2])) {
+				$this->data['thisItem']['players_injured'] = $players[2];
+			}
+			$this->data['thisItem']['team_list'] = getOOTPTeams($this->params['config']['ootp_league_id'],false);
+			
+			if (isset($this->data['thisItem']['league_id']) && $this->data['thisItem']['league_id'] != -1) {
+				$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->data['thisItem']['league_id']);
+			}
+			$this->data['thisItem']['visible_week'] = getVisibleDays($curr_period['date_start'],$this->params['config']['sim_length']);
+			
+			$this->data['thisItem']['schedules'] = getPlayerSchedules($players,$curr_period['date_start'],$this->params['config']['sim_length']);
+			
+			$this->data['thisItem']['owner_name'] = resolveOwnerName($this->dataModel->owner_id);
+			$this->data['thisItem']['owner_id'] = $this->dataModel->owner_id;
+			
+			$divisionName = '';
+			$divisionsList = listLeagueDivisions($this->dataModel->id,false);
+			foreach($divisionsList as $key => $value) {
+				if ($this->dataModel->division_id == $key) {
+					$divisionName = $value;
+					break;
+				}
+			}
+			$this->data['thisItem']['divisionName'] = $divisionName;
+			$this->data['showAdmin'] = (($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $this->params['config']['current_period']) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
+			$this->params['content'] = $this->load->view($this->views['LINEUP'], $this->data, true);
+			$this->params['pageType'] = PAGE_FORM;
+		} else {
+			$message = "error:Required params missing";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		}  // END if if (isset($this->uriVars['team_id']))
+
+		$this->makeNav();
+		$this->displayView();
+
+	}
+
 	/*-------------------------------------------
 	/
 	/	TRADES
@@ -778,7 +876,7 @@ class team extends BaseEditor {
 					$recieve_player_str .= ", ".$pos;
                 }
 				
-				// RECIPIEHT MESSAGE
+				// RECIEPT MESSAGE
 				$msg = $this->lang->line('team_trade_offer');
 				$msg .= $this->lang->line('email_footer');
 				$msg = str_replace('[ACCEPTING_TEAM_NAME]', $this->dataModel->getTeamName($team2Id), $msg);
@@ -1328,7 +1426,8 @@ class team extends BaseEditor {
 			$this->data['message'] = "Your lineups have been successfully updated.";
 			$this->data['messageType'] = 'success';
 		} // END if
-		$this->showInfo();
+		//$this->session->set_flashdata('message', '<span class="'.$this->data['messageType'].'">'.$this->data['message'].'</span>');
+		redirect('team/lineup/'.$this->uriVars['id']);
 	}
 	
 	/**
@@ -1821,6 +1920,16 @@ class team extends BaseEditor {
 		$this->params['content'] = $this->load->view($this->views['ELIGIBILITY'], $this->data, true);
 	    $this->displayView();
 	}
+
+	/**
+	 *	TEAM STATS.
+	 *	Displays a table of stats for the current team. 
+	 *
+	 *	@since	1.0
+	 *	@access	public
+	 * 	@param	id 		Team ID
+	 *  @param	year	The year to display stats for
+	 */
 	public function stats() {
 		
 		$this->getURIData();
@@ -2102,9 +2211,18 @@ class team extends BaseEditor {
 		$form->br();
 		$form->text('teamnick','Nick Name','required|trim',($this->input->post('teamnick')) ? $this->input->post('teamnick') : $this->dataModel->teamnick,array('class','first'));
 		$form->br();
+		if (!isset($this->league_model)) {
+			$this->load->model('league_model');
+		}
+		$this->league_model->load($this->data['league_id']);
+		$scoring_type = $this->league_model->getScoringType();
 		if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
-			$form->select('division_id|division_id',listLeagueDivisions($this->dataModel->league_id),'Division',($this->input->post('division_id')) ? $this->input->post('division_id') : $this->dataModel->division_id);
-			$form->br();
+			if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+				$form->select('division_id|division_id',listLeagueDivisions($this->dataModel->league_id),'Division',($this->input->post('division_id')) ? $this->input->post('division_id') : $this->dataModel->division_id);
+				$form->br();
+			} else {
+				$form->hidden('division_id',-1);
+			}
 		}
 		$form->fieldset('Draft Settings');
 		$responses[] = array('1','Yes');
@@ -2138,86 +2256,144 @@ class team extends BaseEditor {
 		
 	}
 	
-	protected function showInfo() {
+	protected function showInfo($template = false) {
+
+		$this->data['thisItem']['team_id'] = $this->dataModel->id;
+		$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
+		$this->data['thisItem']['teamname'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;		
+		$this->data['thisItem']['owner_name'] = resolveOwnerName($this->dataModel->owner_id);
+
+		$this->params['subTitle'] = $this->data['thisItem']['teamname'];
+
+		/*--------------------------------------
+		/	GET TEAM NEWS
+		/-------------------------------------*/
+		// GET LATEST NEWS ARTICLE FOR THIS TEAM
+		$this->load->model('news_model');
+		$news = $this->news_model->getNewsByParams(NEWS_TEAM,$this->dataModel->id);
+		if (isset($news) && sizeof($news) > 0) {
+			foreach($news as $newsData) {
+				$this->data['newsId'] = $newsData['id'];
+				$this->data['newsTitle'] = $newsData['news_subject'];
+				$this->data['newsBody'] = $newsData['news_body'];
+				$this->data['newsImage'] = $newsData['image'];
+				$this->data['newsDate'] = $newsData['news_date'];
+				$authorName = '';
+				$this->db->select('firstName, lastName');
+				$this->db->where('userId',$newsData['author_id']);
+				$query = $this->db->get('users_meta');
+				if ($query->num_rows() > 0) {
+					$row = $query->row();
+					$authorName = (!empty($row->firstName) && $row->lastName != -1)  ? $row->firstName." ".$row->lastName : 'Unknown Author';
+				} // END if
+				$query->free_result();
+				$this->data['author'] = $authorName;
+				break;
+			} // END foreach
+		}
 
 		if (!function_exists('getScoringPeriod')) {
 			$this->load->helper('admin');
 		}
 
-        if (isset($this->uriVars['period_id'])) {
-            $curr_period_id = $this->uriVars['period_id'];
-            $curr_period = getScoringPeriod($curr_period_id);
-        } else {
-		    $curr_period = $this->getScoringPeriod();
-		    $curr_period_id = $curr_period['id'];
-        }
-		
+		if (isset($this->uriVars['period_id'])) {
+			$curr_period_id = $this->uriVars['period_id'];
+			$curr_period = getScoringPeriod($curr_period_id);
+		} else {
+			$curr_period = $this->getScoringPeriod();
+			$curr_period_id = $curr_period['id'];
+		}
 		$this->data['curr_period'] = $curr_period_id;
 
-        //print("curr_period['id'] = ".$curr_period['id']."<br />");
-        //print("params->config['current_period] = ".$this->params['config']['current_period']."<br />");
-		
+		$this->data['league_id']  = $this->dataModel->league_id;
 		if (!isset($this->league_model)) {
 			$this->load->model('league_model');
-			$this->league_model->load($this->dataModel->league_id);
 		}
-		$this->league_model->load($this->dataModel->league_id);
-		$this->data['avail_periods'] = $this->league_model->getAvailableRosterPeriods();
+		$this->league_model->load($this->data['league_id']);
 		
-		// Setup header Data
-		$this->data['thisItem']['league_id'] = $this->dataModel->league_id;
-		$this->data['thisItem']['team_id'] = $this->dataModel->id;
-		$this->data['thisItem']['teamname'] = $this->dataModel->teamname;
-		$this->data['thisItem']['teamnick'] = $this->dataModel->teamnick;
-		$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
-		//echo("Scoring period param = ".$curr_period_id."<br />");
-		if (!$this->league_model->validateRoster($this->dataModel->getBasicRoster($curr_period_id))) {
-			$this->data['message'] = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b>".$this->league_model->statusMess;
-			$this->data['messageType'] = 'error';
+		$this->data['thisItem']['teamList'] = $this->league_model->getTeamDetails();
+		$this->data['thisItem']['transactions'] = $this->league_model->getLeagueTransactions(5,0,$this->data['thisItem']['team_id'],$this->data['league_id']);
+		$this->data['showEffective']  = -1;
+		$this->data['limit']  = -1;
+		$this->data['pageCount']  = -1;
+		$this->data['recCount']  = -1;
+		$this->data['transaction_summary'] = $this->load->view($this->views['TRANSACTION_SUMMARY'], $this->data, true);
+
+		/*---------------------------
+		/	GET TOP PLAYERS DATA
+		/--------------------------*/
+		$scoring_type = $this->league_model->getScoringType();
+		$this->rules = $this->league_model->getScoringRules($this->dataModel->league_id,$this->league_model->getScoringType($this->dataModel->league_id));
+		if (sizeof($this->rules) == 0) {
+			$this->rules = $this->league_model->getScoringRules(0);
 		}
-		//echo("Scoring period param 2 = ".$curr_period_id."<br />");
-		if ($this->params['loggedIn']) {
-			$this->data['thisItem']['userTeamId'] = $this->user_meta_model->getUserTeamIds($this->dataModel->league_id,$this->params['currUser']);
-		}
-		$players = $this->dataModel->getCompleteRoster($curr_period_id);
-		if (isset($players[0])) {
-			$this->data['thisItem']['players_active'] =	$players[0];
-		} 
-		if (isset($players[1])) {
-			$this->data['thisItem']['players_reserve'] = $players[1];
-		}
-		if (isset($players[2])) {
-			$this->data['thisItem']['players_injured'] = $players[2];
-		}
-		$this->data['thisItem']['team_list'] = getOOTPTeams($this->params['config']['ootp_league_id'],false);
-		
-		if (isset($this->data['thisItem']['league_id']) && $this->data['thisItem']['league_id'] != -1) {
-			$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->data['thisItem']['league_id']);
-		}
-		$this->data['thisItem']['visible_week'] = getVisibleDays($curr_period['date_start'],$this->params['config']['sim_length']);
-		
-		$this->data['thisItem']['schedules'] = getPlayerSchedules($players,$curr_period['date_start'],$this->params['config']['sim_length']);
-		
-		$this->data['thisItem']['owner_name'] = resolveOwnerName($this->dataModel->owner_id);
-		$this->data['thisItem']['owner_id'] = $this->dataModel->owner_id;
-		
-		$divisionName = '';
-		$divisionsList = listLeagueDivisions($this->dataModel->id,false);
-		foreach($divisionsList as $key => $value) {
-			if ($this->dataModel->division_id == $key) {
-				$divisionName = $value;
-				break;
+
+		if (isset($this->uriVars['year'])) {
+			$this->data['lgyear'] = $this->uriVars['year'];
+		} else {
+			$currDate = strtotime($this->ootp_league_model->current_date);
+			$startDate = strtotime($this->ootp_league_model->start_date);
+			if ($currDate <= $startDate) {
+				$this->data['lgyear'] = (intval($this->data['years'][0]));
+			} else {
+				$this->data['lgyear'] = date('Y',$currDate);
 			}
 		}
-		$this->data['thisItem']['divisionName'] = $divisionName;	
+		$this->data['year'] = $this->data['lgyear'];
+		$this->data['league_id']  = $this->dataModel->league_id;
 
-		$this->params['subTitle'] = "Team Overview";
+		$this->data['team_record']  = $this->dataModel->getTeamRecord($this->dataModel->id, $this->data['year']);
 		
-		$this->data['showAdmin'] = (($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $this->params['config']['current_period']) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
+		$this->prepForQuery();
+		
+		$this->data['batters'] = $this->dataModel->getBatters(-1, false, -999);
+		$this->data['pitchers'] = $this->dataModel->getPitchers(-1, false, -999);
+		
+		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
+		
+			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules, $this->data['batters'], null,
+			'all', false, QUERY_BASIC, -1, 3, 0, 'fpts');
+			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules, $this->data['pitchers'], null,
+			'all', false, QUERY_BASIC, -1, 3, 0,false, 'fpts');
+
+			$this->data['limit'] = 3;
+			$this->data['startIndex'] = 0;
+			
+			$this->data['batting_fields'] = player_stat_fields_list(1, QUERY_BASIC, $scoring_type == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $scoring_type != LEAGUE_SCORING_HEADTOHEAD);	
+			$this->data['batter_stats'] = formatStatsForDisplay($stats['batters'], $this->data['batting_fields'], $this->params['config'],$this->data['league_id']);
+			
+			$this->data['pitcher_fields'] = player_stat_fields_list(2, QUERY_BASIC, $scoring_type == LEAGUE_SCORING_HEADTOHEAD, false, false, false, false, $scoring_type != LEAGUE_SCORING_HEADTOHEAD);
+			$this->data['pitcher_stats'] = formatStatsForDisplay($stats['pitchers'], $this->data['pitcher_fields'], $this->params['config'],$this->data['league_id']);
+			
+		} else {
+			$this->data['message']= "The ".$this->dataModel->teamname." roster is incomplete. No stats are available at this time.";
+		}
+		$this->data['scoring_type'] = $scoring_type;
+		// GET UPCOMING GAMES
+		$this->data['upcomingOpponent'] = $this->dataModel->getUpcomingGames($curr_period_id);
+		// GET MOST RECENT GAMES
+		if ($curr_period_id > 1) {
+			$curr_period_id = $curr_period_id-1;
+		} else {
+			$curr_period_id = 1;
+		}
+		$this->data['gamePeriod'] = $curr_period_id;
+		$this->data['recentGames'] = $this->dataModel->getRecentGames($curr_period_id);
+
+		$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+		$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
+		
+		$this->data['isOwner'] = ($this->params['loggedIn'] && ($this->dataModel->owner_id == $this->params['currUser'] || ($isAdmin || $isCommish)));
+
+		if ($this->data['isOwner']) {
+			$this->data['userTrades'] = $this->user_meta_model->getTradeOffers($this->params['currUser'],$curr_period_id, $this->dataModel->id);
+			if ($this->params['config']['approvalType'] == 2) {
+				$this->data['tradesForReview'] = $this->user_meta_model->getTradesForReview($this->params['currUser'],$curr_period_id, $this->dataModel->id);
+			}
+		}
 
 		$this->makeNav();
-		
-		
+
 		parent::showInfo();
 	}
 	/**

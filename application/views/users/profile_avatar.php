@@ -2,7 +2,7 @@
    	<h1><?php echo($subTitle); ?></h1>
         <br />
         <div class="content-form">
-            <p /><br />
+            <p><br />
             <?php 
 			if ( ! function_exists('form_open')) {
 				$this->load>helper('form');
@@ -32,7 +32,7 @@
 			echo(form_hidden('submitted',"1"));
 			echo(form_fieldset_close());
 			echo(form_close()); ?>
-            <p /><br />          
+            <p><br />          
         </div>
     </div>
-    <p /><br />
+    <p><br />

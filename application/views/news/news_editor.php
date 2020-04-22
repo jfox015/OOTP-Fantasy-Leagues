@@ -129,7 +129,7 @@
         <table cellspacing=0 cellpadding=3 width="250px">
         <tr align="left" valign="top">
         	<td width="35%">
-            <img src='<?php print($config['ootp_html_report_path']); ?>images/default_player_photo.jpg' border="0" align="left" />
+            <img src='<?php print($config['ootp_html_report_path']); ?>images/default_player_photo.png' border="0" align="left" />
             </td>
             <td width="65%">
             <b>No Player Selected.</b><br /><br />Select a player from the "Select Player" drop down to preview their information.

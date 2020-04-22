@@ -1,8 +1,27 @@
-    <div id="single-column">
-        <div class="top-bar"><h1><?php echo($subTitle); ?></h1></div>
-    </div>
-    <div id="center-column">
-        <?php if (isset($newsImage) && !empty($newsImage)) { 
+    <div id="center-column" class="league-home">
+        <div class="top-bar">
+            <?php
+            if (isset($thisItem['avatar']) && !empty($thisItem['avatar'])) { 
+                $avatar = PATH_LEAGUES_AVATARS.$thisItem['avatar']; 
+            } else {
+                $avatar = PATH_LEAGUES_AVATARS.DEFAULT_AVATAR;
+            } 
+            ?>
+            <img src="<?php echo($avatar); ?>" width="100" height="100" alt="<?php echo($thisItem['league_name']); ?>" 
+            title="<?php echo($thisItem['league_name']); ?>" /> 
+            <h1><?php echo($thisItem['league_name']); ?></h1>
+        </div>
+
+        <div class="news_title">
+            <h3>Latest League News</h3>
+        </div>
+        <div class="rule"></div>
+
+        <?php 
+        if (isset($newsTitle) && !empty($newsTitle)) { 
+            echo("<h2>".$newsTitle."</h2>");
+        }
+        if (isset($newsImage) && !empty($newsImage)) { 
 		// GET IMAGE DIMENSIONS
 		$size = getimagesize(FCPATH.'images\news\\'.$newsImage);
 		if (isset($size) && sizeof($size) > 0) {
@@ -16,9 +35,19 @@
         <img src="<?php echo(PATH_NEWS_IMAGES.$newsImage); ?>" align="left" border="0" class="league_news_<?php echo($class); ?>" />
         <?php } ?>
         
-        <?php if (isset($newsDate) && !empty($newsDate)) { 
-        	echo('<span class="league_date">'.date('l, M d',strtotime($newsDate)).'</span><br />');
-        } ?>
+        <?php 
+        if (isset($newsDate) && !empty($newsDate)) { 
+        	echo('<span class="league_date">'.date('l, M d',strtotime($newsDate)).'</span>');
+        } 
+        if (isset($newsDate) && !empty($newsDate) && isset($author) && !empty($author)) { 
+            echo(", ");
+        }
+        if (isset($author) && !empty($author)) { 
+        	echo('<span class="news_author">'.$author.'</span>');
+        }
+        ?>
+        <br />
+
         <?php if (isset($newsBody) && !empty($newsBody)) { 
 			$maxChars = 500;
 			if (strlen($newsBody) > $maxChars) {
@@ -33,7 +62,7 @@
         } else {
        		echo("No news is available at this time.");
         } ?>
-        <p />
+        <p>
         <br clear="all" />
         <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
 		<?php echo anchor('/search/news/', 'More League News'); ?><br />
@@ -61,7 +90,7 @@
             <?php echo anchor('/league/transactions/'.$league_id,'See all transactions'); ?>
             </div>
             
-        </div>  <!-- end batting stat div -->
+        </div>
 	</div>
     <div id="right-column">
     	<?php 
@@ -77,7 +106,7 @@
 			if ($draftInfo['draftStatus'] > 0 && $draftInfo['draftStatus'] < 5) {
 		?>
 		<div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" width="225px">
+        <table cellpadding="0" cellspacing="0" border="0">
         <tr class='title'>
             <td style='padding:3px'>League Draft</td>
         </tr>
@@ -114,68 +143,69 @@
 		} // if (isset($userDrafts) 
 					   
 		// STANDINGS MODULE
+        ?>
+        <div class='textbox right-column'>
+            <table cellpadding="5" cellspacing="0" border="0">
+            <tr class='title'>
+                <td colspan='5'>Standings</td>
+            </tr>
+            <?php
         if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
-			if (isset($thisItem['divisions'])) {  ?>
-        <div class='textbox'>
-            <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="213px">
-            <?php 
-			if (sizeof($thisItem['divisions']) > 0) {
-            foreach($thisItem['divisions'] as $id=>$divisionData) { ?>
-            <tr class='title'>
-                <td colspan='5' class='lhl'><?php echo($divisionData['division_name']); ?></td></tr>
-            <tr class='headline'>
-                <td class='hsc2_c'>Team</td>
-                <td class='hsc2_c'>W</td>
-                <td class='hsc2_c'>L</td>
-                <td class='hsc2_c'>GB</td>
-            </tr>
-            <?php 
-            $rowcount = 0;
-            $leadW = 0;
-            $leadG = 0;
-            if (isset($divisionData['teams']) && sizeof($divisionData['teams']) > 0) { 
-                foreach($divisionData['teams'] as $teamId => $teamData) { 
-                if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }  // END if
-                ?>
-            <tr style="background-color:<?php echo($color); ?>">
-                <td class='hsc2_l'><?php echo(anchor('/team/info/'.$teamId,$teamData['teamnick'])); ?></td>
-                <td class='hsc2_l'><?php echo($teamData['w']); ?></td>
-                <td class='hsc2_l'><?php echo($teamData['l']); ?></td>
+			if (isset($thisItem['divisions'])) {  
+			    if (sizeof($thisItem['divisions']) > 0) {
+                    foreach($thisItem['divisions'] as $id=>$divisionData) { ?>
+                    <tr class='headline'>
+                        <td colspan='5'><?php echo($divisionData['division_name']); ?></td></tr>
+                    <tr class='headline'>
+                        <td class='hsc2_c'>Team</td>
+                        <td class='hsc2_c'>W</td>
+                        <td class='hsc2_c'>L</td>
+                        <td class='hsc2_c'>GB</td>
+                    </tr>
+                    <?php 
+                    $rowcount = 0;
+                    $leadW = 0;
+                    $leadG = 0;
+                        if (isset($divisionData['teams']) && sizeof($divisionData['teams']) > 0) { 
+                            foreach($divisionData['teams'] as $teamId => $teamData) { 
+                                if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }  // END if
+                                ?>
+                    <tr style="background-color:<?php echo($color); ?>">
+                        <td class='hsc2_l'><?php echo(anchor('/team/info/'.$teamId,$teamData['teamnick'])); ?></td>
+                        <td class='hsc2_l'><?php echo($teamData['w']); ?></td>
+                        <td class='hsc2_l'><?php echo($teamData['l']); ?></td>
+                        <?php 
+                                if ($rowcount == 0) { 
+                                    $leadG = $teamData['g']; $leadW = $teamData['w']; $gb = "--"; 
+                                } else {
+                                    $gb = $leadW - $teamData['w'];
+                                    if ((($leadG-$teamData['g'])%2) != 0) { $gb .= "<sup>1/2</sup>"; } // END if
+                                } // END if ($rowcount == 0) {)
+                        ?>
+                        <td class='hsc2_l'><?php echo($gb); ?></td>
+                    </tr>
+                    <?php
+                    $rowcount++;
+                            } // END foreach($divisionData['teams'] 
+                        } else { ?>
+                    <tr>
+                        <td class="hsc2_l" colspan="4">No teams were found</td>
+                    </tr>
                 <?php 
-                if ($rowcount == 0) { 
-                    $leadG = $teamData['g']; $leadW = $teamData['w']; $gb = "--"; 
-                } else {
-                    $gb = $leadW - $teamData['w'];
-                    if ((($leadG-$teamData['g'])%2) != 0) { $gb .= "<sup>1/2</sup>"; } // END if
-                } // END if ($rowcount == 0) {)
-                ?>
-                <td class='hsc2_l'><?php echo($gb); ?></td>
-            </tr>
-                <?php
-                $rowcount++;
-                } // END foreach($divisionData['teams'] 
-            } else { ?>
-            <tr>
-                <td class="hsc2_l" colspan="4">No teams were found</td>
-            </tr>
-            <?php } // END if (isset($divisionData['teams']
-				} // END foreach($thisItem['divisions']
-            } else { ?>
-            <tr class='title'>
+                        } // END if (isset($divisionData['teams']
+                    } // END foreach($thisItem['divisions']
+                } else { ?>
+            <tr class='headline'>
                 <td class="lhl">No divisions were found for this league.</td>
             </tr>
-            <?php } // END if (isset($divisionData['teams']
-				}  // END if (isset($thisItem['divisions'])
-			} // END if ($scoring_type ==LEAGUE_SCORING_HEADTOHEAD
+            <?php 
+                } // END if (isset($divisionData['teams']
+			}  // END if (isset($thisItem['divisions'])
+		} // END if ($scoring_type ==LEAGUE_SCORING_HEADTOHEAD
 
-			if ($scoring_type != LEAGUE_SCORING_HEADTOHEAD) {
-				if (isset($thisItem['teams']) && sizeof($thisItem['teams']) > 0) { 
+        if ($scoring_type != LEAGUE_SCORING_HEADTOHEAD) {
+            if (isset($thisItem['teams']) && sizeof($thisItem['teams']) > 0) { 
 			?>
-            <div class='textbox'>
-            <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="213px">
-            <tr class='title'>
-                <td colspan='5' class='lhl'>Current Standings</td>
-            </tr>
             <tr class='headline'>
                 <td class='hsc2_c'>Team</td>
                 <td class='hsc2_c'>Total</td>
@@ -183,7 +213,7 @@
             <?php 
             $rowcount = 0;            
                 foreach($thisItem['teams'] as $teamId => $teamData) { 
-                if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
+                    if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
                 ?>
             <tr style="background-color:<?php echo($color); ?>">
                 <td class='hsc2_l'><?php echo(anchor('/team/info/'.$teamId,$teamData['teamnick'])); ?></td>
@@ -191,26 +221,26 @@
             </tr>
                 <?php
                 $rowcount++;
-                }
+                } // END foreach($thisItem['teams']
             } else { ?>
             <tr>
                 <td class="hsc2_l" colspan="4">No teams were found</td>
             </tr> 
-            <?php } 
-			} ?>
-            
+            <?php 
+            } // END if (isset($thisItem['teams']
+        } // END if ($scoring_type != LEAGUE_SCORING_HEADTOHEAD) {
+        ?>
             
             </table>
         </div>  <!-- end batting stat div -->
         
         <?php
-
 		/*------------------------------------------------
 		/	LEAGUE GAME RESULTS MODULE
 		/-----------------------------------------------*/
 		if (isset($gameList) && sizeof($gameList) > 0) { ?>
-        <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" width="225px">
+        <div class='textbox right-column'>
+        <table cellpadding="5" cellspacing="0" border="0">
         <tr class='title'>
             <td style='padding:3px'>Game Scores</td>
         </tr>
@@ -226,12 +256,15 @@
             foreach($gameList as $game_id => $data) { ?>
             <tr align=left class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>">
                 <?php 
+
                 $homeTeamArr = explode(" ",$data['home_team_name']);
+                $homeTeamName = (strstr($data['home_team_name'], "Team ")) ? $homeTeamArr[2] : $homeTeamArr[1];
                 $awayTeamArr = explode(" ",$data['away_team_name']);
+                $awayTeamName = (strstr($data['away_team_name'], "Team ")) ? $awayTeamArr[2] : $awayTeamArr[1];
                 ?>
-                <td width="40%"><?php echo($homeTeamArr[1]); ?><br /><?php echo($awayTeamArr[1]); ?></td>
-                <td width="30%" align="right"><?php echo($data['home_team_score']); ?><br /><?php echo($data['away_team_score']); ?></td>
-                <td width="30%" align="center"><a href="#" rel="game_nav" id="<?php echo($game_id); ?>">game</a></td>
+                <td width="50%"><?php echo($homeTeamName); ?><br /><?php echo($awayTeamName); ?></td>
+                <td width="50%" style="text-align:right"><?php echo($data['home_team_score']); ?><br /><?php echo($data['away_team_score']); ?></td>
+                <!--td width="30%" align="center"><a href="#" rel="game_nav" id="<?php echo($game_id); ?>">game</a></td-->
             </tr>
             <?php 
 			$rowCount++;
@@ -240,16 +273,18 @@
             </table>
             </td>
         </tr>
+        <tr style="background-color:#EAEAEA">
+            <td style='padding:6px'><?php echo(anchor('/league/results/id/'.$league_id,"View All Results")); ?></td>
+        </tr>
         </table>
         </div>
-		<?php } ?>
-        <?php
+		<?php } 
 		/*------------------------------------------------
 		/	LEAGUE DETAILS MODULE
 		/-----------------------------------------------*/
 		?>
-        <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" width="225px">
+        <div class='textbox right-column'>
+        <table cellpadding="5" cellspacing="0" border="0">
         <tr class='title'>
             <td style='padding:3px'>League Details</td>
         </tr>

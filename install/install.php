@@ -48,16 +48,20 @@ function display_setup_form( $error = null ) {
 			<select id="timezone" name="timezone">
 			    <?php
 			    $timezone_identifiers = DateTimeZone::listIdentifiers();
-			    foreach( $timezone_identifiers as $value ){
-			        if ( preg_match( '/^(America|Antartica|Arctic|Asia|Atlantic|Europe|Indian|Pacific)\//', $value ) ){
+				$continent = "";
+				foreach( $timezone_identifiers as $value ){
+					if ( preg_match( '/^(Africa|America|Antartica|Arctic|Asia|Atlantic|Europe|Indian|Pacific)\//', $value ) ){
 			            $ex=explode("/",$value);//obtain continent,city
-			            if ($continent!=$ex[0]){
+						if ($continent == "") {
+							$continent=$ex[0];
+							echo '<optgroup label="'.$ex[0].'">';
+						}
+						if ($continent!=$ex[0]){
 			                if ($continent!="") echo '</optgroup>';
-			                echo '<optgroup label="'.$ex[0].'">';
-			            }
-
-			            $city=$ex[1];
-			            $continent=$ex[0];
+							echo '<optgroup label="'.$ex[0].'">';
+							$continent=$ex[0];
+						}
+						$city=$ex[1];
 			            echo '<option value="'.$value.'">'.$city.'</option>';
 			        }
 			    }
@@ -268,7 +272,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 			$errors .= '<li>you must provide a server file path to the sql data files.</li>';
 			$error = true;
 		} else {
-			if (strpos($sql_file_path."//")) {
+			if (strpos($sql_file_path,"//")) {
 				$sql_file_path = stripslashes($sql_file_path);
 			} // END if
 		}
@@ -339,6 +343,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 			$queries = '';
 			$prevQuery = '';
 			while (!feof($fr)) {
+				$err = "";
 				$query=fgets($fr);
 				if ($query=="") {continue;}
 				$query=str_replace(", , );",",1,1);",$query);
@@ -502,8 +507,10 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					if (file_exists($html_root."media/uploads")) {
 						chmod($html_root."media/uploads", 0775);
 					} // END if
-
-					unlink('../index.html');
+					if (file_exists($html_root."index.html")) {
+						unlink('../index.html');
+					} // END if
+					
 					if (!$error) {
 					?>
                         <h1>Installation Complete!</h1>

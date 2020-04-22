@@ -1,16 +1,55 @@
 <div id="single-column" class="homepage">
-
-    <h2>Welcome to the <?php echo($leagueAbbr); ?> Fantasy League!</h2>
-    <br />
+	<article class="hero-area">
+		<?php if (isset($splashContent)) {
+			echo($splashContent);	
+		} ?>
+		<h2>Welcome to the <?php echo($leagueAbbr); ?> Fantasy League!</h2>
+	</article>
 </div>
 <div id="center-column" class="homepage">
-	<?php if (isset($splashContent)) {
-		echo($splashContent);	
-	} ?>
-    <br /><br />
-    
-    <h2>Fantasy News</h2>
-    <?php if (isset($news) && sizeof($news)) { 
+	<div class="layout homepage">
+		<div class="layout-column">
+			<div class="headline">Public Leagues for the <?php echo($leagueName); ?></div>
+			<section class="content">
+			<?php 
+			if (isset($leagues) && sizeof($leagues) > 0) { 
+				foreach($leagues as $id => $details) { 
+					?>
+					<section class="teamLinks flex">
+						<figure class="logo-lg">
+							<?php
+							if (isset($details['avatar']) && !empty($details['avatar'])) { 
+								$avatar = PATH_LEAGUES_AVATARS.$details['avatar']; 
+							} else {
+								$avatar = PATH_LEAGUES_AVATARS.DEFAULT_AVATAR;
+							} 
+							?>
+							<img align="absmiddle" src="<?php echo($avatar); ?>" 
+							alt="<?php echo($details['league_name']); ?>" title="<?php echo($details['league_name']); ?>" />
+						</figure>
+						<div class="flexContent">
+							<?php echo(anchor('/league/home/'.$id, $details['league_name'],['class' => 'teamLink'])); ?>
+							<div class="TeamLinks-Links">
+								<?php echo($details['league_type_lbl']." League"); ?>
+							</div>
+						</div>
+					</section>
+				<?php
+				} // END foreach($divisionData['teams']
+			} else {
+				echo("No Public Leagues are available at this time..");
+			}  // END if (isset($leagues)
+			?>
+			</section>
+		</div>
+	</div>
+	<br clear="all" /><br />
+    <div class="news_title home">
+		<h3>Fantasy Leagues News</h3>
+	</div>
+	<div class="rule"></div>
+	<?php 
+	if (isset($news) && sizeof($news)) { 
 		
 		$dispNews = '';
 		if (isset($news[0]['news_subject']) && !empty($news[0]['news_subject'])) { 
@@ -27,7 +66,7 @@
 			}
 		}
 		?>
-        <img src="<?php echo(PATH_NEWS_IMAGES.$news[0]['image']); ?>" align="left" border="0" class="league_news_<?php echo($class); ?>" />
+        <img src="<?php echo(PATH_NEWS_IMAGES.$news[0]['image']); ?>" align="left" class="league_news_<?php echo($class); ?>" />
         <?php } ?>
         
         <?php if (isset($news[0]['news_date']) && !empty($news[0]['news_date'])) { 
@@ -46,57 +85,26 @@
 			}
         }
 	}  else {
-       		echo("No news is available at this time.");
-        } ?>
-        <p />&nbsp;&nbsp;
-        <br clear="all" />
-        <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
-		<?php echo anchor('/search/news/', 'More News'); ?><br />
-		<?php 
-		if ($loggedIn && $accessLevel == ACCESS_ADMINISTRATE) {
-			echo('<img src="'.$config['fantasy_web_root'].'images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> '.anchor('/news/submit/mode/add/type_id/'.NEWS_FANTASY_GAME,'Add News Article'));
-		}
-        ?>
-    
-    
-    <div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:646px;">
-    <tr class='title'>
-    	<td style='padding:6px'>Public Leagues for the <?php echo($leagueName); ?></td>
-    </tr>
-    <tr>
-    	<td class="hsc2_l">
-        <?php if (isset($leagues) && sizeof($leagues) > 0) { ?>
-        <ul id="league_list">
-        	<?php foreach($leagues as $id => $details) { ?>
-            <li>
-            <?php if (isset($details['avatar']) && !empty($details['avatar'])) { ?>
-            <img align="absmiddle" src="<?php echo(PATH_LEAGUES_AVATARS.$details['avatar']); ?>" 
-            border="0" width="24" height="24" alt="<?php echo($details['league_name']); ?>" 
-            title="<?php echo($details['league_name']); ?>" />
-			<?php } ?>
-			<?php echo(anchor('/league/info/'.$id, $details['league_name'])); ?></li>
-        	<?php } ?>
-        </ul>
-        <?php } else { ?>
-        	No Public Leagues are available at this time.
-        <?php } ?>
-        </td>
-    </tr>
-    </table>
-    </div>
-	<br clear="all" /><br />
-	<?php
+		echo("No news is available at this time.");
+	} ?>
+	<p>&nbsp;&nbsp;
+	<br clear="all" />
+	<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" /> 
+	<?php echo anchor('/search/news/', 'More News'); ?><br />
+	<?php 
+	if ($loggedIn && $accessLevel == ACCESS_ADMINISTRATE) {
+		echo('<img src="'.$config['fantasy_web_root'].'images/icons/icon_add.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" /> '.anchor('/news/submit/mode/add/type_id/'.NEWS_FANTASY_GAME,'Add News Article'));
+	}
     if (isset($message) && !empty($message)) { ?>
     <?php echo($message); ?>
-    <br><br>
-    <?php } ?>
+	<br /><br />
+	<?php } ?>
 </div>
 
 <div id="right-column">
 	<!--  Fantasy League Details -->
-    <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" style="width:265px;">
+    <div class='textbox right-column'>
+        <table cellpadding="0" cellspacing="0" style="width:265px;">
         <tr class='title'>
             <td style='padding:3px'>Fantasy League Overview</td>
         </tr>
@@ -119,8 +127,8 @@
 	</div>
 	
 	<!-- OOTP League Details Box -->
-    <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" style="width:265px;">
+    <div class='textbox right-column'>
+        <table cellpadding="0" cellspacing="0" style="width:265px;">
         <tr class='title'>
             <td style='padding:3px'>OOTP League Details</td>
         </tr>

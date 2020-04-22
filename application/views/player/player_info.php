@@ -174,8 +174,8 @@
                   if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/".str_replace(" ","_",strtolower($name)).".bmp'>";}
                    else
                        {
-                     echo "<img src='".$htmlpath."images/person_pictures/default_player_photo.jpg'>";   ## Show default
-                       }
+                     echo "<img src='".$htmlpath."images/person_pictures/default_player_photo.png'>";   ## Show default
+                        }
                 }
                  }
                   }

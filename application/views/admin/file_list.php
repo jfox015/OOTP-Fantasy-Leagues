@@ -1,4 +1,4 @@
-<div id="center-column">
+<div id="subPage">
     <?php include_once('admin_breadcrumb.php'); ?>
         <h1><?php echo($subTitle); ?></h1>
     <br />
@@ -37,7 +37,7 @@
     <form action='<?php echo($config['fantasy_web_root']); ?>admin/loadSQLFiles' method='post' name="fileList" id="fileList">    
    	<div id="activeStatusBox"><div id="activeStatus"></div></div>
     <div class='textbox'>
-    <table cellpadding=2 cellspacing=0 border=0 style="width:825px;" class='sortable'>
+    <table cellpadding=2 cellspacing=0>
      <thead>
      <tr class='title'>
      	<td width="25%" class='hsc_l'>Filename</td>

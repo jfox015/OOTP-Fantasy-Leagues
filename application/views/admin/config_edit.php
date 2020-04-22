@@ -1,5 +1,5 @@
 		<!-- BEGIN LOGIN FORM -->
-    <div id="column-center">
+	<div id="subPage">
         <?php include_once('admin_breadcrumb.php'); ?>
         <div id="top-bar"><h1><?php echo($subTitle); ?></h1></div>
         <br />

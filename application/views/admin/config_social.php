@@ -1,5 +1,5 @@
 		<!-- BEGIN REGISTRATION FORM -->
-    <div id="center-column">
+    <div id="subPage">
         <?php include_once('admin_breadcrumb.php'); ?>
         <h1><?php echo($subTitle); ?></h1>
         <br />

@@ -1,10 +1,10 @@
     <div id="column-single">
    	<h1><?php echo($subTitle); ?></h1>
         <div class="content-form">
-            <p style="text-align:left;" />
+            <p>
             <?php print($league_finder_intro_str); ?>
             <div class='tablebox'>
-            <table cellspacing="0" cellpadding="3" style="width:825px;">
+            <table cellspacing="0" cellpadding="3">
             <tr class='title'><td colspan="5">League with current team openings</td></tr>
             <tr class='headline'>
                 <td width="40%">League</td>
@@ -39,6 +39,6 @@
             </table> 
             </div>      
         </div>
-        <p /><br />
+        <p><br />
     </div>
-    <p /><br />
+    <p><br />

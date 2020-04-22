@@ -47,14 +47,14 @@ you&#8217;re all ready, press <strong>Let's Go</strong> below.</p>
 	<li>Config Directory Writable: <?php echo(($config_writable) ? '<span style="color:#060;">Writable!</span>' : '<span style="color:#c00;">Not Writable</span><br />This means that you will need to either make the "application/config" directory writable via <code>chmod</code> or manually edit the information in these files once the setup operations have been completed.'); ?>
 	<li>PHP Version is compatible: <?php echo(($php_compatible) ? '<span style="color:#060;">Yes!</span>, Version '.phpversion().'' : '<span style="color:#c00;">Not Compatible</span><br />Your server is running PHP version '.phpversion().' but OOTP Fantasy Leagues requires at least '.$phpMinRequired.'.'); ?>
 	<li>PHP Curl Extention is available: <?php echo(($has_curl) ? '<span style="color:#060;">Yes!</span>' : '<span style="color:#c00;">Curl Not Found</span><br />The PHP <strong>Curl</strong> extension is required for numerous administrative purposes. Please check with your web host if Curl can be activated on your hosting environment.'); ?>
-	<li>MySQL is loaded: <?php echo(($mysql_compatible) ? '<span style="color:#060;">Yes!</span>' : '<span style="color:#c00;">Not Loaded</span><br />Your PHP installation appears to be missing the MySQL extension which is required by the OOTP Fantasy Leagues.'); ?>
-	<li>MySQL Version is compatible: <?php echo(($mysql_version) ? '<span style="color:#060;">Yes!</span>, Version '.$gd.'' : '<span style="color:#c00;">Not Compatible</span><br />Your server is running MySQL version '.$gd.' but at least '.$mySqlMinRequired.' is required.'); ?>
+	<li>MySQL is loaded: <?php echo(($mysql_available) ? '<span style="color:#060;">Yes!</span>' : '<span style="color:#c00;">Not Loaded</span><br />Your PHP installation appears to be missing the MySQL extension which is required by the OOTP Fantasy Leagues.'); ?>
+	<li>MySQL Version is compatible: <?php echo(($mysql_version) ? '<span style="color:#060;">Yes!</span>, Version '.$mysql_version.'' : '<span style="color:#c00;">Not Compatible</span><br />Your server is running MySQL version '.$mysql_version.' but at least '.$mySqlMinRequired.' is required.'); ?>
 </ul>
 
 <?php if (!$config_writable || !$root_writable || !$install_writable) { ?>
 <p><strong>If for any reason this automatic file creation doesn't work, don't worry. All this does is fill in the database information to a configuration file. You can open the files in a text editor, fill in the required information provided in the next step, and save them manually.</strong></p>
 <?php } 
-if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
+if ($php_compatible && $mysql_compat && $mysql_available) { ?>
 <p>All looks good let's get going!</p>
 <p class="step"><a href="config.php?step=1" class="button">Let&#8217;s go!</a></p>
 
@@ -144,6 +144,7 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
 			$queries = '';
 			$prevQuery = '';
 			while (!feof($fr)) {
+				$err = "";
 				$query=fgets($fr);
 				if ($query=="") {continue;}
 				$query=str_replace(", , );",",1,1);",$query);
@@ -151,7 +152,7 @@ if ($php_compatible && $mysql_compatible && $mysql_version) { ?>
 				$query=str_replace(", ,",",'',",$query);
 				$query=str_replace("#IND",0,$query);
 				//echo("SQL Test query = ".$query."<br/>");
-				if ($conn->query($sql) !== TRUE) {
+				if ($conn->query($query) !== TRUE) {
 					$err=$conn->error;
 				}
 				if (($err!="") && ($query!="")) {

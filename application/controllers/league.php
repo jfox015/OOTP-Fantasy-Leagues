@@ -143,29 +143,21 @@ class league extends BaseEditor {
 		if (!function_exists('getCurrentScoringPeriod')) {
 			$this->load->helper('admin');
 		}
-		$scoring_type = $this->dataModel->getScoringType();
-		$curr_period = $this->getScoringPeriod();
-		$this->data['curr_period_id'] = $curr_period['id'];
-		if (!empty($curr_period) && $scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
-			$curr_period_id = $curr_period['id'];
-			$this->data['curr_period'] = $curr_period;
-			// GET GAMES
-			$curr_period_id -= 1;
-			$games = $this->dataModel->getGamesForPeriod($curr_period_id);
-			if (!is_array($games) || sizeof($games) == 0) {
-				$games = $this->dataModel->getGamesForPeriod($curr_period_id);
-			}
-			$this->data['gameList'] = $games;
-			$this->data['curr_period_id'] = $curr_period_id;
-		}
 		$owners = $this->dataModel->getOwnerIds();
 		$this->data['isOwner'] = in_array($this->params['currUser'],$owners);
 
 		$this->data['league_id'] = $this->dataModel->id;
 		$this->params['subTitle'] = $this->dataModel->league_name;
-
-
-		$leagueStandings = $this->dataModel->getLeagueStandings($this->data['curr_period_id']);
+		
+		$scoring_type = $this->dataModel->getScoringType();
+		$curr_period = $this->getScoringPeriod();
+		$this->data['curr_period_id'] = $curr_period['id'];
+		if ($this->data['curr_period_id'] > 1) {
+			$curr_period_id = $this->data['curr_period_id']-1;
+		} else {
+			$curr_period_id = 1;
+		}
+		$leagueStandings = $this->dataModel->getLeagueStandings($curr_period_id);
 
 		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
 			$this->data['thisItem']['divisions'] = $leagueStandings;
@@ -198,10 +190,20 @@ class league extends BaseEditor {
 		if (isset($news) && sizeof($news) > 0) {
 			foreach($news as $newsData) {
 				$this->data['newsId'] = $newsData['id'];
-				$this->data['subTitle'] = $newsData['news_subject'];
+				$this->data['newsTitle'] = $newsData['news_subject'];
 				$this->data['newsBody'] = $newsData['news_body'];
 				$this->data['newsImage'] = $newsData['image'];
 				$this->data['newsDate'] = $newsData['news_date'];
+				$authorName = '';
+				$this->db->select('firstName, lastName');
+				$this->db->where('userId',$newsData['author_id']);
+				$query = $this->db->get('users_meta');
+				if ($query->num_rows() > 0) {
+					$row = $query->row();
+					$authorName = (!empty($row->firstName) && $row->lastName != -1)  ? $row->firstName." ".$row->lastName : 'Unknown Author';
+				} // END if
+				$query->free_result();
+				$this->data['author'] = $authorName;
 				break;
 			} // END foreach
 		} else {
@@ -520,7 +522,7 @@ class league extends BaseEditor {
 						$this->displayView();
 					} else {
 						if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
-							$change = $this->dataModel->applyData($this->input, $this->params['currUser']);
+							$change = $this->dataModel->applyData($this->input, $this->params['league_id']);
 							if ($change) {
 								$this->dataModel->save();
 								$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');

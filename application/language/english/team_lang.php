@@ -128,3 +128,5 @@ $lang['team_trade_expired_offering_team'] = 'To [USERNAME],
 <p>Sorry to say, but your trade offer from to owner of the [ACCEPTING_TEAM_NAME] has expired.</p>
 <p>';
 $lang['team_trade_auto_expired'] = 'Trade past scoring period date';
+
+$lang['no_owner'] = 'No Owner';

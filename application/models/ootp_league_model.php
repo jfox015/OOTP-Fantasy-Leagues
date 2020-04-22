@@ -227,7 +227,7 @@ class ootp_league_model extends base_model {
 		return $years;
 	}
 
-	public function load($id,$field = 'id') {
+	public function load($id,$field = 'id',$includeId = true) {
 		// TEST IF OOTP DATA FILES HAVE BEEN UPLOADED OR NOT
 		$query = $this->db->query("SHOW TABLES LIKE '".$this->tblName."'");
 		if ($query->num_rows() > 0) {

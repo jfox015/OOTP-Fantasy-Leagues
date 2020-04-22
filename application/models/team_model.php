@@ -86,6 +86,7 @@ class team_model extends base_model {
 		$this->tables['TRADES'] = 'fantasy_teams_trades';
 		$this->tables['TRADES_STATUS'] = 'fantasy_teams_trades_status';
 		$this->tables['TRADE_PROTESTS'] = 'fantasy_teams_trade_protests';
+		$this->tables['TEAM_RECORDS'] = 'fantasy_teams_record';
 
 		$this->fieldList = array('league_id','division_id','teamname','teamnick','owner_id','auto_draft','auto_list','auto_round_x');
 		$this->conditionList = array('avatarFile');
@@ -109,9 +110,9 @@ class team_model extends base_model {
 	 * @return	TRUE on success, FALSE on error
 	 *
 	 */
-	public function applyData($input,$userId = -1) {
+	public function applyData($input,$team_id = -1) {
 		//print("Model team name = ".$this->teamname." ".$this->teamnick."<br />");
-		$success = parent::applyData($input,$userId);
+		$success = parent::applyData($input,$team_id);
 		if ($success) {
 			if (isset($_FILES['avatarFile']['name']) && !empty($_FILES['avatarFile']['name'])) {
 				$success = $this->uploadFile('avatar',PATH_TEAMS_AVATAR_WRITE,$input,'avatar',$this->teamname);
@@ -627,7 +628,14 @@ class team_model extends base_model {
 	public function getTradesForScoringPeriod($league_id = false, $scoring_period_id = -1, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $status = 100, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
 		$trades = $this->getTradeData($league_id, $team_id, false, false, $status, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
-		$trades = $trades + $this->getTradeData($league_id, false, $team_id, false, $status, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
+		$moreTrades = $this->getTradeData($league_id, false, $team_id, false, $status, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
+		// EDIT 1.0.3
+		// FIXED INCOMING OFFERS NOT BEING APPENDED TO THE FIRST LIST
+		if (sizeof($moreTrades) > 0) {
+			foreach($moreTrades as $mtrade){
+				array_push($trades, $mtrade);
+			}
+		}
         return $trades;
 	}
 	/**
@@ -936,7 +944,9 @@ class team_model extends base_model {
 		return true;
 	}
 	/*----------------------------------------
+	/
 	/	ROSTERS
+	/
 	----------------------------------------*/
 	/**
 	 * GET PLAYER ROSTER STATUS
@@ -996,6 +1006,15 @@ class team_model extends base_model {
 		}
 		return $status;
 	}
+	/**
+	 * SAVE ROSTER CHANGES
+	 * Saves the passed roster to the database.
+	 * 
+	 * @param $roster
+	 * @param $score_period
+	 * @param $team_id
+	 * 
+	 */
 	public function saveRosterChanges($roster,$score_period, $team_id = false) {
 		$success = true;
 		if (!isset($roster) || sizeof($roster) == 0) return;
@@ -1020,6 +1039,15 @@ class team_model extends base_model {
 		}
 		return $success;
 	}
+	/**
+	 * APPLY ROSTER CHANGES
+	 * Checks changes to player status and adjust roster position based on those changes.
+	 * 
+	 * @param $roster
+	 * @param $score_period
+	 * @param $team_id
+	 * 
+	 */
 	public function applyRosterChanges($input, $score_period, $team_id = false) {
 
 		if (!isset($input)) return;
@@ -1049,8 +1077,18 @@ class team_model extends base_model {
 		return $new_roster;
 	}
 	/*----------------------------------------
+	/
 	/	WAIVERS
-	----------------------------------------*/
+	/
+	/---------------------------------------*/
+	/**
+	 * GET WAIVER ORDER
+	 * Returns the team order for waivers for the specified league (or default league).
+	 * 
+	 * @param $league_id
+	 * @param $idOnly
+	 * 
+	 */
 	public function getWaiverOrder($league_id = false, $idOnly = false) {
 		if ($league_id === false) { $league_id = $this->league_id; }
 
@@ -1075,8 +1113,10 @@ class team_model extends base_model {
 	/**
 	 *	GET WAIVER CLAIMS.
 	 *	Returns pending waiver claims for the specified league.
-	 *  @param	$team_id - If not specified, the schedule for the entire league is returned.
-	 *  @param	$league_id - If not specified, no league filter is applied.
+	 *  @param	$limit - Number of claims to limit transaction to
+	 *  @param	$startIndex - Start Index for pagination
+	 *  @param	$team_id - Team ID
+	 *  @param	$league_id - League ID
 	 *	@return	schedule array, false on failure
 	 */
 	public function getWaiverClaims($limit = -1, $startIndex = 0, $team_id = false, $league_id = false) {
@@ -1110,35 +1150,10 @@ class team_model extends base_model {
 		return $claims;
 	}
 	/*-------------------------------------
+	/
 	/ 	GENERAL TEAM DATA FUNCTIONS
+	/
 	/------------------------------------*/
-	/**
-	 * 	DELETE TEAMS.
-	 * 	Deletes all teams for the specified league_id. If no id is passed, the current league id of the loaded team is used.
-	 *
-	 * 	@param	$league_id		{int}	The League Id
-	 * 	@return					{Boolean}	TRUE on success
-	 *
-	 *  @since	1.0.6
-	 *  @access	public
-	 */
-	public function deleteTeams($league_id = false) {
-
-		if ($league_id === false) { $league_id = $this->league_id; }
-
-		//DELETE AVATARS
-		$team_ids = $this->getTeamsForLeague($league_id);
-		foreach ($team_ids as $team_id) {
-			$avtr = $this->getAvatar($team_id);
-			if (!empty($avtr)) {
-				@unlink(PATH_TEAMS_AVATAR_WRITE.$avtr);
-			}
-		}
-		$this->db->where('league_id',$league_id);
-		$this->db->delete($this->tblName);
-
-		return true;
-	}
 	/**
 	 * 	GET TEAMS FOR LEAGUE.
 	 * 	Returns all team IDs for the specified league_id. If no id is passed, the current league id of the loaded team is used.
@@ -1210,7 +1225,7 @@ class team_model extends base_model {
 	}
 	/**
 	 * 	CREATE TEAMS BY ARRAY.
-	 *  Accepts and array with up to fours params:
+	 *  Accepts an array with up to fours params:
 	 *  <ul>
 	 *  	<li>teamname (Required)</li>
 	 *  	<li>teamnick (Optioanl)</li>
@@ -1225,7 +1240,7 @@ class team_model extends base_model {
 	 *  </code>
 	 *  </p>
 	 *  <p>
-	 *  The league_id param can either be passed as an aegument to the function or as a property of the array. The function
+	 *  The league_id param can either be passed as an argument to the function or as a property of the array. The function
 	 *  defaults to the league ID arg if no league_id is passed in the array.
 	 *	</p>
 	 *  This function returns false if all league_ids are -1.
@@ -1290,7 +1305,16 @@ class team_model extends base_model {
 		} // END foreach
 		return $teamIds;
 	}
-
+	/**
+	 * 	GET TEAM OWNER ID.
+	 * 	Returns the owner ID of the passed team owner.
+	 *
+	 * 	@param	$team_id		{int}	The Team Id
+	 * 	@return					{Array}	Array of team IDs
+	 *
+	 *  @since	1.0
+	 *  @access	public
+	 */
 	public function getTeamOwnerId($team_id = FALSE) {
 		if ($team_id === false) { $team_id = $this->id; }
 
@@ -1305,6 +1329,16 @@ class team_model extends base_model {
 		$query->free_result();
 		return $ownerId;
 	}
+	/**
+	 * 	GET TEAM NAME.
+	 * 	Utility function that returns the complete team name as <code>{TEAMNAME NICKNAME}</code>.
+	 *
+	 * 	@param	$team_id		{int}		The Team Id
+	 * 	@return					{String}	Team name
+	 *
+	 *  @since	1.0
+	 *  @access	public
+	 */
 	public function getTeamName($team_id = FALSE) {
 		if ($team_id === false) { $team_id = $this->id; } // END if
 
@@ -1319,7 +1353,16 @@ class team_model extends base_model {
 		$query->free_result();
 		return $teamName;
 	}
-
+	/**
+	 * 	GET TEAM AVATAR.
+	 * 	Utility function that returns the team image name as <code>{IMAGENAME.EXT}</code>.
+	 *
+	 * 	@param	$team_id		{int}		The Team Id
+	 * 	@return					{String}	Team name
+	 *
+	 *  @since	1.0
+	 *  @access	public
+	 */
 	public function getAvatar($team_id = FALSE) {
 		if ($team_id === false) { $team_id = $this->id; } // END if
 
@@ -1413,8 +1456,121 @@ class team_model extends base_model {
 		} // END foreach
 		$this->db->flush_cache();
         return $game_stats;
-    }
+	}
+	/**
+	 *	GET RECENT GAMES.
+	 *	Returns a list of recent games for Head to Head Leagues.
+	 *
+	 *  @param	$score_period - The scoring period 
+	 *  @param	$team_id - (OPTIONAL) - uses loaded Model ID if false
+	 *	@return	{Array} of games
+	 * 	@since 	1.0.3
+	 */
+	public function getRecentGames($score_period = -1, $team_id = false) {
+		
+		if ($team_id === false) { $team_id = $this->id; }
+		$games = array();
+		$sql = "SELECT flg.id, flg.home_team_id, flg.away_team_id, flg.home_team_score, flg.away_team_score ";
+		$sql .= "FROM fantasy_leagues_games as flg ";
+		$sql .= "WHERE (flg.home_team_id = ".$team_id." OR flg.away_team_id = ".$team_id.") AND (flg.home_team_score != 0 OR flg.away_team_score != 0)";
+		if ($score_period != -1) {
+			$sql .= " AND flg.scoring_period_id = ".$score_period;
+		} // END if
+		$query = $this->db->query($sql);
+		//echo($this->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			foreach ($query->result() as $row) {
+				$outCome = -1;
+				if ($row->away_team_id == $team_id) {
+					$teamLoc = 'away';
+					$opponentId = $row->home_team_id;
+					if ($row->away_team_score > $row->home_team_score) { $outCome = 1; }
+				} else {
+					$teamLoc = 'home';
+					$opponentId = $row->away_team_id;
+					if ($row->home_team_score > $row->away_team_score) { $outCome = 1; }
+				} // END if
+				array_push($games, array("game_id" => $row->id, "opp_team_id"=>$opponentId,"teamname"=>$this->getTeamName($opponentId), "avatar"=>$this->getAvatar($opponentId),
+									'team_loc'=> $teamLoc, 'away_team_score'=>$row->away_team_score, 'home_team_score' => $row->home_team_score, 'outcome' => $outCome));
+			} // END foreach
+		} // END if
+		$query->free_result();
+		return $games;
+	}
+	/**
+	 *	GET UPCOMING GAMES.
+	 *	Returns the next upcoming games for a team in a Head to Head League.
+	 *
+	 *  @param	$score_period - The scoring period 
+	 *  @param	$team_id - (OPTIONAL)
+	  *	@return	{Array} of games
+	 * 	@since 	1.0.3
+	 */
+	public function getUpcomingGames($score_period = -1, $team_id = false) {
+		
+		if ($team_id === false) { $team_id = $this->id; }
+		$opponents = array();
+		$opponentId = -1;
+		$sql = "SELECT flg.home_team_id, flg.away_team_id ";
+		$sql .= "FROM fantasy_leagues_games as flg ";
+		$sql .= "WHERE (flg.home_team_id = ".$team_id." OR flg.away_team_id = ".$team_id.") AND (flg.home_team_score = 0 OR flg.away_team_score = 0)";
+		if ($score_period != -1) {
+			$sql .= " AND flg.scoring_period_id = ".$score_period;
+		} // END if
+		$query = $this->db->query($sql);
+		//echo($this->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			foreach ($query->result() as $row) {
+				$opponentId = ($row->away_team_id == $team_id) ? $row->home_team_id : $row->away_team_id;
+				array_push($opponents, array("opp_team_id"=>$opponentId,"teamname"=>$this->getTeamName($opponentId), "avatar"=>$this->getAvatar($opponentId)));
+			}
+		} // END if
+		$query->free_result();
+		return $opponents;
+	}
+	/**
+	 *	GET TEAM RECORD.
+	 *	Returns the next upcoming games for a team in a Head to Head League.
+	 *
+	 *  @param	$score_period - The scoring period 
+	 *  @param	$team_id - (OPTIONAL)
+	  *	@return	{Array} of games
+	 * 	@since 	1.0.3
+	 */
+	public function getTeamRecord($team_id = false, $year = false) {
+		
+		if ($team_id === false) { $team_id = $this->id; }
+		if ($year === false) { $year = date("Y"); }
 
+		$record = array();
+		$sql = "SELECT w, l, pos, pct, gb, streak, magic_number, fd.division_name ";
+		$sql .= "FROM ".$this->tables['TEAM_RECORDS']." ";
+		$sql .= "LEFT JOIN fantasy_teams as ft ON ft.id = fantasy_teams_record.team_id ";
+		$sql .= "LEFT JOIN fantasy_divisions fd ON fd.id = ft.id ";
+		$sql .= "WHERE team_id = ".$team_id." AND year = ".$year;
+		$query = $this->db->query($sql);
+		//echo($this->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			foreach ($query->result() as $row) {
+				$record = array("w"=>$row->w,"l"=>$row->l,"pos"=>$row->pos,"streak"=>$row->streak,"gb"=>$row->gb,"pct"=>$row->pct,
+				"magic_number"=>$row->magic_number,"division_name"=>$row->division_name);
+			}
+		} // END if
+		$query->free_result();
+		return $record;
+	}
+	/**
+	 *	GET BASIC ROSTER.
+	 *	Returns a list of players for the specified team (or models loaded team if FALSE. 
+	 *	Scoring period ID gets the list fot eh current or requested scoring period.
+	 *	Extended IDs returns player IDs for rendering clickable links.
+	 *
+	 *  @param	$score_period - The scoring period 
+	 *  @param	$team_id - (OPTIONAL)
+	 *  @param	$extendedIds - (OPTIONAL) Adds Fnatasy Player ID and OOTP Player IDs for linking to player profiles
+	 *	@return	array of pitchers
+	 */
 	public function getBasicRoster($score_period = -1, $team_id = false, $extendedIds = false) {
 
 		if ($team_id === false) { $team_id = $this->id; }
@@ -1459,8 +1615,21 @@ class team_model extends base_model {
 		//echo("Team, get roster, size of roster = ".sizeof($roster)."<br />");
 		return $roster;
 	}
-
+	/*------------------------------------------------------
+	/
+	/
 	// SPECIAL QUERIES
+	/
+	/
+	/------------------------------------------------------*/
+	/**
+	 *	GET BATTERS.
+	 *	Returns a list of batters for the specified team. Scoring period ID gets the list fot eh current or requested scoring period.
+	 *  @param	$scoring_period - The scoring period 
+	 *  @param	$team_id - (OPTIONAL)
+	 *  @param	$status - (OPTIONAL)
+	 *	@return	array of pitchers
+	 */
 	public function getBatters($scoring_period = -1, $team_id = false, $status = 1) {
 
 		if ($team_id === false && $this->id != -1) { $team_id = $this->id; } // END if
@@ -1495,6 +1664,15 @@ class team_model extends base_model {
 		$query->free_result();
 		return $players;
 	}
+
+	/**
+	 *	GET PITCHERS.
+	 *	Returns a list of pitchers for the specified team. Scoring period ID gets the list fot eh current or requested scoring period.
+	 *  @param	$scoring_period - The scoring period 
+	 *  @param	$team_id - (OPTIONAL)
+	 *  @param	$status - (OPTIONAL)
+	 *	@return	array of pitchers
+	 */
 	public function getPitchers($scoring_period = -1, $team_id = false, $status = 1) {
 		if ($team_id === false && $this->id != -1) { $team_id = $this->id; }
 
@@ -1528,10 +1706,12 @@ class team_model extends base_model {
 		$query->free_result();
 		return $players;
 	}
+
 	/**
-	 *	Returns a list of public leagues.
-	 *  @param	$league_id - If not specified, no league filter is applied.
-	 *	@return	array of league information
+	 *	GET COMPLETE ROSTER.
+	 *  @param	$scoring_period - The scoring period 
+	 *  @param	$team_id - (OPTIONAL)
+	 *	@return	array of pitchers and batters
 	 */
 	public function getCompleteRoster($scoring_period, $team_id = false) {
 		if ($team_id === false) { $team_id = $this->id; }
@@ -1541,7 +1721,49 @@ class team_model extends base_model {
 					$this->getBatters($scoring_period, $team_id,2)+$this->getPitchers($scoring_period, $team_id, 2));
 
 	}
+	/*---------------------------------------------------------
+	/
+	/	DATA OPERATIONS
+	/
+	/--------------------------------------------------------*/
 
+	/**
+	 * 	DELETE TEAMS.
+	 * 	Deletes all teams for the specified league_id. If no id is passed, the current league id of the loaded team is used.
+	 *
+	 * 	@param	$league_id		{int}	The League Id
+	 * 	@return					{Boolean}	TRUE on success
+	 *
+	 *  @since	1.0.6
+	 *  @access	public
+	 */
+	public function deleteTeams($league_id = false) {
+
+		if ($league_id === false) { $league_id = $this->league_id; }
+
+		//DELETE AVATARS
+		$team_ids = $this->getTeamsForLeague($league_id);
+		foreach ($team_ids as $team_id) {
+			$avtr = $this->getAvatar($team_id);
+			if (!empty($avtr)) {
+				@unlink(PATH_TEAMS_AVATAR_WRITE.$avtr);
+			}
+		}
+		$this->db->where('league_id',$league_id);
+		$this->db->delete($this->tblName);
+		return true;
+	}
+	/*---------------------------------------
+	/
+	/	PRIVATE/PROTECTED FUNCTIONS
+	/
+	/--------------------------------------*/
+	/**
+	 *	DELETE TEAM DATA.
+	 *  @param	$table - Table name for delete 
+	 *  @param	$team_id 
+	 *	@return	boolean TRUE if successful, FALSE if not
+	 */
 	protected function deleteTeamData($table = false, $team_id = false) {
 
 		if ($table === false) {
@@ -1556,51 +1778,4 @@ class team_model extends base_model {
 
 		return true;
 	}
-
-	/*public function getTeamStats($playerIds = array(), $order_by = 'total', $scoring_period_id = false, $league_id = false) {
-
-		$stats = array();
-		if ($league_id === false) { $league_id = $this->league_id; }
-
-		$select = '';
-		for ($i = 0; $i < 12; $i++) {
-			if (!empty($select)) { $select .= ","; }
-			if ($scoring_period_id === false) { $select .= 'SUM('; }
-			$select .= 'value_'.$i;
-			if ($scoring_period_id === false) { $select .= ') as value_'.$i; }
-		}
-		$select .= ',';
-		if ($scoring_period_id === false) { $select .= 'SUM('; }
-		$select .= 'total';
-		if ($scoring_period_id === false) { $select .= ') as total'; }
-		$select .= ','.$this->tables['SCORING'].'.player_id';
-
-		$this->db->select($select);
-		$this->db->from($this->tables['SCORING']);
-
-		if ($scoring_period_id != -1) {
-			$this->db->where('scoring_period_id', $scoring_period_id);
-		}
-		$players = "(";
-		foreach ($playerIds as $id => $data) {
-			if ($players != "(") { $players .= ","; }
-			$players .= $data['id'];
-		}
-		$players .= ")";
-		$this->db->where($this->tables['SCORING'].".player_id IN ".$players);
-		$this->db->order_by($order_by.' DESC');
-
-		$query = $this->db->get();
-		echo("sql = ".$this->db->last_query()."<br />");
-		if ($query->num_rows() > 0) {
-			foreach ($query->result_array() as $row) {
-				array_push($stats, $row);
-			}
-		}
-		$query->free_result();
-		return $stats;
-	}*/
-	/*---------------------------------------
-	/	PRIVATE/PROTECTED FUNCTIONS
-	/--------------------------------------*/
 }

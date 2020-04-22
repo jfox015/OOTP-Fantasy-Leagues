@@ -205,7 +205,7 @@ class member extends BaseEditor {
 
 		$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$this->dataModel->id,$currPeriod);
 		
-		$this->data['thisItem']['locked'] = '<p style="display:inline;color:'.(($this->dataModel->locked == 1) ? '#040;">Not Locked':'#f60;">Locked').'</p>';
+		$this->data['thisItem']['locked'] = '<p style="display:inline;color:'.(($this->dataModel->locked == 1) ? '#f60;">Locked': '#040;">Not Locked').'</p>';
 		$this->data['thisItem']['active_id'] = $this->dataModel->active;
 		
 		$this->data['thisItem']['active'] = '<p style="display:inline;color:'.(($this->dataModel->active == 1) ? '#040;">Active':'#f60;">Inactive').'</p>';

@@ -20,7 +20,7 @@
 			echo(form_fieldset());
 			?>
             <div class='textbox'>
-                <table style="margin:6px; width:825px" cellpadding="5" cellspacing="0" border="0">
+                <table cellpadding="5" cellspacing="0">
                 <?php 
                 $division_options = array();
 				if (isset($thisItem['divisions']) && sizeof($thisItem['divisions']) > 0) { 

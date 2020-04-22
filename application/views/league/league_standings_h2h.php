@@ -17,7 +17,7 @@
             </div>
             <?php } ?>
             <div class='textbox'>
-                <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
+                <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0">
                 <?php 
                 if (isset($thisItem['divisions']) && sizeof($thisItem['divisions']) > 0) { 
                 foreach($thisItem['divisions'] as $id=>$divisionData) { ?>
@@ -39,7 +39,15 @@
                     if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
                     ?>
                 <tr style="background-color:<?php echo($color); ?>">
-                    <td class='hsc2_l'><?php echo(anchor('/team/info/'.$teamId,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
+                    <?php
+                    if (isset($teamData['avatar']) && !empty($teamData['avatar'])) { 
+                        $avatar = PATH_TEAMS_AVATARS.$teamData['avatar'];
+                    } else {
+                        $avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
+                    }
+                    ?>
+                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" /> &nbsp;
+                    <?php echo(anchor('/team/info/'.$teamId,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
                     <td class='hsc2_l'><?php echo($teamData['w']); ?></td>
                     <td class='hsc2_l'><?php echo($teamData['l']); ?></td>
                     <td class='hsc2_l'><?php echo(sprintf("%.3f",$teamData['pct'])); ?></td>

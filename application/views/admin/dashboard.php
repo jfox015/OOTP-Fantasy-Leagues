@@ -166,10 +166,10 @@
 		<div id="activeStatusBox"><div id="activeStatus"></div></div>
         <?php
         // IN-SEASON FUNCTIONS
-				if (isset($league_info)) {
-         $currDate = strtotime($league_info->current_date);
-         $startDate = strtotime($league_info->start_date);
-			 }
+		if (isset($league_info)) {
+			$currDate = strtotime($league_info->current_date);
+			$startDate = strtotime($league_info->start_date);
+		}
 
 		if ($in_season && isset($league_info) && $currDate > $startDate && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
 		<h3>Regular Season Functions</h3>
@@ -228,7 +228,10 @@
             Import Available Players</li>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar_empty.png" width="48" height="48" border="0" />',array('rel'=>'sched')); ?><br />
             Generate Scoring Schedule</li>
-
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
+			Update Player Elidgibility</li>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'rating')); ?><br />
+			Update Player Ratings</li>
             <?php
 			// LEAGUE SETTINGS
 			if (isset($leagues) && sizeof($leagues) > 0) { ?>

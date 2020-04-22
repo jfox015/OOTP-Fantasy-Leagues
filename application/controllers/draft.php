@@ -438,7 +438,6 @@ class draft extends BaseEditor {
 							 } // END if
 							 // GET DRAFT ELIDGIBLE PLAYERS
 							 $values = $this->dataModel->getPlayerValues();
-
 							 // DRAFT SETTINGS FROM CONFIG
 							 $draftEnable=$this->dataModel->draftEnable;
 							 $pauseAuto=$this->dataModel->pauseAuto;
@@ -1105,7 +1104,8 @@ class draft extends BaseEditor {
 				if ($this->debug) {
 					echo("CHECKING POSITION<br />");
 					echo("Draft Team ID, dteam= ".$dteam."<br />");
-                    echo("Player $pid OOTP position = ".get_pos($pos)."<br />");
+					echo("Player $pid OOTP position = ".get_pos($pos)."<br />");
+					echo("Player injury_is_injured OOTP position = ".$details['injury_is_injured']."<br />");
 				}
 				$draft = true;
                 if (isset($teamQuotas[$dteam][$pos])) {
@@ -1681,6 +1681,10 @@ class draft extends BaseEditor {
 		$responses[] = array('-1','No');
 		$form->fieldset('Auto Draft Settings');
 		$form->fieldset('',array('class'=>'radioGroup'));
+		$form->radiogroup ('draftInjured',$responses,'Draft Players with Injured Status',($this->input->post('draftInjured') ? $this->input->post('draftInjured') : $this->dataModel->draftInjured));
+        $form->span('If set to YES, auto draft will ignore injured status of players. For OOTP games that use injuries, this will likely require extensive review of rosters prior to running sims.',array('class'=>'field_caption'));
+		$form->space(); 
+		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('pauseAuto',$responses,'Pause auto draft for manual picks',($this->input->post('pauseAuto') ? $this->input->post('pauseAuto') : $this->dataModel->pauseAuto));
         $form->span('This option suspends all auto draft options when making a single manual pick. Disabling this option allows auto draft to continue uninterupted once begun.',array('class'=>'field_caption'));
 		$form->space();        
@@ -1712,6 +1716,8 @@ class draft extends BaseEditor {
 		$form->radiogroup ('enforceTimer',$responses,'Auto Pick for teams past time limit',($this->input->post('enforceTimer') ? $this->input->post('enforceTimer') : $this->dataModel->enforceTimer));
 		$form->space();
 		$form->fieldset();
+		$form->text('timePick1','Time Per Pick (in seconds)','trim',($this->input->post('timePick1')) ? $this->input->post('timePick1') : $this->dataModel->timePick1);
+		$form->br();
 		//$form->label('Current server time',"time");
 		//$form->html('<span>'.date("Y-m-d H:i T",time()).'</span>');
 		//$form->space();
@@ -1719,8 +1725,6 @@ class draft extends BaseEditor {
 		//$form->br();
 		//$form->text('timePerPick','Time Per Pick (in seconds)','trim',($this->input->post('timePerPick')) ? $this->input->post('timePerPick') : $this->dataModel->timePerPick);
 		//$form->br();
-		$form->text('timePick1','Time Per Pick (in seconds)','trim',($this->input->post('timePick1')) ? $this->input->post('timePick1') : $this->dataModel->timePick1);
-		$form->br();
 		//$form->text('timePick1','Time Per Pick (min)','trim',($this->input->post('timePick1')) ? $this->input->post('timePick1') : $this->dataModel->timePick1);
 		//$form->br();
 		//$form->text('rndSwitch','- Through Round','trim',($this->input->post('rndSwitch')) ? $this->input->post('rndSwitch') : $this->dataModel->rndSwitch);

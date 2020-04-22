@@ -4,12 +4,12 @@
 	});
     </script>
        
-    <div id="column-center" class="dashboard">
+    <div id="single-column">
         <div class="top-bar"> <h1><?php echo $subTitle; ?></h1></div>
-        <br class="clear" />
-		
+	</div>
+	<div id="center-column" class="dashboard">
         <div class='textbox'>
-	    <table cellpadding="0" cellspacing="0" border="0" style="width:625px;">
+	    <table cellpadding="0" cellspacing="0">
 	    <tr class='title'>
 	    	<td style='padding:6px'>Admin Functions</td>
 	    </tr>
@@ -97,48 +97,46 @@
 		</tr>
 		</table>
 		</div>
+	</div>
         
-        <div id="right-column">
-		<?php
-		if (isset($tradeLists) && sizeof($tradeLists) > 0) {
-		?>
-		<div class='textbox' style="margin-left:10px;">
-		<table cellpadding="0" cellspacing="0" border="0" style="width:250px;" class="dashboard">
-		<tr class='title'>
-			<td style="padding:3px">League Transaction Information</td>
-		</tr>
-		<tr>
-			<td style="padding:12px; line-height:1.5;">
-			<b>Trades</b><br />
-                <?php
-            $drawn = false;
-			if (isset($tradeLists['forAppproval']) && sizeof($tradeLists['forAppproval']) > 0) {
-				print('<span class="error_txt">Approval NOTICE:</span> There are currently <b>'.sizeof($tradeLists['forAppproval']).'</b> trades requiring commissioner approval.<br />');
-                $drawn = true;
-			} // END if
-			if (isset($tradeLists['inLeagueReview']) && sizeof($tradeLists['inLeagueReview']) > 0) {
-				print('There are currently <b>'.sizeof($tradeLists['inLeagueReview']).'</b> trades waiting under review by the league .<br />');
-                $drawn = true;
-			} // END if
-			if ($drawn) {
-                print('<br />You can review, approve and/or reject trades on the '.anchor('/league/tradeReview/'.$league_id,'Trade Review Page').'<br />');
-            } else {
-                print("There are no trades pending league or admin review at this time.");
-            }
-			?>
-			</td>
-		</tr>
-		</table>
-		</div>
-		<br clear="all" /><br />
-		<?php
+	<div id="right-column">
+	<?php
+	if (isset($tradeLists) && sizeof($tradeLists) > 0) {
+	?>
+	<div class='textbox' style="margin-left:10px;">
+	<table cellpadding="0" cellspacing="0" border="0" style="width:250px;" class="dashboard">
+	<tr class='title'>
+		<td style="padding:3px">League Transaction Information</td>
+	</tr>
+	<tr>
+		<td style="padding:12px; line-height:1.5;">
+		<b>Trades</b><br />
+			<?php
+		$drawn = false;
+		if (isset($tradeLists['forAppproval']) && sizeof($tradeLists['forAppproval']) > 0) {
+			print('<span class="error_txt">Approval NOTICE:</span> There are currently <b>'.sizeof($tradeLists['forAppproval']).'</b> trades requiring commissioner approval.<br />');
+			$drawn = true;
 		} // END if
+		if (isset($tradeLists['inLeagueReview']) && sizeof($tradeLists['inLeagueReview']) > 0) {
+			print('There are currently <b>'.sizeof($tradeLists['inLeagueReview']).'</b> trades waiting under review by the league .<br />');
+			$drawn = true;
+		} // END if
+		if ($drawn) {
+			print('<br />You can review, approve and/or reject trades on the '.anchor('/league/tradeReview/'.$league_id,'Trade Review Page').'<br />');
+		} else {
+			print("There are no trades pending league or admin review at this time.");
+		}
 		?>
-        <span class="notice">
-        <?php print($leeague_admin_intro_str); ?>
-        </span>
-        </div>
-        
-        <p>&nbsp;</p>
-    </div>
-    <p /><br />
+		</td>
+	</tr>
+	</table>
+	</div>
+	<br clear="all" /><br />
+	<?php
+	} // END if
+	?>
+	<span class="notice">
+	<?php print($leeague_admin_intro_str); ?>
+	</span>
+	</div>
+    <p>&nbsp;</p>

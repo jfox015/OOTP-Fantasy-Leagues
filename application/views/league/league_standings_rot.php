@@ -23,7 +23,7 @@
             </div>
             <?php } ?>
             <div class='textbox'>
-                <table style="margin:6px" class="sortable" cellpadding="8" cellspacing="2" border="0" width="925px">
+                <table style="margin:6px" class="sortable" cellpadding="8" cellspacing="2" border="0">
                 <?php 
                 if (isset($thisItem['teams']) && sizeof($thisItem['teams']) > 0 && 
 					isset($thisItem['rules']) && sizeof($thisItem['rules']) > 0) { 
@@ -65,7 +65,15 @@
                     if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }  // END if
                     ?>
                 <tr style="background-color:<?php echo($color); ?>">
-                    <td class='hsc2_l'><?php echo(anchor('/team/info/'.$id,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
+					<?php
+                    if (isset($teamData['avatar']) && !empty($teamData['avatar'])) { 
+                        $avatar = PATH_TEAMS_AVATARS.$teamData['avatar'];
+                    } else {
+                        $avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
+                    }
+                    ?>
+                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" /> &nbsp;
+					<?php echo(anchor('/team/info/'.$id,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
                     <td>&nbsp;</td>
                     <?php 
 						$i = 0;

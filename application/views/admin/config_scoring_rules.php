@@ -64,36 +64,10 @@
 		}
 		?>
     </div>
-	<div id="right-column">
-    	<div class='textbox'>
-        <table cellpadding="2" cellspacing="0" border="0" style="width:225px;">
-        <tr class='title'>
-            <td width="100%">Scoring Type</td>
-        </tr>
-        <tr>
-            <td width="100%">
-    	<?php if (isset($scoring_types) && sizeof($scoring_types) > 0) { ?>
-    	<label for="chooseScoring" style="min-width:0px;width:auto;margin:0px;">Scoring Type:</label>
-        <select id="chooseScoring" name="chooseScoring">
-            <?php
-			foreach($scoring_types as $id => $type) {
-				print('<option value="'.$id.'"');
-				if (isset($scoring_type) && $scoring_type == $id) {
-					print(' selected="selected"');
-				}
-				print('>'.$type.'</option>');
-			}
-			?>
-        </select>
-        <?php } ?>
-        </td>
-        </tr>
-        </table>
-        </div>
-    </div> <div id="left-column">
+	<div id="center-column">
         <form action="<?php echo($config['fantasy_web_root']); ?>admin/configScoringRules" name="configScoring" id="configScoring" method="post" autocomplete="false">
      	<div class='textbox'>
-	    <table cellpadding="0" cellspacing="0" border="0" style="width:255px;">
+	    <table cellpadding="0" cellspacing="0">
 	    <tr class='title'>
 	    	<td style='padding:6px' colspan="2">Point Scoring Values</td>
 	    </tr>
@@ -232,7 +206,34 @@
         <input type="hidden" name="scoring_type" value="<?php print($scoring_type); ?>" />
          </form>
         <br class="clearfix" />
-    </div>
+	</div>
+	<div id="right-column">
+    	<div class='textbox'>
+        <table cellpadding="2" cellspacing="0" border="0" style="width:225px;">
+        <tr class='title'>
+            <td width="100%">Scoring Type</td>
+        </tr>
+        <tr>
+            <td width="100%">
+    	<?php if (isset($scoring_types) && sizeof($scoring_types) > 0) { ?>
+    	<label for="chooseScoring" style="min-width:0px;width:auto;margin:0px;">Scoring Type:</label>
+        <select id="chooseScoring" name="chooseScoring">
+            <?php
+			foreach($scoring_types as $id => $type) {
+				print('<option value="'.$id.'"');
+				if (isset($scoring_type) && $scoring_type == $id) {
+					print(' selected="selected"');
+				}
+				print('>'.$type.'</option>');
+			}
+			?>
+        </select>
+        <?php } ?>
+        </td>
+        </tr>
+        </table>
+        </div>
+	</div> 
     
    
     

@@ -1,7 +1,7 @@
 <script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.md5.js"></script>
 <script type="text/javascript" charset="UTF-8">
-	var ajaxWait = '<img src="<?php echo(PATH_IMAGES); ?>icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
-	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
+	var ajaxWait = '<img src="<?php echo(PATH_IMAGES); ?>icons/ajax-loader.gif" width="28" height="28" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
+	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" align="absmiddle" />&nbsp;';
 	var fader = null;
 	var team_id = <?php echo($team_id); ?>;
 	var team_id2 = <?php echo($team_id2); ?>;
@@ -120,8 +120,7 @@
 		});
 		$('input[rel=reviewbtn]').live('click',function () {
 			var params = this.id.split("|");
-			document.location.href = "<?php echo($config['fantasy_web_root']); ?>team/tradeReview/team_id/"+team_id+"/league_id/"+league_id+"/trans_type/"+params[0]+"/trade_id/"+params[1]+cacheBuster();
-			
+			document.location.href = "<?php echo($config['fantasy_web_root']); ?>team/tradeReview/team_id/"+team_id+"/league_id/"+league_id+"/trans_type/"+params[1]+"/trade_id/"+params[2]+cacheBuster();
 		});
 		$('input#btnReview').live('click',function () {
 			// PREPARE PLAYER ID LISTS
@@ -424,7 +423,7 @@
 			if (addPlayers[i] != null && (addPlayers[i].id != '' && addPlayers[i].id != -1)) {
 				rowClass = ((rowCount % 2) == 0) ? 'sl_1' : 'sl_2';
 				addHTML += '<tr align=left class="'+rowClass+'">';
-				addHTML += '<td><img alt="Remove" title="Remove" rel="addListRemove" id="'+addPlayers[i]['id']+'" src="<?php echo(PATH_IMAGES); ?>icons/icon_fail.png" width="16" height="16" align="absmiddle" border="0" />';
+				addHTML += '<td><img alt="Remove" title="Remove" rel="addListRemove" id="'+addPlayers[i]['id']+'" src="<?php echo(PATH_IMAGES); ?>icons/icon_fail.png" width="16" height="16" align="absmiddle" />';
 				addHTML += ' &nbsp;<a target="_blank" href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/'+league_id+'/player_id/'+addPlayers[i]['id']+'" title="Click to view bio" alt="Click to view bio">'+addPlayers[i]['player_name']+'</a>';
 				if (addPlayers[i]['position'] == "P") {
 					addHTML += ' '+addPlayers[i].role;
@@ -451,7 +450,7 @@
 			if (dropPlayers[i] != null && (dropPlayers[i].id != '' && dropPlayers[i].id != -1)) {
 				rowClass = ((rowCount % 2) == 0) ? 'sl_1' : 'sl_2';
 				dropHTML += '<tr align=left class="'+rowClass+'">';
-				dropHTML += '<td><img alt="Remove" title="Remove" rel="dropListRemove" id="'+dropPlayers[i]['id']+'" src="<?php echo(PATH_IMAGES); ?>/icons/icon_fail.png" width="16" height="16" align="absmiddle" border="0" />';
+				dropHTML += '<td><img alt="Remove" title="Remove" rel="dropListRemove" id="'+dropPlayers[i]['id']+'" src="<?php echo(PATH_IMAGES); ?>/icons/icon_fail.png" width="16" height="16" align="absmiddle" />';
 				dropHTML += ' &nbsp;<a target="_blank" href="<?php echo($config['fantasy_web_root']); ?>players/info/league_id/'+league_id+'/player_id/'+dropPlayers[i]['id']+'" title="Click to view bio" alt="Click to view bio">'+dropPlayers[i]['player_name']+'</a>';
 				if (dropPlayers[i]['position'] == "P") {
 					dropHTML += ' '+dropPlayers[i].role;
@@ -504,6 +503,7 @@
 		$('div#listStatus').empty();
 		$('div#listStatus').html(ajaxWait);
 		$('div#listStatusBox').show();
+		
 		$.getJSON(url, function(data){
 			if (data.code.indexOf("200") != -1) {
 				if (data.status.indexOf(":") != -1) {
@@ -629,7 +629,7 @@
 			if (type == "notice") { type = "list"; }
 		}
 		if (type == "stats") {
-			outHTML += '<table cellpadding="4" cellspacing="1" border="0" class="sortable" id="stats_table" style="width:100%;">';
+			outHTML += '<table cellpadding="4" cellspacing="1" class="sortable" id="stats_table" style="width:100%;">';
 			outHTML += '<thead>';
 			outHTML += '<tr class="headline">';
 			var cols = colnames.split("|");
@@ -693,7 +693,7 @@
 			outHTML += '</table>';
 		}
 		if (rownum == 0) {
-			outHTML += '<table cellpadding="4" cellspacing="1" border="0" class="sortable" id="stats_table" style="width:100%;">';
+			outHTML += '<table cellpadding="4" cellspacing="1" class="sortable" id="stats_table" style="width:100%;">';
 			outHTML += '<tr>';
 			outHTML += '<td colspan="8">No Players were found</td>';
 			outHTML += '</tr>';
@@ -730,7 +730,7 @@
                 <?php } ?>
                     	<li><img alt="Send in Trade" title="Send in Trade" rel="itemRemove" id="<?php echo($player['id']); ?>" 
                         src="<?php echo(PATH_IMAGES); ?>icons/arrow_right.png" width="16" 
-                        height="16" align="absmiddle" border="0" /> 
+                        height="16" align="absmiddle" /> 
                         <?php if ($player['player_position'] == 1) {
 							$pos = $player['player_role'];
 						} else {
@@ -825,7 +825,7 @@
             <div id="right-column">
             	<div id="listStatusBox"><div id="listStatus"></div></div>
             	<div class='textbox'>
-                <table cellpadding="0" cellspacing="0" border="0" width="265px">
+                <table cellpadding="0" cellspacing="0" width="265px">
                 <tr class='title'>
                     <td style='padding:3px'>Trade Summary</td>
                 </tr>
@@ -834,7 +834,7 @@
                 </tr>
                 <tr>
                     <td style='padding:3px'>
-                    <table cellpadding="2" cellspacing="1" border="0" style="width:100%;">
+                    <table cellpadding="2" cellspacing="1" style="width:100%;">
                     <tr>
                     	<td>
                         <div id="playersToAdd">
@@ -854,7 +854,7 @@
                 </tr>
                 <tr>
                     <td style='padding:3px'>
-                    <table cellpadding="2" cellspacing="1" border="0" style="width:100%;">
+                    <table cellpadding="2" cellspacing="1" style="width:100%;">
                     <tr>
                     	<td>
                         <div id="playersToDrop">
@@ -923,8 +923,8 @@
                         print('<b style="color:#700;">'.humanize($type).'</b>');
                         ?>
                 <br class="clear" clear="all" />
-                       <div class='textbox'>
-                <table cellpadding="3" cellspacing="1" border="0" width="265px">
+        	<div class='textbox right-column tradebox'>
+                <table cellpadding="3" cellspacing="1" width="265px">
                 <tr class='title'>
                     <td style='padding:3px' colspan="3"><?php print(humanize($type));?> Trade Details</td>
                 </tr>
@@ -947,45 +947,78 @@
 				?>
                 <form action="" method="post" id="trade_form_<?php print($tradeData['trade_id']); ?>">
                 <tr class='headline'>
-				 	<td width="45%:"><b>From:</b></td>
-                	<td width="55%:"><a target="_blank" href="<?php echo($config['fantasy_web_root']); ?>team/info/<?php print($tradeData['team_1_id']); ?>"><?php print($tradeData['team_1_name']); $rowNum++; ?></a></td>
-                </tr>
-               <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+				 	<td width="38%:"><b>From:</b></td>
+                	<td width="60%:"><a target="_blank" href="<?php echo($config['fantasy_web_root']); ?>team/info/<?php print($tradeData['team_1_id']); ?>"><?php print($tradeData['team_1_name']); ?></a></td>
+				</tr>
+				
+               <tr class="sl_1">
                 	<td><b>Offer Date:</b></td>
 					<td><?php print(date('m/d/Y',strtotime($tradeData['offer_date']))); ?></td>
-                </tr>
-                <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+				</tr>
+                <tr class="sl_2">
                 	<td><b>Offered To:</b></td>
-                	<td><a  target="_blank" href="<?php echo($config['fantasy_web_root']); ?>team/info/<?php print($tradeData['team_2_id']); ?>"><?php print($tradeData['team_2_name']); $rowNum++; ?></a></td>
-                </tr>
-                <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+                	<td><a  target="_blank" href="<?php echo($config['fantasy_web_root']); ?>team/info/<?php print($tradeData['team_2_id']); ?>"><?php print($tradeData['team_2_name']); ?></a></td>
+				</tr>
+                <tr class="sl_1">
 					<td><img src="<?php echo(PATH_IMAGES); ?>icons/arrow_right.png" width="16" 
-                        height="16" align="absmiddle" border="0" /> <b>Send:</b></td>
-					<td><?php  foreach($tradeData['send_players'] as $playerStr) {
-						print($playerStr."<br />"); 
-				} 
-				$rowNum++;?></td>
+                        height="16" align="absmiddle" /> <b>Send:</b></td>
+					<td>
+					<?php  
+						foreach($tradeData['send_players'] as $playerStr) {
+							print($playerStr."<br />"); 
+						}
+					?>
+					</td>
                 </tr>
-                <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+                <tr class="sl_2">
 					<td><img src="<?php echo(PATH_IMAGES); ?>icons/arrow_left.png" width="16" 
-                        height="16" align="absmiddle" border="0" /> <b>Recieve:</b></td>
-					<td><?php  foreach($tradeData['receive_players'] as $playerStr) {
-						print($playerStr."<br />"); 
-					} 
-					$rowNum++;?></td>
+                        height="16" align="absmiddle" /> <b>Recieve:</b></td>
+					<td><?php  
+						foreach($tradeData['receive_players'] as $playerStr) {
+							print($playerStr."<br />"); 
+						} 
+					?>
+					</td>
                 </tr>
-                <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+                <tr class="sl_1">
                 	<td><b>Effective:</b></td>
-                	<td>Period <?php print($tradeData['in_period']); $rowNum++; ?></td>
-                </tr>
-                <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+                	<td>Period <?php print($tradeData['in_period']); ?></td>
+				</tr>
+                <tr class="sl_2">
                 	<td><b>Status:</b></td>
-                	<td><?php print($tradeData['tradeStatus']); $rowNum++; ?></td>
-                </tr>
-                <?php
+					<?php
+					switch ($tradeData['tradeStatus']) {
+						case 'Offered':
+						case 'Accepted':
+						case 'Completed':
+							$class = 'positive';
+							break;
+						case 'Rejected by Owner':
+						case 'Rejected by League':
+						case 'Rejected by Commissioner':
+						case 'Rejected by Admin':
+						case 'Rejected with Counter':
+						case 'Invalid Trade':
+							$class = 'negative';
+							break;
+						case 'Removed':
+						case 'Retracted':
+							$class = 'warning';
+							break;
+						case 'Pending League Approval':
+						case 'Pending Commissioner Approval':
+							$class = 'alert';
+							break;
+						default:
+							$class = 'message';
+					}
+					?>
+					<td class="<?php echo($class); ?>"> <?php print($tradeData['tradeStatus']); ?></td>
+				</tr>
+				<?php
 				// EXPIRATION DATE
 				if ($config['tradesExpire'] == 1 && !empty($tradeData['expiration_days'])) { ?>
-                <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+                <tr class="<?php echo((($rowNum % 2) == 0) ? 'sl_1' : 'sl_2'); ?>">
 					<td><b>Expires:</b></td>
 					<td>
 					<?php
@@ -1007,44 +1040,60 @@
                 <?php $rowNum++;
                 }
 				// COMMENTS
-				if (!empty($tradeData['comments']) && ($team_id == $tradeData['team_2_id'] || $team_id == $tradeData['team_1_id'])) { $rowNum++; ?>
-                <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+				if (!empty($tradeData['comments']) && ($team_id == $tradeData['team_2_id'] || $team_id == $tradeData['team_1_id'])) { ?>
+                <tr class="<?php echo((($rowNum % 2) == 0) ? 'sl_1' : 'sl_2'); ?>">
 					<td><b>Comments:</b></td>
 					<td><?php print($tradeData['comments']); ?></td>
                 </tr>
-                <?php }
+				<?php $rowNum++;
+                }
+				// RESPONSE
+				if (!empty($tradeData['response']) && ($team_id == $tradeData['team_2_id'] || $team_id == $tradeData['team_1_id'])) { ?>
+					<tr class="<?php echo((($rowNum % 2) == 0) ? 'sl_1' : 'sl_2'); ?>">
+						<td><b>Reponse:</b></td>
+						<td><?php print($tradeData['response']); ?></td>
+					</tr>
+				<?php 
+				}
+				$rowNum++;
 				// TRADE PROTESTS
-				if ($allowProtests && (isset($tradeData['protest_count']) && $tradeData['protest_count'] > 0)) { $rowNum++; ?>
-                <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+				if ($allowProtests && (isset($tradeData['protest_count']) && $tradeData['protest_count'] > 0)) { ?>
+                <tr class="<?php echo((($rowNum % 2) == 0) ? 'sl_1' : 'sl_2'); ?>">
 					<td><b>Protests:</b></td>
 					<td><?php print($tradeData['protest_count']); ?> <!--span class="small">(<a href="#">Who?</a>)</span--></td>
                 </tr>
-                <?php } 
-				// COMMISSIOERN APPROVAL
+				<?php 
+				$rowNum++;
+				} 
+				
 				if ($transType <= 3) {
-					$rowNum++; 
 					$outMess = "";
 					if ($tradeData['status'] == TRADE_OFFERED) {
 						if ($transType == 2) {
 							$outMess = "This trade requires a response from you.";
 						} else if ($transType == 3) {
 							$outMess = "You are waiting for a response to this offer.";
-						}
-					}
+						}// END if
+					} // END if
+					// COMMISSIONER APPROVAL
 					if (($tradeData['status'] == TRADE_PENDING_LEAGUE_APPROVAL || $tradeData['status'] == TRADE_PENDING_COMMISH_APPROVAL) && $config['approvalType'] != -1) { 
 						$approvalType = loadSimpleDataList('tradeApprovalType'); 
 						if (!empty($outMess)) { $outMess.="<br />"; }
 						$outMess .= "This trade is pending ".$approvalType[$config['approvalType']]." approval";
-					}
+					}// END if
+				
+					if (!empty($outMess)) {
+					?>
+						<tr class="<?php echo((($rowNum % 2) == 0) ? 'sl_1' : 'sl_2'); ?>">
+							<td colspan="2"><span class="notice inline"><?php print($outMess); ?></span></td>
+						</tr>
+					<?php 
+					} // END if (!empty($outMess))
+				} // END if ($transType <= 3)
 				?>
-                <tr align="left" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
-					<td colspan="2"><span class="notice inline"><?php print($outMess); ?></span></td>
-                </tr>
-                <?php }
-				?>
-                <tr bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+                <tr class="<?php echo((($rowNum % 2) == 0) ? 'sl_1' : 'sl_2'); ?>">
                 	<td colspan="2">
-                	<input type='button' rel="reviewbtn" id="<?php print($transType."|".$tradeData['trade_id']); ?>" class="button" value='Review Trade' style="float:left;margin-right:8px;" />
+                	<input type='button' rel="reviewbtn" id="<?php print("0|".$transType."|".$tradeData['trade_id']); ?>" class="button" value='Review Trade' style="float:left;margin-right:8px;" />
 	                <?php if ($transType == 3) { 
 						if ($tradeData['status'] == TRADE_OFFERED) { ?>
                 		<input type='button' rel="responsebtn" id="<?php print(TRADE_RETRACTED."|".$tradeData['trade_id']); ?>" class="button" value='Retract' style="float:left;margin-right:8px;" />

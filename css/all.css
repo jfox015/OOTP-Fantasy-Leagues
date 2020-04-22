@@ -9,7 +9,7 @@ img { border: 0; }
 
 .top-bar h1 {
 	margin-top:16px;
-	font-size: 22px;
+	font-size: 28px;
 }
 /* nav */
 #subnav li {
@@ -114,7 +114,6 @@ img { border: 0; }
 	padding:7px 8 0 0;
 }
 #bug_bar ul {
-   style:none;
    margin:0 2px 2px 2px;
    padding:0;
 }
@@ -130,20 +129,112 @@ img { border: 0; }
    color:#c00;
 }
 
-img.splash {
+/*img.splash {
 	border: 1px solid #666;
 	padding:3px;
 	outline:none;
-}
+}*/
 .imgattr {
 	font: 9px/10px Arial, Helvetica, sans-serif;
 	color:#999;
 }
-.homepage h2 {
-	padding:0px;
-	margin: 0 0 8px 0;
+/*------------------------------------------------
+/	HOMEPAGE
+/-----------------------------------------------*/
+.homepage .hero-area {
+	width:100%;
+	z-index: 1;
+	position: relative;
+	height: 185px;
+}
+.homepage .hero-area img.splash {
+	width:925px;
+	height:175px;
+}
+
+.homepage .hero-area  > h2 {
+	position: absolute;
+	top: 35px;
+	left: 40px;
+	/*padding:0px;
+	margin: 0 0 8px 0;*/
 	font: bold 21px/24px Tahoma, Geneva, sans-serif;
-	color:#C00;
+	color:#eeeeee;
+	padding: 18px;
+	background: rgba(0, 0, 0, 0.7);
+	z-index: 999;
+}
+
+/*-------------------------------------------------
+/	TEXT BOX CLASS UPDATES
+/	@since PROD 1.0.3
+/------------------------------------------------*/
+.textbox, .textbox.right-column > table {
+	width:100%;
+}
+
+.textbox > table {
+	width:96%;
+}
+.textbox.filterbar {
+	border: 0;
+}
+
+.textbox.filterbar > table {
+	width: auto;
+	margin: 0;
+}
+
+/*------------------------------------------------
+/	LEAGUES
+/-----------------------------------------------*/
+.league-home .top-bar {
+	position: relative;
+    padding-bottom: 20px;
+    height: 105px;
+}
+
+.league-home .top-bar img {
+	float: left;
+    padding: 0 20px 25px 0;
+    clear: right;
+}
+
+.league-home .top-bar > h1 {
+	margin: 0;
+    padding: 30px 0 0 0;
+    display: inline-block;
+    font-size: 32px;
+}
+
+.league-home h2 {
+	margin-bottom:5px;
+}
+.news_title > h3 {
+	position: relative;
+	margin: 0px;
+	top: 4px;
+	left: -4px;
+	z-index: 999;
+	font-family: "Oswald", sans-serif;
+	font-size: 16px;
+	line-height: 24px;
+	color: #fff;
+	display: inline-block;
+	text-transform: uppercase;
+	padding: 3px 15px;
+	background: #ea2e2b;
+	border: 4px solid #fff;
+	border-top: 0;
+	border-left: 0;
+}
+.news_title.teams > h3 {
+	background: #006;
+	color:#FCB97C;
+}
+.news_title.home > h3 {
+	background: #461102;
+	color: #eeeeee;
 }
 img.league_news_wide, img.league_news_tall {
 	border:1px solid #999; 
@@ -160,6 +251,10 @@ img.league_news_tall {
 	font: 13px/16px Arial, Helvetica, sans-serif;
 	color:#900;	
 }
+.news_author {
+	font: 13px/16px Arial, Helvetica, sans-serif;
+	color:#202020;	
+}
 .news_body {
 	width:90%;
 	padding:3px;
@@ -171,22 +266,101 @@ img.league_news_tall {
 #league_list {
 	list-style:none;
 	margin-left:0px;
+	padding-left: 5px;
 }
+#league_list li {
+	padding: 0 0 8px 0px;
+}
+#league_list li a { font-weight:bold; font-size: 12px; }
 div.rule {
     background-color: #A2A2A2;
     height: 1px;
     overflow: hidden;
 	margin: 6px 0 6px 0;
 }
-#league_list li { }
-#league_list li a { font-weight:bold; font-size: 12px; }
+
+.league-home div.rule {
+	margin: 4px 0 6px 0;
+}
+
+
 
 #left-column { width: 185px; float:left; margin-right:10px;  }
 #left-column-wide { width: 245px; float:left; margin-right:10px;  }
-#center-column { width: 655px; float:left; margin-right:10px; }
+#center-column { width: 655px; float:left; margin-right:10px; height:100%; }
+#center-column-med { width: 535px; float:left; margin-right:10px; }
 #center-column-short { width: 400px; float:left; margin-right:10px; }
 #right-column { width: 265px; float:left;}
+#right-column-wide { width: 375px; float:left;}
 #single-column { width: 925px; float:left;}
+
+/*--------------------------
+/	 1.0.3 2 Col
+/-------------------------*/
+.layout {
+	display: flex;
+	padding-top: 20px;
+}
+.layout-column:first-child {
+	margin-right: 20px;
+}
+.layout-column {
+	padding-right: 6px;
+	flex-basis: auto;
+    -webkit-box-flex: 1;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+    -ms-flex-negative: 1;
+    flex-shrink: 1;
+}
+.layout-column .headline {
+	font-weight: bold;
+	color: #151617;
+	line-height: 19px;
+	font-size: 16px;
+	border-bottom: 1px solid #bbb;
+}
+
+.layout.homepage .layout-column .headline {
+	line-height: 24px;
+	font-size: 20px;
+}
+
+section.content {
+	padding: 4px 0;
+	clear: both;
+	margin-top: 8px!important;
+}
+
+.teamLinks.flex {
+	display: flex;
+	-webkit-box-align: center;
+    -ms-flex-align: center;
+	align-items: center;
+	padding:10px 0 10px 0;
+}
+figure.logo-lg {
+	padding: 0 12px 0 20px;
+    margin: 0;
+}
+.logo-lg > img {
+	width: 50px;
+	margin: 0;
+	max-width: 100%;
+	height: auto;
+    overflow: hidden;
+    position: relative;
+}
+.flexContent {
+	padding-left: 8px!important;
+}
+.teamLinks a.teamLink  {
+	display: inline;
+    color: #151617;
+    font-weight: 600;
+    line-height: 22px;
+    font-size: 18px;
+}
 
 .dashboard ul.iconmenu  {
 	list-style:none;
@@ -203,14 +377,165 @@ div.rule {
 }
 #previewPane {
 	width:825px;
-	border;1px solid #dedede;
+	border:1px solid #dedede;
 	padding:12px;
 	margin:none;
 	text-align:left;
 }
-.textbox .title {
+
+.textbox .title .lhl {
+	font-size:16px;
+	font-weight: bold;
+	color:#036;
+}
+.textbox .title td {
+	font-weight: bold;
+	font-size: 15px;
+}
+.textbox .headline td, .textbox .statscol td {
+	font-weight: bold;
+	font-size: 14px;
+	padding-left:6px;
+}
+
+.textbox.right-column .title {
+	background-color: #4a4a4a;
+}
+.textbox.right-column .title td {
+	color: #eeeeee;
+}
+/*.textbox.right-column .error, .textbox.right-column .success, .textbox.right-column .warn,
+.textbox.right-column .info, .textbox.right-column .notice {
+	display: inline;
+	margin: 0;
+}
+
+.textbox.tradebox .error, .textbox.tradebox .success, .textbox.tradebox .warn,
+.textbox.tradebox .info, .textbox.tradebox .notice {
+	padding: 2px 6px;
+}*/
+
+.winner {
+	font-weight: bold;
+	font-size: larger;
+}
+
+tr.s1_l, tr.sl_1 {
+	background-color: #EAEAEA !important;
+}
+tr.s2_l, tr.sl_2 {
+	background-color: #FFFFFF !important;
+}
+
+.textbox.statsbox table, .textbox.gamebox table {
+	border-collapse: collapse;
+    width: 100%;
+}
+.textbox.statsbox thead, .textbox.gamebox thead {
+	display: table-header-group;
+}
+.textbox.statsbox tr, .textbox.gamebox tr {
+	display: table-row;
+}
+.textbox.statsbox thead > tr > th, .textbox.gamebox thead > tr > th {
+	border-bottom: 1px solid #dcdddf;
+    border-top: 1px solid #dcdddf;
+    color: #48494a;
+	display: table-cell;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+    height: 24px;
+	line-height: 15px;
+	padding: 4px 4px 3px;
+	text-align: right;
+	text-transform: uppercase;
+	vertical-align: middle;
+    white-space: nowrap;
+}
+
+.textbox.statsbox thead > tr > th:first-child, .textbox.statsbox tbody > tr > td:first-child,
+.textbox.gamebox thead > tr > th:first-child, .textbox.gamebox tbody > tr > td:first-child {
+	text-align: left;
+}
+
+.textbox.statsbox tbody, .textbox.gamebox tbody {
+	display: table-row-group;
+}
+
+.textbox.statsbox .statscol tr, .textbox.gamebox .statscol tr {
+	color: #dedede;
+}
+.textbox.statsbox tbody > tr > td, .textbox.gamebox tbody > tr > td {
+	padding:3px;
+	text-align: right;
+}
+.textbox.tradesbox tbody > tr > td {
+	padding:6px;
+	text-align: left;
+}
+.textbox.tradesbox tbody > tr > td {
+	padding:6px;
+	text-align: left;
+}
+.textbox.tradesbox tbody > tr > td.review {
+	padding:6px;
+	text-align: center;
+}
+.textbox.gamebox tbody > tr > td {
+	padding: 10px;
+	vertical-align: middle;
+}
+.textbox.gamebox tbody > tr > td a {
+	font-weight: bold;
+	color: #202020;
+	text-decoration: none;
+	font-size: 16px;
+}
+.textbox.gamebox tbody > tr > td a:hover {
+	font-weight: bold;
+	color: #000060;
+	text-decoration: none;
+}
+.textbox.statsbox .statsrow {
+	background-color: #dedede;
+}
+.textbox.statsbox .statsrow.even {
+	background-color: #fff;
+}
+
+.textbox .title, .textbox.statsbox .title, .textbox.tradesbox .title {
 	padding:6px;
 }
+.textbox.tradesbox .title th {
+	padding:7px;
+}
+
+/*-------------------------------------------
+/	TEAMS
+/------------------------------------------*/
+.teamDetails {
+	margin: 20px 0;
+	position: relative;
+}
+.teamDetails h3 {
+	font-weight: bold;
+	font-size: 1.2em;
+	margin: 0 8px;
+}
+.teamDetails .ownerName {
+	font-weight: normal;
+	font-size: 1.02em;
+	display:inline;
+}
+
+.teamDetails .record {
+    display: flex;
+    color: #4c4d4f;
+	margin-left: 12px;
+	font-size: 15px;
+}
+
+
 .space_small {
 	width:100%;
 	float:left;
@@ -257,3 +582,9 @@ div.rule {
 .notice, .notice_txt, .notice a { color: #514721; }
 .info, .info_txt, .info a { color:#006; }
 .warn, .warn_txt, .warn a { color: #461102; font-weight:bold;  }
+
+.textbox.right-column td.positive { font-weight: bold; color: #264409; background: #E6EFC2; border: 1px solid #C6D880; }
+.textbox.right-column td.negative { font-weight: bold; color: #8a1f11; background: #FBE3E4; border: 1px solid #FBC2C4; }
+.textbox.right-column td.message { font-weight: bold; color: #006; background:#C8CFE1; border: 1px solid #006; }
+.textbox.right-column td.warning { font-weight: bold; color: #461102; background:#FCB97C; border: 1px solid #73612B; }
+.textbox.right-column td.alert { font-weight: bold; color: #514721; background: #FFF6BF; border: 1px solid #FFD324; }

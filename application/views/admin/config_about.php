@@ -7,12 +7,12 @@
 	});
     </script>
     	<!-- BEGIN LOGIN FORM -->
-    <div id="column-center">
+    <div id="subPage">
         <?php include_once('admin_breadcrumb.php'); ?>
         <div id="top-bar"><h1><?php echo($subTitle); ?></h1></div>
         <br /><br />
         <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" style="width:825px;">
+        <table cellpadding="0" cellspacing="0">
         <tr class='title'>
             <td style='padding:3px' colspan="2">Edit About Page</td>
         </tr>

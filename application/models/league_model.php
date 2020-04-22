@@ -407,7 +407,7 @@ class league_model extends base_model {
 	}
 	/**
 	* 	OWNER CAN BE COMMISSIONER.
-	* 	<p>Tests f the passed user ID can be commissioner of the specified (or leaded) league (I.E. if they are already
+	* 	<p>Tests if the passed user ID can be commissioner of the specified (or leaded) league (I.E. if they are already
 	*	commissioner or not).</p>
 	* 	@param	$userId			{int}			The user Id
 	* 	@param	$league_id		{int}			OPTIONAL - The League Id
@@ -795,7 +795,7 @@ class league_model extends base_model {
 	 */
 	public function getLeagues($league_id = false, $type=1) {
 		$leagues = array();
-		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id,access_type, league_type');
+		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id, access_type, league_type, leagueType');
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		if ($type != -1) $this->db->where('access_type',1);
 		$query = $this->db->get($this->tblName);
@@ -805,7 +805,7 @@ class league_model extends base_model {
 				$commish = resolveUsername($row->commissioner_id);
 				$leagues = $leagues + array($row->id=>array('league_name'=>$row->league_name,'avatar'=>$row->avatar,
 															'commissioner_id'=>$row->commissioner_id,'commissioner'=>$commish,
-															'league_type_desc'=>$row->shortDesc,'league_type'=>$row->league_type,'description'=>$row->description,
+															'league_type_desc'=>$row->shortDesc,'league_type_lbl'=>$row->leagueType,'league_type'=>$row->league_type,'description'=>$row->description,
 															'access_type'=>$row->access_type));
 			}
 		}
@@ -970,7 +970,7 @@ class league_model extends base_model {
 
 		if ($league_id === false) { $league_id = $this->id; }
 
-		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, owner_id, firstName, lastName, email');
+		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, '.$this->tables['TEAMS'].'.avatar, owner_id, firstName, lastName, email');
 		$this->db->join('users_core','users_core.id = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->join('users_meta','users_meta.userId = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->where('league_id',$league_id);
@@ -988,10 +988,10 @@ class league_model extends base_model {
 					$teams = $teams + array($trow->id=>$trow->teamname." ".$trow->teamnick);
 				} else {
 					$ownerName = $trow->firstName." ".$trow->lastName;
-					if ($trow->owner_id == $this->commissioner_id) {
+					if ($trow->owner_id != -1 && $trow->owner_id == $this->commissioner_id) {
 						$ownerName .= " (Commisioner)";
 					}
-					$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,
+					$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,'avatar'=>$trow->avatar,
 													     'owner_id'=>$trow->owner_id,'owner_name'=>$ownerName,'owner_email'=>$trow->email));
 				}
 			}
@@ -1069,7 +1069,7 @@ class league_model extends base_model {
 				$rules = $this->getScoringRules();
 				$teams = array();
 				$this->db->flush_cache();
-				$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, value_0 as val_0, value_1 as val_1, value_2 as val_2, value_3 as val_3, value_4 as val_4,
+				$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, avatar, value_0 as val_0, value_1 as val_1, value_2 as val_2, value_3 as val_3, value_4 as val_4,
 				value_5 as val_5, value_6 as val_6, value_7 as val_7, value_8 as val_8, value_9 as val_9, value_10 as val_10, value_11 as val_11, total as total');
 				$this->db->join($this->tables['TEAMS'],'fantasy_teams_scoring.team_id = '.$this->tables['TEAMS'].'.id','right outer');
 				$this->db->where('fantasy_teams.league_id',$league_id);
@@ -1092,7 +1092,7 @@ class league_model extends base_model {
 								}
 							}
 						}
-						$teams = $teams + array($row->id=>array('teamname'=>$row->teamname,'teamnick'=>$row->teamnick,
+						$teams = $teams + array($row->id=>array('teamname'=>$row->teamname,'teamnick'=>$row->teamnick,'avatar'=>$row->avatar,
 																'value_0' => $row->val_0, 'value_1' => $row->val_1, 'value_2' => $row->val_2, 'value_3' => $row->val_3, 'value_4' => $row->val_4,
 																'value_5' => $row->val_5, 'value_6' => $row->val_6, 'value_7' => $row->val_7, 'value_8' => $row->val_8, 'value_9' => $row->val_9,
 																'value_10' => $row->val_10, 'value_11' => $row->val_11, 'total' => $row->total));
@@ -1111,7 +1111,7 @@ class league_model extends base_model {
 				if ($query->num_rows() > 0) {
 					foreach ($query->result() as $row) {
 						$this->db->flush_cache();
-						$this->db->select('fantasy_teams.id, teamname, teamnick, g, w, l, pct');
+						$this->db->select('fantasy_teams.id, teamname, teamnick, avatar, g, w, l, pct');
 						$this->db->join('fantasy_teams_record','fantasy_teams_record.team_id = fantasy_teams.id','left');
 						$this->db->where('fantasy_teams.league_id',$league_id);
 						$this->db->where('fantasy_teams.division_id',$row->id);
@@ -1124,7 +1124,7 @@ class league_model extends base_model {
 						$teams = array();
 						if ($query2->num_rows() > 0) {
 							foreach ($query2->result() as $trow) {
-								$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,
+								$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,'avatar'=>$trow->avatar,
 																		'g'=>$trow->g,'w'=>$trow->w,'l'=>$trow->l,'pct'=>$trow->pct));
 							}
 						}

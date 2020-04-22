@@ -28,9 +28,9 @@ input.error {
 }
 .richEditor {
 	width:600px;
-	float:left;
-	margin:3px;
-	padding:0px;
+	/*float:left;*/
+	margin:3px 0 3px 6px;
+	padding:0 0 6px 0;
 	clear:none;
 	width:auto;
 	height:auto;
