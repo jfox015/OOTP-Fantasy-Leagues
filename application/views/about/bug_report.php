@@ -5,7 +5,7 @@
 		<?php echo($theContent); ?>
         <br /><br />
         <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" style="width:640px;">
+        <table cellpadding="0" cellspacing="0" style="width:640px;">
         <tr class='title'>
             <td style='padding:3px' colspan="2">Please enter bug details below.</td>
         </tr>
@@ -89,4 +89,4 @@
         ?>
     });
 	</script>
-	><p /><br />
+	<p><br />

@@ -77,7 +77,7 @@
 					}	
 					?>
                 	<form action="<?php echo($config['fantasy_web_root']); ?>team/setLineup/id/<?php echo($thisItem['team_id']); ?>" method="post" id="lineupForm" name="lineupForm">
-                    <div class='textbox'>
+                    <div class='textbox toolbox'>
                     	<table style="margin:6px" cellpadding="2" cellspacing="0" border="0" width="895px">
 						<?php 
 						$roster_types = array('active','reserve','injured');
@@ -260,7 +260,7 @@
                         </table>
             		</div>  <!-- end batting stat div -->
                     <?php if ($showAdmin) { ?>
-                    <div style="display:block;width:90%;position:relative; text-align:center; clear:right; margin-bottom:6px;float:right;">
+                    <div class="roster-actions-box">
                     <input type="hidden" name="id" value="<?php echo($thisItem['team_id']); ?>" />
                     <input type="submit" class="button" value="Set Lineup" /></div>
                     <?php } ?>

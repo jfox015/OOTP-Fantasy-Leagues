@@ -36,7 +36,7 @@
 
     <form action='<?php echo($config['fantasy_web_root']); ?>admin/loadSQLFiles' method='post' name="fileList" id="fileList">    
    	<div id="activeStatusBox"><div id="activeStatus"></div></div>
-    <div class='textbox'>
+    <div class='textbox toolbox'>
     <table cellpadding=2 cellspacing=0>
      <thead>
      <tr class='title'>
@@ -111,7 +111,7 @@
       <td>&nbsp;</td>
       </tr></tfoot>
     <?php } ?>
-     <tfoot><tr><td colspan="5" align="right">
+     <tfoot><tr><td colspan="5" class="action-buttons">
      <input type="hidden" name="returnPage" value="file_list" />
      <a href="#" onclick="checkRequired(); <?php if ($isSplit==1){ ?>uncheckSplitParents();<?php } ?> return false;">Select Only Required</a> | 
      <a href="#" onclick="setCheckBoxState(true); return false;">Select All</a> | <a 
