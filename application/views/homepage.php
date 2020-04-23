@@ -37,7 +37,7 @@
 				<?php
 				} // END foreach($divisionData['teams']
 			} else {
-				echo("No Public Leagues are available at this time..");
+				echo("No Public Leagues are available at this time.");
 			}  // END if (isset($leagues)
 			?>
 			</section>
