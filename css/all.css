@@ -58,7 +58,6 @@ img { border: 0; }
 }
 #subnav li .drop ul li{
 	float:none;
-	vertical-align:middle;
 	height:1%;
 	padding:4px 0 4px 0;
 	background: #000;
@@ -68,7 +67,7 @@ img { border: 0; }
 	clear:none;
 	display:block;
 }
-#subnav li .drop ul li img{
+#subnav li .drop ul li img {
 	padding: 0 8px 0 0;
 	margin:none;
 	border:none;
@@ -137,6 +136,17 @@ img { border: 0; }
 .imgattr {
 	font: 9px/10px Arial, Helvetica, sans-serif;
 	color:#999;
+}
+a.register, a.register:visited {
+	font-size:15px;
+	font-weight:bold;
+	color:#E6EFC2;
+	padding:10px;
+	background-color: crimson;
+}
+a.register:hover {
+	background-color:#461102;
+	color:#fff;
 }
 /*------------------------------------------------
 /	HOMEPAGE
@@ -606,8 +616,12 @@ tr.s2_l, tr.sl_2 {
 .info, .info_txt, .info a { color:#006; }
 .warn, .warn_txt, .warn a { color: #461102; font-weight:bold;  }
 
-.textbox.right-column td.positive { font-weight: bold; color: #264409; background: #E6EFC2; border: 1px solid #C6D880; }
-.textbox.right-column td.negative { font-weight: bold; color: #8a1f11; background: #FBE3E4; border: 1px solid #FBC2C4; }
-.textbox.right-column td.message { font-weight: bold; color: #006; background:#C8CFE1; border: 1px solid #006; }
-.textbox.right-column td.warning { font-weight: bold; color: #461102; background:#FCB97C; border: 1px solid #73612B; }
-.textbox.right-column td.alert { font-weight: bold; color: #514721; background: #FFF6BF; border: 1px solid #FFD324; }
+.textbox td.positive { font-weight: bold; color: #264409; background: #E6EFC2; border: 1px solid #C6D880; }
+.textbox td.negative { font-weight: bold; color: #8a1f11; background: #FBE3E4; border: 1px solid #FBC2C4; }
+.textbox td.message { font-weight: bold; color: #006; background:#C8CFE1; border: 1px solid #006; }
+.textbox td.warning { font-weight: bold; color: #461102; background:#FCB97C; border: 1px solid #73612B; }
+.textbox td.alert { font-weight: bold; color: #514721; background: #FFF6BF; border: 1px solid #FFD324; }
+.textbox td.cell_c { text-align: center;}
+.textbox td.cell_m { vertical-align: middle; padding-top: 5px; font-weight: bold;}
+.textbox td.cell_m a { font-weight: bold;}
+.textbox td.cell_m_np { vertical-align: middle; padding-top: 0; }

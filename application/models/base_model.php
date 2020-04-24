@@ -98,6 +98,12 @@ class base_model extends Model implements Serializable {
 	 */
 	var $errorCode = -1;
 	/**
+	 *	ERROR COUNT.
+	 *	Counts errors. Default is 0.
+	 *	@var $errorCount:int
+	 */
+	var $errorCount = 0;
+	/**
 	 *	STATUS MESSAGE.
 	 *	A message with feedback on model status, issues and results.
 	 *	@var $statusMess:String

@@ -5,7 +5,7 @@ require_once('base_editor.php');
  *	The primary controller for League manipulation and details.
  *	@author			Jeff Fox
  *	@dateCreated	04/04/10
- *	@lastModified	08/17/11
+ *	@lastModified	04/18/20
  *
  */
 class league extends BaseEditor {

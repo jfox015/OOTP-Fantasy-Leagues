@@ -2,7 +2,7 @@
 /**
  *	PLAYERS.
  *	The primary controller for the Players Section.
- *	@author			Jeff Fox (Github ID: jfox015)
+ *	@author			Jeff Fox
  *	@dateCreated	11/13/09
  *	@lastModified	04/16/20
  *

@@ -1562,8 +1562,8 @@ class team_model extends base_model {
 	}
 	/**
 	 *	GET BASIC ROSTER.
-	 *	Returns a list of players for the specified team (or models loaded team if FALSE. 
-	 *	Scoring period ID gets the list fot eh current or requested scoring period.
+	 *	Returns a list of players for the specified team (or models loaded team if FALSE). 
+	 *	Scoring period ID gets the list for the current or requested scoring period.
 	 *	Extended IDs returns player IDs for rendering clickable links.
 	 *
 	 *  @param	$score_period - The scoring period 

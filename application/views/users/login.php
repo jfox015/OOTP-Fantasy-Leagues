@@ -38,7 +38,7 @@
     </div>
 	<div id="right-column">
     	
-	    <div class='textbox'>
+	    <div class='textbox right-column'>
         <table cellpadding="0" cellspacing="0" border="0">
         <tr class='title'>
             <td style='padding:3px;color:#ff0;'><?php print($this->lang->line('user_login_register_title')); ?></td>
@@ -48,7 +48,7 @@
             <?php print($this->lang->line('user_login_register_body')); ?>
             <br /><br />
             <p style="width:100%; text-align:center;">
-            <b><?php echo(anchor('/user/register','REGISTER NOW!',array('style'=>'font-size:14px;font-weight:bold;color:#c00;'))); ?></b>
+            <b><?php echo(anchor('/user/register','REGISTER NOW!',array('class'=>'register'))); ?></b>
      		</p></td>
         </tr>
         </table>
@@ -56,7 +56,7 @@
 		
 		<?php 
 		if (isset($authenticationType) && $authenticationType == 1) { ?>
-        <div class='textbox'>
+        <div class='textbox right-column'>
         <table cellpadding="0" cellspacing="0" border="0">
         <tr class='title'>
             <td style='padding:3px'><?php print($this->lang->line('user_login_activate_title')); ?></td>

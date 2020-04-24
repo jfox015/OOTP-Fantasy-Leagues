@@ -138,6 +138,7 @@ define("DB_CONNECTION_FILE","ootpfl_db.php");
 define('QUERY_BASIC',1);
 define('QUERY_STANDARD',2);
 define('QUERY_EXTENDED',3);
+define('QUERY_COMPACT',4);
 
 define('SECURITY_RECAPTHCA',1);
 
