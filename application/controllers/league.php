@@ -80,6 +80,7 @@ class league extends BaseEditor {
 		$this->views['LEAGUE_LIST'] = 'league/league_listing';
 		$this->views['TEAM_REQUEST'] = 'league/league_team_request';
 		$this->views['CONTACT_FORM'] = 'league/league_contact';
+		$this->views['TEAM_ROSTERS'] = 'league/league_team_rosters'; // PROD 1.0.3
 
 		$this->lang->load('league');
 
@@ -306,6 +307,48 @@ class league extends BaseEditor {
 	        $this->session->set_userdata('loginRedirect',current_url());
 			redirect('user/login');
 	    }
+	}
+	/**
+	 * TEAM ROSTERS STATUS
+	 * Show a listing of the teams in the league and their roster status
+	 *
+	 * 	@return void
+	 *	@since	1.0.3 PROD
+
+	 */
+	public function rosters() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+				$this->data['league_id'] = $this->uriVars['id'];
+				if (!function_exists('getScoringPeriod')) {
+					$this->load->helper('admin');
+				}
+				if (isset($this->uriVars['period_id'])) {
+					$curr_period_id = $this->uriVars['period_id'];
+				} else {
+					$curr_period_id = $this->params['config']['current_period'];
+				}
+				$curr_period = getScoringPeriod($curr_period_id);
+				$this->data['rosterStatus'] = $this->dataModel->validateRosters($curr_period_id, $this->data['league_id']);
+				$this->data['statusMessage'] = $this->dataModel->statusMess;
+
+				$this->makeNav();
+				$this->data['subTitle'] = "League Roster Status";
+				$this->params['content'] = $this->load->view($this->views['TEAM_ROSTERS'], $this->data, true);
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+			}
+			$this->displayView();
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());
+			redirect('user/login');
+	    }
+		
 	}
 	/**
 	 *	SELECT.

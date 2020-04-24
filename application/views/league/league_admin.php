@@ -29,7 +29,11 @@
             	Edit Divisions</li>
                 <?php } ?>
                 <li><?php echo anchor('/league/teamAdmin/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/folder_edit.png" width="48" height="48" border="0" />'); ?><br />
-            	Edit Teams/Owners</li>
+				Edit Teams/Owners</li>
+				<?php if ($draftEnabled && $draftStatus >= 5) { ?>
+				<li><?php echo anchor('/league/rosters/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" border="0" />'); ?><br />
+				Check Teams Roster Status</li>
+				<?php } ?>
             </ul> 
             <br clear="all" /><br />
             <h3>General Functions</h3> 

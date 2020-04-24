@@ -1,13 +1,28 @@
-	   
-   
-   <script type="text/javascript" charset="UTF-8">
+	<script type="text/javascript" charset="UTF-8">
 	$(document).ready(function(){		   
 
 		$('select#teams').change(function(){
 			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/lineup/' + $('select#teams').val();
 		});
+
+		/*---------------------------------------------------
+		/	EDIT 1.0.3
+		/	Bug #36, Add FF point total to lineup screen
+		/--------------------------------------------------*/
+		$('a[rel=listPick]').live('click',function () {
+			var params = this.id.split("|");
+			$('td.'+params[0]).removeClass('field_hide');
+			$('td.'+params[0]).addClass('field_show');
+			$('td.'+params[1]).removeClass('field_show');
+			$('td.'+params[1]).addClass('field_hide');
+			return false;
+		});
 	});
 	</script>
+	<style>
+	.field_show { display:table-cell; }
+	.field_hide { display:none; }
+	</style>
    	<?php 
 	$schedules = array();
 	if (isset($thisItem['schedules']) && sizeof($thisItem['schedules']) > 0) {
@@ -42,22 +57,29 @@
                         	?>
                         </div>
                         <?php } ?>
-						<?php if (isset($thisItem['fantasy_teams']) && sizeof($thisItem['fantasy_teams']) > 0 ) {?>
-                        <div style="width:48%;text-align:right;float:left;">
-                        <label for="teams" style="min-width:225px;">Fantasy Teams:</label> 
-                        <select id="teams" style="clear:none;">
-                            <?php  
-                            foreach($thisItem['fantasy_teams'] as $id => $teamName) {
-                                echo('<option value="'.$id.'"');
-                                if ($id == $thisItem['team_id']) { echo(' selected="selected"'); }
-                                echo('>'.$teamName.'</option>');
-                            }
-                            ?>
-                        </select>
-                        </div>
-						<?php } ?>
-                    
-                    
+						
+						<div style="float:left; width:50%">
+							<div style="float:left; text-align:left; width:40%; padding-top:5px;">
+								<label for="display" style="min-width:55px; margin-top:0;">Show:</label> 
+								<a href="#" id="stat|sched" rel="listPick">Stats</a> | <a href="#" id="sched|stat" rel="listPick">Schedule</a> 
+							</div>
+							<?php if (isset($thisItem['fantasy_teams']) && sizeof($thisItem['fantasy_teams']) > 0 ) { ?>
+							<div style="width:59%;text-align:right;float:left;">
+							
+								<label for="teams" style="min-width:95px; margin-right: 5px; margin-top:5px;display: inline-block;">Fantasy Teams:</label> 
+								<select id="teams" style="clear:none;display: inline-block;">
+									<?php  
+									foreach($thisItem['fantasy_teams'] as $id => $teamName) {
+										echo('<option value="'.$id.'"');
+										if ($id == $thisItem['team_id']) { echo(' selected="selected"'); }
+											echo('>'.$teamName.'</option>');
+									}
+									?>
+								</select>
+							</div>
+							<?php } ?>
+						</div>
+
 						<?php if (isset($message) && !empty($message)) { ?>
                         <div style="display:block;width:98%;position:relative; clear:right; float:left;">
                         <?php
@@ -75,13 +97,54 @@
 					if ($showAdmin) {
 						$infoColumns = 7;
 					}	
+					/*----------------------------------------------
+					/	STATS DISPLAY CHANGE. CREATE HEADINGS
+					/	DYNAMICALLY TO HANDLE SWITCHING BETWEEN 
+					/ 	STATS TYPES DURING RENDERING OF THE 
+					/	ROSTER STATUS TYPES
+					/----------------------------------------------*/
+					$headlines = array();
+					$headlineL = "<tr class='headline'>\n
+					<td class='hsc2_c'>POS</td>\n
+					<td class='hsc2_c'>Player</td>\n
+					<td class='hsc2_c'>Status</td>\n";
+					$headlineBats = '';
+					if (isset($colnames['batters'])) { 
+						$colNames = explode("|", $colnames['batters']);
+						foreach ($colNames as $name) {
+							$headlineBats .= "<td class='hsc2_c stat field_show'>".$name."</td>\n";
+						}
+					}
+					$headlinePitch = '';
+					if (isset($colnames['pitchers'])) { 
+						$colNames = explode("|", $colnames['pitchers']);
+						foreach ($colNames as $name) {
+							$headlinePitch .= "<td class='hsc2_c stat field_show'>".$name."</td>\n";
+						}
+					}
+					$headlineSched = '';
+					if (isset($thisItem['visible_week']) && sizeof($thisItem['visible_week']) > 0) { 
+						foreach ($thisItem['visible_week'] as $day) {
+							$headlineSched .= "<td class='hsc2_c sched field_hide'>".date('m/d',strtotime($day))."</td>\n";
+						}
+					}
+					$headlineR = "<td class='hsc2_c'>Own%</td>\n
+					<td class='hsc2_c'>Start%</td>\n";
+					if ($showAdmin) { 
+						$headlineR .= "<td class='hsc2_c' colspan='2' align='center'>Actions</td>\n";
+					} 
+					$headlineR .= "</tr>\n";
+					$headlines['batting'] = $headlineL.$headlineBats.$headlineSched.$headlineR;
+					$headlines['pitching'] = $headlineL.$headlinePitch.$headlineSched.$headlineR;
 					?>
                 	<form action="<?php echo($config['fantasy_web_root']); ?>team/setLineup/id/<?php echo($thisItem['team_id']); ?>" method="post" id="lineupForm" name="lineupForm">
                     <div class='textbox toolbox'>
-                    	<table style="margin:6px" cellpadding="2" cellspacing="0" border="0" width="895px">
+                    	<table style="margin:6px" cellpadding="2" cellspacing="0" width="895px">
 						<?php 
 						$roster_types = array('active','reserve','injured');
-						foreach ($roster_types as $type) { ?>
+						foreach ($roster_types as $type) { 
+							$pitchHeaderDrawn = false;
+							?>
                         <tr class='title'>
                         	<td colspan='<?php 
 							$rosterTitle = '';
@@ -91,35 +154,12 @@
 								case 'injured': $rosterTitle = "Injured"; break;
 							}
 							echo($infoColumns+$config['sim_length']); ?>' class='lhl'><?php echo($rosterTitle); ?> Roster</td></tr> 
-              			<tr class='headline'>
-                        	<td class='hsc2_c'>POS</td>
-                            <td class='hsc2_c'>Player</td>
-                            <td class='hsc2_c'>Status</td>
-                            <?php
-							if (isset($thisItem['visible_week']) && sizeof($thisItem['visible_week']) > 0) { 
-								foreach ($thisItem['visible_week'] as $day) {
-							?>
-							
-							<td class='hsc2_c'><?php echo(date('m/d',strtotime($day))); ?></td>
-							
-							<?php 	}
-							}   ?>
-                            <td class='hsc2_c'>Own%</td>
-                            <td class='hsc2_c'>Start%</td>
-                            <?php
-							if ($showAdmin) { ?>
-                            <td class='hsc2_c' colspan="2" align="center">Actions</td>
-                            <?php } ?>
-                        </tr>
-						
 						<?php
 						if (isset($thisItem['players_'.$type]) && sizeof($thisItem['players_'.$type]) > 0) { 
 						$rowcount = 0;
+						echo($headlines['batting']);
 						foreach($thisItem['players_'.$type] as $id => $playerData) {
-							if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
-							?>
-                        <tr style="background-color:<?php echo($color); ?>">
-                            <?php 
+
 							if ($playerData['position'] != 1) {
 								$ftyPos = get_pos($playerData['player_position']);
 							} else {
@@ -139,7 +179,13 @@
 									}
 								}
 							}
+							if (!$pitchHeaderDrawn && $playerData['position'] == 1) {
+								echo($headlines['pitching']);
+								$pitchHeaderDrawn = true;
+							}
+							if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
 							?>
+                        <tr style="background-color:<?php echo($color); ?>">
                             <td class='hsc2_l'><?php echo($ftyPos); ?></td>
                             <td class='hsc2_l'><?php 
 							// PLAYER NAME AND BIO LINK
@@ -162,13 +208,39 @@
 								case 4: $statusCode = "R"; break;
 							}
 							?>
-                            <td class='hsc2_c' align="center"><?php echo($statusCode); ?></td>
-                            <?php $playerSched = $schedules['players_'.$type][$id];
+                            <td class='hsc2_c'><?php echo($statusCode); ?></td>
+							<?php 
+							/*----------------------------------------------
+							/	PLAYER STATS
+							/---------------------------------------------*/
+							if (isset($playerData['stats']) && sizeof($playerData['stats'])> 0) {
+								foreach($playerData['stats'] as $key=>$val) {
+									$color = "#000";
+									if ($key == 'rating') {
+										if ($val > 0) {
+											$color = "#080";
+										} else if ($val < 0) {
+											$color = "#C00";
+										} // END if
+									} // END if
+								?>
+								<td class='hsc2_l stat field_show'><?php echo('<span style="color:'.$color.';">'.$val.'</span>'); ?></td>
+								<?php
+								} // END foreach
+
+							} else {
+								for ($i = 0; $i < 7; $i++) { ?>
+									<td class='hsc2_l stat field_show'>0</td>
+								<?php
+								}
+							}// END if (isset($playerData['stats'])
+							
+							$playerSched = $schedules['players_'.$type][$id];
 							if (isset($playerSched) && sizeof($playerSched) > 0) {
 								$drawn = 0;
 								$limit = $config['sim_length'];
 								foreach ($playerSched as $game_id => $game_data) { ?>
-									<td class='hsc2_l'><?php
+									<td class='hsc2_l sched field_hide'><?php
 									if ($game_id > 0) {//if($game_data['game_date'] > $thisItem['visible_week'][$drawn]) {
 										//	echo("</td><td class='hsc2_l'>");
 										//	$drawn++;
@@ -189,7 +261,7 @@
 								<?php 
 							} else {
 								for ($i = 0; $i < $config['sim_length']; $i++) {
-									echo("<td class='hsc2_l'></td>\n");
+									echo("<td class='hsc2_l sched field_hide'></td>\n");
 								}
 							} ?>
                             <td class='hsc2_r' align="right"><?php echo($playerData['own']); ?></td>

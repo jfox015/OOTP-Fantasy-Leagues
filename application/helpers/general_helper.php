@@ -6,8 +6,10 @@
  * 	helper functions such as reslving positon names and numbers, building common
  *	stat queries and display lists and more.
  *
- * 	@author 	All functions are written by Frank Holmes unless otherwise noted.
+ * 	@author 	Jeff Fox
+ * 	@author 	Several functions written by Frank Esselink where noted.
  */
+
 function getFantasyStatus() {
 	$status = -1; // UNKNOWN
 	// LOAD RELEVANT PROPERTIES
@@ -148,6 +150,9 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 	if ($player_type == 1) {
 		// BATTERS
 		switch ($query_type) {
+			case QUERY_COMPACT:
+				$sql .= 'if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(h)/'.$sqlOperator.'(ab)) as avg,'.$sqlOperator.'(r) as r,'.$sqlOperator.'(hr) as hr,'.$sqlOperator.'(bb) as bb,'.$sqlOperator.'(k) as k,'.$sqlOperator.'(sb) as sb';
+				break;
 			case QUERY_BASIC:
 				$sql .= 'if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(h)/'.$sqlOperator.'(ab)) as avg,'.$sqlOperator.'(hr) as hr,'.$sqlOperator.'(rbi) as rbi,'.$sqlOperator.'(bb) as bb,'.$sqlOperator.'(k) as k,'.$sqlOperator.'(sb) as sb, if(('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp))/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf)))+if('.$sqlOperator.'(ab)=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(d)+2*'.$sqlOperator.'(t)+3*'.$sqlOperator.'(hr))/'.$sqlOperator.'(ab)) as ops';
 				break;
@@ -163,6 +168,9 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 	} else {
 		// PITCHERS
 		switch ($query_type) {
+			case QUERY_COMPACT:
+				$sql .= 'if(w=0,0,'.$sqlOperator.'(w)) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk,'.$sqlOperator.'(s) as s';
+				break;
 			case QUERY_BASIC:
 				$sql .= 'if(w=0,0,'.$sqlOperator.'(w)) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip,'.$sqlOperator.'(s) as s';
 				break;
@@ -216,6 +224,9 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
 	if ($player_type == 1) {
 		// BATTERS
 		switch ($query_type) {
+			case QUERY_COMPACT:
+				$colnames .= "AVG|R|HR|BB|K|SB";
+				break;
 			case QUERY_BASIC:
 				$colnames .= "AVG|HR|RBI|BB|K|SB|OPS";
 				break;
@@ -229,6 +240,9 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
 		} // END switch
 	} else {
 		switch ($query_type) {
+			case QUERY_COMPACT:
+				$colnames .= "W|L|ERA|BB|K|SV";
+				break;
 			case QUERY_BASIC:
 				$colnames .= "W|L|ERA|IP|BB|K|SV|WHIP";
 				break;
@@ -259,7 +273,7 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
  */
 function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD, $showFpts = true, $statsOnly = false,
 								 $showTrans = false, $showDraft = false, $showGenInfo = false,
-								 $showRating = false) {
+								 $showRating = false, $addFPid = false, $addOOTPId = false) {
 
 	$defaultFields = array('player_name','teamname','pos','positions');
 	$genInfoFields = array('age','throws','bats');
@@ -267,6 +281,9 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
 	if ($player_type == 1) {
 		// BATTERS
 		switch ($query_type) {
+			case QUERY_COMPACT:
+				$fieldList = array('avg','r','hr','bb','k','sb');
+				break;
 			case QUERY_BASIC:
 				$fieldList = array('avg','hr','rbi','bb','k','sb','ops');
 				break;
@@ -280,6 +297,9 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
 		} // END switch
 	} else {
 		switch ($query_type) {
+			case QUERY_COMPACT:
+				$fieldList = array('w','l','era','pbb','pk','s');
+				break;
 			case QUERY_BASIC:
 				$fieldList = array('w','l','era','ip','pbb','pk','s','whip');
 				break;
@@ -298,6 +318,12 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
 	}
 	if ($showDraft) {
 		array_push($fields, 'draft');
+	}
+	if ($addFPid) {
+		array_push($fields, 'fpid');
+	}
+	if ($addOOTPId) {
+		array_push($fields, 'player_id');
 	}
 	if (!$statsOnly) {
 		foreach($defaultFields as $field) {
@@ -325,7 +351,7 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
  *
  *	Based on the stat selected, handles converting the raw data output to display ready HTML.
  *
- * 	@author	Frank Holmes
+ * 	@author	Frank Esselink
  * 	@author	Jeff Fox
  *	@since	1.0
  */
@@ -554,6 +580,7 @@ function makeElidgibilityString($positions) {
 	}
 	return $gmPos;
 }
+
 function calc_rating($rating,$ratOrTal=0,$max="")
  {
    if ($rating==0) {return 0;}
@@ -616,7 +643,16 @@ function calc_rating($rating,$ratOrTal=0,$max="")
 
    return $rat;
  }
-
+/**
+ *	FORMAT BYTES.
+ *
+ *	@param	$bytes		int			Bytes value
+ *	@param	$precision	int			Math Round Precicion Value
+ *	@return				String		Bytes String
+ *
+ *	@author	Frank Esselink
+ * 	@since	1.0
+ */
 function formatBytes($bytes, $precision = 1) {
     $units = array('B', 'KB', 'MB', 'GB', 'TB');
 
@@ -628,13 +664,34 @@ function formatBytes($bytes, $precision = 1) {
 
     return round($bytes, $precision) . ' ' . $units[$pow];
 }
-
+/**
+ *	CALCULATE MOVEMENT.
+ *
+ *	@param	$mvmnt		int			Bytes value
+ *	@param	$gb			int			Math Round Precicion Value
+ *	@return				int			Movement Rating
+ *
+ *	@author	Frank Esselink
+ * 	@since	1.0
+ */
 function calc_movement($mvmnt,$gb)
  {
    $rat=200.5-(5*((18+(54-$gb)*.6)+((200-$mvmnt)/6))/2);
    return $rat;
  }
-
+/**
+ *	GET PITCH RATING.
+ *
+ *	@param	$pitch		String	Pitch type
+ *	@param	$ir			int
+ *	@param	$gb			int
+ *	@param	$mvmnt		int		Movement Int
+ *	@param	$velo		int		Velocity int
+ *	@return				int		Rating Value
+ *
+ *	@author	Frank Esselink
+ * 	@since	1.0
+ */
 function get_pitch_rating($pitch,$ir,$gb,$mvmnt,$velo)
 {
    $velo=$velo*10;
@@ -667,7 +724,19 @@ function get_pitch_rating($pitch,$ir,$gb,$mvmnt,$velo)
     }
    return $rat;
  }
-
+/**
+ * 	Get Level.
+ * 	Returns the acronym for a level for use in displaying the text.
+ *
+ *	NOTE: This function requies that the Stats library be inialtized with
+ *	the sport and scource values to populate the level_list property.
+ *
+ * 	@static
+ * 	@param 		string		$level			Level ID
+ * 	@param 		array		$level_list		The sport and source specific level list
+ * 	@return 	string          			Level acronym
+ *	@since	0.3
+ */
 function get_level($lvl)
  {
    switch ($lvl)
@@ -687,7 +756,19 @@ function get_level($lvl)
     }
    return $txt;
  }
-
+/**
+ * 	Get Award.
+ * 	Returns the acronym for a award for use in displaying the text.
+ *
+ *	NOTE: This function requies that the Stats library be inialtized with
+ *	the sport and scource values to populate the award_list property.
+ *
+ * 	@static
+ * 	@param 		string		$award			Award ID
+ * 	@param 		array		$award_list		The sport and source specific award list
+ * 	@return 	string          			Award acronym
+ *	@since	0.3
+ */
 function get_award($awid)
  {
     switch ($awid)
@@ -1212,7 +1293,17 @@ function get_ll_cat($catID,$forSQL = false)
     }
    return $txt;
  }
-
+/**
+ *	ORDINAL SUFFIX.
+ *	Determines a suffix based on the value passed.
+ *
+ *	@param	$value		int 		Numeric Value
+ *	@param	$sup		int			1 to wrap return value in <Sup> tags, 0 to not
+ *	@return				String		String value with ordinal
+ *
+ *	@author	Frank Esselink
+ * 	@since	1.0
+ */
 function ordinal_suffix($value, $sup = 0) {
     if(substr($value, -2, 2) == 11 || substr($value, -2, 2) == 12 || substr($value, -2, 2) == 13){
         $suffix = "th";
@@ -1234,7 +1325,19 @@ function ordinal_suffix($value, $sup = 0) {
     }
     return $value . $suffix;
 }
-
+/**
+ * 	Get Hand.
+ * 	Returns the acronym for a hand for use in displaying the text.
+ *
+ *	NOTE: This function requies that the Stats library be inialtized with
+ *	the sport and scource values to populate the level_list property.
+ *
+ * 	@static
+ * 	@param 		string		$hand			Hand ID
+ * 	@param 		array		$hand_str		The sport and source specific hand list
+ * 	@return 	string          			Hand acronym
+ *	@since	0.3
+ */
 function get_hand($handID)
  {
   switch ($handID)
@@ -1246,7 +1349,16 @@ function get_hand($handID)
    }
   return $hand;
  }
-
+/**
+ *	CENTIMETERS TO FEET/INCHES.
+ *	Converts a centimeter value to a feet and inches string.
+ *
+ *	@param	$len		int 		Length value in centimeters
+ *	@return				String		String value
+ *
+ *	@author	Frank Esselink
+ * 	@since	1.0
+ */
 function cm_to_ft_in($len)
  {
    $in=$len/2.54;
@@ -1256,13 +1368,34 @@ function cm_to_ft_in($len)
    $txt=$ft."' ".$in."\"";
    return $txt;
  }
+ /**
+ *	AVERAGE.
+ *	Creates an average based on the values of the array passed.
+ *
+ *	@param	$array		Array 		Contains int values
+ *	@return				Int			Average value
+ *
+ *	@author	Frank Esselink
+ * 	@since	1.0
+ */
  function average($array)
  {
    $sum   = array_sum($array);
    $count = count($array);
    return $sum/$count;
  }
-
+/**
+ *	DEVIATION.
+ *	Creates a standard deviation based on the values of the array passed. This function
+ * 	is helpful when trying to determine if a value is higher or lower than the standard
+ *	deviation from a median value.
+ *
+ *	@param	$array		Array 		Contains int values
+ *	@return				Int			Average value
+ *
+ *	@author	Frank Esselink
+ * 	@since	1.0
+ */
 function deviation($array)
  {
    $avg = average($array);
@@ -1273,6 +1406,16 @@ function deviation($array)
    $deviation = sqrt(average($variance));
    return $deviation;
  }
+ /**
+ *	RETURN BYTES.
+ *	Cronverts a file size string into a byte value.
+ *
+ *	@param	$val		String 		String file size value
+ *	@return				Int			Bytes value
+ *
+ *	@author	Frank Esselink
+ * 	@since	1.0
+ */
 function return_bytes($val) {
 	$val = trim($val);
 	$last = strtolower($val[strlen($val)-1]);

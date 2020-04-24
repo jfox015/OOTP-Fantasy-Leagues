@@ -2,10 +2,9 @@
 /**
  *	Team.
  *	The primary controller for Team manipulation and details.
- *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
- *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@author			Jeff Fox
  *	@dateCreated	04/04/10
- *	@lastModified	08/24/11
+ *	@lastModified	04/23/20
  *
  */
 require_once('base_editor.php');
@@ -223,6 +222,8 @@ class team extends BaseEditor {
 			
 			$this->data['curr_period'] = $curr_period_id;
 			
+			$players = $this->dataModel->getCompleteRoster($curr_period_id);
+			
 			if (!isset($this->league_model)) {
 				$this->load->model('league_model');
 				$this->league_model->load($this->dataModel->league_id);
@@ -237,22 +238,14 @@ class team extends BaseEditor {
 			$this->data['thisItem']['teamnick'] = $this->dataModel->teamnick;
 			$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
 			
-			if (!$this->league_model->validateRoster($this->dataModel->getBasicRoster($curr_period_id))) {
-				$this->data['message'] = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b>".$this->league_model->statusMess;
-				$this->data['messageType'] = 'error';
+			if (!$this->params['loggedIn'] || ($this->dataModel->owner_id == $this->params['currUser'] && (!$isAdmin && !$isCommish))) {
+				if (!$this->league_model->validateRoster($this->dataModel->getBasicRoster($curr_period_id))) {
+					$this->data['message'] = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b><br /><br />".$this->league_model->statusMess;
+					$this->data['messageType'] = 'error';
+				}
 			}
 			if ($this->params['loggedIn']) {
 				$this->data['thisItem']['userTeamId'] = $this->user_meta_model->getUserTeamIds($this->dataModel->league_id,$this->params['currUser']);
-			}
-			$players = $this->dataModel->getCompleteRoster($curr_period_id);
-			if (isset($players[0])) {
-				$this->data['thisItem']['players_active'] =	$players[0];
-			} 
-			if (isset($players[1])) {
-				$this->data['thisItem']['players_reserve'] = $players[1];
-			}
-			if (isset($players[2])) {
-				$this->data['thisItem']['players_injured'] = $players[2];
 			}
 			$this->data['thisItem']['team_list'] = getOOTPTeams($this->params['config']['ootp_league_id'],false);
 			
@@ -274,7 +267,49 @@ class team extends BaseEditor {
 					break;
 				}
 			}
-			$this->data['thisItem']['divisionName'] = $divisionName;
+			/*---------------------------------------------------
+			/	EDIT - 1.0.3 PROD
+			/	INCLUDE CURRENT PLAYER STATS ON LINEUP PAGE
+			/--------------------------------------------------*/
+			$this->prepForQuery();
+			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
+				$this->data['stats_range'] = 0;
+			} else {
+				$this->data['stats_range'] = $this->uriVars['stats_range'];
+			} // END if
+			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
+				$this->data['stats_range'] = 1;	
+			} // END if
+			$periodForQuery = $this->data['scoring_period']['id'];
+			if ($this->data['stats_range'] != 0) {
+				$periodForQuery = -1;
+			} // END if
+			
+			$formattedStats = array();
+			$stats['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules);
+			$this->data['colnames']['pitchers']=player_stat_column_headers(2, QUERY_COMPACT, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, true, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
+			$this->data['fields'] = player_stat_fields_list(2, QUERY_COMPACT, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, true, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD, false, true);
+			$this->data['formattedStats']['pitchers'] = formatStatsForDisplay($stats['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
+			
+			// BATTERS
+			$stats['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules);
+			$this->data['colnames']['batters']=player_stat_column_headers(1, QUERY_COMPACT, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, true, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
+			$this->data['fields'] = player_stat_fields_list(1, QUERY_COMPACT, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, true, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD, false, true);
+			$this->data['formattedStats']['batters'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
+			
+			$players = $this->addStatsToPlayerList($players, $this->data['formattedStats']['pitchers']);
+			$players = $this->addStatsToPlayerList($players, $this->data['formattedStats']['batters']);
+
+			if (isset($players[0])) {
+				$this->data['thisItem']['players_active'] =	$players[0];
+			} 
+			if (isset($players[1])) {
+				$this->data['thisItem']['players_reserve'] = $players[1];
+			}
+			if (isset($players[2])) {
+				$this->data['thisItem']['players_injured'] = $players[2];
+			}
+			
 			$this->data['showAdmin'] = (($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $this->params['config']['current_period']) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
 			$this->params['content'] = $this->load->view($this->views['LINEUP'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
@@ -287,7 +322,6 @@ class team extends BaseEditor {
 		$this->displayView();
 
 	}
-
 	/*-------------------------------------------
 	/
 	/	TRADES
@@ -1399,6 +1433,12 @@ class team extends BaseEditor {
 		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
+	/**
+	 * 
+	 *	SET LINEUP.
+	 *	Calls the add/drop page interface for teams.
+	 *
+	 */
 	public function setLineup() {
 		$this->getURIData();
 		$this->data['subTitle'] = "Set lineup";
@@ -2010,6 +2050,46 @@ class team extends BaseEditor {
 	/
 	/-------------------------------------------*/
 	/**
+	 *	
+	 *	ADD STATS TO PLAYERS LISt
+	 *	This function takes stats created by $this->dataModel->getTeamStats() and
+	 *	adds them to the Players array as a new 'stats' item.
+	 *
+	 * 	@param $players	{Array}		Array of players in [id] => {data Array} format
+	 *  @param $stats 	{Array}		Array of stats arrays
+	 *  @return			{Array}		A copy of the original players array with a stats entry for each matching player
+	 *	
+	 *	@since	1.0.4
+	 */
+	protected function addStatsToPlayerList($players = false, $stats = false) {
+
+		if ($players === false || $stats === false) { 
+			return false; 
+		} else {
+			$new_types = array();
+			foreach($players as $types => $player_list) {
+				$new_players = array();
+				$stats4Check = $stats;
+				foreach($player_list as $player_id => $player_data) {
+					$index = 0;
+					$found = false;
+					foreach($stats4Check as $statArray) {
+						if ($statArray['player_id'] == $player_id) {
+							array_splice($statArray, 0, 2);
+							$player_data['stats'] = $statArray;
+							array_splice($stats4Check, $index, 1);
+							break;
+						}
+						$index++;
+					}
+					$new_players[$player_id] = $player_data;
+				}
+				$new_types[$types] = $new_players;
+			}
+			return $new_types;
+		}
+	}
+	/**
 	 *	VERIFY ROSTERS FOR TRADE.
 	 *	Checks that players involved in a trade are actually still on the applicable teams active rosters
 	 *
@@ -2019,7 +2099,7 @@ class team extends BaseEditor {
 	 *	@param	$receiveList	Array of players to be received
 	 *	@param	$scoring_period	Scoring period Array object
 	 *	@return	$return			Emptry String on success, Message string on error	
-	 *	@since					1.0.4
+	 *	@since					1.0.4 Beta
 	 *	@see					tradeResponse
 	 */
 	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period) {
@@ -2255,7 +2335,17 @@ class team extends BaseEditor {
 		$this->makeNav();
 		
 	}
-	
+	/*----------------------------------------------------------
+	/	
+	/	SHOW INFO
+	/	Team Home Page
+	/	Overrides the BaseEditor->showInfo method.
+	/	Displayed the Lineup screen since the beggining. 
+	/
+	/	Since 1.0.3 PROD
+	/	@param $template	{String}	A template override if provided
+	/	
+	/----------------------------------------------------------*/
 	protected function showInfo($template = false) {
 
 		$this->data['thisItem']['team_id'] = $this->dataModel->id;
@@ -2390,6 +2480,17 @@ class team extends BaseEditor {
 			if ($this->params['config']['approvalType'] == 2) {
 				$this->data['tradesForReview'] = $this->user_meta_model->getTradesForReview($this->params['currUser'],$curr_period_id, $this->dataModel->id);
 			}
+		}
+
+		// ROSTER STATUS BOX
+		if ($this->data['isOwner']) {
+			if (!$this->league_model->validateRoster($this->dataModel->getBasicRoster($curr_period_id))) {
+				$this->data['message'] = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b><br />".$this->league_model->statusMess;
+				$this->data['messageType'] = 'error';
+			} else {
+				$this->data['message'] = "Your roster is currently valid!";
+				$this->data['messageType'] = 'success';
+			} // END if
 		}
 
 		$this->makeNav();

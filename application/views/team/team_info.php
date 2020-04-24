@@ -133,6 +133,32 @@
 			</div>
 			<?php
 			/*----------------------------------------
+			/	Roster Satus Alert
+			/---------------------------------------*/
+			// GET AND DISPLAY USER TRADES
+			if (isset($message) && !empty($message)) { ?>
+				<div class='textbox right-column'>
+					<table cellpadding="0" cellspacing="0">
+						<thead>	
+						<tr class="title">
+							<td class='hsc2_l'>Roster Status</td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>
+							<?php
+							$messageType = isset($messageType) ? $messageType : "";
+							echo('<span class="'.$messageType.'">'.$message.'</span>');
+							?>
+							</td>
+						</tr>
+					</tbody>
+					</table>
+				</div>
+			<?php
+			}
+			/*----------------------------------------
 			/	USER TRADE OFFERS
 			/---------------------------------------*/
 			// GET AND DISPLAY USER TRADES

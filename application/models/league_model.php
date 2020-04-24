@@ -356,7 +356,7 @@ class league_model extends base_model {
 	}
 	/**
 	* 	HAS VALID ROSTERS.
-	* 	<p>Simple test if teams in a legaue have players on rosters. it does not, howver,
+	* 	<p>Simple test if teams in a legaue have players on rosters. it does not, however,
     *	test if they are valid against a league roster rules.</p>
 	* 	@param	$league_id		{int}		The League Id
 	* 	@return					{Boolean}	TRUE if teams have rosters, FALSE if no
@@ -966,7 +966,7 @@ class league_model extends base_model {
 		$query->free_result();
 		return $divisions;
 	}
-	public function getTeamDetails($league_id = false,$selectBox = false, $noOwner = false) {
+	public function getTeamDetails($league_id = false, $selectBox = false, $noOwner = false) {
 
 		if ($league_id === false) { $league_id = $this->id; }
 
@@ -1741,7 +1741,16 @@ class league_model extends base_model {
 		}
 		return true;
 	}
-
+	/**
+	 * 	VALIDATE ROSTER
+	 * 
+	 * 	This function tests the provided roster against the leagues roster rules.
+	 * 	@param	$roster		Team Roster Array
+	 * 	@param	$league_id 	Optional league ID. Defaults to model value if no id is passed.
+	 * 	@return	{Boolean} 	TRUE if valid, FALSE if not
+	 * 	@since 	1.0
+	 * 
+	 */
 	public function validateRoster($roster,$league_id = false) {
 
 		//echo("Validate Roser<br />");
@@ -1750,7 +1759,7 @@ class league_model extends base_model {
 		$errors = "";
 
 		$rules = $this->getRosterRules($league_id);
-
+		$errCount = 0;
 		$activePos = array();
 		$activeCount = 0;
 		$reserveCount = 0;
@@ -1784,15 +1793,21 @@ class league_model extends base_model {
 					if ($activePos[$position] < $ruleData['active_min']) {
 						//echo("Count for ".strtoupper(get_pos($position))." is below the minimum of ".$ruleData['active_min']."<br />");
 						$valid = false;
-						$errors .= "<br />The position ".strtoupper(get_pos($position))." has ".$activePos[$position]." active players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "The position ".strtoupper(get_pos($position))." has ".$activePos[$position]." active players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						$errCount++;
 					} else if ($activePos[$position] > $ruleData['active_max']) {
 						$valid = false;
-						$errors .= "<br />The position ".strtoupper(get_pos($position))." has ".$activePos[$position]." active players. At most, ".$ruleData['active_max']." ".($ruleData['active_min']>1 ? "are" : "is")." allowed.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "The position ".strtoupper(get_pos($position))." has ".$activePos[$position]." active players. At most, ".$ruleData['active_max']." ".($ruleData['active_min']>1 ? "are" : "is")." allowed.";
+						$errCount++;
 					}
 				} else {
 					if ($ruleData['active_min'] > 0) {
 						$valid = false;
-						$errors .= "<br />The position ".strtoupper(get_pos($position))." has 0 active players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "The position ".strtoupper(get_pos($position))." has 0 active players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						$errCount++;
 					}
 				}
 			} else {
@@ -1800,38 +1815,113 @@ class league_model extends base_model {
 					//$active = sizeof($activeCount);
 					if ($activeCount < $ruleData['active_min']) {
 						$valid = false;
-						$errors .= "<br />Your teams has ".$activeCount." active players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "There are only ".$activeCount." active players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						$errCount++;
+
 					} else if ($activeCount > $ruleData['active_max']) {
 						$valid = false;
-						$errors .= "<br />Your teams has ".$activeCount." active players. At most, ".$ruleData['active_max']." ".($ruleData['active_max']>1 ? "are" : "is")." allowed.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "There are ".$activeCount." active players. At most, ".$ruleData['active_max']." ".($ruleData['active_max']>1 ? "are" : "is")." allowed.";
+						$errCount++;
 					}
 				}
 				if ($position == 101) {;
 					if ($reserveCount < $ruleData['active_min']) {
 						$valid = false;
-						$errors .= "<br />Your teams has ".$reserveCount." reserve players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "There are only ".$reserveCount." reserve players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						$errCount++;
 					} else if ($reserveCount > $ruleData['active_max']) {
 						$valid = false;
-						$errors .= "<br />Your teams has ".$reserveCount." reserve players. At most, ".$ruleData['active_max']." ".($ruleData['active_max']>1 ? "are" : "is")." allowed.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "There are ".$reserveCount." reserve players. At most, ".$ruleData['active_max']." ".($ruleData['active_max']>1 ? "are" : "is")." allowed.";
+						$errCount++;
 					}
 				}
 				if ($position == 102) {;
 					if ($injuredCount < $ruleData['active_min']) {
 						$valid = false;
-						$errors .= "<br />Your teams has ".$injuredCount." inured reserrve players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "There are only ".$injuredCount." inured reserrve players. At least ".$ruleData['active_min']." ".($ruleData['active_min']>1 ? "are" : "is")." required.";
+						$errCount++;
 					} else if ($injuredCount > $ruleData['active_max']) {
 						$valid = false;
-						$errors .= "<br />Your teams has ".$injuredCount." injured reserve players. At most, ".$ruleData['active_max']." ".($ruleData['active_max']>1 ? "are" : "is")." allowed.";
+						if ($errors != '') { $errors .= "<br />"; }
+						$errors .= "There are ".$injuredCount." injured reserve players. At most, ".$ruleData['active_max']." ".($ruleData['active_max']>1 ? "are" : "is")." allowed.";
+						$errCount++;
 					}
 				}
 			}
-
 		}
-		if (!$valid) $this->errorCode = 1;
+		if (!$valid) {
+			$this->errorCode = 1;
+		}
+		$this->$errorCount = $errCount;
 		$this->statusMess = $errors;
 		return $valid;
 	}
-
+	/**
+	 * 	VALIDATE LEAGUE ROSTERS
+	 * 	
+	 * 	Validate the rosters of all teams in a league. 
+	 * 	Mainly a simple helper that calls validateRoster() for the passed teams.
+	 * 
+	 *	@param	$period_id		{Array}	
+	 *	@param	$league_id		{Array}	
+	 *	@param	$excludeList	{Array}		Array of treams to exclude from validation
+	 *	@return					{Array}		Array of validation reports for each team
+	 *	@since	1.0.3 PROD
+	 */
+	public function validateRosters($period_id = false, $league_id = false, $excludeList = array()) {
+		
+		if ($league_id === false) { $league_id = $this->id; }
+		if ($period_id === false) { $period_id = 1; }
+		
+		$validation = array();
+		if ($league_id === false) { $league_id = $this->id; }
+		$message = "";
+		$allValid = true;
+		if (!function_exists('getBasicRoster')) {
+			$this->load->helper('roster');
+		}
+		$teams = $this->getTeamDetails($league_id);
+		if (sizeof($teams) > 0) {
+			foreach($teams as $team_id => $details) {
+				if (!in_array($team_id, $excludeList)) {
+					$roster = getBasicRoster($team_id, $period_id);
+					$valid = $this->validateRoster($roster, $league_id);
+					array_push($validation, array('team_id'=>$team_id, 'details'=>$details, 'rosterValid'=>(($valid)?1:-1), 'issueCount'=>$this->$errorCount, 'validationDetails'=>$this->statusMess));
+					if (!$valid) $allValid = false;
+				} else {
+					array_push($validation, array('team_id'=>$team_id, 'details'=>$details, 'rosterValid'=>100, 'issueCount'=>0, 'validationDetails'=>'Validation Skipped'));
+				}
+			}
+		} else {
+			array_push($validation, array('team_id'=>'-1', NULL, -1, 1, "The League has no teams."));
+		}
+		if (!$allValid) {
+			$this->errorCode = 1;
+			$this->$errorCount = $errorCount;
+			$this->statusMess = "error|One or more rosters are currently invalid!";
+		} else {
+			$this->statusMess = "success|All rosters are currently valid!";
+		}
+		return $validation;
+	}
+	/**
+	 * 	GET GAMES FOR PERIOD
+	 * 	
+	 * 	Returns the games for a league for the passed scoring period
+	 * 
+	 *	@param	$period_id		{Int}		The scoring period ID
+	 *	@param	$excludeList	{Array}		Sets game count to 0 for any passed IDs
+	 *	@param	$league_id		{Int}		Optional league ID. Defaults to model value if no id is passed.
+	 *	@return					{Array}		An array of games
+	 *	@since	1.0
+	 *
+	 *
+	 */
 	public function getGamesForPeriod($period_id = false, $excludeList = array(), $league_id = false) {
 
 		if ($period_id === false) { $period_id = 1; }
