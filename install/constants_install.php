@@ -51,8 +51,8 @@ define("MESSAGE_SUCCESS",'success');
 define("TEMPLATE_DEFAULT",'template');
 define("TIMEZONE_DEFAULT",'Americas/New_York');
 
-define('EMPTY_DATE_STR','0000-00-00');
-define('EMPTY_DATE_TIME_STR','0000-00-00 00:00:00');
+define('EMPTY_DATE_STR','1970-01-01');
+define('EMPTY_DATE_TIME_STR','1970-01-01 00:00:00');
 
 define('EMPTY_TIME_STR','00:00:00');
 

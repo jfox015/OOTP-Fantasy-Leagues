@@ -1772,8 +1772,9 @@ class draft extends BaseEditor {
 		$this->data['thisItem']['league_id'] = $this->dataModel->league_id;
 		$draftPeriod = explode(":",$this->params['config']['draft_period']);
 		$this->data['draftStart'] = $draftPeriod[0];
-		$this->data['draftEnd'] = $draftPeriod[1];
-		
+		if (isset($draftPeriod[1])) {
+			$this->data['draftEnd'] = $draftPeriod[1];
+		}
 		$this->makeNav();
 	}
 	/**

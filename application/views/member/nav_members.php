@@ -12,7 +12,7 @@
           </ul>
           
         <?php } ?>
-        <h3>More Attendee Tools</h3>
+        <h3>More Member Tools</h3>
         <ul class="nav">
             <li><?php echo( anchor('/search/members','View member list')); ?></li>
             <li><?php echo( anchor('/member/submit/add','Add a new member')); ?></li>

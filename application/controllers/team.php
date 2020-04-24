@@ -2418,6 +2418,7 @@ class team extends BaseEditor {
 			$this->rules = $this->league_model->getScoringRules(0);
 		}
 
+		$this->data['years'] = $this->ootp_league_model->getAllSeasons();
 		if (isset($this->uriVars['year'])) {
 			$this->data['lgyear'] = $this->uriVars['year'];
 		} else {

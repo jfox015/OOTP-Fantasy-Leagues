@@ -14,7 +14,7 @@
           </ul>
           
         <?php }} ?>
-        <h3>More Attendee Tools</h3>
+        <h3>More News Tools</h3>
         <ul class="nav">
             <li><?php echo( anchor('/search/news','View news list')); ?></li>
             <li><?php echo( anchor('/news/submit/add','Add a new news')); ?></li>

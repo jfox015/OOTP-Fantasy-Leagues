@@ -1857,7 +1857,7 @@ class league_model extends base_model {
 		if (!$valid) {
 			$this->errorCode = 1;
 		}
-		$this->$errorCount = $errCount;
+		$this->errorCount = $errCount;
 		$this->statusMess = $errors;
 		return $valid;
 	}
@@ -1867,16 +1867,17 @@ class league_model extends base_model {
 	 * 	Validate the rosters of all teams in a league. 
 	 * 	Mainly a simple helper that calls validateRoster() for the passed teams.
 	 * 
-	 *	@param	$period_id		{Array}	
-	 *	@param	$league_id		{Array}	
-	 *	@param	$excludeList	{Array}		Array of treams to exclude from validation
-	 *	@return					{Array}		Array of validation reports for each team
+	 *	@param	$scoring_period		{Array}	
+	 *	@param	$league_id			{Int}	
+	 *	@param	$excludeList		{Array}		Array of treams to exclude from validation
+	 *	@return						{Array}		Array of validation reports for each team
 	 *	@since	1.0.3 PROD
 	 */
-	public function validateRosters($period_id = false, $league_id = false, $excludeList = array()) {
+	public function validateRosters($scoring_period = false, $league_id = false, $excludeList = array()) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
-		if ($period_id === false) { $period_id = 1; }
+		if ($excludeList === false) { $excludeList = array(); }
+		if ($scoring_period === false) { array('id'=>1, 'date_start'=>EMPTY_DATE_STR, 'date_end'=>EMPTY_DATE_STR,'manual_waivers'=>-1); }
 		
 		$validation = array();
 		if ($league_id === false) { $league_id = $this->id; }
@@ -1888,10 +1889,10 @@ class league_model extends base_model {
 		$teams = $this->getTeamDetails($league_id);
 		if (sizeof($teams) > 0) {
 			foreach($teams as $team_id => $details) {
-				if (!in_array($team_id, $excludeList)) {
-					$roster = getBasicRoster($team_id, $period_id);
+				if (!in_array($team_id, $excludeList, false)) {
+					$roster = getBasicRoster($team_id, $scoring_period);
 					$valid = $this->validateRoster($roster, $league_id);
-					array_push($validation, array('team_id'=>$team_id, 'details'=>$details, 'rosterValid'=>(($valid)?1:-1), 'issueCount'=>$this->$errorCount, 'validationDetails'=>$this->statusMess));
+					array_push($validation, array('team_id'=>$team_id, 'details'=>$details, 'rosterValid'=>(($valid)?1:-1), 'issueCount'=>$this->errorCount, 'validationDetails'=>$this->statusMess));
 					if (!$valid) $allValid = false;
 				} else {
 					array_push($validation, array('team_id'=>$team_id, 'details'=>$details, 'rosterValid'=>100, 'issueCount'=>0, 'validationDetails'=>'Validation Skipped'));

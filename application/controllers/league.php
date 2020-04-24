@@ -332,7 +332,7 @@ class league extends BaseEditor {
 					$curr_period_id = $this->params['config']['current_period'];
 				}
 				$curr_period = getScoringPeriod($curr_period_id);
-				$this->data['rosterStatus'] = $this->dataModel->validateRosters($curr_period_id, $this->data['league_id']);
+				$this->data['rosterStatus'] = $this->dataModel->validateRosters($curr_period, $this->data['league_id']);
 				$this->data['statusMessage'] = $this->dataModel->statusMess;
 
 				$this->makeNav();
