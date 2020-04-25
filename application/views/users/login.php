@@ -1,12 +1,21 @@
-		<!-- BEGIN LOGIN FORM -->
+<script type="text/javascript" charset="UTF-8">
+$(document).ready(function(){	
+    $('button[rel=register]').live('click',function (e) {
+        e.preventDefault();
+        document.location.href = '<?php echo($config['fantasy_web_root']); ?>/user/register';
+    });
+});
+</script>
+
+<!-- BEGIN LOGIN FORM -->
     <div id="center-single"> 
     	<h1><?php print($this->lang->line('user_login_title')); ?></h1>
-        <p /><br />
+        <p><br />
     </div>
     <div id="center-column">
         
         <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" style="width:640px;">
+        <table cellpadding="0" cellspacing="0" style="width:640px;">
         <tr class='title'>
             <td style='padding:3px' colspan="2"><?php print($this->lang->line('user_login_inst')); ?></td>
         </tr>
@@ -39,7 +48,7 @@
 	<div id="right-column">
     	
 	    <div class='textbox right-column'>
-        <table cellpadding="0" cellspacing="0" border="0">
+        <table cellpadding="0" cellspacing="0">
         <tr class='title'>
             <td style='padding:3px;color:#ff0;'><?php print($this->lang->line('user_login_register_title')); ?></td>
         </tr>
@@ -48,7 +57,7 @@
             <?php print($this->lang->line('user_login_register_body')); ?>
             <br /><br />
             <p style="width:100%; text-align:center;">
-            <b><?php echo(anchor('/user/register','REGISTER NOW!',array('class'=>'register'))); ?></b>
+            <button class="sitebtn register" rel="register">REGISTER NOW!</button>
      		</p></td>
         </tr>
         </table>
@@ -57,7 +66,7 @@
 		<?php 
 		if (isset($authenticationType) && $authenticationType == 1) { ?>
         <div class='textbox right-column'>
-        <table cellpadding="0" cellspacing="0" border="0">
+        <table cellpadding="0" cellspacing="0">
         <tr class='title'>
             <td style='padding:3px'><?php print($this->lang->line('user_login_activate_title')); ?></td>
         </tr>

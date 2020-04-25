@@ -813,6 +813,41 @@ class league_model extends base_model {
 		//echo($this->db->last_query()."<br />");
 		return $leagues;
 	}
+	/**	
+	 *	GET LEAGUE LISTING.
+	 *	Returns a list of all leagues on the site. The array ciontains extended information such as if it is accepting owners,
+	 *  if so, if it has openings as well.
+	 * 	
+	 *  @param	$user_id - The user ID to check against
+	 *	@return	leagues array, empty if not league found on failure
+	 *	@since 	1.0.3 PROD
+	 *
+	 */
+	public function getLeagueList($user_id = false) {
+		$leagues = array();
+		$select = $this->tblName.'.id, league_name, description, avatar, league_status, leagueStatus, max_teams, accept_requests, shortDesc, commissioner_id, username, access_type, league_type, leagueType, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount';
+		if ($user_id !== false) {
+			$select .=  ', (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND owner_id = '.$user_id.') as teamsOwned';
+		}
+		$this->db->select($select);
+		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
+		$this->db->join('fantasy_leagues_status','fantasy_leagues_status.id = '.$this->tblName.'.league_status','left');
+		$this->db->join("users_core","users_core.id = ".$this->tblName.".commissioner_id", "left");
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			foreach ($query->result() as $row) {
+				array_push($leagues,array('league_id'=>$row->id,'league_name'=>$row->league_name,'description'=>$row->description,'avatar'=>$row->avatar,'access_type'=>$row->access_type,
+															'league_status'=>$row->league_status,'accept_requests'=>$row->accept_requests,'max_teams'=>$row->max_teams,
+															'shortDesc'=>$row->shortDesc,'commissioner'=>$row->username, 'commissioner_id'=>$row->commissioner_id,
+															'league_type_desc'=>$row->shortDesc,'league_type_lbl'=>$row->leagueType,'league_status_lbl'=>$row->leagueStatus,
+															'league_type'=>$row->league_type,'openCount'=>$row->openCount,'teamsOwned'=>$row->teamsOwned));
+			}
+		}
+		//echo($this->db->last_query()."<br />");
+		$query->free_result();
+		return $leagues;
+	}
+	
 	protected function loadLeagueTeams($league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$teamNames = array();
@@ -1486,40 +1521,6 @@ class league_model extends base_model {
 		$query->free_result();
 		unset($query);
 		return $transactions;
-	}
-	/**
-	 *	GET OPEN LEAGUES.
-	 *	Returns pending waiver claims for the specified league.
-	 *  @param	$team_id - If not specified, the schedule for the entire league is returned.
-	 *  @param	$league_id - If not specified, no league filter is applied.
-	 *	@return	schedule array, false on failure
-	 */
-	public function getOpenLeagues($user_id = false) {
-
-		$leagues = array();
-		$select = $this->tblName.'.id,league_name,commissioner_id,username,leagueType, max_teams, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount';
-		if ($user_id !== false) {
-			$select .=  ', (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND owner_id = '.$user_id.') as teamsOwned';
-		}
-		$this->db->select($select);
-		$this->db->join("fantasy_leagues_types","fantasy_leagues_types.id = ".$this->tblName.".league_type", "left");
-		$this->db->join("users_core","users_core.id = ".$this->tblName.".commissioner_id", "left");
-		$this->db->where('accept_requests',1);
-		$this->db->where('league_status',1);
-		$query = $this->db->get($this->tblName);
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				if ($row->openCount > 0 && ($user_id === false || ($user_id !== false && isset($row->teamsOwned) && $row->teamsOwned == 0))) {
-					array_push($leagues,array('id'=>$row->id,'league_name'=>$row->league_name, 'max_teams'=>$row->max_teams,
-										 'leagueType'=>$row->leagueType, 'openings'=>$row->openCount,
-										 'commissioner_id'=>$row->commissioner_id,'commissioner_name'=>$row->username));
-
-				} // END if
-			} // END foreach
-		} // END if
-		$query->free_result();
-		unset($query);
-		return $leagues;
 	}
 	/**
 	 *	GET WAIVER CLAIMS.
@@ -3403,5 +3404,45 @@ class league_model extends base_model {
 			$query->free_result();
 		}
 		return false;
+	}
+	/*----------------------------------------------------
+	/
+	/	DEPRECATED FUNCTIONS
+	/
+	/---------------------------------------------------*/
+	/**
+	*	GET OPEN LEAGUES.
+	*	Returns a list of league available to the current player.
+	*  	@param	$user_id - The user ID to check against
+	*	@return	leagues array, empty if not league found on failure
+	*
+	*  	@deprecated		1.0.3 PROD onward, use getLeagueList() instead
+	*/
+	public function getOpenLeagues($user_id = false) {
+
+		$leagues = array();
+		$select = $this->tblName.'.id,league_name,commissioner_id,username,leagueType, max_teams, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount';
+		if ($user_id !== false) {
+			$select .=  ', (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND owner_id = '.$user_id.') as teamsOwned';
+		}
+		$this->db->select($select);
+		$this->db->join("fantasy_leagues_types","fantasy_leagues_types.id = ".$this->tblName.".league_type", "left");
+		$this->db->join("users_core","users_core.id = ".$this->tblName.".commissioner_id", "left");
+		$this->db->where('accept_requests',1);
+		$this->db->where('league_status',1);
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				if ($row->openCount > 0 && ($user_id === false || ($user_id !== false && isset($row->teamsOwned) && $row->teamsOwned == 0))) {
+					array_push($leagues,array('id'=>$row->id,'league_name'=>$row->league_name, 'max_teams'=>$row->max_teams,
+											'leagueType'=>$row->leagueType, 'openings'=>$row->openCount,
+											'commissioner_id'=>$row->commissioner_id,'commissioner_name'=>$row->username));
+
+				} // END if
+			} // END foreach
+		} // END if
+		$query->free_result();
+		unset($query);
+		return $leagues;
 	}
 }

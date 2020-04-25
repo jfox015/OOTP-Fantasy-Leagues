@@ -597,20 +597,23 @@ class league extends BaseEditor {
 	    }
 	}
 	/**
-	 *	FIND A LEAGUE.
-	 *	Show a list of leagues that are 1) have teams without owners and 2) are open to requests from
-	 *	site members.
+	 *	LEAGUE Listing.
+	 *	Shows a list of leagues that are on the site. Replaces both the League Search and joinleague
+	 *  screens
 	 *
-	 *	@since	1.0.5
+	 *	@since	1.0.3 PROD
+	 *  
 	 *
 	 */
-	public function joinleague() {
+	public function leagueList() {
 		$this->init();
-		$this->data['league_finder_intro_str'] = $this->lang->line('league_finder_intro_str');
-		$this->data['subTitle'] = $this->lang->line('league_finder_title');
+		$this->data['league_list_intro_str'] = $this->lang->line('league_list_intro_str');
+		$this->data['subTitle'] = $this->lang->line('league_list_title');
 		$userVar = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->params['currUser'] : false;
-		$this->data['league_list'] = $this->dataModel->getOpenLeagues($userVar);
+		$this->data['league_list'] = $this->dataModel->getLeagueList($userVar);
+		$this->data['loggedIn'] =$this->params['loggedIn'];
 		$this->makeNav();
+		$this->params['pageType'] = PAGE_FORM;
 		$this->params['content'] = $this->load->view($this->views['LEAGUE_LIST'], $this->data, true);
 		$this->displayView();
 	}
@@ -2044,6 +2047,31 @@ class league extends BaseEditor {
 		}
 		array_push($this->params['subNavSection'],league_nav($this->dataModel->id, $this->dataModel->league_name,$admin,false,$this->dataModel->getScoringType(),$private));
 	}
+	/*----------------------------------------------------
+	/
+	/	DEPRECATED FUNCTIONS
+	/
+	/---------------------------------------------------*/
+	/**
+	 *	FIND A LEAGUE.
+	 *	Show a list of leagues that are 1) have teams without owners and 2) are open to requests from
+	 *	site members.
+	 *
+	 *	@since	1.0.5
+	 *	@deprecated 1.0.3 PROD onward, Use this->leaguelist() now insead
+	 *
+	 */
+	public function joinleague() {
+		$this->init();
+		$this->data['league_finder_intro_str'] = $this->lang->line('league_finder_intro_str');
+		$this->data['subTitle'] = $this->lang->line('league_finder_title');
+		$userVar = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->params['currUser'] : false;
+		$this->data['league_list'] = $this->dataModel->getOpenLeagues($userVar);
+		$this->makeNav();
+		$this->params['content'] = $this->load->view($this->views['LEAGUE_LIST'], $this->data, true);
+		$this->displayView();
+	}
+	
 }
 /* End of file league.php */
 /* Location: ./application/controllers/league.php */

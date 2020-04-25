@@ -70,6 +70,9 @@ Please note that any and all dependant information associated with this record m
 /*------------------------------------
 /	LEAGUE MESSAGING
 /-----------------------------------*/
+$lang['league_list_title'] = 'Fantasy Leagues';
+$lang['league_list_intro_str'] = 'Below is a list of the leagues available on this site. If the League is accepting new members, you can click the <b>Request a Team</b> link below to send the league commissioner a request for a team.';
+
 $lang['league_finder_title'] = 'Join a League';
 $lang['league_finder_intro_str'] = 'Below is a list of leagues with team openings that are accepting new members. Click the <b>Request a Team</b> link below to send the league commissioner a request for a team.';
 

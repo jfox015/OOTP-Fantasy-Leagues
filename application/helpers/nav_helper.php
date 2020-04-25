@@ -1,7 +1,7 @@
 <?php
 function top_nav($logged_in = false, $show_admin = false, $userTeams = array()) {
 	$nav = array(array('url'=>'/home','label'=>'Home'));
-	$leagueSubMenu = '<div class="drop">
+	/*$leagueSubMenu = '<div class="drop">
 						<span class="t">&nbsp;</span>
 						<ul>';
 	$leagueSubMenu .= '<li>'.anchor('/search/leagues','Search Leagues').'</li>';
@@ -9,8 +9,8 @@ function top_nav($logged_in = false, $show_admin = false, $userTeams = array()) 
 	$leagueSubMenu .= '</ul>
 					<span class="b">&nbsp;</span>
 				</div>';
-	array_push($nav,array('url'=>'','label'=>'<span class="opener">Leagues</span>','menu'=>$leagueSubMenu));
-	
+	array_push($nav,array('url'=>'','label'=>'<span class="opener">Leagues</span>','menu'=>$leagueSubMenu));*/
+	array_push($nav,array('url'=>'/league/leagueList','label'=>'Leagues'));
 	$ctrlr = 'user';
 	if ($logged_in) {
 		if ($show_admin) {

@@ -11,6 +11,10 @@ img { border: 0; }
 	margin-top:16px;
 	font-size: 28px;
 }
+.top-bar.leagues {
+	width:100%;
+	text-align: right;
+}
 /* nav */
 #subnav li {
 	position:relative;
@@ -313,6 +317,10 @@ div.rule {
 }
 .layout-column:first-child {
 	margin-right: 20px;
+	width: 58%;
+}
+.layout-column:last-child {
+	width: 41%;
 }
 .layout-column {
 	padding-right: 6px;
@@ -349,11 +357,11 @@ section.content {
 	align-items: center;
 	padding:10px 0 10px 0;
 }
-figure.logo-lg {
+figure.logo-lg, figure.logo-exlg {
 	padding: 0 12px 0 20px;
     margin: 0;
 }
-.logo-lg > img {
+.logo-lg > img, .logo-exlg > img {
 	width: 50px;
 	margin: 0;
 	max-width: 100%;
@@ -361,6 +369,10 @@ figure.logo-lg {
     overflow: hidden;
     position: relative;
 }
+.logo-exlg > img {
+	width: 75px;
+}
+
 .flexContent {
 	padding-left: 8px!important;
 }
@@ -371,6 +383,93 @@ figure.logo-lg {
     line-height: 22px;
     font-size: 18px;
 }
+.teamLinks a.leagueLink  {
+	display: inline;
+    color: #151617;
+    font-weight: 600;
+    line-height: 28px;
+    font-size: 24px;
+}
+
+.sitebtn {
+	display: inline-block;
+	font-family: "Montserrat", "Trebuchet MS", Helvetica, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	position: relative;
+	padding: 0.8em 1.4em;
+	padding-right: 4.7em;
+	background: #009ED8;
+	border: none;
+	color: white;
+	transition: 0.2s;
+}
+.sitebtn:before,
+.sitebtn:after {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	padding-top: inherit;
+	padding-bottom: inherit;
+	width: 2.8em;
+	content: "\00b1";
+	/*font-family: 'FontAwesome', sans-serif;*/
+	font-size: 1.3em;
+	text-align: center;
+	transition: 0.2s;
+	transform-origin: 50% 60%;
+}
+.sitebtn:before {
+	background: rgba(0, 0, 0, 0.1);
+	}
+.sitebtn:hover {
+	background: #0079a5;
+	cursor: pointer;
+	}
+.sitebtn:active,
+.sitebtn:focus {
+	background: #002e3f;
+	outline: none;
+	}
+.sitebtn {
+	min-width: 15em;
+	}
+.create_league {
+	background: #139675;
+}
+.create_league:hover {
+	background: #0d6952;
+}
+.create_league:active,
+.create_league:focus {
+	background: #083b2e;
+}
+.create_league:after {
+	content: "\F095";
+}
+.create_league:hover:after {
+	-webkit-animation: wiggle 0.05s alternate ease infinite;
+	animation: wiggle 0.05s alternate ease infinite;
+}
+
+.register {
+	background: #940c0c;
+}
+.register:hover {
+	background: #530707;
+}
+.register:active,
+.register:focus {
+	background: #5f0303;
+}
+.register:after {
+	content: "\003e";
+}
+.register:hover:after {
+	-webkit-animation: wiggle 0.05s alternate ease infinite;
+	animation: wiggle 0.05s alternate ease infinite;
+}
+
 
 .dashboard ul.iconmenu  {
 	list-style:none;
