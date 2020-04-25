@@ -136,60 +136,26 @@
                 <tr class='title'>
                     <td style='padding:3px'>Share this story</td>
                 </tr>
-                
                 <tr>
                 	<td style='padding:12px'>
                     <?php 
-					$buttonsDrawn = false;
-					if (isset($config['share_facebook']) && $config['share_facebook'] == 1) { ?>
-					<!-- FACEBOOK BUTTON -->
-                    <iframe src="http://www.facebook.com/plugins/like.php?href=%3C%3Fphp+echo%28%24_SERVER%5B%27PHP_SELF%27%5D%29%3B+%3F%3E&amp;layout=box_count&amp;show_faces=true&amp;width=50&amp;action=like&amp;font=verdana&amp;colorscheme=light&amp;height=60" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:58px; height:65px;" allowTransparency="true" style="margin: 10px 0 0 0"></iframe>
-					<?php 
-						if (!$buttonsDrawn) { $buttonsDrawn = true; }
-					} ?>
-                    <?php if (isset($config['share_twitter']) && $config['share_twitter'] == 1) { ?>
-					<!-- TWITTER BUTTON -->
-					<script type="text/javascript">
-					tweetmeme_service = 'bit.ly';
-					</script>
-					<script type="text/javascript" src="http://tweetmeme.com/i/scripts/button.js"></script>
-                    <?php 	if (!$buttonsDrawn) { $buttonsDrawn = true; }
-					} ?>
-                    <?php if (isset($config['share_digg']) && $config['share_digg'] == 1) { ?>
-					<!-- DIGG BUTTON -->
-					<script type="text/javascript">
-					(function() {
-					var s = document.createElement('SCRIPT'), s1 = document.getElementsByTagName('SCRIPT')[0];
-					s.type = 'text/javascript';
-					s.async = true;
-					s.src = 'http://widgets.digg.com/buttons.js';
-					s1.parentNode.insertBefore(s, s1);
-					})();
-					</script>
-					<!-- Medium Button -->
-					<a class="DiggThisButton DiggMedium"></a>
-                    <?php if (!$buttonsDrawn) { $buttonsDrawn = true; }
-					} ?>
-                    <?php if (isset($config['share_stumble']) && $config['share_stumble'] == 1) { ?>
-					<!-- STUMBLE BUTTON -->
-                    <script src="http://www.stumbleupon.com/hostedbadge.php?s=5"></script>
-                    <?php 	if (!$buttonsDrawn) { $buttonsDrawn = true; }
-					} ?>
-                    <?php if ($buttonsDrawn) { ?><br clear="all" /><br /><?php } ?>
-					<?php if (isset($config['share_addtoany']) && $config['share_addtoany'] == 1) { ?>
+                    $buttonsDrawn = false;
+                    if (isset($config['share_addtoany']) && $config['share_addtoany'] == 1) { ?>
                     <!-- AddToAny BEGIN -->
-                    <div class="a2a_kit a2a_default_style">
-                    <a class="a2a_dd" href="http://www.addtoany.com/share_save">Share</a>
-                    <span class="a2a_divider"></span>
+                    <!-- AddToAny BEGIN -->
+                    <div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+                    <a class="a2a_dd" href="https://www.addtoany.com/share"></a>
                     <a class="a2a_button_facebook"></a>
                     <a class="a2a_button_twitter"></a>
                     <a class="a2a_button_email"></a>
+                    <a class="a2a_button_reddit"></a>
                     </div>
-                    <script type="text/javascript">
+                    <script>
                     var a2a_config = a2a_config || {};
                     a2a_config.onclick = 1;
                     </script>
-                    <script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+                    <script async src="https://static.addtoany.com/menu/page.js"></script>
+                    <!-- AddToAny END -->
                     <!-- AddToAny END -->
                     <?php } ?>
                     </td>

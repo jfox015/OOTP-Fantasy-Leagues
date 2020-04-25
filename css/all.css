@@ -470,6 +470,13 @@ figure.logo-lg, figure.logo-exlg {
 	animation: wiggle 0.05s alternate ease infinite;
 }
 
+.security {
+	display:block;
+	float: left;
+	clear: right;
+    margin: 4px;
+}
+
 
 .dashboard ul.iconmenu  {
 	list-style:none;

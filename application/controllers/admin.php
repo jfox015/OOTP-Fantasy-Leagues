@@ -300,10 +300,6 @@ class admin extends MY_Controller {
 			redirect('user/login');
 		} else {
 			$fields = array('sharing_enabled' =>  'Social Media Sharing Options',
-			'share_facebook' => 'Facebook',
-			'share_twitter' => 'Twitter',
-			'share_digg' => 'Digg',
-			'share_stumble' => 'Stumbleupon',
 			'share_addtoany' => 'Add To Any');
 			foreach($fields as $field => $label) {
 				$this->form_validation->set_rules($field, $label, 'required');
@@ -543,69 +539,6 @@ class admin extends MY_Controller {
 			}
 		}
 	}
-
-	/**
-	 *	SECURITY CONFIG.
-	 *	Updates the sites security and spam protection settings.
-	 *
-	 *	@since 0.6
-	 *
-	 */
-	function configSecurity() {
-		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
-			$this->session->set_flashdata('loginRedirect',current_url());
-			redirect('user/login');
-		} else {
-			$this->form_validation->set_rules('security_enabled', 'Security Enabled', 'required');
-			$this->form_validation->set_rules('security_type', 'Anti Spam Countermeasure Type', 'required');
-			$fields = array('recaptcha_key_public' => 'reCAPTCHA public key',
-				'recaptcha_key_private' => 'reCAPTCHA private key',
-				'recaptcha_theme' => 'reCAPTCHA Theme',
-				'recaptcha_lang' => 'reCAPTCHA Language',
-				'recaptcha_compliant' => 'reCAPTCHA Standards Compliance Mode',
-				'security_class' => 'Security Class');
-			foreach($fields as $field => $label) {
-				$this->form_validation->set_rules($field, $label, 'trim');
-			}
-			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
-
-			if ($this->form_validation->run() == false) {
-					$this->data['outMess'] = '';
-				$this->data['input'] = $this->input;
-				$this->data['subTitle'] = "Site Security Settings";
-				$this->params['content'] = $this->load->view($this->views['CONFIG_SECURITY'], $this->data, true);
-				$this->params['subTitle'] = "OOTP Config Options";
-				$this->params['pageType'] = PAGE_FORM;
-				$this->displayView();
-			} else {
-				$change = false;
-				$configArr = array();
-				$change = update_config('security_enabled',$this->input->post('security_enabled'));
-				$change = update_config('security_type',$this->input->post('security_type'));
-				foreach($fields as $field => $label) {
-					$value= ($this->input->post($field)) ? $this->input->post($field) : '';
-					$configArr = $configArr + array($field=>$value);
-					//echo($field." = ".$value."<br />");
-				}
-				$change = update_config_by_array($configArr);
-				if ($change) {
-					$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
-					redirect('admin/dashboard');
-				} else {
-					$message = '<span class="error">Settings update failed.</span>';
-					$this->data['outMess'] = $message;
-					$this->data['outMess'] = '';
-					$this->data['input'] = $this->input;
-					$this->data['subTitle'] = "Site Security Settings";
-					$this->params['content'] = $this->load->view($this->views['CONFIG_SECURITY'], $this->data, true);
-					$this->params['subTitle'] = "OOTP Config Options";
-					$this->params['pageType'] = PAGE_FORM;
-					$this->displayView();
-				}
-			}
-		}
-	}
-
 	/**
 	 *	ROSTER CONFIG.
 	 *	Sets the game start date and drafting period dates.
@@ -1717,6 +1650,71 @@ class admin extends MY_Controller {
 			$this->uriVars['status'] = $this->input->post('status');
 		} // END if
 	}
+	/*------------------------------------
+	/	DEPRECATED
+	/-----------------------------------*/
+	/**
+	 *	SECURITY CONFIG.
+	 *	Updates the sites security and spam protection settings.
+	 *
+	 *	@since 0.6
+	 *	@deprecated 	1.0.3 PROD	- Recaptcha v1 no longer supported by Google
+	 *
+	 */
+	/*function configSecurity() {
+		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
+			$this->session->set_flashdata('loginRedirect',current_url());
+			redirect('user/login');
+		} else {
+			$this->form_validation->set_rules('security_enabled', 'Security Enabled', 'required');
+			$this->form_validation->set_rules('security_type', 'Anti Spam Countermeasure Type', 'required');
+			$fields = array('recaptcha_key_public' => 'reCAPTCHA public key',
+				'recaptcha_key_private' => 'reCAPTCHA private key',
+				'recaptcha_theme' => 'reCAPTCHA Theme',
+				'recaptcha_lang' => 'reCAPTCHA Language',
+				'recaptcha_compliant' => 'reCAPTCHA Standards Compliance Mode',
+				'security_class' => 'Security Class');
+			foreach($fields as $field => $label) {
+				$this->form_validation->set_rules($field, $label, 'trim');
+			}
+			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
+
+			if ($this->form_validation->run() == false) {
+					$this->data['outMess'] = '';
+				$this->data['input'] = $this->input;
+				$this->data['subTitle'] = "Site Security Settings";
+				$this->params['content'] = $this->load->view($this->views['CONFIG_SECURITY'], $this->data, true);
+				$this->params['subTitle'] = "OOTP Config Options";
+				$this->params['pageType'] = PAGE_FORM;
+				$this->displayView();
+			} else {
+				$change = false;
+				$configArr = array();
+				$change = update_config('security_enabled',$this->input->post('security_enabled'));
+				$change = update_config('security_type',$this->input->post('security_type'));
+				foreach($fields as $field => $label) {
+					$value= ($this->input->post($field)) ? $this->input->post($field) : '';
+					$configArr = $configArr + array($field=>$value);
+					//echo($field." = ".$value."<br />");
+				}
+				$change = update_config_by_array($configArr);
+				if ($change) {
+					$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
+					redirect('admin/dashboard');
+				} else {
+					$message = '<span class="error">Settings update failed.</span>';
+					$this->data['outMess'] = $message;
+					$this->data['outMess'] = '';
+					$this->data['input'] = $this->input;
+					$this->data['subTitle'] = "Site Security Settings";
+					$this->params['content'] = $this->load->view($this->views['CONFIG_SECURITY'], $this->data, true);
+					$this->params['subTitle'] = "OOTP Config Options";
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				}
+			}
+		}
+	}*/
 }
 /* End of file admin.php */
 /* Location: ./application/controllers/admin.php */

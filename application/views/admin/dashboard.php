@@ -314,11 +314,6 @@
             Users requiring activation</li>
             <li><?php echo anchor('admin/configAbout','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
             Edit &quot;About&quot; Page</li>
-            <!-- PLACEHOLDER - DB BACKUP -->
-            <!-- PLACEHOLDER - MEMBER MESSAGING -->
-            <!-- PLACEHOLDER - PERMISSIONS -->
-            <li><?php echo anchor('admin/configSecurity','<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
-            Security Settings</li>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'remove')); ?><br />
             Uninstall Database</li>
             <li></li>

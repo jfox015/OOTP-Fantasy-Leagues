@@ -26,8 +26,9 @@
 			$form->html('Setting the following option to <strong>disabled</strong> turns off all social media options sitewide. You can fine tune which options to use below.');
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('sharing_enabled',$responses,'Social Media Sharing Options',($this->input->post('sharing_enabled') ? $this->input->post('sharing_enabled') : $config['sharing_enabled']),'required');
-			$form->space();
-			$form->fieldset('Social Sharing Tools');
+            $form->space();
+            // EDIT 1.0.3 PROD - Deprecated all individual buttons in favor of only AddToAny, others are redundant
+			/*$form->fieldset('Social Sharing Tools');
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('share_facebook',$responses,'<img src="'.PATH_IMAGES.'icons/facebook.png" align="absmiddle" /> Facebook',($this->input->post('share_facebook') ? $this->input->post('share_facebook') : $config['share_facebook']),'required');
 			$form->space();
@@ -39,7 +40,7 @@
 			$form->space();
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('share_stumble',$responses,'<img src="'.PATH_IMAGES.'icons/stumbleupon.png" align="absmiddle" /> StumbleUpon',($this->input->post('share_stumble') ? $this->input->post('share_stumble') : $config['share_stumble']),'required');
-			$form->space();
+			$form->space();*/
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('share_addtoany',$responses,'<img src="'.PATH_IMAGES.'icons/addtoany.png" align="absmiddle" /> Add to Any',($this->input->post('share_addtoany') ? $this->input->post('share_addtoany') : $config['share_addtoany']),'required');
 			$form->space();

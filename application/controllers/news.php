@@ -324,6 +324,9 @@ class news extends BaseEditor {
 		if ($this->dataModel->news_date != EMPTY_DATE_TIME_STR) { 
 			$this->data['thisItem']['news_date'] = date('m/j/Y',strtotime($this->dataModel->news_date));
 		}
+		if (!function_exists('ascii_to_entities')) {
+			$this->load->helper('text');
+		}
 		$this->data['thisItem']['news_subject'] = $this->dataModel->news_subject;
 		$this->data['thisItem']['news_body'] = $this->dataModel->news_body;
 		$this->data['thisItem']['author_id'] = $this->dataModel->author_id;

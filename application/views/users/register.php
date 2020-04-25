@@ -1,4 +1,3 @@
-
 		<!-- BEGIN LOGIN FORM -->
     <div id="center-column">
         <h1><?php echo($subTitle); ?></h1>
@@ -6,14 +5,14 @@
 		<?php echo($theContent); ?>
         <?php 
 		if (!empty($activation)) { ?>
-        <p /><br />
+        <p><br />
         <?php echo($activation); ?>
 		<?php } ?>
         <br /><br />
 	</div>
     <div id="center-column">
         <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" style="width:525px;">
+        <table cellpadding="0" cellspacing="0" style="width:525px;">
         <tr class='title'>
             <td style='padding:3px' colspan="2">Enter the information below to register for the site.</td>
         </tr>
@@ -53,15 +52,6 @@
 			$gender[] = array('f','Female');
 			$form->radiogroup ('gender',$gender,'Gender',($input->post('gender') ? $input->post('gender') : ''));
 			$form->space();
-			if (isset($security_enabled) && $security_enabled == 1) {
-				 $form->fieldset('Verification');
-				if ($security_type == SECURITY_RECAPTHCA) {
-					$form->html('<div width="100%" id="focus_response_field" style="margin-left:125px;">');
-					$form->html('<div id="captcha_resp" class="clearfix"></div>');
-					$form->html('<div id="recaptcha_div" class="clearfix"></div>');
-					$form->html('</div>');
-				}
-           	}
 			$form->fieldset('',array('class'=>'button_bar'));
 			$form->html('<p class="step"><div id="waitDiv" style="display:none;"><img src="'.$config['fantasy_web_root'].'images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...</div>');
     		$form->html('<div id="buttonDiv">');
@@ -74,24 +64,4 @@
         </table>
         </div>
     </div>
-    <?php 
-    // IF SECURITY IS ENABLED, DRAW THE SUPPORTING JAVASCRIPT TO THE PAGE
-    if (isset($securityJS) && !empty($securityJS)) { print($securityJS); } ?>
-    <script type="text/javascript">
-    $(document).ready(function(){
-    	 <?php 
-    	 if ($security_enabled == 1 && $security_class >= 1) { ?>
-    	 $("#btnSubmit").click(function() {
-    		testCaptcha(document.registerForm.recaptcha_challenge_field.value,document.registerForm.recaptcha_response_field.value,'registerForm');
-		});
-		showRecaptcha('recaptcha_div');
-		<?php  
-    	} else {// END if
-    	?>
-    	$("#btnSubmit").click(function() { $("#registerForm").submit(); });
-    	<?php  
-        } // END if
-        ?>
-    });
-	</script>
-    <p /><br />
+    <p><br />
