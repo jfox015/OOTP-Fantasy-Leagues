@@ -859,7 +859,8 @@ class user extends MY_Controller {
 	 *	@updated		1.0.6
 	 * 	@access			public
 	 *
-	 *	@changeLog		1.0.6 - Added Anti-Spam Security countermeasure support
+	 *	@changeLog		1.0.6 BETA - Added Anti-Spam Security countermeasure support
+	 *	@changeLog		1.0.3 PROD - Removed outdated Recaptcha
 	 * 
 	 **/
 	function register() {
@@ -873,9 +874,10 @@ class user extends MY_Controller {
 				$this->data['theContent'] = $this->lang->line('user_register_instruct');
 				
 				// EDIT 1.0.6 - SECURITY
-				if ($this->params['config']['security_enabled'] != -1 && $this->params['config']['security_class'] >= 1) {
-					$this->data = $this->data + getSecurityCode($this->views['RECAPTCHA_JS']);
-				} // END if
+				// DEPRECATED 1.0.3 PROD
+				//if ($this->params['config']['security_enabled'] != -1 && $this->params['config']['security_class'] >= 1) {
+				//	$this->data = $this->data + getSecurityCode($this->views['RECAPTCHA_JS']);
+				//} // END if
 				
 				// END 1.0.6 EDIT
 				// ACTIVATION
@@ -898,10 +900,9 @@ class user extends MY_Controller {
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
 			} else {       	       
-				$message = $this->auth->register($this->input,$this->debug);
-				if ($message !== false) {
+				if ($this->auth->register($this->input,$this->debug)) {
 					$registered = $this->lang->line('user_registered');
-					if ($this->params['config']['user_activation_method'] != -1) {
+					if ($this->params['config']['user_activation_required'] != -1 && $this->params['config']['user_activation_method'] != -1) {
 						switch ($this->params['config']['user_activation_method']) {
 							case 1:
 								$registered .= str_replace('[EMAIL]',$this->input->post('email'),$this->lang->line('user_register_activate_email'));
@@ -918,8 +919,8 @@ class user extends MY_Controller {
 				} else {
 					$message = '<span class="error">An error has occured. ';
 					if ($this->auth->get_status_code() != 0) {
-						$message .= "The server replied with the following status: <b>".$this->auth->get_status_message()."</b>";
-						$message .= 'Please <a rel="back" href="#">go back</a>, try a different username and try submitting again.';
+						$message .= "The server replied with the following status: <b>".$this->auth->get_status_message()."</b> ";
+						$message .= 'Please <a rel="back" href="#">go back</a> and try submitting again.';
 					}	
 					$message .= "</span>";
 					$this->data['subTitle'] = $this->lang->line('user_register_title');
@@ -951,8 +952,9 @@ class user extends MY_Controller {
 	*
 	* 	@since			1.0.6
 	* 	@access			public
+	*	@deprecated		1.0.3 PROD
 	*/
-	public function captchaTest() {
+	/*public function captchaTest() {
 		$this->getURIData();
 		$code = 200;
 		$status = $answer = 'OK';
@@ -982,5 +984,5 @@ class user extends MY_Controller {
 		$result = '{"result":"'.$answer.'","code":"'.$code.'","status":"'.$status.'"}';
 		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
-	}
+	}*/
 }

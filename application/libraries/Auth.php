@@ -203,8 +203,17 @@ class Auth
 	
 	/**
 	 * 	REGISTER.
+	 *  Registers a new user on the site. If FALSE is received, can check $this->auth->get_status_code()
+	 *  and $this->auth->get_status_message() for error codes and messaging.
+	 * 
+	 * 	@param	$formInput	{Object}	CI Form Obkject with Input Data
+	 *  @param	$debug		{Boolean}	Enable Debug mode tracing if true
+	 *	@return TRUE on sucess, FALSE on error
+	 *	@since 	1.0
+	 *	@see	Application -> Models -> user_auth_model -> register
 	 *
-	 * @return TRUE on sucess, FALSE on error
+	 * 	@changelog	1.0.3 PROD, debugged issues with activation methods
+	 *
 	 **/
 	public function register($formInput,$debug = false) {
 	    
@@ -212,38 +221,81 @@ class Auth
 		if ($formInput->post('firstName') && $formInput->post('lastName')) {
 			$this->ci->user_auth_model->name = $formInput->post('firstName')." ".$formInput->post('lastName');
 		}
-		if ($register = $this->ci->user_auth_model->register($formInput)) {
+		if ($this->ci->user_auth_model->register($formInput)) {
 			$this->ci->user_meta_model->userId = $this->ci->user_auth_model->id;
 			if ($this->ci->user_meta_model->applyData($formInput)) {
 				$register = $this->ci->user_meta_model->save();
 			} 
 			$register = true;
-		} else {
-			$register = false;
+		} 		
+		if (!$register) { 
+			$this->errorCode = $this->ci->user_auth_model->errorCode;
+			$this->status = $this->ci->user_auth_model->statusMess;
+			return false; 
 		} // END if
-		
-		if (!$register) { return false; } // END if
-		
-		$deactivate = $this->ci->user_auth_model->deactivate($formInput->post('username'));
 
-		if (!$deactivate) { return false; } // END if
-
-		$activation_code = $this->ci->user_auth_model->emailConfirmKey;
-		
-		$email_activation = ($this->ci->params['config']['user_activation_method'] != -1) ? true : false;
-		
-		if (!$email_activation) {
-			if ($this->ci->user_auth_model->activate($activation_code)) {
-				return $this->confirmationEmail($formInput->post('email'),$formInput->post('username'),$debug);
+		if ($debug) {
+			echo("User Registered and saved to database.<br />");
+		}
+		$activate_req = ($this->ci->params['config']['user_activation_required'] == 1) ? true : false;
+		$activate_type = $this->ci->params['config']['user_activation_method'];
+		if (!$activate_req || ($activate_req && $activate_type == -1)) {
+			if ($debug) {
+				echo("No activation required or activation required but method set to none.<br />");
+			}
+			if ($this->ci->user_auth_model->adminActivation($this->ci->user_auth_model->id, $this->ci->params['config']['primary_contact'])) {
+				if ($debug) {
+					echo("Activation complete. Confirmation email to be sent to user.<br />");
+					echo("Environment check = ".ENVIRONMENT."<br />");
+				}
+				if (ENVIRONMENT == "production") {
+					if ($debug) {
+						echo("PROD Environment, send email.<br />");
+						$this->ci->user_auth_model->errorCode = 1;
+						$this->ci->user_auth_model->statusMess = "Activation Complete, sending confirmation email.";
+					}
+					return $this->confirmationEmail($formInput->post('email'),$formInput->post('username'),$debug);
+				} else {
+					if ($debug) {
+						echo("Dev Environment, we should return true with no sendMail call<br />");
+					}
+					return true;
+				}
 			} else {
+				if ($debug) {
+					echo("Auth->activate function failed.<br />");
+					echo("Error: ".$this->ci->user_auth_model->errorCode.", message:".$this->ci->user_auth_model->statusMess."<br />");
+				}
+				$this->errorCode = $this->ci->user_auth_model->errorCode;
+				$this->status = $this->ci->user_auth_model->statusMess;
 				return false;
 			}
 		} else {
+			// ACTIVATION REQUIRED
+			if ($debug) {
+				echo("Activation Required.<br />");
+			}
 			$email_folder = $this->ci->config->item('email_templates');
 			$this->ci->email->clear();
 			$this->ci->email->set_newline("\r\n");
 			
-			if ($this->ci->params['config']['user_activation_method']== 1) {
+			if ($activate_type== 1) {
+				// ACTIVATION BY EMAIL
+				if ($debug) {
+					echo("Activation by Email.<br />");
+				}
+				$deactivate = $this->ci->user_auth_model->deactivate($formInput->post('username'));
+		
+				if (!$deactivate) { 
+					if ($debug) {
+						echo("Deactivate method failed.<br />");
+						echo("Error: ".$this->ci->user_auth_model->errorCode.", message:".$this->ci->user_auth_model->statusMess."<br />");
+					}
+					$this->errorCode = $this->ci->user_auth_model->errorCode;
+					$this->status = $this->ci->user_auth_model->statusMess;
+					return false; 
+				} // END if
+		
 				$activation_code = $this->ci->user_auth_model->emailConfirmKey;
 	
 				$data = array('siteName'=>$this->ci->params['config']['site_name'],
@@ -256,7 +308,11 @@ class Auth
 				$to = $formInput->post('email');
 				$subject = $this->ci->params['config']['site_name'].' Registration - Activation Required';
 			} else {
-				$this->ci->user_auth_model->activate($activation_code, true);
+				// ADMIN ACTIVATION
+				if ($debug) {
+					echo("Activation by Admin.<br />");
+				}
+				//$this->ci->user_auth_model->activate($activation_code, true);
 				$data = array('siteName'=>$this->ci->params['config']['site_name'],
 						'username' => $formInput->post('username'),
 						'email'    => $formInput->post('email'));
@@ -265,9 +321,25 @@ class Auth
 				$subject = $this->ci->params['config']['site_name'].' User Activation Required';
 			} // END if
 			
-			return sendEmail($to,$this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator",
-				             $subject,$message,'','email_register_');
-			
+			if ($debug) {
+				echo("Send email to user or admin.<br />");
+				echo("Recipient: ".$to."<br />");
+				echo("Environment check = ".ENVIRONMENT."<br />");
+			}
+			if (ENVIRONMENT == "production") {
+				if ($debug) {
+					echo("PROD Environment, send email.<br />");
+					$this->ci->user_auth_model->errorCode = 1;
+					$this->ci->user_auth_model->statusMess = "Activation Complete, sending confirmation email.";
+				}
+				return sendEmail($to,$this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator",
+							$subject,$message,'','email_register_');
+			} else {
+				if ($debug) {
+					echo("Dev Environment, we should return true with no sendMail call<br />");
+				}
+				return true;
+			}
 		} // END if
 	}
 	public function resend_activation($email,$debug = false) {

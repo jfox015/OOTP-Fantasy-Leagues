@@ -132,7 +132,7 @@ class user_auth_model extends base_model {
 		}
 	}
 	/**
-	 * activate
+	 * ADMIN activate
 	 *
 	 * @return TRUE on success, FALSE on error
 	 *
@@ -524,11 +524,20 @@ class user_auth_model extends base_model {
 			return false;
 		}
 	}
+	/**
+	 * 	GET ADMIN ACTIVATIONS
+	 * 	Returns a list of users requiring activation.
+	 * 
+	 * @return		{Array}	Users list or Empty array
+	 * @since		1.0.6 Beta
+	 * @changelog	1.0.3 PROD, fixed issue with confirm key value not returning any users
+	 * 
+	 */
 	public function getAdminActivations() {
 		
 		$query = $this->db->select('id,username,email,dateCreated')
                    	   ->where('active', 0)
-					   ->where("emailConfirmKey = ''")
+					   ->where("emailConfirmKey", 0)
                    	   ->get($this->tblName);
 		$users = array();
 		//print($this->db->last_query()."<br />");

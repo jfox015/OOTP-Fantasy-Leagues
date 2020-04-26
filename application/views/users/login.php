@@ -2,7 +2,7 @@
 $(document).ready(function(){	
     $('button[rel=register]').live('click',function (e) {
         e.preventDefault();
-        document.location.href = '<?php echo($config['fantasy_web_root']); ?>/user/register';
+        document.location.href = '<?php echo($config['fantasy_web_root']); ?>user/register';
     });
 });
 </script>

@@ -410,7 +410,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 				include_once("../application/config/auth.php");
 				$pw = !empty($admin_password) ? $admin_password : substr(md5('admin'.time()),0,10);
 				$salt = substr(md5('admin'.time()),0,10);
-				$sql = "INSERT INTO `users_core` VALUES(1, '".$admin_username."', '".__hash($pw,$salt)."', '".$salt."', '".$admin_email."', 4, 5, 6, '', '0', 0, 0, '".date('Y-m-d h:m:s')."', '".date('Y-m-d h:m:s')."', 0, 1, 0, 0)";
+				$sql = "INSERT INTO `users_core` VALUES(1, '".$admin_username."', '".__hash($pw,$salt)."', '".$salt."', '".$admin_email."', 4, 5, 6, '0', '0', 0, 0, '".date('Y-m-d h:m:s')."', '".date('Y-m-d h:m:s')."', 0, 1, -1, 0)";
 				if ($conn->query($sql) !== TRUE) {
 					$err=$conn->error;
 				}
@@ -418,7 +418,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					$error = true;
 					$errors .= "Error adding admin user. Error: ".$err."<br />SQL = ".$sql."<br />";
 				} // END if
-				$sql = "INSERT INTO `users_meta` ( `id` , `userId` , `firstName` , `lastName` , `nickName` , `city` , `state` , `country` , `zipCode` , `title` , `bio` , `dateOfBirth` , `gender` , `avatar` , `custom` , `timezone` ) VALUES ( '1', '1', 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '0000-00-00', '', '', '', '' )";
+				$sql = "INSERT INTO `users_meta` ( `id` , `userId` , `firstName` , `lastName` , `nickName` , `city` , `state` , `country` , `zipCode` , `title` , `bio` , `dateOfBirth` , `gender` , `avatar` , `custom` , `timezone` ) VALUES ( '1', '1', 'Site', 'Admin', '', '', '', '', '', 'Site Administrator', '', '1970-01-01', '', '', '', '' )";
 				if ($conn->query($sql) !== TRUE) {
 					$err=$conn->error;
 				}

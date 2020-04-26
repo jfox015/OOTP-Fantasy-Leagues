@@ -1,4 +1,9 @@
-		<!-- BEGIN LOGIN FORM -->
+<script type="text/javascript">
+    $(document).ready(function(){
+    	 $("#btnSubmit").click(function() { $("#registerForm").submit(); });
+    });
+	</script>
+    	<!-- BEGIN LOGIN FORM -->
     <div id="center-column">
         <h1><?php echo($subTitle); ?></h1>
         <br />
