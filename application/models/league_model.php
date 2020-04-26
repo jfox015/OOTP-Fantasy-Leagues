@@ -570,7 +570,30 @@ class league_model extends base_model {
 		return $access;
 
 	}
+	/**
+	 * 	GET OPEN TEAM COUNT
+	 * 	Function that gets the number of unowned teams for the given league ID
+	 *  @param	$league_id	{int}	League ID var, if FALSE, defaults to models ID
+	 *  @return				{int}	Count value, 0 if no teams open
+	 * 
+	 * 	@since	1.0.3 PROD
+	 *  @see	$this->getLeagueList()
+	 */
+	public function getOpenTeamCount($league_id = false) {
 
+		$count = 0;
+		if ($league_id === false) { $league_id = $this->id; }
+
+		$this->db->select('COUNT(id) as teamCount');
+		$this->db->from($this->tables['TEAMS']);
+		$this->db->where("league_id",$league_id);
+		$this->db->where("owner_id", -1);
+		$query = $this->db->get();
+		$row = $query->row();
+		$count = $row->teamCount;
+		$query->free_result();
+		return $count;
+	}
 	/*----------------------------------------------------------------------
 	/
 	/	INVITES AND REQUESTS
@@ -601,7 +624,7 @@ class league_model extends base_model {
 		$query->free_result();
 		return $invites;
 	}
-	public function getLeagueRequests($onlyPending = false, $league_id = false, $request_id = false) {
+	public function getLeagueRequests($onlyPending = false, $league_id = false, $request_id = false, $user_id = false) {
 
 		$requests = array();
 		if ($league_id === false) { $league_id = $this->id; }
@@ -618,10 +641,13 @@ class league_model extends base_model {
 		if ($onlyPending !== false) {
 			$this->db->where('status_id', REQUEST_STATUS_PENDING);
 		}
+		if ($user_id !== false) {
+			$this->db->where('user_id', $user_id);
+		}
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
-				array_push($requests,array('id'=>$row->id,'user_id'=>$row->user_id, 'username'=>$row->username,'date_requested'=>$row->date_requested,
+				array_push($requests,array('id'=>$row->id,'user_id'=>$row->user_id, 'username'=>$row->username,'date_requested'=>date_format(date_create($row->date_requested),"m/d/Y"),
 										  'team_id'=>$row->team_id,'team'=>$row->teamname." ".$row->teamnick));
 			}
 		}
@@ -825,9 +851,11 @@ class league_model extends base_model {
 	 */
 	public function getLeagueList($user_id = false) {
 		$leagues = array();
-		$select = $this->tblName.'.id, league_name, description, avatar, league_status, leagueStatus, max_teams, accept_requests, shortDesc, commissioner_id, username, access_type, league_type, leagueType, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount';
+		$openCount = 0;
+		$pendingRequests = array();
+		$select = $this->tblName.'.id, league_name, description, avatar, league_status, leagueStatus, max_teams, accept_requests, shortDesc, commissioner_id, username, access_type, league_type, leagueType';
 		if ($user_id !== false) {
-			$select .=  ', (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND owner_id = '.$user_id.') as teamsOwned';
+					$select .=  ', (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND owner_id = '.$user_id.') as teamsOwned';
 		}
 		$this->db->select($select);
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
@@ -836,11 +864,15 @@ class league_model extends base_model {
 		$query = $this->db->get($this->tblName);
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
+				$openCount = $this->getOpenTeamCount($row->id);
+				if ($user_id !== false) {
+					$pendingRequests = $this->getLeagueRequests(true, $row->id, false, $user_id);
+				}
 				array_push($leagues,array('league_id'=>$row->id,'league_name'=>$row->league_name,'description'=>$row->description,'avatar'=>$row->avatar,'access_type'=>$row->access_type,
 															'league_status'=>$row->league_status,'accept_requests'=>$row->accept_requests,'max_teams'=>$row->max_teams,
 															'shortDesc'=>$row->shortDesc,'commissioner'=>$row->username, 'commissioner_id'=>$row->commissioner_id,
 															'league_type_desc'=>$row->shortDesc,'league_type_lbl'=>$row->leagueType,'league_status_lbl'=>$row->leagueStatus,
-															'league_type'=>$row->league_type,'openCount'=>$row->openCount,'teamsOwned'=>$row->teamsOwned));
+															'league_type'=>$row->league_type,'openCount'=>$openCount,'teamsOwned'=>$row->teamsOwned, 'pendingRequests'=>$pendingRequests));
 			}
 		}
 		//echo($this->db->last_query()."<br />");
@@ -3405,11 +3437,6 @@ class league_model extends base_model {
 		}
 		return false;
 	}
-	/*----------------------------------------------------
-	/
-	/	DEPRECATED FUNCTIONS
-	/
-	/---------------------------------------------------*/
 	/**
 	*	GET OPEN LEAGUES.
 	*	Returns a list of league available to the current player.

@@ -109,27 +109,40 @@
 					} 
 					?></span>
 					</h3>
-				<?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
 				<div class="record">
 					<?php 
-					if (isset($team_record) && !empty($team_record) && count($team_record) > 0) {
-						$teamRecordStr = "";
-						if (isset($team_record['w']) && !empty($team_record['w'])) { $teamRecordStr .= $team_record['w']; } else { $teamRecordStr .= "0"; }
-						$teamRecordStr .= "-";
-						if (isset($team_record['l']) && !empty($team_record['l'])) { $teamRecordStr .= $team_record['l']; } else { $teamRecordStr .= "0"; }
-						$teamRecordStr .= ", ";
-						if (isset($team_record['pos']) && !empty($team_record['pos'])) { $teamRecordStr .= ordinal_suffix($team_record['pos']); } else { echo "1st"; }
-						$teamRecordStr .= " in ";
-						if (isset($team_record['division_name']) && !empty($team_record['division_name'])) { $teamRecordStr .= $team_record['division_name']; } else { echo "Unknown Division"; }
-						echo($teamRecordStr);
-					} else {
-						echo("0-0, 1st Place");
+					$teamRecordStr = "Tied, 1st Place";
+					if (isset($standings) && sizeof($standings) > 0) { 
+						$found = false;
+						if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+							$teamRecordStr = "0-0, 1st Place";
+							foreach($standings as $id=>$divisionData) { 
+								if (isset($divisionData['teams']) && sizeof($divisionData['teams']) > 0) { 
+									$count = 1; 
+									foreach($divisionData['teams'] as $teamId => $teamData) { 
+										if ($thisItem['team_id'] == $teamId) {
+											$teamRecordStr = $teamData['w']."-".$teamData['l'].", ".ordinal_suffix($count)." in ".$divisionData['division_name'];
+											break;
+										}
+										$count++;
+									}
+								}
+								if ($found) break;
+							}
+						} else {
+							$count = 1;
+							foreach($standings  as $id=>$teamData) {
+								if ($thisItem['team_id'] == $id) {
+									$teamRecordStr = ordinal_suffix($count)." Place";
+									break;
+								}
+								$count++;
+							}
+						}
 					}
+					echo($teamRecordStr);
 					?>
 				</div>
-				<?php
-				} // END if
-				?>
 			</div>
 			<?php
 			/*----------------------------------------

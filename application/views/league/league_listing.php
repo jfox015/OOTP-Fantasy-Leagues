@@ -81,7 +81,6 @@ $(document).ready(function(){
                             } 
                             ?>
                             <strong>Type:</strong> <?php echo($leagueData['league_type_lbl']); ?> League<br />
-                            <strong>Teams:</strong> <?php echo($leagueData['max_teams']); ?><br />
                             <strong>Status:</strong> <?php 
                             switch($leagueData['league_status']) {
                                 case 1:
@@ -91,31 +90,44 @@ $(document).ready(function(){
                                     $color = "#A00";
                                     break;
                             }
-                            echo('<span style="color:'.$color.'">'.$leagueData['league_status_lbl'].'</span>'); ?><br />
+                            echo('<span style="font-weight:bold; color:'.$color.'">'.$leagueData['league_status_lbl'].'</span>'); ?><br />
+                            <strong>Teams:</strong> <?php echo($leagueData['max_teams']); ?><br />
                             <?php
                             if ($loggedIn) {
                                 if ($leagueData['teamsOwned'] > 0) {
                                     echo('<span style="color:#080;">You own a team in this League!</span>');
                                 } else {
-                                    if ($leagueData['openings'] > 0) {
-                                        echo("This League currently has <b>".$leagueData['openings']."</b> unowned teams!"); 
-                                        if ($leagueData['accept_requests']) {
-                                            echo(anchor('/league/requestTeam/'.$leagueData['league_id'],'Request a Team',['class' => 'teamLink']));
-                                        } else {
-                                            echo('<span style="color:#A00;">Not currently accepting team requests.</span>');
-                                        }
+                                    if (sizeof($leagueData['pendingRequests'][0]) > 0) {
+                                        $requests = $leagueData['pendingRequests'][0];
+                                        echo("You requested to own the <b>".$requests['team']."</b> on ".$requests['date_requested'].". Your request is Pending approval."); 
                                     } else {
-                                        echo('<span style="color:#A00;">This Leagues does not have any teams available.</span>');
+                                        if ($leagueData['openCount'] > 0) {
+                                            echo("This League currently has <b>".$leagueData['openCount']."</b> unowned teams!"); 
+                                            if ($leagueData['accept_requests']) { ?>
+                                                <div class="TeamLinks-Links">
+                                                <?php
+                                                echo(anchor('/league/requestTeam/'.$leagueData['league_id'],'<img src="'.PATH_IMAGES.'icons/note_edit.png" width="16" height="16" alt="Edit" title="Edit" /> Request a Team'));
+                                                ?>
+                                                </div>
+                                            <?php
+                                            } else {
+                                                echo('<span style="color:#A00;">Not currently accepting team requests.</span>');
+                                            } // END if
+                                        } else {
+                                            echo('<span style="color:#A00;">This Leagues does not have any teams available.</span>');
+                                        } // END if
                                     }
                                 } // END if
-                            }
+                            } // END if
                             ?>
                             <?php if ($accessLevel == ACCESS_ADMINISTRATE) { 
                             echo('<br/>');
                             echo( anchor('/league/submit/mode/edit/id/'.$leagueData['league_id'],'<img src="'.PATH_IMAGES.'icons/edit-icon.gif" width="16" height="16" alt="Edit" title="Edit" /> Edit League'));
                             echo('&nbsp;');
                             echo( anchor('#','<img src="'.PATH_IMAGES.'icons/hr.gif" width="16" height="16" alt="Delete" title="Delete" /> Delete League',array('id'=>$leagueData['league_id'],'rel'=>'delete'))); ?></td>
-                            <?php } ?>
+                            <?php 
+                            }  // END if 
+                            ?>
                         </div>
                     </section>
                 </dsectioniv>

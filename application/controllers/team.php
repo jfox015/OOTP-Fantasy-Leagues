@@ -2386,6 +2386,7 @@ class team extends BaseEditor {
 			$this->load->helper('admin');
 		}
 
+		$curr_period_id = 1;
 		if (isset($this->uriVars['period_id'])) {
 			$curr_period_id = $this->uriVars['period_id'];
 			$curr_period = getScoringPeriod($curr_period_id);
@@ -2433,8 +2434,6 @@ class team extends BaseEditor {
 		$this->data['year'] = $this->data['lgyear'];
 		$this->data['league_id']  = $this->dataModel->league_id;
 
-		$this->data['team_record']  = $this->dataModel->getTeamRecord($this->dataModel->id, $this->data['year']);
-		
 		$this->prepForQuery();
 		
 		$this->data['batters'] = $this->dataModel->getBatters(-1, false, -999);
@@ -2468,6 +2467,8 @@ class team extends BaseEditor {
 		} else {
 			$curr_period_id = 1;
 		}
+		$this->data['standings'] = $this->league_model->getLeagueStandings($curr_period_id);
+		
 		$this->data['gamePeriod'] = $curr_period_id;
 		$this->data['recentGames'] = $this->dataModel->getRecentGames($curr_period_id);
 

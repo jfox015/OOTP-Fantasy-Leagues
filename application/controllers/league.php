@@ -667,11 +667,11 @@ class league extends BaseEditor {
 
 						$outMess = str_replace('[LEAGUE_NAME]',$this->dataModel->league_name,$this->lang->line('league_finder_request_success'));
 						$this->session->set_flashdata('message', '<span class="success">'.$outMess.'</span>');
-						redirect('league/joinleague/');
+						redirect('league/leagueList/');
 					} else {
 						if ($this->dataModel->errorCode != -1) {
 							$this->session->set_flashdata('message', '<span class="error">An error occured submitting your request: '.$this->dataModel->statusMess.'</span>');
-							redirect('league/joinleague/');
+							redirect('league/leagueList/');
 						}
 					}
 				}
@@ -690,7 +690,7 @@ class league extends BaseEditor {
 				$this->displayView();
 			} else {
 				$this->session->set_flashdata('message', '<span class="error">'.$this->lang->line('league_finder_request_no_id').'</span>');
-				redirect('league/joinleague/');
+				redirect('league/leagueList/');
 			}
 
 		} else {
