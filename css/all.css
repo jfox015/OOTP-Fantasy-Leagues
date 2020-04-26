@@ -412,7 +412,7 @@ figure.logo-lg, figure.logo-exlg {
 	padding-top: inherit;
 	padding-bottom: inherit;
 	width: 2.8em;
-	content: "\00b1";
+	content: "";
 	/*font-family: 'FontAwesome', sans-serif;*/
 	font-size: 1.3em;
 	text-align: center;
@@ -445,7 +445,7 @@ figure.logo-lg, figure.logo-exlg {
 	background: #083b2e;
 }
 .create_league:after {
-	content: "\F095";
+	content: "\00b1";
 }
 .create_league:hover:after {
 	-webkit-animation: wiggle 0.05s alternate ease infinite;
@@ -468,6 +468,48 @@ figure.logo-lg, figure.logo-exlg {
 .register:hover:after {
 	-webkit-animation: wiggle 0.05s alternate ease infinite;
 	animation: wiggle 0.05s alternate ease infinite;
+}
+
+.lineup {
+	background: #036;
+}
+.lineup:hover {
+	background: #003;
+}
+.lineup:active,
+.lineup:focus {
+	background: #003;
+}
+.lineup:after {
+	content: "\00b1";
+}
+.lineup:hover:after {
+	-webkit-animation: wiggle 0.05s alternate ease infinite;
+	animation: wiggle 0.05s alternate ease infinite;
+}
+
+.adddrop {
+	background: #036;
+    width: 76px;
+    min-width: 0px;
+    margin-right: 3px;
+    padding: 0.5em 0.3em;
+	float: left;
+	display: none;
+}
+.adddrop:hover {
+	background: #003;
+}
+.adddrop:active,
+.adddrop:focus {
+	background: #003;
+}
+.adddrop:after {
+	content: "";
+}
+.adddrop:hover:after {
+	-webkit-animation: none;
+	animation: none;
 }
 
 .security {

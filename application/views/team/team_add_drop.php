@@ -82,13 +82,13 @@
 			}
 			return false;
 		});	
-		$('input#btnClear').live('click',function () {
+		$('button#btnClear').live('click',function () {
 			if (confirm("Are you sure you want to clear your transaction?")) {
 				clearTransaction();
 			}
 			return false;
 		});	
-		$('input#btnSubmit').live('click',function () {
+		$('button#btnSubmit').live('click',function () {
 			if (confirm("Process this transaction?")) {
 				processTransaction();
 			}
@@ -306,8 +306,8 @@
 		} else {
 			btnDisplay = 'none';
 		}
-		$('input#btnSubmit').css('display',btnDisplay);
-		$('input#btnClear').css('display',btnDisplay);
+		$('button#btnSubmit').css('display',btnDisplay);
+		$('button#btnClear').css('display',btnDisplay);
 	}
 	function processTransaction() {
 		// PREPARE PLAYER ID LISTS
@@ -820,8 +820,8 @@
                 <tr>
                     <td style='padding:6px'>
                     <div class="button_bar" style="text-align:right;">
-                    	<input type='button' id="btnClear" class="button" value='Clear' style="display:none;float:left;margin-right:8px;" />
-						<input type='button' id="btnSubmit" class="button" value='Submit' style="display:none;float:left;" />
+                    	<button id="btnClear" class="sitebtn adddrop">Clear</button>
+						<button id="btnSubmit" class="sitebtn adddrop">Submit</button>
                     </div></td>
                 </tr>
                 

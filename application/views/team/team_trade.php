@@ -59,13 +59,13 @@
 			}
 			return false;
 		});	
-		$('input#btnClear').live('click',function () {
+		$('button#btnClear').live('click',function () {
 			if (confirm("Are you sure you want to clear your transaction?")) {
 				clearTransaction();
 			}
 			return false;
 		});	
-		$('input#btnSubmit').live('click',function () {
+		$('button#btnSubmit').live('click',function () {
 			if (confirm("Process this transaction?")) {
 				processTransaction();
 			}
@@ -122,7 +122,7 @@
 			var params = this.id.split("|");
 			document.location.href = "<?php echo($config['fantasy_web_root']); ?>team/tradeReview/team_id/"+team_id+"/league_id/"+league_id+"/trans_type/"+params[1]+"/trade_id/"+params[2]+cacheBuster();
 		});
-		$('input#btnReview').live('click',function () {
+		$('button#btnReview').live('click',function () {
 			// PREPARE PLAYER ID LISTS
 			var teamId2 = $('select#teams').val();	
 			var addList = '';
@@ -475,9 +475,9 @@
 		} else {
 			btnDisplay = 'none';
 		}
-		$('input#btnSubmit').css('display',btnDisplay);
-		$('input#btnReview').css('display',btnDisplay);
-		$('input#btnClear').css('display',btnDisplay);
+		$('button#btnSubmit').css('display',btnDisplay);
+		$('button#btnReview').css('display',btnDisplay);
+		$('button#btnClear').css('display',btnDisplay);
 	}
 	function processTransaction() {
 		// PREPARE PLAYER ID LISTS
@@ -894,9 +894,9 @@
 				<tr>
                     <td style='padding:6px'>
                     <div class="button_bar" style="text-align:right;">
-                    	<input type='button' id="btnClear" class="button" value='Clear' style="display:none;float:left;margin-right:8px;" />
-						<input type='button' id="btnReview" class="button" value='Review' style="display:none;float:left;" />
-                        <input type='button' id="btnSubmit" class="button" value='Make Offer' style="display:none;float:left;" />
+						<button id="btnClear" class="sitebtn adddrop">Clear</button>
+						<button id="btnReview" class="sitebtn adddrop">Review</button>
+						<button id="btnSubmit" class="sitebtn adddrop">Make Offer</button>
                     </div></td>
                 </tr>
                 </table>

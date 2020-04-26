@@ -334,7 +334,7 @@
                     <?php if ($showAdmin) { ?>
                     <div class="roster-actions-box">
                     <input type="hidden" name="id" value="<?php echo($thisItem['team_id']); ?>" />
-                    <input type="submit" class="button" value="Set Lineup" /></div>
+                    <button class="sitebtn lineup" onclick="document.lineupForm.submit();">Set Lineup</button></div>
                     <?php } ?>
                     </td>
                     </form>
