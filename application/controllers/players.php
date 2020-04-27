@@ -52,7 +52,7 @@ class players extends MY_Controller {
 		$this->load->model('player_model','dataModel');
 
 		//-----------------------------------------------------------------------
-		// UPDATE 1.0.3
+		// UPDATE 1.0.3 BETA
 		// TEST TO ASSURE PLAYERS HAVE BEEN IMPORTED BEFORE DISPLAYING THE PAGE
 		//-----------------------------------------------------------------------
 		if ($this->dataModel->getPlayerCount() > 0) {

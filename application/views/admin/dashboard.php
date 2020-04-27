@@ -170,6 +170,12 @@
 			$currDate = strtotime($league_info->current_date);
 			$startDate = strtotime($league_info->start_date);
 		}
+		$last_process_time = 1;
+		$last_sql_load_time = 1;
+		if (isset($config['last_process_time']) && isset($config['last_sql_load_time'])) {
+			$last_process_time = new DateTime(config['last_process_time']);
+			$last_sql_load_time = new DateTime(config['last_sql_load_time']);
+		}
 
 		if ($in_season && isset($league_info) && $currDate > $startDate && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
 		<h3>Regular Season Functions</h3>
@@ -177,7 +183,7 @@
 		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.
 		<br clear="all" /><br />
 		<ul class="iconmenu">
-			<?php if ($config['last_process_time'] < $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && (isset($leagues) && sizeof($leagues) > 0)) { ?>
+			<?php if ($last_process_time < $last_sql_load_time && $league_info->current_date > $league_info->start_date && (isset($leagues) && sizeof($leagues) > 0)) { ?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" border="0" />',array('rel'=>'sim')); ?><br />
 			Process Current Sim Results</li><?php } ?>
 			<?php

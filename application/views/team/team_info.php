@@ -149,7 +149,7 @@
 			/	Roster Satus Alert
 			/---------------------------------------*/
 			// GET AND DISPLAY USER TRADES
-			if (isset($message) && !empty($message)) { ?>
+			if (isset($rostMessage) && !empty($rostMessage)) { ?>
 				<div class='textbox right-column'>
 					<table cellpadding="0" cellspacing="0">
 						<thead>	
@@ -161,8 +161,8 @@
 						<tr>
 							<td>
 							<?php
-							$messageType = isset($messageType) ? $messageType : "";
-							echo('<span class="'.$messageType.'">'.$message.'</span>');
+							$rostMessageType = isset($rostMessageType) ? $rostMessageType : "";
+							echo('<span class="'.$rostMessageType.'">'.$rostMessage.'</span>');
 							?>
 							</td>
 						</tr>
@@ -403,7 +403,7 @@
 					} else {
 						$oppAvatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 					} ?>
-					<img src="<?php echo($oppAvatar); ?>" width="42" height="42" alt="<?php echo($game['teamname']); ?>" 
+					<img src="<?php echo($oppAvatar); ?>" width="35" height="35" alt="<?php echo($game['teamname']); ?>" 
 					title="<?php echo($game['teamname']); ?>" align="absmiddle" /> 
 					<?php echo anchor('/team/info/'.$game['opp_team_id'], $game['teamname']); ?></td>
 					<td>
@@ -421,32 +421,31 @@
 						echo(anchor('/league/results/id/'.$league_id.'/period_id/'.$gamePeriod.'/game_id/'.$game['game_id'], $awayScore."&nbsp;-&nbsp;".$homeScore));
 						?>
 					</td>
-					<td <?php
+					<?php
 					$outStr = '';
 					switch($game['outcome']) {
 						case 1:
-							$outStr = 'class="positive"><strong>W</strong>';
+							$outStr = '<td class="result positive"><strong>W</strong></td>';
 							break;
 						case -1:
 						default:
-							$outStr = 'class="negative">L';
+							$outStr = '<td class="result negative">L</td>';
 							break;
 					} // END switch
 					echo($outStr);
-					?>
-					</td>
+					?>					
 				</tr>
-				</tbody>
-				</table>
-				<table cellpadding="0" cellspacing="0">
-				<thead>
 				<?php
 					} // END foreach
+				?>
+				</tbody>
+				<thead>
+				<?php
 				} // END if
 				if (isset($upcomingOpponent) && sizeof($upcomingOpponent) > 0) {
 				?>
 				<tr class='headline'>
-					<th colspan="3">Next Game in Period <?php echo($curr_period); ?></th>
+					<th colspan="3">Next Games in Period <?php echo($curr_period); ?></th>
 				</tr>
 				<?php
 					foreach($upcomingOpponent as $opponent) {
@@ -461,7 +460,7 @@
 					} else {
 						$oppAvatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 					} ?>
-					<img src="<?php echo($oppAvatar); ?>" width="42" height="42" alt="<?php echo($opponent['teamname']); ?>" 
+					<img src="<?php echo($oppAvatar); ?>" width="35" height="35" alt="<?php echo($opponent['teamname']); ?>" 
 					title="<?php echo($opponent['teamname']); ?>" align="absmiddle" /> 
 					<?php echo anchor('/team/info/'.$opponent['opp_team_id'], $opponent['teamname']); ?>
 					</td>

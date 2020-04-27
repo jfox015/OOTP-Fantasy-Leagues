@@ -519,9 +519,9 @@ class player_model extends base_model {
 		} else if (sizeof($scoring_period) == 0 && $stats_range != -1) {
 			$year_time = (60*60*24*365);
 			if ($stats_range != 4) {
-				$sql .= ' AND games.year = '.date('Y',time()-($year_time * $stats_range));
+				$sql .= ' AND '.$tblName.'.year = '.date('Y',time()-($year_time * $stats_range));
 			} else {
-				$sql .= ' AND (games.year = '.date('Y',time()-($year_time)).' OR games.year = '.date('Y',time()-($year_time * 2)).' OR games.year = '.date('Y',time()-($year_time * 3)).")";
+				$sql .= ' AND ('.$tblName.'year = '.date('Y',time()-($year_time)).' OR games.year = '.date('Y',time()-($year_time * 2)).' OR games.year = '.date('Y',time()-($year_time * 3)).")";
 			}
 		}
 		switch ($searchType) {
@@ -546,10 +546,10 @@ class player_model extends base_model {
 				break;
 		} // END switch
 		if ($playerList != "()") {
-			$sql .= "AND ".$tblName.".player_id IN ".$playerList.' ';
+			$sql .= " AND ".$tblName.".player_id IN ".$playerList.' ';
 		}
 		if ($excludeLostStr != "()") {
-			$sql .= "AND ".$tblName.".player_id NOT IN ".$excludeLostStr.' ';
+			$sql .= " AND ".$tblName.".player_id NOT IN ".$excludeLostStr.' ';
 		}
 		$sql .= "GROUP BY ".$tblName.'.player_id ';
 		$sql .= "ORDER BY ".$order." DESC ";

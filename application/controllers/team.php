@@ -237,10 +237,12 @@ class team extends BaseEditor {
 			$this->data['thisItem']['teamname'] = $this->dataModel->teamname;
 			$this->data['thisItem']['teamnick'] = $this->dataModel->teamnick;
 			$this->data['thisItem']['avatar'] = $this->dataModel->avatar;
-			
-			if (!$this->params['loggedIn'] || ($this->dataModel->owner_id == $this->params['currUser'] && (!$isAdmin && !$isCommish))) {
+			$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+			$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
+		
+			if ($this->params['loggedIn'] && ($this->dataModel->owner_id == $this->params['currUser'] || $isAdmin || $isCommish)) {
 				if (!$this->league_model->validateRoster($this->dataModel->getBasicRoster($curr_period_id))) {
-					$this->data['message'] = "<b>Your Rosters are currently illegal! Your team will score 0 points until roster errors are corrected.</b><br /><br />".$this->league_model->statusMess;
+					$this->data['message'] = "<b>Team Roster is currently illegal! The team will score 0 points until roster errors are corrected.</b><br /><br />".$this->league_model->statusMess;
 					$this->data['messageType'] = 'error';
 				}
 			}
@@ -277,10 +279,13 @@ class team extends BaseEditor {
 			} else {
 				$this->data['stats_range'] = $this->uriVars['stats_range'];
 			} // END if
-			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
+			$date1 = new DateTime($this->ootp_league_model->current_date);
+			$date2 = new DateTime($this->ootp_league_model->start_date);
+
+			if ($date1 <= $date2 || sizeof($this->data['curr_period']) < 1) {
 				$this->data['stats_range'] = 1;	
 			} // END if
-			$periodForQuery = $this->data['scoring_period']['id'];
+			$periodForQuery = $this->data['curr_period']['id'];
 			if ($this->data['stats_range'] != 0) {
 				$periodForQuery = -1;
 			} // END if
