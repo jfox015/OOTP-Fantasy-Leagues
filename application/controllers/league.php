@@ -283,9 +283,10 @@ class league extends BaseEditor {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
 			$this->load->model($this->modelName,'dataModel');
-			$this->load->model('draft_model');
-			$this->dataModel->load($this->uriVars['id']);
+			
 			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+				$this->load->model('draft_model');
+				$this->dataModel->load($this->uriVars['id']);
 				$this->data['leeague_admin_intro_str'] = $this->lang->line('leeague_admin_intro_str');
 				$this->data['subTitle'] = "League Admin";
 				$this->data['league_id'] = $this->uriVars['id'];
@@ -294,6 +295,15 @@ class league extends BaseEditor {
 				$this->data['draftTimer'] = $this->draft_model->timerEnable;
 				$this->data['debug'] = $this->debug;
 				$this->data['scoring_type'] = $this->dataModel->getScoringType();
+
+				$this->load->model('team_model');
+				// Data for Alert Notifications
+				$this->data['waiver_clainms'] = count($this->dataModel->getWaiverClaims());
+				$this->data['trades'] = count($this->team_model->getPendingTrades($this->dataModel->id));
+				$invites = count($this->dataModel->getLeagueInvites(true));
+				$requests = count($this->dataModel->getLeagueRequests(true));
+				$this->data['invites_requets'] = $invites + $requests;
+				
 				$this->makeNav();
 				$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
 			} else {
@@ -1814,12 +1824,12 @@ class league extends BaseEditor {
 			if (isset($this->uriVars['league_id'])) { $this->uriVars['id'] = $this->uriVars['league_id']; }
 			$this->loadData();
 			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
-				$this->data['type'] = $limit = (isset($this->uriVars['type'])) ? $this->uriVars['type'] : 1;
+				//$this->data['type'] = $limit = (isset($this->uriVars['type'])) ? $this->uriVars['type'] : 1;
 				$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : DEFAULT_RESULTS_COUNT;
 				$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;
 				$startIndex = 0;
 				if ($limit != -1) {
-					$startIndex = ($limit * ( - 1))-1;
+					$startIndex = ($limit * ($pageId - 1))-1;
 				}
 				if ($startIndex < 0) { $startIndex = 0; }
 				$this->data['startIndex'] = $startIndex;
@@ -1939,9 +1949,16 @@ class league extends BaseEditor {
 				$this->load->helper('admin');
 			}
 			$periodCount = sizeof(getScoringPeriods());
-			$form->select('regular_scoring_periods|regular_scoring_periods',array(24=>25,23=>24,22=>23,21=>22,20=>21),'Playoffs begin in week',($this->input->post('regular_scoring_periods')) ? $this->input->post('regular_scoring_periods') : $this->dataModel->regular_scoring_periods);
+			$periods_choices = array();
+			$counter = $periodCount -2;
+			while ($counter > $periodCount - 7) {
+				$periods_choices = $periods_choices + array($counter => $counter);
+				$counter--;
+			}
+			$form->select('regular_scoring_periods|regular_scoring_periods',$periods_choices,'Playoffs begin in week',($this->input->post('regular_scoring_periods')) ? $this->input->post('regular_scoring_periods') : $this->dataModel->regular_scoring_periods);
 			$form->nobr();
 			$form->html('<div style-"display:inline-block;margin-top:4px;">Scoring Periods Available: '.$periodCount.'</div>');
+			$form->html('<script> var scoring_periods_available = '.$periodCount.';</script>');
 			$form->br();
 			$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
 		}

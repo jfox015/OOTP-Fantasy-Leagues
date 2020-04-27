@@ -14,6 +14,13 @@
 			showH2HOp($('#league_type').val());
 		});
 		showH2HOp(<?php print($league_type); ?>);
+
+		$('#regular_scoring_periods').change(function(){
+			checkPlayoffs();
+		});
+		$('#playoff_rounds').change(function(){
+			checkPlayoffs();
+		});
 	});
 	function showH2HOp(val) {
 		var type = "none";
@@ -21,6 +28,13 @@
 			type = "block";
 		}
 		$('#optHeadToHead').css('display',type);
+	}
+	function checkPlayoffs() {
+		var scoringPeriods = parseInt($('#regular_scoring_periods').val()), 
+		playoffs = parseInt($('#playoff_rounds').val());
+		if ((scoringPeriods + playoffs) > scoring_periods_available) {
+			$('#regular_scoring_periods').val((scoring_periods_available - playoffs));
+		}
 	}
     </script>
     <div id="single-column">

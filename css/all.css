@@ -391,6 +391,9 @@ figure.logo-lg, figure.logo-exlg {
     font-size: 24px;
 }
 
+/*---------------------------
+/	2020 Site Button update
+/---------------------------*/
 .sitebtn {
 	display: inline-block;
 	font-family: "Montserrat", "Trebuchet MS", Helvetica, sans-serif;
@@ -512,13 +515,15 @@ figure.logo-lg, figure.logo-exlg {
 	animation: none;
 }
 
+/*--------------------------------------------
+/	ADMIN STYLES
+/-------------------------------------------*/
 .security {
 	display:block;
 	float: left;
 	clear: right;
     margin: 4px;
 }
-
 
 .dashboard ul.iconmenu  {
 	list-style:none;
@@ -532,7 +537,18 @@ figure.logo-lg, figure.logo-exlg {
 	font-size:10px; color:#333;	
 	text-align:center;
 	width:24%;
+	position: relative;
 }
+.dashboard ul.iconmenu li span.badge {
+	position: absolute;
+	top: -10px;
+	right: 20px;
+	padding: 5px 10px;
+	border-radius: 50%;
+	background: red;
+	color: white;
+  }
+
 #previewPane {
 	width:825px;
 	border:1px solid #dedede;
@@ -640,8 +656,11 @@ tr.s2_l, tr.sl_2 {
 	text-align: center;
 }
 .textbox.gamebox tbody > tr > td {
-	padding: 10px;
+	padding: 6px;
 	vertical-align: middle;
+}
+.textbox.gamebox tbody > tr > td.result {
+	text-align: center;
 }
 .textbox.gamebox tbody > tr > td a {
 	font-weight: bold;
@@ -764,12 +783,12 @@ tr.s2_l, tr.sl_2 {
 .info, .info_txt, .info a { color:#006; }
 .warn, .warn_txt, .warn a { color: #461102; font-weight:bold;  }
 
-.textbox td.positive { font-weight: bold; color: #264409; background: #E6EFC2; border: 1px solid #C6D880; }
-.textbox td.negative { font-weight: bold; color: #8a1f11; background: #FBE3E4; border: 1px solid #FBC2C4; }
-.textbox td.message { font-weight: bold; color: #006; background:#C8CFE1; border: 1px solid #006; }
-.textbox td.warning { font-weight: bold; color: #461102; background:#FCB97C; border: 1px solid #73612B; }
-.textbox td.alert { font-weight: bold; color: #514721; background: #FFF6BF; border: 1px solid #FFD324; }
-.textbox td.cell_c { text-align: center;}
-.textbox td.cell_m { vertical-align: middle; padding-top: 5px; font-weight: bold;}
-.textbox td.cell_m a { font-weight: bold;}
+.textbox td.positive { font-weight: bold; color: #264409; background: #E6EFC2; }
+.textbox td.negative { font-weight: bold; color: #8a1f11; background: #FBE3E4; }
+.textbox td.message { font-weight: bold; color: #006; background:#C8CFE1; }
+.textbox td.warning { font-weight: bold; color: #461102; background:#FCB97C; }
+.textbox td.alert { font-weight: bold; color: #514721; background: #FFF6BF; }
+.textbox td.cell_c { text-align: center; }
+.textbox td.cell_m { vertical-align: middle; padding-top: 5px; font-weight: bold; }
+.textbox td.cell_m a { font-weight: bold; }
 .textbox td.cell_m_np { vertical-align: middle; padding-top: 0; }

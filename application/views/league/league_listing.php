@@ -55,7 +55,7 @@ $(document).ready(function(){
                         <div class="flexContent">
                             <?php 
                             if ($leagueData['access_type'] == 1) {
-                                echo(anchor('/league/info/'.$leagueData['league_id'], $leagueData['league_name'],['class' => 'leagueLink'])); 
+                                echo(anchor('/league/home/'.$leagueData['league_id'], $leagueData['league_name'],['class' => 'leagueLink'])); 
                             } else {
                                 echo($leagueData['league_name']);
                             } // END if

@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<SCHEDULE>
+
+<!--
+Start of header comments
+#
+# 8 team schedule, 84 total games
+# 
+# 12 games against 7 other teams
+#
+# Credit: gmo (OOTP Forums)
+# Adapted for OOTP FL use by: ootpFox07
+
+End of header comments
+-->
+
+<GAMES>
+<GAME set="1" away="1" home="2" />
+<GAME set="1" away="6" home="3" />
+<GAME set="1" away="8" home="5" />
+<GAME set="1" away="4" home="7" />
+
+<GAME set="2" away="8" home="1" />
+<GAME set="2" away="2" home="3" />
+<GAME set="2" away="5" home="4" />
+<GAME set="2" away="6" home="7" />
+
+<GAME set="3" away="3" home="1" />
+<GAME set="3" away="6" home="2" />
+<GAME set="3" away="8" home="4" />
+<GAME set="3" away="5" home="7" />
+
+
+
+<GAME set="4" away="4" home="1" />
+<GAME set="4" away="5" home="6" />
+<GAME set="4" away="2" home="7" />
+<GAME set="4" away="3" home="8" />
+
+<GAME set="5" away="5" home="1" />
+<GAME set="5" away="7" home="3" />
+<GAME set="5" away="2" home="4" />
+<GAME set="5" away="6" home="8" />
+
+<GAME set="6" away="4" home="3" />
+<GAME set="6" away="2" home="5" />
+<GAME set="6" away="1" home="6" />
+<GAME set="6" away="7" home="8" />
+
+
+
+<GAME set="7" away="1" home="2" />
+<GAME set="7" away="6" home="3" />
+<GAME set="7" away="8" home="5" />
+<GAME set="7" away="4" home="7" />
+
+<GAME set="8" away="3" home="2" />
+<GAME set="8" away="4" home="5" />
+<GAME set="8" away="7" home="6" />
+<GAME set="8" away="1" home="8" />
+
+<GAME set="9" away="8" home="2" />
+<GAME set="9" away="3" home="5" />
+<GAME set="9" away="4" home="6" />
+<GAME set="9" away="1" home="7" />
+
+
+
+<GAME set="10" away="4" home="3" />
+<GAME set="10" away="2" home="5" />
+<GAME set="10" away="1" home="6" />
+<GAME set="10" away="7" home="8" />
+
+<GAME set="11" away="4" home="1" />
+<GAME set="11" away="5" home="6" />
+<GAME set="11" away="2" home="7" />
+<GAME set="11" away="3" home="8" />
+
+<GAME set="12" away="8" home="2" />
+<GAME set="12" away="3" home="5" />
+<GAME set="12" away="4" home="6" />
+<GAME set="12" away="1" home="7" />
+
+
+
+<GAME set="13" away="7" home="1" />
+<GAME set="13" away="5" home="3" />
+<GAME set="13" away="6" home="4" />
+<GAME set="13" away="2" home="8" />
+
+<GAME set="14" away="4" home="2" />
+<GAME set="14" away="1" home="5" />
+<GAME set="14" away="8" home="6" />
+<GAME set="14" away="3" home="7" />
+
+<GAME set="15" away="6" home="1" />
+<GAME set="15" away="5" home="2" />
+<GAME set="15" away="3" home="4" />
+<GAME set="15" away="8" home="7" />
+
+
+
+<GAME set="16" away="2" home="1" />
+<GAME set="16" away="7" home="4" />
+<GAME set="16" away="3" home="6" />
+<GAME set="16" away="5" home="8" />
+
+<GAME set="17" away="7" home="2" />
+<GAME set="17" away="8" home="3" />
+<GAME set="17" away="1" home="4" />
+<GAME set="17" away="5" home="6" />
+
+<GAME set="18" away="8" home="1" />
+<GAME set="18" away="2" home="3" />
+<GAME set="18" away="5" home="4" />
+<GAME set="18" away="6" home="7" />
+
+
+
+<GAME set="19" away="2" home="1" />
+<GAME set="19" away="6" home="3" />
+<GAME set="19" away="8" home="5" />
+<GAME set="19" away="4" home="7" />
+
+<GAME set="20" away="1" home="4" />
+<GAME set="20" away="6" home="5" />
+<GAME set="20" away="2" home="7" />
+<GAME set="20" away="3" home="8" />
+
+<GAME set="21" away="1" home="3" />
+<GAME set="21" away="7" home="5" />
+<GAME set="21" away="2" home="6" />
+<GAME set="21" away="4" home="8" />
+
+
+
+<GAME set="22" away="6" home="1" />
+<GAME set="22" away="5" home="2" />
+<GAME set="22" away="3" home="4" />
+<GAME set="22" away="8" home="7" />
+
+<GAME set="23" away="4" home="2" />
+<GAME set="23" away="1" home="5" />
+<GAME set="23" away="8" home="6" />
+<GAME set="23" away="3" home="7" />
+
+<GAME set="24" away="2" home="1" />
+<GAME set="24" away="6" home="3" />
+<GAME set="24" away="8" home="5" />
+<GAME set="24" away="4" home="7" />
+
+
+
+<GAME set="25" away="1" home="3" />
+<GAME set="25" away="7" home="5" />
+<GAME set="25" away="2" home="6" />
+<GAME set="25" away="4" home="8" />
+
+<GAME set="26" away="3" home="2" />
+<GAME set="26" away="5" home="4" />
+<GAME set="26" away="6" home="7" />
+<GAME set="26" away="1" home="8" />
+
+<GAME set="27" away="7" home="1" />
+<GAME set="27" away="5" home="3" />
+<GAME set="27" away="6" home="4" />
+<GAME set="27" away="2" home="8" />
+
+
+
+<GAME set="28" away="5" home="2" />
+<GAME set="28" away="4" home="3" />
+<GAME set="28" away="1" home="6" />
+<GAME set="28" away="7" home="8" />
+
+<GAME set="29" away="2" home="1" />
+<GAME set="29" away="7" home="4" />
+<GAME set="29" away="3" home="6" />
+<GAME set="29" away="5" home="8" />
+
+<GAME set="30" away="8" home="2" />
+<GAME set="30" away="3" home="5" />
+<GAME set="30" away="4" home="6" />
+<GAME set="30" away="1" home="7" />
+
+
+
+<GAME set="31" away="3" home="2" />
+<GAME set="31" away="4" home="5" />
+<GAME set="31" away="7" home="6" />
+<GAME set="31" away="1" home="8" />
+
+<GAME set="32" away="1" home="2" />
+<GAME set="32" away="6" home="3" />
+<GAME set="32" away="8" home="5" />
+<GAME set="32" away="4" home="7" />
+
+<GAME set="33" away="7" home="2" />
+<GAME set="33" away="8" home="3" />
+<GAME set="33" away="1" home="4" />
+<GAME set="33" away="5" home="6" />
+
+
+<GAME set="34" away="5" home="1" />
+<GAME set="34" away="7" home="3" />
+<GAME set="34" away="2" home="4" />
+<GAME set="34" away="6" home="8" />
+
+<GAME set="35" away="7" home="2" />
+<GAME set="35" away="8" home="3" />
+<GAME set="35" away="1" home="4" />
+<GAME set="35" away="5" home="6" />
+
+<GAME set="36" away="6" home="1" />
+<GAME set="36" away="5" home="2" />
+<GAME set="36" away="3" home="4" />
+<GAME set="36" away="8" home="7" />
+
+
+
+<GAME set="37" away="3" home="1" />
+<GAME set="37" away="6" home="2" />
+<GAME set="37" away="8" home="4" />
+<GAME set="37" away="5" home="7" />
+
+<GAME set="38" away="8" home="1" />
+<GAME set="38" away="2" home="3" />
+<GAME set="38" away="5" home="4" />
+<GAME set="38" away="6" home="7" />
+
+<GAME set="39" away="2" home="1" />
+<GAME set="39" away="7" home="4" />
+<GAME set="39" away="3" home="6" />
+<GAME set="39" away="5" home="8" />
+
+
+
+<GAME set="40" away="1" home="3" />
+<GAME set="40" away="7" home="5" />
+<GAME set="40" away="2" home="6" />
+<GAME set="40" away="4" home="8" />
+
+<GAME set="41" away="4" home="2" />
+<GAME set="41" away="1" home="5" />
+<GAME set="41" away="8" home="6" />
+<GAME set="41" away="3" home="7" />
+
+<GAME set="42" away="2" home="1" />
+<GAME set="42" away="6" home="3" />
+<GAME set="42" away="8" home="5" />
+<GAME set="42" away="4" home="7" />
+
+
+
+<GAME set="43" away="8" home="1" />
+<GAME set="43" away="2" home="3" />
+<GAME set="43" away="4" home="5" />
+<GAME set="43" away="7" home="6" />
+
+<GAME set="44" away="5" home="1" />
+<GAME set="44" away="7" home="3" />
+<GAME set="44" away="2" home="4" />
+<GAME set="44" away="6" home="8" />
+
+<GAME set="45" away="1" home="4" />
+<GAME set="45" away="6" home="5" />
+<GAME set="45" away="2" home="7" />
+<GAME set="45" away="3" home="8" />
+
+
+
+<GAME set="46" away="1" home="4" />
+<GAME set="46" away="6" home="5" />
+<GAME set="46" away="2" home="7" />
+<GAME set="46" away="3" home="8" />
+
+<GAME set="47" away="7" home="1" />
+<GAME set="47" away="8" home="2" />
+<GAME set="47" away="6" home="4" />
+<GAME set="47" away="3" home="5" />
+
+<GAME set="48" away="8" home="1" />
+<GAME set="48" away="2" home="3" />
+<GAME set="48" away="5" home="4" />
+<GAME set="48" away="6" home="7" />
+
+
+
+<GAME set="49" away="5" home="1" />
+<GAME set="49" away="7" home="3" />
+<GAME set="49" away="2" home="4" />
+<GAME set="49" away="6" home="8" />
+
+<GAME set="50" away="7" home="1" />
+<GAME set="50" away="8" home="2" />
+<GAME set="50" away="6" home="4" />
+<GAME set="50" away="3" home="5" />
+
+<GAME set="51" away="4" home="3" />
+<GAME set="51" away="2" home="5" />
+<GAME set="51" away="1" home="6" />
+<GAME set="51" away="7" home="8" />
+
+
+
+
+<GAME set="52" away="1" home="3" />
+<GAME set="52" away="8" home="4" />
+<GAME set="52" away="2" home="6" />
+<GAME set="52" away="5" home="7" />
+
+<GAME set="53" away="5" home="2" />
+<GAME set="53" away="4" home="3" />
+<GAME set="53" away="1" home="6" />
+<GAME set="53" away="7" home="8" />
+
+<GAME set="54" away="6" home="1" />
+<GAME set="54" away="3" home="4" />
+<GAME set="54" away="2" home="5" />
+<GAME set="54" away="8" home="7" />
+
+
+
+<GAME set="55" away="3" home="2" />
+<GAME set="55" away="4" home="5" />
+<GAME set="55" away="7" home="6" />
+<GAME set="55" away="1" home="8" />
+
+<GAME set="56" away="5" home="1" />
+<GAME set="56" away="7" home="3" />
+<GAME set="56" away="2" home="4" />
+<GAME set="56" away="6" home="8" />
+
+<GAME set="57" away="4" home="1" />
+<GAME set="57" away="7" home="2" />
+<GAME set="57" away="8" home="3" />
+<GAME set="57" away="6" home="5" />
+
+
+
+<GAME set="58" away="3" home="2" />
+<GAME set="58" away="4" home="5" />
+<GAME set="58" away="7" home="6" />
+<GAME set="58" away="1" home="8" />
+
+<GAME set="59" away="1" home="3" />
+<GAME set="59" away="8" home="4" />
+<GAME set="59" away="2" home="6" />
+<GAME set="59" away="5" home="7" />
+
+<GAME set="60" away="6" home="1" />
+<GAME set="60" away="3" home="4" />
+<GAME set="60" away="2" home="5" />
+<GAME set="60" away="8" home="7" />
+
+
+
+<GAME set="61" away="3" home="1" />
+<GAME set="61" away="6" home="2" />
+<GAME set="61" away="7" home="5" />
+<GAME set="61" away="4" home="8" />
+
+<GAME set="62" away="7" home="1" />
+<GAME set="62" away="8" home="2" />
+<GAME set="62" away="6" home="4" />
+<GAME set="62" away="3" home="5" />
+
+<GAME set="63" away="8" home="1" />
+<GAME set="63" away="3" home="2" />
+<GAME set="63" away="4" home="5" />
+<GAME set="63" away="7" home="6" />
+
+
+
+<GAME set="64" away="3" home="1" />
+<GAME set="64" away="6" home="2" />
+<GAME set="64" away="8" home="4" />
+<GAME set="64" away="5" home="7" />
+
+<GAME set="65" away="4" home="1" />
+<GAME set="65" away="5" home="6" />
+<GAME set="65" away="2" home="7" />
+<GAME set="65" away="3" home="8" />
+
+<GAME set="66" away="1" home="2" />
+<GAME set="66" away="7" home="4" />
+<GAME set="66" away="3" home="6" />
+<GAME set="66" away="5" home="8" />
+
+
+
+<GAME set="67" away="1" home="2" />
+<GAME set="67" away="7" home="4" />
+<GAME set="67" away="3" home="6" />
+<GAME set="67" away="5" home="8" />
+
+<GAME set="68" away="4" home="2" />
+<GAME set="68" away="1" home="5" />
+<GAME set="68" away="8" home="6" />
+<GAME set="68" away="3" home="7" />
+
+<GAME set="69" away="1" home="2" />
+<GAME set="69" away="7" home="4" />
+<GAME set="69" away="3" home="6" />
+<GAME set="69" away="5" home="8" />
+
+
+
+<GAME set="70" away="5" home="3" />
+<GAME set="70" away="4" home="6" />
+<GAME set="70" away="1" home="7" />
+<GAME set="70" away="2" home="8" />
+
+<GAME set="71" away="5" home="1" />
+<GAME set="71" away="7" home="3" />
+<GAME set="71" away="2" home="4" />
+<GAME set="71" away="6" home="8" />
+
+<GAME set="72" away="5" home="3" />
+<GAME set="72" away="4" home="6" />
+<GAME set="72" away="1" home="7" />
+<GAME set="72" away="2" home="8" />
+
+
+
+<GAME set="73" away="3" home="1" />
+<GAME set="73" away="6" home="2" />
+<GAME set="73" away="7" home="5" />
+<GAME set="73" away="4" home="8" />
+
+<GAME set="74" away="3" home="1" />
+<GAME set="74" away="6" home="2" />
+<GAME set="74" away="7" home="5" />
+<GAME set="74" away="4" home="8" />
+
+<GAME set="75" away="4" home="1" />
+<GAME set="75" away="7" home="2" />
+<GAME set="75" away="8" home="3" />
+<GAME set="75" away="6" home="5" />
+
+
+
+<GAME set="76" away="4" home="2" />
+<GAME set="76" away="1" home="5" />
+<GAME set="76" away="8" home="6" />
+<GAME set="76" away="3" home="7" />
+
+<GAME set="77" away="1" home="3" />
+<GAME set="77" away="8" home="4" />
+<GAME set="77" away="2" home="6" />
+<GAME set="77" away="5" home="7" />
+
+<GAME set="78" away="6" home="1" />
+<GAME set="78" away="3" home="4" />
+<GAME set="78" away="2" home="5" />
+<GAME set="78" away="8" home="7" />
+
+
+
+<GAME set="79" away="4" home="1" />
+<GAME set="79" away="7" home="2" />
+<GAME set="79" away="8" home="3" />
+<GAME set="79" away="6" home="5" />
+
+<GAME set="80" away="2" home="3" />
+<GAME set="80" away="5" home="4" />
+<GAME set="80" away="6" home="7" />
+<GAME set="80" away="1" home="8" />
+
+<GAME set="81" away="5" home="2" />
+<GAME set="81" away="4" home="3" />
+<GAME set="81" away="1" home="6" />
+<GAME set="81" away="7" home="8" />
+
+
+
+<GAME set="82" away="7" home="1" />
+<GAME set="82" away="5" home="3" />
+<GAME set="82" away="6" home="4" />
+<GAME set="82" away="2" home="8" />
+
+<GAME set="83" away="5" home="3" />
+<GAME set="83" away="4" home="6" />
+<GAME set="83" away="1" home="7" />
+<GAME set="83" away="2" home="8" />
+
+<GAME set="84" away="4" home="2" />
+<GAME set="84" away="1" home="5" />
+<GAME set="84" away="8" home="6" />
+<GAME set="84" away="3" home="7" />
+
+
+
+
+</GAMES>
+
+</SCHEDULE>

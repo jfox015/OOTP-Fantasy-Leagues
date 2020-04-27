@@ -557,6 +557,16 @@ class league_model extends base_model {
 		$query->free_result();
 		return $owners;
 	}
+	/**
+	 * 	USER HAS ACCESS
+	 * 	Returns TRUE Or FALSE if the passed user has access to the LEague (I.E. is a team owner)
+	 *  @param	$user_id	{int}	The USER ID to check for ownership of a team
+	 *  @param	$league_id	{int}	League ID var, if FALSE, defaults to models ID
+	 *  @return				{int}	Count value, 0 if no teams open
+	 * 
+	 * 	@since	1.0.6 Beta
+	 * 
+	 */
 	public function userHasAccess($user_id = false, $league_id = false) {
 
 		$access = false;
@@ -599,8 +609,16 @@ class league_model extends base_model {
 	/	INVITES AND REQUESTS
 	/
 	/----------------------------------------------------------------------*/
-
-
+	/**
+	 * 	GET LEAGUE INVITES
+	 * 	Function that returns of list of league team invites. Can be all invites only those
+	 *  still in PENDING status.
+	 *  @param	$onlyPending	{int}	Only return pending and not completed invites
+	 *  @param	$league_id		{int}	League ID var, if FALSE, defaults to models ID
+	 *  @return					{int}	Count value, 0 if no teams open
+	 *  @since	1.0.6 Beta
+	 * 
+	 */
 	public function getLeagueInvites($onlyPending = false, $league_id = false) {
 
 		$invites = array();
@@ -624,6 +642,19 @@ class league_model extends base_model {
 		$query->free_result();
 		return $invites;
 	}
+	/**
+	 * 	GET LEAGUE REQUESTS
+	 * 	Function that returns the number of requests for teams for a League. Can be filtered to only show
+	 * 	PENDING requesta, requests by a specific user ID or a single request passing the REQUEST ID.
+	 *  @param	$onlyPending	{int}	(OPTIONAL) Only return pending and not completed invites
+	 *  @param	$league_id		{int}	League ID var, if FALSE, defaults to models ID
+	 *  @param	$request_id		{int}	(OPTIONAL) REQUEST ID if passed
+	 *  @param	$user_id		{int}	(OPTIONAL) The Requesting USER ID
+	 *  @return					{int}	Count value, 0 if no teams open
+	 *  @since					1.0.6 Beta
+	 *  @changelog				1.0.3 PROD - Updated to support passing a USER ID value.
+	 * 
+	 */
 	public function getLeagueRequests($onlyPending = false, $league_id = false, $request_id = false, $user_id = false) {
 
 		$requests = array();
@@ -654,6 +685,17 @@ class league_model extends base_model {
 		$query->free_result();
 		return $requests;
 	}
+	/**
+	 * 	TEAM REQUEST
+	 * 	Checks if the passed user has a team request already PENDING and if so, rejects the request,
+	 * 	If no other requests are open the the given League, the request is logged.
+	 *  @param	$team_id		{int}	The TEAM ID for the request
+	 *  @param	$user_id		{int}	The Requesters USER ID
+	 *  @param	$league_id		{int}	League ID var, if FALSE, defaults to models ID
+	 *  @return					{int}	Count value, 0 if no teams open
+	 *  @since	1.0.6 Beta
+	 * 
+	 */
 	public function teamRequest($team_id = false, $user_id = false, $league_id = false) {
 		if ($league_id === false) {
 			$league_id = $this->id;
@@ -695,7 +737,15 @@ class league_model extends base_model {
 		}
 		return true;
 	}
-
+	/**
+	 * 	UPDATE REQUEST
+	 * 	Changes the status and details of an open request.
+	 *  @param	$request_id		{int}		The REQUEST ID
+	 *  @param	$response		{int}		The new REQUEST STATUS TYPE
+	 *  @param	$league_id		{int}		League ID var, if FALSE, defaults to models ID
+	 *  @return					{Boolean}	TRUE on success, FALSE on failure
+	 * 
+	 */
 	public function updateRequest($request_id = false, $response = false, $league_id = false) {
 
 		if ($league_id === false) {
@@ -812,6 +862,11 @@ class league_model extends base_model {
 		return true;
 	}
 
+	/*------------------------------------------------------------------
+	/
+	/	LEAGUE SEARCH AND INFORMATION
+	/
+	/-----------------------------------------------------------------*/
 	/**
 	 *	GET LEAGUES.
 	 *	Returns a list of public leagues.
@@ -1209,14 +1264,19 @@ class league_model extends base_model {
 	 *	CREATE LEAGUE SCHEDULE.
 	 *	Builds a scheudle for all teams based on the number of teams, number of scoring periods
 	 *	and the number of games per team.
-	 *  @param	$league_id - If not specified, no league filter is applied.
-	 *	@return	"OK" on success, false on failure
+	 *  @param		$league_id - If not specified, no league filter is applied.
+	 *	@return		[JSON] "OK" on success, error message on failure
+	 *
+	 * 	@since 		1.0
+	 * 	@version	2.0
 	 */
-	public function createLeagueSchedule($league_id = false) {
+	public function createLeagueSchedule($league_id = false, $debug = false) {
 
 		if ($league_id === false) { $league_id = $this->id; }
 
-		// GET ALL TEAMS
+		/*-------------------------------------------------------
+		/	1.0 GET ALL TEAMS
+		/------------------------------------------------------*/
 		$teams = array();
 		$this->db->select("id");
 		$this->db->where("league_id",$league_id);
@@ -1228,209 +1288,168 @@ class league_model extends base_model {
 		}
 		$query->free_result();
 
-		// DELETE ALL GAMES FOR THIS LEAGUE IF THEY EXIST
+		/*-------------------------------------------------------
+		/	1.1 DELETE ALL GAMES FOR THIS LEAGUE (IF THEY EXIST)
+		/------------------------------------------------------*/
 		$this->db->flush_cache();
 		$this->db->where('league_id',$league_id);
 		$this->db->delete('fantasy_leagues_games');
 
-		$matchups = sizeof($teams) * $this->games_per_team;
-
-		//echo("matchups per period = ".$matchups."<br />");
-
-		for ($s = 1; $s < ($this->regular_scoring_periods +1); $s++) {
-
-			$data = array();
-			//echo("Scoring period ".$s."<br />");
-			$teamCount = 0;
-			$periodDone = false;
-			$gamesPerTeam = array();
-			$type = 0;
-			for ($p = 0; $p < $matchups; $p++) {
-
-
-				$team_id = $teams[intval(rand(0, (sizeof($teams)-1)))];
-				if (isset($gamesPerTeam[$team_id]) && $gamesPerTeam[$team_id] >= $this->games_per_team) { }
-				else {
-
-					// PICK THREE RANDOM OPPONENTS FOR THE CURRENT TEAM
-					// ALTERNATE HOME AND AWAY
-					$type = ($type == 0) ? 1 : 0;
-					$tries = 0;
-					while (true) {
-						$opponent = $teams[intval(rand(0, (sizeof($teams)-1)))];
-						//echo("Opponent = ".$opponent."<br />");
-						if ($opponent != $team_id) {
-							$gamesForTeam = isset($gamesPerTeam[$opponent]) ? $gamesPerTeam[$opponent] : 0;
-							if ($gamesForTeam < $this->games_per_team) {
-								if ($type == 0) {
-									$home_team_id = $team_id;
-									$away_team_id = $opponent;
-								} else {
-									$home_team_id = $opponent;
-									$away_team_id = $team_id;
-								} // END if
-								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id,
-											  'away_team_id'=>$away_team_id,'scoring_period_id'=>$s));
-
-								if (isset($gamesPerTeam[$opponent]))
-									$gamesPerTeam[$opponent] = $gamesPerTeam[$opponent] + 1;
-								else
-									$gamesPerTeam[$opponent] = 1; // END if
-
-								if (isset($gamesPerTeam[$team_id]))
-									$gamesPerTeam[$team_id] = $gamesPerTeam[$team_id] + 1;
-								else
-									$gamesPerTeam[$team_id] = 1; // END if
-								break;
-							} // END if
-						} // END if
-						$tries++;
-						if ($tries > 500) {
-							//echo("In loop = true");
-							//echo("Current team id = ".$team_id."<br />");
-							//echo("Has any games? ".(isset($gamesPerTeam[$team_id]) ? "true" : "false")."<br />");
-							// ATEMPT A MATCHUP MANUALLY
-							if (isset($gamesPerTeam[$team_id])) {
-								//echo("Games for team ".$team_id." = ".$gamesPerTeam[$team_id]."<br />");
-								if ($gamesPerTeam[$team_id] < $this->games_per_team) {
-								// FIND ANOTHER TEAM UNDER THE MINIMUM
-									foreach($gamesPerTeam as $team_id_val => $game_count) {
-										if ($game_count < $this->games_per_team) {
-											if ($type == 0) {
-												$home_team_id = $team_id;
-												$away_team_id = $team_id_val;
-											} else {
-												$home_team_id = $team_id_val;
-												$away_team_id = $team_id;
-											} // END if
-											array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id,
-											 'away_team_id'=>$away_team_id,'scoring_period_id'=>$s));
-											if (isset($gamesPerTeam[$home_team_id]))
-												$gamesPerTeam[$home_team_id] = $gamesPerTeam[$home_team_id] + 1;
-											else
-												$gamesPerTeam[$home_team_id] = 1; // END if
-											if (isset($gamesPerTeam[$away_team_id]))
-												$gamesPerTeam[$away_team_id] = $gamesPerTeam[$away_team_id] + 1;
-											else
-												$gamesPerTeam[$away_team_id] = 1; // END if
-											break;
-										}
-									}
-								}
-							} else {
-								//echo("No matchups.<br />");
-								// THIS TEAM HAS NO MATCHUPS THIS PERIOD
-								// BREAK UP ANOTHER GAME AND GIVE THE OPPOENTS TO THIS TEAM
-								$gameData = array_shift($data);
-								//echo("# of games saved = ".sizeof($data)."<br />");
-								//echo("fields in gameData = ".sizeof($gameData)."<br />");
-								$home_team_id = $gameData['home_team_id'];
-								$away_team_id = $gameData['away_team_id'];
-								//echo("home_team_id = ".$home_team_id."<br />");
-								//echo("away_team_id = ".$away_team_id."<br />");
-
-								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$team_id,
-									  'away_team_id'=>$home_team_id,'scoring_period_id'=>$s));
-								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$away_team_id,
-											  'away_team_id'=>$team_id,'scoring_period_id'=>$s));
-								if (!isset($gamesPerTeam[$team_id]))
-									$gamesPerTeam[$team_id] = 2; // END if
-
-							}
-							$periodDone = true; break;
-						}
-					} // END while
-					if ($periodDone) { break; }
-				} // END if
-			} // END for
-			$totalGames = 0;
-			if (sizeof($gamesPerTeam) > 0) {
-				foreach($gamesPerTeam as $team_id_val => $game_count) {
-					//echo($team_id_val ." has ".$game_count." games this period.<br />");
-					$totalGames += $game_count;
-				}
+		/*-------------------------------------------------------
+		/	1.2 SET BASIC DATA VARS
+		/------------------------------------------------------*/
+		$matchups = (sizeof($teams)/2) * $this->games_per_team;
+		$gamesNeeded = $matchups*$this->regular_scoring_periods;
+		$success = false;
+		$outMess = "";
+		$data = array();
+		/*-------------------------------------------------------
+		/	1.2.1 IF DEBUGGING OUTPUT THE BASICS
+		/------------------------------------------------------*/
+		//$this->debug =false;
+		if ($this->debug) {
+			echo("Team count = ".sizeof($teams)."<br />"); 
+			echo("Games per team = ".$this->games_per_team."<br />"); 
+			echo("matchups per period = ".$matchups."<br />"); 
+			echo("this->regular_scoring_periods = ".$this->regular_scoring_periods."<br />");
+			echo("Total games needed = ".$gamesNeeded."<br />");
+		}
+		/*-------------------------------------------------------
+		/
+		/	EDIT 1.0.3 PROD
+		/	Switch from unreliable automatic generation of games
+		/	to using a pre-built schedule XML file. The file
+		/	format is based off the LSDL format used by OOTP.
+		/
+		/-----------------------------------------------------*/
+		
+		/*-------------------------------------------------------
+		/	2.0 IF LOAD THE SCHEDULE XML FILE
+		/------------------------------------------------------*/
+		$schedFile = DIR_WRITE_PATH.PATH_MEDIA_WRITE."schedules".URL_PATH_SEPERATOR."ootpfls_t_".sizeof($teams).".lsdl";
+		if ($this->debug) { echo "XML file path = ".$schedFile."<br />\n"; }
+		if (!file_exists($schedFile)){ 
+			$outMess = "The Schedule file could not be found in path:".$schedFile."<br />\n";
+		} else {
+			$fr = fopen($schedFile,"r") or $outMess = "Failed to load the file ".$schedFile;
+			$xmlIn = fread($fr,filesize($schedFile));
+			fclose($fr);
+			if ($this->debug) { 
+				echo "XML data loaded!<br />\n";
+				//echo "XML data = ".$xmlIn."<br />\n";
 			}
-			$loops = 0;
-			while (true) {
-				//echo("Total games before correct for period = ".$totalGames."<br />");
-				//echo("Total games less than matchups? = ".(($totalGames < $matchups) ? "true" : "false")."<br />");
-				if ($totalGames < $matchups) {
-					if (sizeof($gamesPerTeam) > 0 && sizeof($gamesPerTeam) == sizeof($teams)) {
-						$team1Id = -1;
-						// FIND A TEAM UNDER THE MINIMUM
-						foreach($gamesPerTeam as $team_id_val => $game_count) {
-							if ($game_count < $this->games_per_team) {
-								$team1Id = $team_id_val;
-								break;
-							}
-						}
-						//echo("team under the minimum ".$team1Id." = ".$game_count."<br />");
-						// FIND ANOTHER TEAM UNDER THE MINIMUM
-						foreach($gamesPerTeam as $team_id_val => $game_count) {
-							if ($team_id_val != $team1Id && $game_count < $this->games_per_team) {
-								//echo("second under the minimum ".$team_id_val." = ".$game_count."<br />");
-
-								$type = ($type == 0) ? 1 : 0;
-								if ($type == 0) {
-									$home_team_id = $team1Id;
-									$away_team_id = $team_id_val;
-								} else {
-									$home_team_id = $team_id_val;
-									$away_team_id = $team1Id;
-								} // END if
-								array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id,
-								 'away_team_id'=>$away_team_id,'scoring_period_id'=>$s));
-								$gamesPerTeam[$home_team_id] = $gamesPerTeam[$home_team_id] + 1;
-								$gamesPerTeam[$away_team_id] = $gamesPerTeam[$away_team_id] + 1;
-								$totalGames += 2;
-							}
-						}
-					} else {
-						$team1Id = -1;
-						// FIND A TEAM WITH NO GAMES ENTRY
-						foreach($teams as $team_id_val) {
-							if (!isset($gamesPerTeam[$team_id_val])) {
-								$team1Id = $team_id_val;
-								break;
-							} // END if
-						} // END foreach
-						//echo("Team missing games = ".$team1Id."<br />");
-						// THIS TEAM HAS NO MATCHUPS THIS PERIOD
-						// BREAK UP ANOTHER GAME AND GIVE THE OPPOENTS TO THIS TEAM
-						$gameData = array_shift($data);
-						//echo("# of games saved = ".sizeof($data)."<br />");
-						//echo("fields in gameData = ".sizeof($gameData)."<br />");
-						$home_team_id = $gameData['home_team_id'];
-						$away_team_id = $gameData['away_team_id'];
-						//echo("home_team_id = ".$home_team_id."<br />");
-						//echo("away_team_id = ".$away_team_id."<br />");
-						array_push($data,array('league_id'=>$league_id,'home_team_id'=>$team1Id,
-									  'away_team_id'=>$home_team_id,'scoring_period_id'=>$s));
-
-						array_push($data,array('league_id'=>$league_id,'home_team_id'=>$away_team_id,
-									  'away_team_id'=>$team1Id,'scoring_period_id'=>$s));
-						if (!isset($gamesPerTeam[$team1Id]))
-							$gamesPerTeam[$team1Id] = 2; // END if
-						$totalGames += 2;
+			/*--------------------------------------------
+			/	2.1 CREATE A NEW SIMPLE XML ELEMENT
+			/-------------------------------------------*/
+			$xml = new SimpleXMLElement($xmlIn);
+			if ($xml === false) {
+				$outMess = "Failed loading XML: ";
+				foreach(libxml_get_errors() as $error) { $outMess .= "<br>". $error->message; }
+				if ($this->debug) { echo($outMess."<br />\n"); }
+			} else {
+				/*--------------------------------------------
+				/	2.2 DEFINE CHILD NODES AND START INDEX
+				/-------------------------------------------*/
+				$games = $xml->children();
+				$gameList = $games->children();
+				// DEFINE A STARTING INDEX FOR PULLING THE REQUIRED AMOUNT OF GAMES
+				$loopCount = 0;
+				$startIndex = 0;
+				$endIndex = (count($gameList) - $gamesNeeded)-1;
+				while (true) {
+					$startIndex = random_int(0, $endIndex);
+					// ASSERT START INDEX IS DIVISIBLE BY THE NUMBER OF GAMES PER GAME GROUP (1/2 the teams in league)
+					if (($startIndex % (sizeof($teams)/2)) == 0 || $loopCount > 1000) {
+						break;
 					}
-				} else {
-					break;
+					$loopCount++;
 				}
-				$loops++;
-				if ($loops == 100) { break; } // END if
-			}
-			$totalGames = 0;
-			if (sizeof($gamesPerTeam) > 0) {
-				foreach($gamesPerTeam as $team_id_val => $game_count) {
-					$totalGames += $game_count;
-				} // END foreach
+				
+				if ($this->debug) { 
+					echo "XML parsed!<br />\n";
+					echo("Root node name = ".$xml->getName()."<br />\n");
+					echo("number of top level nodes = ".count($xml->children())."<br />\n");
+					echo("Root games node name = ".$games->getName()."<br />\n");
+					echo("Number of Games = ".count($gameList)."<br />\n");
+					echo("Game sets available = ".(count($gameList)/$matchups)."<br />\n");
+					echo("Start Index for games block = ".$startIndex."<br />\n");
+					echo("Highest piossible new start Index = ".$endIndex."<br />\n");
+				}
+				/*-------------------------------------------------
+				/	2.3 LOOP THROUGH GAME SETS AND MAKE MATCHUPS
+				/------------------------------------------------*/
+				$s = 1;
+				$totalGames = 0;
+				do {
+					if ($this->debug) { 
+						echo("------------------------------------------------");
+						echo("Creating games for scoring period ".$s."<br />\n");
+						echo("------------------------------------------------");
+					}
+					$gamesCreated = 0;
+					while($gamesCreated < $matchups) {
+						// START EXTRACTING THE GAME BLOCk
+						$game = $gameList[$startIndex];
+						// GET GAME ATTRIBUTES
+						$attrs = $game->attributes();
+						$home_team_id = $teams[$attrs['home']-1];
+						$away_team_id = $teams[$attrs['away']-1];
+						if ($this->debug) { 
+							echo("Start Index = ".$startIndex."<br />\n");
+							echo "Current set = ".$attrs['day']."<br />\n";
+							echo "Home team = ".$attrs['home']."<br />\n";
+							echo "Away team = ".$attrs['away']."<br />\n";
+							echo "Home team ID = ".$home_team_id."<br />\n";
+							echo "Away team ID = ".$away_team_id."<br />\n";
+						}
+						// PUSH THE GAME INTO THE GAME LIST
+						array_push($data,array('league_id'=>$league_id,'home_team_id'=>$home_team_id,
+												'away_team_id'=>$away_team_id,'scoring_period_id'=>$s));
+						$gamesCreated++;
+						$startIndex++;
+						$totalGames++;
+						if ($this->debug) { 
+							echo("------------------------------------------------<br />");
+							echo("Games created for scoring period ".$s." = ".$gamesCreated."<br />\n");
+							echo("------------------------------------------------<br />");
+						}
+					} // END while($gamesCreated < $matchups)
+					$s++;
+
+				} while ($s < ($this->regular_scoring_periods + 1));  // END do...while
+
+				if ($this->debug) { 
+					echo "Games needed for league league ".$league_id." is ".$gamesNeeded."<br />\n";
+					echo "Total games created for league ".$league_id." is ".$totalGames."<br />\n";
+					echo "Total game records in data array ".count($data)."<br />\n";
+					foreach($data as $query) {
+						foreach($query as $key => $val) {
+							echo($key." = ".$val."<br />");
+						}
+					}
+				} // END if
+
+				if (count($data) == $gamesNeeded) {
+					$this->db->flush_cache();
+					//$this->db->insert_batch($this->tables['GAMES'], $data);
+					foreach($data as $query) {
+						$this->db->flush_cache();
+						$this->db->insert($this->tables['GAMES'],$query);
+						
+					} // END foreach
+					$rows = $this->db->affected_rows();
+					if ($this->debug) { 
+						echo "Rows written = ".$rows."<br />\n";
+					}
+					$success = true;
+					$outMess = "OK";
+				} else {
+					$success = false;
+					$outMess = "Not enough games created vs games needed. Check the integrity of the schedule XML file in <code>&quot;".DIR_WRITE_PATH.PATH_MEDIA_WRITE."schedules&quot;</code> and try again";
+				} // END if
 			} // END if
-			foreach($data as $query) {
-				$this->db->flush_cache();
-				$this->db->insert($this->tables['GAMES'],$query);
-			} // END foreach
-		} // END for
-		return "OK";
+		} // END if
+		return $outMess;
 	} // END function
 
 	/**
@@ -3148,7 +3167,7 @@ class league_model extends base_model {
 	 *	@return					Error string or "OK" on success
 	 *	@deprecated
 	 */
-	public function _auto_draft($max_rounds,$curr_year, $league_id = false) {
+	/*public function _auto_draft($max_rounds,$curr_year, $league_id = false) {
 		$errors = "";
 		if ($league_id === false) { $league_id = $this->id; }
 
@@ -3258,7 +3277,7 @@ class league_model extends base_model {
 		}
 		if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 		return $errors;
-	}
+	}*/
 	/**
 	 * 	UPDATE LEAGUE SCORING
 	 *  Runs scoring against each leagues scoring rules for all players.
@@ -3267,9 +3286,9 @@ class league_model extends base_model {
 	 *	@param	$league_id		The fatntasy league ID, defaults to $id property if nothing is passed
 	 *	@param	$ootp_league_id	The OOTP League ID to run stats from
 	 *	@return	TRUE on success, FALSE on ERROR
-	 *	@deprecated
+	 *	@deprecated		Use $this->updateLeagueScoring() instead
 	 */
-	private function _updateLeagueScoring($scoring_period, $excludeList = array(), $league_id = false) {
+	/*private function _updateLeagueScoring($scoring_period, $excludeList = array(), $league_id = false) {
 
 		if ($league_id === false) { $league_id = $this->id; }
 
@@ -3436,16 +3455,16 @@ class league_model extends base_model {
 			$query->free_result();
 		}
 		return false;
-	}
+	}*/
 	/**
 	*	GET OPEN LEAGUES.
 	*	Returns a list of league available to the current player.
 	*  	@param	$user_id - The user ID to check against
 	*	@return	leagues array, empty if not league found on failure
 	*
-	*  	@deprecated		1.0.3 PROD onward, use getLeagueList() instead
+	*  	@deprecated		1.0.3 PROD onward, use $this->getLeagueList() instead
 	*/
-	public function getOpenLeagues($user_id = false) {
+	/*public function getOpenLeagues($user_id = false) {
 
 		$leagues = array();
 		$select = $this->tblName.'.id,league_name,commissioner_id,username,leagueType, max_teams, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount';
@@ -3471,5 +3490,5 @@ class league_model extends base_model {
 		$query->free_result();
 		unset($query);
 		return $leagues;
-	}
+	}*/
 }

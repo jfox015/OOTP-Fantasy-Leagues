@@ -39,14 +39,26 @@
             <h3>General Functions</h3> 
             <ul class="iconmenu">  
             	<li><?php echo anchor('/league/leagueInvites/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
-            	Pending Owner Invites/Requests</li>
+            	Pending Owner Invites/Requests
+				<?php if (isset($invites_requets) && $invites_requets > 0) { ?>
+					<span class="badge"><?php echo($invites_requets); ?></span>
+				<?php }	?>
+				</li>
                 <?php if ($this->params['config']['useWaivers'] == 1) { ?>
                 <li><?php echo anchor('/league/waiverClaims/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/user_accept.png" width="48" height="48" border="0" />'); ?><br />
-            	Pending Waiver Claims</li>
+            	Pending Waiver Claims
+				<?php if (isset($waiver_clainms) && $waiver_clainms > 0) { ?>
+					<span class="badge"><?php echo($waiver_clainms); ?></span>
+				<?php }	?>
+				</li>
                 <?php } 
                 if ($this->params['config']['useTrades'] == 1) { ?>
                 <li><?php echo anchor('/league/tradeReview/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
-            	Pending Trades</li>
+            	Pending Trades
+				<?php if (isset($trades) && $trades > 0) { ?>
+					<span class="badge"><?php echo($trades); ?></span>
+				<?php }	?>
+				</li>
                 <?php }  ?>
              </ul>
              
