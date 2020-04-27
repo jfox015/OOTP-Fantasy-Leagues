@@ -552,6 +552,31 @@ class user_auth_model extends base_model {
 		}
 		return $users;
 	}
+	/**
+	 * 	GET ADMIN ACTIVATION COUNT
+	 * 	Returns a count of the number of users requiring activation.
+	 * 
+	 * @return		{Int}		Count of inactive users requiing activation
+	 * @since		1.0.3 PROD
+	 * 
+	 */
+	public function getAdminActivationCount() {
+		$query = $this->db->select('COUNT(id) as userCount')
+                   	   ->where('active', 0)
+					   ->where("emailConfirmKey", 0)
+                   	   ->get($this->tblName);
+		$row = $query->row();
+		return intval($row->userCount);
+	}
+	/**
+	 * 	GET DATE DETAILS
+	 * 	Gets the date stamps for the users Auth record
+	 * 
+	 * @param		$userId	{Int}		The USER ID to get details for
+	 * @return				{Array}		Array with dateCreated and dateModified values
+	 * @since				1.0.3 PROD
+	 * 
+	 */
 	public function getDateDetails($userId = false) {
 		
 		if ($userId === false) { $userId = $this->id; }
@@ -561,7 +586,7 @@ class user_auth_model extends base_model {
                        ->limit(1)
                    	   ->get($this->tblName);
 		$result = $query->row();
-
+		
         if ($query->num_rows() > 0) {
 			$dates = array('dateCreated'=>$result->dateCreated,'dateModified'=>$result->dateModified);
 		} else {
@@ -571,10 +596,15 @@ class user_auth_model extends base_model {
 		}
 		return $dates;
 	}
-	
 	/**
+	 *	
 	 *	LOGIN
 	 *	Starts a new user session.
+	 * 	@param		$login		{String}		The username of the user logging in
+	 * 	@param		$password	{String}		The password
+	 * 	@return					{Boolean}		TRUE on success, FALSE on failure
+	 * 	@since					1.0
+	 * 
 	 */
 	public function login($login,$password) {
 		$success = false;

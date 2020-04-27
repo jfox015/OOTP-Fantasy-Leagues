@@ -904,7 +904,7 @@ class league_model extends base_model {
 	 *	@since 	1.0.3 PROD
 	 *
 	 */
-	public function getLeagueList($user_id = false) {
+	public function getLeagueList($user_id = false, $active = false, $public = false) {
 		$leagues = array();
 		$openCount = 0;
 		$pendingRequests = array();
@@ -916,6 +916,13 @@ class league_model extends base_model {
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		$this->db->join('fantasy_leagues_status','fantasy_leagues_status.id = '.$this->tblName.'.league_status','left');
 		$this->db->join("users_core","users_core.id = ".$this->tblName.".commissioner_id", "left");
+		if ($active !== false) {
+			$this->db->where("league_status", 1);
+		}
+		if ($public !== false) {
+			$this->db->where("access_type", 1);
+		}
+		$this->db->order_by("league_status", "asc");
 		$query = $this->db->get($this->tblName);
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {

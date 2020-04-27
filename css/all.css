@@ -383,7 +383,7 @@ figure.logo-lg, figure.logo-exlg {
     line-height: 22px;
     font-size: 18px;
 }
-.teamLinks a.leagueLink  {
+.teamLinks a.leagueLink, .flexContent h2  {
 	display: inline;
     color: #151617;
     font-weight: 600;

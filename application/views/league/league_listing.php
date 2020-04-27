@@ -17,12 +17,15 @@ $(document).ready(function(){
     <?php print($league_list_intro_str); ?>
     <br/>
 	<div id="content">
-        <?php if ($loggedIn) { ?>
+        <?php if ($loggedIn && $curr_period_id <= 1) { ?>
         <div class="top-bar leagues">
             <button class="sitebtn create_league" rel="create">Create a New League</button>
         </div>
         <?php 
-        } 
+        } else { ?>
+            <br /><span class="message"><b>Interested in Starting a League?</b> The <?php echo($leagueName); ?> has begun it's <?php echo($current_year); ?> season. New Leagues can be added once this season has finished.</span>
+        <?php
+        }
         /*-------------------------------------------------
         /
         // LEAGUE LISTING
@@ -57,14 +60,16 @@ $(document).ready(function(){
                             if ($leagueData['access_type'] == 1) {
                                 echo(anchor('/league/home/'.$leagueData['league_id'], $leagueData['league_name'],['class' => 'leagueLink'])); 
                             } else {
-                                echo($leagueData['league_name']);
+                                echo('<h2>'.$leagueData['league_name'].'</h2>');
                             } // END if
                             ?>
                             <div class="TeamLinks-Links">
-                                Commissioner: <?php if((isset($leagueData['commissioner_id']) && $leagueData['commissioner_id'] != -1) && isset($leagueData['commissioner'])) {echo(anchor('/user/profiles/'.$leagueData['commissioner_id'],$leagueData['commissioner'],['class' => 'teamLink-link'])); } 
-                                else {
-                                    echo('No Commissioner');
-                                }?>
+                                <?php 
+                                if(isset($leagueData['description']) && !empty($leagueData['description'])) {
+                                    echo('<br />'.$leagueData['description']); ?><br />
+                                <?php
+                                } 
+                                ?>
                             </div>
                         </div>
                     </section>
@@ -74,12 +79,6 @@ $(document).ready(function(){
                 <section class="content">
                     <section class="teamLinks flex">
                         <div class="flexContent">
-                            <?php 
-                            if(isset($leagueData['description']) && !empty($leagueData['description'])) {
-                                echo($leagueData['description']); ?><br />
-                            <?php
-                            } 
-                            ?>
                             <strong>Type:</strong> <?php echo($leagueData['league_type_lbl']); ?> League<br />
                             <strong>Status:</strong> <?php 
                             switch($leagueData['league_status']) {
@@ -92,6 +91,11 @@ $(document).ready(function(){
                             }
                             echo('<span style="font-weight:bold; color:'.$color.'">'.$leagueData['league_status_lbl'].'</span>'); ?><br />
                             <strong>Teams:</strong> <?php echo($leagueData['max_teams']); ?><br />
+                            <strong>Commissioner:</strong> <?php if((isset($leagueData['commissioner_id']) && $leagueData['commissioner_id'] != -1) && isset($leagueData['commissioner'])) {echo(anchor('/user/profiles/'.$leagueData['commissioner_id'],$leagueData['commissioner'],['class' => 'teamLink-link'])); } 
+                                else {
+                                    echo('No Commissioner');
+                                }?>
+                            <br />
                             <?php
                             if ($loggedIn) {
                                 if ($leagueData['teamsOwned'] > 0) {

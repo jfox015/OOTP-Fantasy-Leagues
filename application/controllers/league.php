@@ -620,7 +620,14 @@ class league extends BaseEditor {
 		$this->data['league_list_intro_str'] = $this->lang->line('league_list_intro_str');
 		$this->data['subTitle'] = $this->lang->line('league_list_title');
 		$userVar = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->params['currUser'] : false;
-		$this->data['league_list'] = $this->dataModel->getLeagueList($userVar);
+		$curr_period_id = 1;
+		if ($this->params['config']['current_period'] > 1) {
+			$curr_period_id = $this->params['config']['current_period'];
+		}
+		$this->data['curr_period_id'] = $curr_period_id;
+		$this->data['leagueName'] =  $this->ootp_league_model->name;
+		$this->data['current_year'] =  date('Y',(strtotime($this->ootp_league_model->current_date)));
+		$this->data['league_list'] = $this->dataModel->getLeagueList($userVar, true, true);
 		$this->data['loggedIn'] =$this->params['loggedIn'];
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;

@@ -173,8 +173,8 @@
 		$last_process_time = 1;
 		$last_sql_load_time = 1;
 		if (isset($config['last_process_time']) && isset($config['last_sql_load_time'])) {
-			$last_process_time = new DateTime(config['last_process_time']);
-			$last_sql_load_time = new DateTime(config['last_sql_load_time']);
+			$last_process_time = new DateTime($config['last_process_time']);
+			$last_sql_load_time = new DateTime($config['last_sql_load_time']);
 		}
 
 		if ($in_season && isset($league_info) && $currDate > $startDate && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
@@ -194,7 +194,7 @@
 			<?php
 			} else { ?>
 			<li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png"
-			width="24" height="24" border="0" align="left" alt="" title="" class="floated_icon" /><div
+			width="24" height="24" alt="" title="" class="floated_icon" /><div
 			class="floated_caption"><?php print($this->lang->line('dash_seasonfuncs_pre_add_leagues')); ?></div>
 			</li>
 			<?php } // END if
@@ -246,7 +246,7 @@
             <?php
 			} else { ?>
             <li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png"
-            width="24" height="24" border="0" align="left" alt="" title="" class="floated_icon" /><div
+            width="24" height="24" alt="" title="" class="floated_icon" /><div
             class="floated_caption"><?php print($this->lang->line('dash_settings_pre_add_leagues')); ?></div>
             </li>
 			<?php } // END if
@@ -317,7 +317,14 @@
         	<li><?php echo anchor('member','<img src="'.$config['fantasy_web_root'].'images/icons/user.png" width="48" height="48" border="0" />'); ?><br />
             Manage Members</li>
             <li><?php echo anchor('admin/userActivations','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
-            Users requiring activation</li>
+			Users requiring activation
+			<?php
+			if (isset($requiring_activation) && $requiring_activation > 0) { ?>
+				<span class="badge"><?php echo($requiring_activation); ?></span>
+			<?php
+			}
+			?>
+			</li>
             <li><?php echo anchor('admin/configAbout','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
             Edit &quot;About&quot; Page</li>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'remove')); ?><br />

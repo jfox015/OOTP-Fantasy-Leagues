@@ -144,6 +144,7 @@ class admin extends MY_Controller {
 				}
 			}
 			//  END 0.2 MODS
+			
 			//-------------------------------------------------------------
 			// UPDATE VERSION 0.3 beta
 			//-------------------------------------------------------------
@@ -156,6 +157,7 @@ class admin extends MY_Controller {
 				$this->data['settingsError'] = str_replace('[FANTASY_SETTINGS_URL]',$this->params['config']['fantasy_web_root'].'admin/configFantasy',$this->lang->line('admin_error_fantasy_settings'));
 			}
 			//  END 0.3 MODS
+			
 			//-------------------------------------------------------------
 			// UPDATE VERSION 0.4 beta
 			//-------------------------------------------------------------
@@ -163,6 +165,15 @@ class admin extends MY_Controller {
 			$this->data['summary_size'] = getSimSummaries(true);
 			//  END 0.4 MODS
 
+			//-------------------------------------------------------------
+			// UPDATE VERSION 1.0.3 PROD
+			//-------------------------------------------------------------
+			// GET USERS REQUIRING ACTIVATION COUNT
+			if (!isset($this->user_auth_model)) {
+				$this->load->model('user_auth_model');
+			}
+			$this->data['requiring_activation'] = $this->user_auth_model->getAdminActivationCount();
+			//  END 1.0.3 PROD MODS
 
 			$this->params['content'] = $this->load->view($this->views['DASHBOARD'], $this->data, true);
 			$this->params['subTitle'] = "Welcome to OOTP Fantasy Leagues";
