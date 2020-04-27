@@ -33,6 +33,7 @@ class draft_model extends base_model {
 	var $emailDraftSummary = -1;
 	var $emailOwnersForPick = -1;
 	var $completed = -1;
+	var $draftBy = 1;
 	var $debug = false;
 	
 	/*---------------------------------------------
@@ -49,7 +50,7 @@ class draft_model extends base_model {
 		$this->tables['DRAFT'] = 'fantasy_draft';
 		$this->tables['TEAMS'] = 'fantasy_teams';
 		
-		$this->fieldList = array('league_id','draftEnable','nRounds','dispLimit','pauseAuto','setAuto','autoOpen','timerEnable','flexTimer','enforceTimer','dStartDt','timePick1','timePick2','rndSwitch','timeStart','timeStop','pauseWkEnd','emailDraftSummary','emailOwnersForPick','draftInjured');
+		$this->fieldList = array('league_id','draftEnable','nRounds','dispLimit','pauseAuto','setAuto','autoOpen','timerEnable','flexTimer','enforceTimer','dStartDt','timePick1','timePick2','rndSwitch','timeStart','timeStop','pauseWkEnd','emailDraftSummary','emailOwnersForPick','draftInjured','draftBy');
 		$this->conditionList = array('whenDraft');
 		$this->readOnlyList = array('draftDate','completed','dStartTm');  
 		
@@ -1381,11 +1382,51 @@ class draft_model extends base_model {
 		return $stats;
 	}
 	/**
+	 * 	GET PLAYER RATINGS.
+	 * 	Returns a list if player IDs sorted accoring to their ranking against hitt/pitching and fielding ratings categories.
+	 * 	@param	$ootp_league_id		(Integer)	OPTIONAL, usually 100
+	 *  @param 	$draftInjured		(Boolean)	TRUE to draft injured players, FALSE to not
+	 *  @return						(Array)		An array of player IDs and rankings
+	 *  @see						controllers -> draft -> selection()		
+	 *  @since 						1.0.3 PROD
+	 *  @author 					jfox015
+	 */
+	public function getPlayerRatings($ootp_league_id = 100, $draftInjured = false) {
+
+		echo("<b>Draft Model -> getPlayerRatings</b><br />");
+								
+		if ($draftInjured === false) $draftInjured = $this->draftInjured;
+	
+		$teamStr = "";
+		$teams = getOOTPTeams($ootp_league_id, false);
+		foreach($teams as $id => $data) {
+			if (!empty($teamStr)) { $teamStr .= ","; }
+			$teamStr .= $id;
+		}
+		$values = array();
+		$sql="SELECT fp.id, fp.rating ";
+		$sql.="FROM players as p, fantasy_players as fp ";
+		$sql.="WHERE p.player_id = fp.player_id AND p.retired=0 ";
+		if ($draftInjured == -1) {
+			$sql.="AND p.injury_is_injured=0 ";
+		}
+		$sql.="AND p.team_id IN (".$teamStr.") ";
+		$sql.="ORDER BY fp.rating DESC";
+		$query = $this->db->query($sql);
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				$values[$row->id] = $row->rating;
+			}
+		}
+		$query->free_result();
+		return $values;
+	}
+	/**
 	 * 	GET PLAYER VALUES.
 	 * 	Returns a list if player IDs sorted accoring to their ranking against hitt/pitching and fielding ratings categories.
 	 * 	@param	$ootp_league_id		(Integer)	OPTIONAL, usually 100
 	 *  @param 	$league_id			(Integer)	OPTIONAL< Fantasy league ID. $this->league_id is used if ommited
-	 *  @return						(Array)		A multi dimensional array of player IDs and rankings
+	 *  @return						(Array)		A array of player IDs and rankings
 	 *  @see						controllers -> draft -> selection()		
 	 *  @since 						1.0
 	 *  @author						fhommes, Adapted from StatsLab X

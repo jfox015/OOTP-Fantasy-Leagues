@@ -1276,7 +1276,17 @@ class admin extends MY_Controller {
 		$status = '';
 		// CHECK FOR DUPLICATE
 		$this->load->model('player_model');
-		$resp = $this->player_model->updatePlayerRatings(15,getCurrentScoringPeriod($this->ootp_league_model->current_date),$this->params['config']['ootp_league_id']);
+		
+		$statsRange = 1; // 1 = CURRENT SEASON, -1 == LAST SEASON
+		$statsParam = getCurrentScoringPeriod($this->ootp_league_model->current_date);
+		
+		$currDate = strtotime ($this->ootp_league_model->current_date." ".EMPTY_TIME_STR);
+		$startDate = strtotime ($this->ootp_league_model->start_date." ".EMPTY_TIME_STR);
+		if ($currDate <= $startDate) {
+			$statsRange = -1;
+			$statsParam = (date("Y", $currDate) - 1);
+		}
+		$resp = $this->player_model->updatePlayerRatings(15,$statsRange, $statsParam ,$this->params['config']['ootp_league_id']);
 
 		if (is_array($resp)) {
 			$rslt = $resp[0];

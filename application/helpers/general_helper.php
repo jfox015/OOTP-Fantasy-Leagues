@@ -1069,81 +1069,36 @@ function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 	}
 	return $stats;
 }
-function get_stats_for_ratings($type=1,$scoring_type = 1) {
+/**--------------------------------------------------------
+ *  GET STATS FOR RATINGS
+ * 	Looks up the scoring categories used by the passed 
+ * 	League for use in Player Ratings.
+ * 
+ * 	@param	$type			1 = Better, 2 = Pittcher
+ *  @return					{Array}		Array of stats categories
+ * 
+ * 
+ */
+function get_stats_for_ratings($type=1) {
 	$stats = array();
-	switch ($type) {
-		case 1:
-			$stats = array(
-			//2=>"AB",
-			//1=>"PA",
-			3=>"1B",
-			//6=>"2B",
-			//7=>"3B",
-			8=>"HR",
-			4=>"K",
-			//5=>"TB",
-			//9=>"SB",
-			//10=>"RBI",
-			11=>"R"
-			//12=>"BB",
-			//13=>"IBB",
-			//14=>"HBP",
-			//15=>"SH",
-			//16=>"SF",
-			//17=>"EBH",
-			//21=>"RC",
-			//22=>"RC/27",
-			//58=>"CS",
-			//0=>"GS",
-			//18=>"AVG",
-			//19=>"OBP",
-			//20=>"SLG",
-			//23=>"ISO",
-			//24=>"TAVG",
-			//25=>"OPS"
-			//26=>"WAR"
-			);
-			break;
-		case 2:
-			// PITCHING STATS
-			$stats = array(
-			//27=>"G",
-			29=>"W",
-			//30=>"L",
-			//32=>"SV",
-			//33=>"HLD",
-			34=>"IP",
-			//35=>"BF",
-			//36=>"HRA",
-			37=>"BB",
-			38=>"K"
-			//39=>"WP",
-			//50=>"RA",
-			//51=>"GF",
-			//52=>"QS",
-			//54=>"CG",
-			//56=>"SHO",
-			//59=>"HA",
-			//60=>"ER",
-			//61=>"BS",
-			//,31=>"Win%",
-			//28=>"GS",
-			//40=>"ERA",
-			//41=>"BABIP",
-			//42=>"WHIP"
-			//43=>"K/BB",
-			//44=>"RA/9IP",
-			//45=>"HR/9IP",
-			//46=>"H/9IP",
-			//47=>"BB/9IP",
-			//48=>"K/9IP",
-			//49=>"WAR",
-			//53=>"QS%",
-			//55=>"CG%",
-			//57=>"GB%"
-			);
-			break;
+	$ci =& get_instance();
+	$rules = array('batting','pitching');
+	$ci->db->select("*");
+	$ci->db->where("scoring_type",LEAGUE_SCORING_ROTO_PLUS);
+	$query = $ci->db->get("fantasy_leagues_scoring_".($rules[$type - 1]));
+	if ($query->num_rows() > 0) {
+		$row = $query->row();
+		foreach($row as $key => $val) {
+			if (strpos($key, "type") !== false && ($val != 0 && $val != -1)) {
+				if ($type == 2 && $val == 3) {
+					$stats[59] = "HA";
+				} else {
+					$stats[$val] = get_ll_cat($val);
+				}
+			}
+		}
 	}
+	$query->free_result();
 	return $stats;
 }
 function get_velo($velo)
@@ -1225,7 +1180,7 @@ function get_ll_cat($catID,$forSQL = false)
       case 0: $txt="GS"; break;
       case 1: $txt="PA"; break;
       case 2: $txt="AB"; break;
-      case 3: $txt="H"; break;
+      case 3: if($forSQL) $txt="h"; else $txt="H"; break;
       case 4: $txt="K"; break;
       case 5: $txt="TB"; break;
       case 6: if($forSQL) $txt="d"; else $txt="2B"; break;

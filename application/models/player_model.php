@@ -733,6 +733,7 @@ class player_model extends base_model {
 	 *	fantasy_players table.
 	 *
 	 *	@param	$ratingsPeriod		Number of days back to rate stats
+	 *	@param	$stats_period		1 = CURRENT SEASOn, =1 = LAST SEASON
 	 *	@param	$scoring_period		Scoring Period object
 	 *	@param	$ootp_league_id		OOTP League ID value, defaults to 100 if no value passed
 	 *	@return						Summary String
@@ -741,8 +742,9 @@ class player_model extends base_model {
 	 *	@see						Controller->Admin->playerRatings()
 	 *
 	 */
-	public function updatePlayerRatings($ratingsPeriod = 15, $scoring_period = false, $ootp_league_id = 100) {
-		if (($scoring_period === false|| sizeof($scoring_period) < 1)) { return false; } // END if
+	public function updatePlayerRatings($ratingsPeriod = 15, $stats_period = 1, $scoring_period = false, $ootp_league_id = 100) {
+		
+		if (($scoring_period === false || ($stats_period == 1 && sizeof($scoring_period) < 1))) { return false; } // END if
 
 		$this->lang->load('admin');
 		/*--------------------------------------
@@ -759,8 +761,15 @@ class player_model extends base_model {
 		/*--------------------------------------
 		/	1.2 DEFINE RATING PERIOD
 		/-------------------------------------*/
-		$day = 60*60*24;
-		$period_start = date('Y-m-d',((strtotime($scoring_period['date_end']))-($day*$ratingsPeriod)));
+		// IF the season has started, usen current years game stats
+		if ($stats_period == 1) {
+			$day = 60*60*24;
+			$period_start = date('Y-m-d',((strtotime($scoring_period['date_end']))-($day*$ratingsPeriod)));
+		} else {
+			// OTHER WISE, use last years stats
+			$year = $scoring_period;
+		}
+		
 		$statsTypes = array(1=>'batting',2=>'pitching');
 		$statCats = array();
 		$ratingsCats = array();
@@ -794,11 +803,11 @@ class player_model extends base_model {
 
 			foreach ($statsTypes as $typeId => $type) {
 				if ($typeId == 1) {
-					$table = "players_game_batting";
+					if ($stats_period == 1) { $table = "players_game_batting"; } else {  $table = "players_career_batting_stats"; }
 					$qualifier = "ab";
 					$minQualify = 3.1;
 				} else {
-					$table = "players_game_pitching_stats";
+					if ($stats_period == 1) { $table = "players_game_pitching_stats"; } else {  $table = "players_career_pitching_stats"; }
 					$qualifier = "ip";
 					$minQualify = 1;
 				} // END if
@@ -811,7 +820,11 @@ class player_model extends base_model {
 				$statSum = "";
 				foreach($ratingsCats[$typeId] as $id => $val) {
 					$statSum .= "<b>Stat = ".$val."</b><br />";
-					$tmpSelect = 'games.date, ';
+					if ($stats_period == 1) {
+						$tmpSelect = 'games.date, ';
+					} else {
+						$tmpSelect = '';
+					}
 					$id = intval($id);
 					$stat = '';
 					// FILTER OUT COMPILED STATS LIKE AVG, ERA AND WHIP
@@ -829,19 +842,34 @@ class player_model extends base_model {
 						default:
 							break;
 					} // END switch
-					if (!empty($stat)) { $tmpSelect .= 'SUM(g) as sum_g, SUM('.$stat.') as sum_'.$stat.', SUM('.$qualifier.') as sum_'.$qualifier; }
+					if (!empty($stat)) { 
+						if ($stats_period == 1) {
+							$tmpSelect .= 'SUM(g) as sum_g, SUM('.$stat.') as sum_'.$stat.', SUM('.$qualifier.') as sum_'.$qualifier; 
+						} else {
+							$tmpSelect .= 'g as sum_g, '.$stat.' as sum_'.$stat.', '.$qualifier.' as sum_'.$qualifier; 
+						}
+					}
 					/*-----------------------------------------
 					/	2.2.1.1 EXECUTE THE QUERY FOR THIS STAT
 					/----------------------------------------*/
 					$this->db->flush_cache();
 					$this->db->select($tmpSelect);
-					$this->db->join($table,'games.game_id = '.$table.'.game_id','left');
 					$this->db->where($table.'.player_id IN '.$players_str);
-					$this->db->where("DATEDIFF('".$period_start."',games.date)<=",0);
-					$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
-					$this->db->group_by($table.'.player_id');
+					if ($stats_period == 1) {
+						$this->db->join($table,'games.game_id = '.$table.'.game_id','left');
+						$this->db->where("DATEDIFF('".$period_start."',games.date)<=",0);
+						$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
+						$this->db->group_by($table.'.player_id');
+					} else {
+						$this->db->where("year",$year);
+					}
+
 					$this->db->order_by($table.'.player_id', 'asc');
-					$query = $this->db->get($this->tables['OOTP_GAMES']);
+					if ($stats_period == 1) {
+						$query = $this->db->get($this->tables['OOTP_GAMES']); 
+					} else {
+						$query = $this->db->get($table);
+					}
 					//echo($this->db->last_query()."<br />");
 					if ($query->num_rows() > 0) {
 						$statCount = 0;
@@ -879,14 +907,19 @@ class player_model extends base_model {
 				$playerSum = "";
 				if ($row['position'] != 1) {
 					$type = 1;
-					$table = "players_game_batting";
+					if ($stats_period == 1) { $table = "players_game_batting"; } else {  $table = "players_career_batting_stats"; }
 					$qualifier = "ab";
 				} else {
 					$type = 2;
-					$table = "players_game_pitching_stats";
+					if ($stats_period == 1) { $table = "players_game_pitching_stats"; } else {  $table = "players_career_pitching_stats"; }
 					$qualifier = "ip";
 				} // END if
-				$select = $table.'.player_id,SUM('.$qualifier.') as sum_'.$qualifier.',';
+
+				if ($stats_period == 1) {
+					$select = $table.'.player_id,SUM('.$qualifier.') as sum_'.$qualifier.','; 
+				} else {
+					$select = $table.'.player_id,'.$qualifier.' as sum_'.$qualifier.',';
+				}
 				foreach($ratingsCats[$type] as $id => $val) {
 					$stat = "";
 					$id = intval($id);
@@ -894,13 +927,13 @@ class player_model extends base_model {
 						case 1:
 							if ($id <= 17 || $id >= 26) {
 								$tmpStat = strtolower(get_ll_cat($id, true));
-								$stat = "SUM(".$tmpStat.") as sum_".$tmpStat;
+								if ($stats_period == 1) { $stat = "SUM(".$tmpStat.") as sum_".$tmpStat; } else { $stat = "".$tmpStat." as sum_".$tmpStat; }
 							} // END if
 							break;
 						case 2:
 							if ($id <= 39 || $id >= 43) {
 								$tmpStat = strtolower(get_ll_cat($id, true));
-								$stat = "SUM(".$tmpStat.") as sum_".$tmpStat;
+								if ($stats_period == 1) { $stat = "SUM(".$tmpStat.") as sum_".$tmpStat; } else { $stat = "".$tmpStat." as sum_".$tmpStat; }
 							} // END if
 							break;
 						default:
@@ -913,13 +946,21 @@ class player_model extends base_model {
 				} // END foreach
 
 				$this->db->select($select);
-				$this->db->join($table,'games.game_id = '.$table.'.game_id','left');
 				$this->db->where($table.'.player_id', $row['player_id']);
-				$this->db->where("DATEDIFF('".$period_start."',games.date)<=",0);
-				$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
-				$this->db->group_by($table.'.player_id');
+				if ($stats_period == 1) {
+					$this->db->join($table,'games.game_id = '.$table.'.game_id','left');
+					$this->db->where("DATEDIFF('".$period_start."',games.date)<=",0);
+					$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
+					$this->db->group_by($table.'.player_id');
+				} else {
+					$this->db->where("year",$year);
+				}
 				$this->db->order_by($table.'.'.$qualifier,'desc');
-				$query = $this->db->get($this->tables['OOTP_GAMES']);
+				if ($stats_period == 1) {
+					$query = $this->db->get($this->tables['OOTP_GAMES']); 
+				} else {
+					$query = $this->db->get($table);
+				}
 				$statCount = 0;
 				$rating = 0;
 				if ($query->num_rows() > 0) {
