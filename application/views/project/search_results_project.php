@@ -1,7 +1,5 @@
 		<img src="<?php echo PATH_IMAGES; ?>icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
         <?php echo anchor('/project','Add new Project'); ?>
-        <br />
-        <p />&nbsp;<br />
         <div class="textbox">
         <table class="listing" cellpadding="5" cellspacing="2" width="725">
         <tr class="title">

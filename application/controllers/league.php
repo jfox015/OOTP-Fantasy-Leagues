@@ -129,7 +129,7 @@ class league extends BaseEditor {
 	 *	to the login.
 	 */
 	public function index() {
-		redirect('search/leagues/');
+		redirect('league/home/');
 	}
 	/**
 	 *	HOME PAGE.
@@ -1935,7 +1935,7 @@ class league extends BaseEditor {
 		$form->fieldset();
 		$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
 		$form->br();
-		if ($this->mode != 'edit') {
+		if ($this->mode != 'edit' || $this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
 			$league_type = ($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type;
 			$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',$league_type,'required');
 			$this->data['league_type'] = $league_type;

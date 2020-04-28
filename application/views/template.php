@@ -21,9 +21,9 @@
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
     <link rel="shortcut icon" href="<?php echo($favicon); ?>" />
     <title><?php echo(!empty($subTitle) ? $subTitle." - ".$league_abbr." Fantasy Leagues" : 'OOTP Fantasy Leagues'); ?></title>
-    <?php echo link_tag('css/all.css'); ?>
-	<?php echo link_tag('css/ootpsqlstyles.css'); ?>
+    <?php echo link_tag('css/ootpsqlstyles.css'); ?>
     <?php echo link_tag($config['ootp_html_report_path'].'styles.css'); ?>
+	<?php echo link_tag('css/all.css'); ?>
 	<?php if (isset($styles) && sizeof($styles)) {
 		foreach($styles as $style) {
 			echo link_tag('css/'.$style)."\n";
@@ -158,7 +158,6 @@
 		} // END if
 	} // END if
 	?>
-    <?php //echo set_breadcrumb(); ?>
     <?php echo $content."\n" ?>
     <p>&nbsp;<br class="clear" clear="all" />
  </div>   <!-- END contentpane DIV -->

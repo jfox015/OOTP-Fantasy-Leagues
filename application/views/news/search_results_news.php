@@ -1,10 +1,10 @@
 		<?php 
-			if ($loggedIn && $accessLevel == ACCESS_ADMINISTRATE) { ?><img src="<?php echo PATH_IMAGES; ?>icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
+            if ($loggedIn && $accessLevel == ACCESS_ADMINISTRATE) { ?>
+            <img src="<?php echo PATH_IMAGES; ?>icons/icon_add.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" /> 
         <?php echo( anchor('/news/submit/add','Add new news article')); ?><br />
-        
-        <p />&nbsp;<?php } ?><br />
+        <?php } ?>
         <div class="textbox">
-        <table class="listing" cellpadding="5" cellspacing="2" width="625px">
+        <table class="listing" cellpadding="5" cellspacing="2">
           <tr class="title">
             <td colspan="<?php 
 			if ($loggedIn && $accessLevel == ACCESS_ADMINISTRATE) { echo("5"); } else { echo "3"; } ?>">News Results</td>

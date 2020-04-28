@@ -1,4 +1,3 @@
-        <p />&nbsp;&nbsp;&nbsp;<br />
         <div class="textbox">
         <table class="listing" cellpadding="5" cellspacing="0" width="650">
         <tr class="title">

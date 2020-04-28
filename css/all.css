@@ -7,6 +7,12 @@ hr.space {background:#fff;color:#fff;}
 table { background:none; }
 img { border: 0; }
 
+input {
+    float: left;
+    clear: none;
+    margin: 4px;
+}
+
 .top-bar h1 {
 	margin-top:16px;
 	font-size: 28px;
@@ -534,7 +540,7 @@ figure.logo-lg, figure.logo-exlg {
 .dashboard ul.iconmenu li {
 	float:left;
 	margin:0px 4px 6px 0px;
-	font-size:10px; color:#333;	
+	font-size:12px; color:#333;	
 	text-align:center;
 	width:24%;
 	position: relative;
@@ -594,6 +600,12 @@ figure.logo-lg, figure.logo-exlg {
 	font-size: larger;
 }
 
+th.center-align, td.center-align {
+	text-align:center;
+}
+th.right-align, td.right-align {
+	text-align:right;
+}
 tr.s1_l, tr.sl_1 {
 	background-color: #EAEAEA !important;
 }
@@ -700,7 +712,9 @@ tr.s2_l, tr.sl_2 {
 	display: inline;
 	float:none;
 }
-
+.textbox.searchBox, .textbox.searchBox table {
+	width: 100%;
+}
 .roster-actions-box {
 	width: 99%;
     padding: 6px 20px 6px 0;

@@ -1,9 +1,7 @@
 		<img src="<?php echo ($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
-        <?php echo( anchor('/member/submit/add','Add new member')); ?>
-        <br />
-        <p />&nbsp;<br />
+        <?php echo( anchor('/member/submit/add','Add new member')); ?><br />
         <div class="textbox">
-        <table class="listing" cellpadding="5" cellspacing="0" width="725">
+        <table class="listing" cellpadding="5" cellspacing="0">
         <tr class="title">
             <th width="125">Username</th>
             <th>E-mail</th>

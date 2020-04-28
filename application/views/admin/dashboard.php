@@ -283,9 +283,9 @@
 		<ul class="iconmenu">
 			<li><?php echo anchor('admin/configGame','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
             Global Settings</li>
-			<?php
+			<?php 
 			// SETTING OPTIONS (PRE-SEASON ONLY)
-			if ((isset($league_info) && $league_info->current_date <= $league_info->start_date) || !isset($league_info)) { ?>
+			if ((isset($league_info) && $currDate <= $startDate) || !isset($league_info)) { ?>
             <li><?php echo anchor('admin/configFantasy','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
             Fantasy Settings</li>
             <li><?php echo anchor('admin/configRosters','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
@@ -310,6 +310,8 @@
 			<?php
 			} // END if
 			?>
+			<li><?php echo anchor('/search/doSearch/leagues','<img src="'.$config['fantasy_web_root'].'images/icons/notes_edit.png" width="48" height="48" border="0" />'); ?><br />
+            Manage Leagues</li>
         </ul>
         <br clear="all" /><br />
         <h3>Tools and Utilities</h3>

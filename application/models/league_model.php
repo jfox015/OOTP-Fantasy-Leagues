@@ -129,10 +129,11 @@ class league_model extends base_model {
 		$this->readOnlyList = array('avatar','commissioner_id');
 		$this->textList = array('description');
 
-		$this->columns_select = array('id','league_type','description','league_name','max_teams','access_type','avatar','commissioner_id');
+		$this->columns_select = array('id','league_type','description','league_name','max_teams','access_type','avatar','commissioner_id','league_status','regular_scoring_periods');
 
 		$this->addSearchFilter('league_type','Scoring Type','leagueType','leagueType');
 		$this->addSearchFilter('access_type','Public/Private','accessType','accessType');
+		$this->addSearchFilter('league_status','Status','leagueStatus','leagueStatus');
 
 		parent::_init();
 	}

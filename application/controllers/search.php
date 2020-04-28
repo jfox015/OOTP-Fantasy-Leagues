@@ -11,7 +11,7 @@
  *
  *	@author			Jeff Fox
  *	@dateCreated	09/03/09
- *	@lastModified	08/09/10
+ *	@lastModified	4/27/20
  *	@see			models/base_model.php
  */
 
@@ -119,6 +119,9 @@ class search extends MY_Controller {
 			// LEAGUES
 			case 'league':
 			case 'leagues':
+				// EDIT 1.0.3 PROD - SEARCH MOVED TO ADMIN DASHBOARD SO  ACCESS CHANGED TO MANAGER LEVEL AND ABOVE
+				$this->restrictAccess = true;
+				$this->minAccessLevel = ACCESS_MANAGE;
 				$this->load->model('league_model','dataModel');
 				$this->data['subTitle'] = 'Leagues';
 				$this->data['searchType'] = 'leagues';
@@ -131,10 +134,13 @@ class search extends MY_Controller {
 						$this->uriVars['access_type'] = $this->input->post('access_type'); // END if
 					if (isset($this->uriVars['access_type']) && !empty($this->uriVars['access_type'])) 
 						$this->filterVars = $this->filterVars + array('access_type'=>$this->uriVars['access_type']); // END if
+					if (isset($this->uriVars['league_status']) && !empty($this->uriVars['league_status'])) 
+						$this->filterVars = $this->filterVars + array('league_status'=>$this->uriVars['league_status']); // END if
 				} // END if
 				$this->defaultSort = 'league_name';
 				$this->defaultSortOrder = "desc";
 				$this->data['sortFields'] = array('league_name'=>'League Name',				  
+							   'league_status'=>'League Status',
 							   'league_type'=>'Scoring Type',
 							   'max_teams'=>'Teams',
 							   'access_type'=>"Public/Private");
@@ -214,6 +220,9 @@ class search extends MY_Controller {
 				break;
 			// PROJECTS
 			case 'projects':
+				// EDIT 1.0.3 PROD - ACCESS CHANGED TO MANAGER LEVEL AND ABOVE
+				$this->restrictAccess = true;
+				$this->minAccessLevel = ACCESS_MANAGE;
 				$this->load->model('project_model','dataModel');
 				$this->data['subTitle'] = 'Projects';
 				$this->data['searchType'] = 'projects';
@@ -229,8 +238,9 @@ class search extends MY_Controller {
 			// BUGS
 			case 'bug':
 			case 'bugs':
+				// EDIT 1.0.3 PROD - ACCESS CHANGED TO MANAGER LEVEL AND ABOVE
 				$this->restrictAccess = true;
-				$this->minAccessLevel = ACCESS_WRITE;
+				$this->minAccessLevel = ACCESS_MANAGE;
 				$this->load->model('bug_model','dataModel');
 				$this->data['subTitle'] = 'Bugs';
 				$this->data['searchType'] = 'bugs';

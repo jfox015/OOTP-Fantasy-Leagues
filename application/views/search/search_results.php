@@ -165,11 +165,13 @@
             </select>
             <div id="sortOrderIcon" alt="Change Sort Direction" title="Change Sort Direction" class="<?php echo(($sortOrder == 'asc') ? 'up' : 'down'); ?>"></div>
             </div>
-		</div>
+        </div>
+    </div>
+    <div id="single-column">
        	<!-- BEGIN RESULTS OUTPUT -->
         <div class="results_browse">
 		<?php echo($search); ?>
-        <p /><br />&nbsp;<br />
+        <p><br />&nbsp;<br />
         </div>
         <div class="searchFooterBar">
        	<div class="footerItem">
@@ -246,10 +248,10 @@
         </div>
         <?php } else { ?>
         <span class="error">Access error - you are not authorized to view this page.</span>
-        <p /><br />
+        <p><br />
         The search you are trying to perform requires higher access privlidges than you have
         been assigned.
-        <p />
+        <p>
         If you feel you have reached this page in error, please <a href="<?php print(BUG_URL); ?>">submit a bug report</a>.
 
         <?php } // END if accessAllowed

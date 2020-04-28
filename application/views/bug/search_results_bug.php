@@ -1,8 +1,6 @@
 		<img src="<?php echo PATH_IMAGES; ?>icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
         <?php echo anchor('/bug','Add new Bug'); 
-        if ($loggedIn) { ?> | <?php echo anchor('/search/doSearch/id/bugs/filterAction/search/assignmentId/'.$currUser,'View My Bugs'); } ?>
-        <br />
-        <p />&nbsp;<br />
+        if ($loggedIn) { ?> | <?php echo anchor('/search/doSearch/id/bugs/filterAction/search/assignmentId/'.$currUser,'View My Bugs'); } ?><br />
         <div class="textbox">
         <table class="listing" cellpadding="5" cellspacing="2" width="725">
         <tr class="title">
