@@ -2445,11 +2445,11 @@ class team extends BaseEditor {
 		$this->data['pitchers'] = $this->dataModel->getPitchers(-1, false, -999);
 		
 		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
-		
+			$sort = ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) ? 'fpts' : 'rating';
 			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules, $this->data['batters'], null,
-			'all', false, QUERY_BASIC, -1, 3, 0, 'fpts');
+			'all', false, QUERY_BASIC, -1, 3, 0, $sort);
 			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules, $this->data['pitchers'], null,
-			'all', false, QUERY_BASIC, -1, 3, 0,false, 'fpts');
+			'all', false, QUERY_BASIC, -1, 3, 0,false, $sort);
 
 			$this->data['limit'] = 3;
 			$this->data['startIndex'] = 0;

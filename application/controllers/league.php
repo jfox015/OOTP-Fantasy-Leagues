@@ -1144,6 +1144,9 @@ class league extends BaseEditor {
 			$game_display_data = $this->dataModel->loadGameData($game_id, $this->team_model,$excludeList);
 		}
 
+		// EDIT 1.0.3 PROD
+		$this->data['owned_team'] = $this->team_model->getTeamByOwnerId($this->params['currUser']);
+
 		$this->data['curr_period'] = $curr_period;
 		$this->data['avail_periods'] = $this->dataModel->getAvailableScoringPeriods();
 		$this->data['games'] = $games;

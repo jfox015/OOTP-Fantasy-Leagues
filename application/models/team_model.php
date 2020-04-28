@@ -1182,6 +1182,35 @@ class team_model extends base_model {
 
 	}
 	/**
+	 * 	GET TEAM BY OWNER ID.
+	 * 	Returns the team ID owned by the passed user.
+	 *
+	 * 	@param	$user_id		{int}	The User Id
+	 * 	@param	$league_id		{int}	The League Id
+	 * 	@return					{int}   The team Id, FALSE if no team found
+	 *
+	 *  @since	1.0.3 PROD
+	 *  @access	public
+	 */
+	public function getTeamByOwnerId($ownerId = false, $league_id = false) {
+
+		if ($ownerId === false) { return false; }
+		if ($league_id === false) { $league_id = $this->league_id; }
+
+		$team_id = false;
+		$this->db->select('id');
+		$this->db->where('league_id',$league_id);
+		$this->db->where('owner_id',$ownerId);
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$team_id = $row->id;
+		}
+		$query->free_result();
+		return $team_id;
+
+	}
+	/**
 	* 	CREATE TEAM.
 	*  	Creates a new team for the specified league id.  This function returns the ID of the newly
 	*  	created team on success and false if required data is missing.

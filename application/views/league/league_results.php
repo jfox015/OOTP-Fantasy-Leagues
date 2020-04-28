@@ -42,13 +42,29 @@
                 <td width="16%">
                 <a href="#" rel="game_nav" id="<?php echo($game_id); ?>"> 
                 <table cellpadding="6" cellspacing="0" border="0" style="width:100%; border:1px solid white; background:#000000;">
+                <?php 
+                $homeColor = "#fff";
+                $awayColor = "#fff";
+                if ($data['home_team_score'] > $data['away_team_score']) {
+                    $homeColor = "#E6EFC2";
+                    $awayColor = "#FBE3E4";
+                } else if ($data['home_team_score'] < $data['away_team_score']) {
+                    $homeColor = "#FBE3E4";
+                   $awayColor = "#E6EFC2";
+                }
+                if ($data['home_team_id'] == $owned_team) {
+                    $homeColor = "#FCB97C";
+                } else if ($data['away_team_id'] == $owned_team) {
+                   $awayColor = "#FCB97C";
+                }
+                ?>
                 <tr class='slg_1'<?php if ($data['home_team_score'] > $data['away_team_score']) { echo(' style="font-weight:bold;"'); } ?>>
-                    <td height="42" class="hsc2_l" style="color:#fff;"><?php echo($data['home_team_name']); ?></td>
-                    <td class="hsc2_r" style="color:#fff;"><?php echo($data['home_team_score']); ?></td>
+                    <td height="42" class="hsc2_l" style="color:<?php echo($homeColor); ?>"><?php echo($data['home_team_name']); ?></td>
+                    <td class="hsc2_r" style="color:<?php echo($homeColor); ?>;"><?php echo($data['home_team_score']); ?></td>
                 </tr>
                 <tr class='slg_1'<?php if ($data['away_team_score'] > $data['home_team_score']) { echo(' style="font-weight:bold;"'); } ?>>
-                    <td height="42" class="hsc2_l" style="color:#fff;"><?php echo($data['away_team_name']); ?></td>
-                    <td class="hsc2_r" style="color:#fff;"><?php echo($data['away_team_score']); ?></td>
+                    <td height="42" class="hsc2_l" style="color:<?php echo($awayColor); ?>;"><?php echo($data['away_team_name']); ?></td>
+                    <td class="hsc2_r" style="color:<?php echo($awayColor); ?>;"><?php echo($data['away_team_score']); ?></td>
                 </tr>
                 </table>
                 </a>

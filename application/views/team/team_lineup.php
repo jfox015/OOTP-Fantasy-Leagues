@@ -216,7 +216,7 @@
 							if (isset($playerData['stats']) && sizeof($playerData['stats'])> 0) {
 								foreach($playerData['stats'] as $key=>$val) {
 									$color = "#000";
-									if ($key == 'rating') {
+									if ($key == 'rating' || $key == "fpts") {
 										if ($val > 0) {
 											$color = "#080";
 										} else if ($val < 0) {
