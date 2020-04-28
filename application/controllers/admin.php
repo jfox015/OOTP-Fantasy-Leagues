@@ -173,6 +173,85 @@ class admin extends MY_Controller {
 				$this->load->model('user_auth_model');
 			}
 			$this->data['requiring_activation'] = $this->user_auth_model->getAdminActivationCount();
+			// NEW FIELDS FOR SITE READINLESS LISTING
+			$this->data['members'] = $this->user_auth_model->getUserList();
+			// LEAGUE READINESS CHECKS
+			$currDate = strtotime($league_info->current_date);
+			$startDate = strtotime($league_info->start_date);
+			$firstPeriodStart = strtotime($startDate);
+			$preseason = ($currDate <= $startDate && $currDate<=$firstPeriodStart);
+			$leagueCount = count($this->data['leagues']);
+			$activeleagueCount = 0;
+			$missingGames = 0;
+			$invalidRosters = array();
+			$draftsNotSet = array();
+			$draftsInProgress = array();
+			$draftsNotFinished = array();
+			$draftsCompleted = 0;
+			$ratingsCount = 0;
+			$rotisserieCount = 0;
+			if ($leagueCount > 0) {
+				if (!isset($this->draft_model)) {
+					$this->load->model('draft_model');
+				}
+				foreach($this->data['leagues'] as $id => $details) {
+					if ($details['league_type'] != LEAGUE_SCORING_HEADTOHEAD) $rotisserieCount++;
+					$draftStatus = intval($this->draft_model->getDraftStatus($id));
+					if ($preseason) {
+						// PRE-SEASON
+						if ($details['league_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+							$gamesNeeded = (($details['max_teams']/2)*$details['games_per_team'])*$details['regular_scoring_periods'];
+							$gameCount = $this->league_model->getLeagueGameCount($id);
+							if ($gameCount < $gamesNeeded) {
+								$missingGames++;
+							}
+						}
+						// TEST DRAFT STATUS
+						if ($details['league_status'] == 1) {
+							$activeleagueCount++;
+							switch ($draftStatus) {
+								case 1:
+								case 2:
+								case 3:
+									$draftsInProgress[$id] = $details['league_name'];
+									break;
+								case 4:
+									$draftsNotFinished[$id] = $details['league_name'];
+									break;
+								case 5:
+									$draftsCompleted++;
+									break;
+								case -1:
+								default:
+									$draftsNotSet[$id] = $details['league_name'];
+									break;
+							} // END switch
+						}
+					} else {
+						// REGULAR SEASON
+
+					}
+					// IF DRAFT IS COMPLETE, VALIDATE ROSTERS
+					if ($draftStatus == 5 && $details['league_status'] == 1) {
+						$this->league_model->errorCode = -1;
+						$this->league_model->validateRosters($this->data['currPeriodConfig']['id'], $id);
+						if ($this->league_model->errorCode == 1) $invalidRosters[$id] = $details['league_name'];
+					}
+				}
+			}
+			$this->data['activeleagueCount'] = $activeleagueCount;
+			$this->data['leagueCount'] = $leagueCount;
+			$this->data['missingGames'] = $missingGames;
+			$this->data['invalidRosters'] = $invalidRosters;
+			$this->data['draftsNotSet'] = $draftsNotSet;
+			$this->data['draftsInProgress'] = $draftsInProgress;
+			$this->data['draftsNotFinished'] = $draftsNotFinished;
+			$this->data['draftsCompleted'] = $draftsCompleted;
+			$this->data['rotisserieCount'] = $rotisserieCount;
+			if (!isset($this->player_model)) {
+				$this->load->model('player_model');
+			}
+			$this->data['ratingsCount'] = $this->player_model->getPlayersHaveRatings();
 			//  END 1.0.3 PROD MODS
 
 			$this->params['content'] = $this->load->view($this->views['DASHBOARD'], $this->data, true);

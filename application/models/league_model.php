@@ -875,20 +875,22 @@ class league_model extends base_model {
 	 *	@param	$type - 1 = Public, -1 = all (admin only)
 	 *	@return	array of league information
 	 */
-	public function getLeagues($league_id = false, $type=1) {
+	public function getLeagues($league_id = false, $type=1, $status = false) {
 		$leagues = array();
-		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id, access_type, league_type, leagueType');
+		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id, league_status, access_type, league_type, leagueType, max_teams, regular_scoring_periods, games_per_team');
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		if ($type != -1) $this->db->where('access_type',1);
+		if ($status !== false) $this->db->where('league_status', $status);
 		$query = $this->db->get($this->tblName);
 		//echo("getLeagues, query->num_rows = ".$query->num_rows()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				$commish = resolveUsername($row->commissioner_id);
-				$leagues = $leagues + array($row->id=>array('league_name'=>$row->league_name,'avatar'=>$row->avatar,
-															'commissioner_id'=>$row->commissioner_id,'commissioner'=>$commish,
-															'league_type_desc'=>$row->shortDesc,'league_type_lbl'=>$row->leagueType,'league_type'=>$row->league_type,'description'=>$row->description,
-															'access_type'=>$row->access_type));
+				$leagues = $leagues + array($row->id=>array('league_name'=>$row->league_name,'avatar'=>$row->avatar,'max_teams'=>$row->max_teams,
+															'league_status'=>$row->league_status,'commissioner_id'=>$row->commissioner_id,'commissioner'=>$commish,
+															'league_type_desc'=>$row->shortDesc,'league_type_lbl'=>$row->leagueType,'league_type'=>$row->league_type,
+															'description'=>$row->description,'access_type'=>$row->access_type,
+															'regular_scoring_periods'=>$row->regular_scoring_periods,'games_per_team'=>$row->games_per_team));
 			}
 		}
 		$query->free_result();
@@ -1502,6 +1504,27 @@ class league_model extends base_model {
 		}
 		$query->free_result();
 		return $schedule;
+	}
+	/**
+	 *	GET LEAGUE GAME COUNT.
+	 *	Returns a count of the number of games scheduled for the passed league
+	 *  @param	$team_id - If not specified, the schedule for the entire league is returned.
+	 *  @param	$excludeScores - Set to TRUE to not return score information
+	 *  @param	$league_id - If not specified, no league filter is applied.
+	 *	@return	schedule array, false on failure
+	 */
+	public function getLeagueGameCount($league_id = false) {
+
+		if ($league_id === false) { $league_id = $this->id; }
+
+		$count = 0;
+		$this->db->select('COUNT(id) as gameCount');
+		$this->db->where('league_id',$league_id);
+		$query = $this->db->get($this->tables['GAMES']);
+		$row = $query->row();
+		$count = $row->gameCount;
+		$query->free_result();
+		return $count;
 	}
 
 	/**

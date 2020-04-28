@@ -273,7 +273,7 @@ class draft_model extends base_model {
 			$max = $this->getDraftMax($league_id, $year);
 			if ($max == 0) {
 				// DRAFT NOT YET SET UP, NO SCHEUDLE CREATED YET
-				$status = 0;
+				$status = -1;
 			} else {
 				$today = time()+(60*60*3);
 				
@@ -310,7 +310,7 @@ class draft_model extends base_model {
 				}
 			}
 		}
-		//echo("Draft status = ".$status."<br />");
+		//echo("Draft status for League ".$league_id." = ".$status."<br />");
 		return $status;
 	}
 	/**

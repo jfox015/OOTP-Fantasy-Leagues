@@ -806,3 +806,15 @@ tr.s2_l, tr.sl_2 {
 .textbox td.cell_m { vertical-align: middle; padding-top: 5px; font-weight: bold; }
 .textbox td.cell_m a { font-weight: bold; }
 .textbox td.cell_m_np { vertical-align: middle; padding-top: 0; }
+
+.textbox.statusBox .warn,
+.textbox.statusBox .info,
+.textbox.statusBox .error,
+.textbox.statusBox .notice, 
+.textbox.statusBox .success { display:inline-block; padding: .6em; margin: 0 0 2px 0; border: 1px solid #ddd; width: 97%; clear:right; }
+
+.textbox.statusBox span a {
+	margin-left: 26px;
+	font-weight:bold;
+	color:#151617;
+}

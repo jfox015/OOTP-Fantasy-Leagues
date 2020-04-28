@@ -497,14 +497,14 @@ class player_model extends base_model {
 			$sql .= ",players.position as pos ";
 			$tblName = 'players_game_batting';
 			$posType = 'players.position';
-			if ($batting_sort !== false) $order = $batting_sort;
 			$order = 'ab';
+			if ($batting_sort !== false) $order = $batting_sort; 
 		} else {
 			$sql .= ",players.role as pos ";
 			$tblName = 'players_game_pitching_stats';
 			$posType = 'players.role';
-			if ($pitching_sort !== false) $order = $pitching_sort;
 			$order = 'ip';
+			if ($pitching_sort !== false) $order = $pitching_sort;
 		}
 		$sql .= "FROM games ";
 		$sql .= 'LEFT JOIN '.$tblName.' ON games.game_id = '.$tblName.'.game_id ';
@@ -1393,5 +1393,29 @@ class player_model extends base_model {
 			}
 		}
 		return $stats;
+	}
+	/**
+	 *  GET PLAYERS HAVE RATINGS
+	 * 	Tests if Player Ratings have been run by counting records not
+	 *  equal to 0 meaning ratigns have been run. It could also mean 
+	 *  that there are no stats to run ratings against.
+	 * 
+	 * 	@return		{int} 	Count of records <> 0
+	 *  @since		1.0.3 PROD
+	 *  
+	 */
+	public function getPlayersHaveRatings() {
+		
+		$count = 0;
+
+		$this->db->flush_cache();
+		$this->db->select('COUNT(id) as playerCount');
+		$this->db->where('rating <> 0');
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$count = $row->playerCount;
+		}
+		return $count;
 	}
 }

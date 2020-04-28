@@ -2,8 +2,8 @@
 	<script type="text/javascript" src="<?php echo($config['fantasy_web_root']); ?>js/jquery.md5.js"></script>
 	<script src="<?php echo($config['fantasy_web_root']); ?>js/jquery.colorbox.js"></script>
 	<script type="text/javascript" charset="UTF-8">
-	var ajaxWait = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
-	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
+	var ajaxWait = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
+	var responseError = '<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" align="absmiddle" />&nbsp;';
 	var fader = null;
 	var refreshAfterUpdate = false;
 	var redirectAfterUpdate = null;
@@ -157,7 +157,7 @@
 <?php } else { ?>
 
     <div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:625px;">
+    <table cellpadding="0" cellspacing="0" style="width:625px;">
     <tr class='title'>
     	<td style='padding:3px'>Admin Functions</td>
     </tr>
@@ -184,12 +184,12 @@
 		<br clear="all" /><br />
 		<ul class="iconmenu">
 			<?php if ($last_process_time < $last_sql_load_time && $league_info->current_date > $league_info->start_date && (isset($leagues) && sizeof($leagues) > 0)) { ?>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" border="0" />',array('rel'=>'sim')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" />',array('rel'=>'sim')); ?><br />
 			Process Current Sim Results</li><?php } ?>
 			<?php
 			// LEAGUE SETTINGS
 			if (isset($leagues) && sizeof($leagues) > 0) { ?>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" border="0" />',array('rel'=>'upavail')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" />',array('rel'=>'upavail')); ?><br />
 			Update Players</li>
 			<?php
 			} else { ?>
@@ -199,18 +199,18 @@
 			</li>
 			<?php } // END if
 			?>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
 			Update Player Elidgibility</li>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'rating')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'rating')); ?><br />
 			Update Player Ratings</li>
 			<?php
 			 if ($config['last_process_time'] > $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && $summary_size > 0) { ?>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'resetSim')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'resetSim')); ?><br />
 			Undo last Sim</li>
 			<?php
 			}
 			if($currPeriod['manual_waivers'] == -1) { ?>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/page_swap.png" width="48" height="48" border="0" />',array('rel'=>'runWaivers')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/page_swap.png" width="48" height="48" />',array('rel'=>'runWaivers')); ?><br />
 			Process Waivers</li>
 			<?php
 			}
@@ -228,20 +228,20 @@
            	<?php
 			$hidden_funcs = false;
 			?>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'reset')); ?><br />
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'reset')); ?><br />
             Reset game to Pre-season</li>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />',array('rel'=>'avail')); ?><br />
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" />',array('rel'=>'avail')); ?><br />
             Import Available Players</li>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar_empty.png" width="48" height="48" border="0" />',array('rel'=>'sched')); ?><br />
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar_empty.png" width="48" height="48" />',array('rel'=>'sched')); ?><br />
             Generate Scoring Schedule</li>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'elidg')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
 			Update Player Elidgibility</li>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" border="0" />',array('rel'=>'rating')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'rating')); ?><br />
 			Update Player Ratings</li>
             <?php
 			// LEAGUE SETTINGS
 			if (isset($leagues) && sizeof($leagues) > 0) { ?>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar.png" width="48" height="48" border="0" />',array('rel'=>'games')); ?><br />
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar.png" width="48" height="48" />',array('rel'=>'games')); ?><br />
             Generate Head-to-Head Schedules</li>
             <?php
 			} else { ?>
@@ -266,11 +266,11 @@
 		} else { ?>
         Using <strong>Load All SQL Data Files</strong> below may take serveral minutes to load all your OOTP data files. Please be patient when running this function. For more precise control over what files are loaded, use the <strong>Load Individual SQL Files</strong> option instead.
         <ul class="iconmenu">
-            <!--li><?php echo anchor('admin/uploadFiles','<img src="'.$config['fantasy_web_root'].'images/icons/database_up.png" width="48" height="48" border="0" />'); ?><br />
+            <!--li><?php echo anchor('admin/uploadFiles','<img src="'.$config['fantasy_web_root'].'images/icons/database_up.png" width="48" height="48" />'); ?><br />
             Upload SQL Files</li-->
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_up.png" width="48" height="48" border="0" />',array('rel'=>'sql')); ?><br />
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_up.png" width="48" height="48" />',array('rel'=>'sql')); ?><br />
             Load All SQL Data Files</li>
-			<li><?php echo anchor('admin/listSQLFiles','<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" border="0" />'); ?><br />
+			<li><?php echo anchor('admin/listSQLFiles','<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" />'); ?><br />
             Load Individual SQL Files</li>
 
         </ul>
@@ -281,44 +281,44 @@
         <span class="error"><?php echo($settingsError); ?></span><br />
         <?php } ?>
 		<ul class="iconmenu">
-			<li><?php echo anchor('admin/configGame','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
+			<li><?php echo anchor('admin/configGame','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" />'); ?><br />
             Global Settings</li>
 			<?php 
 			// SETTING OPTIONS (PRE-SEASON ONLY)
 			if ((isset($league_info) && $currDate <= $startDate) || !isset($league_info)) { ?>
-            <li><?php echo anchor('admin/configFantasy','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
+            <li><?php echo anchor('admin/configFantasy','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" />'); ?><br />
             Fantasy Settings</li>
-            <li><?php echo anchor('admin/configRosters','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
+            <li><?php echo anchor('admin/configRosters','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" />'); ?><br />
             Rosters Rules Settings</li>
-			<li><?php echo anchor('admin/configScoringRules','<img src="'.$config['fantasy_web_root'].'images/icons/application_edit.png" width="48" height="48" border="0" />'); ?><br />
+			<li><?php echo anchor('admin/configScoringRules','<img src="'.$config['fantasy_web_root'].'images/icons/application_edit.png" width="48" height="48" />'); ?><br />
             Scoring Rules Settings</li>
             <?php
 			} else {
 			// SETTING REVIEW (REGULAR SEASON)
 			?>
-            <li><?php echo anchor('admin/configInfo','<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
+            <li><?php echo anchor('admin/configInfo','<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" />'); ?><br />
             Review Fantasy Settings</li>
             <?php
 			} // END if
 			?>
-			<li><?php echo anchor('admin/configSocial','<img src="'.$config['fantasy_web_root'].'images/icons/facebook-64x64.png" width="48" height="48" border="0" />'); ?><br />
+			<li><?php echo anchor('admin/configSocial','<img src="'.$config['fantasy_web_root'].'images/icons/facebook-64x64.png" width="48" height="48" />'); ?><br />
             Social Media Settings</li>
             <?php
 			if (defined('ENVIRONMENT') && ENVIRONMENT != "production") { ?>
-			<li><?php echo anchor('admin/configOOTP','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
+			<li><?php echo anchor('admin/configOOTP','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" />'); ?><br />
             Date/Scoring Period Settings</li>
 			<?php
 			} // END if
 			?>
-			<li><?php echo anchor('/search/doSearch/leagues','<img src="'.$config['fantasy_web_root'].'images/icons/notes_edit.png" width="48" height="48" border="0" />'); ?><br />
+			<li><?php echo anchor('/search/doSearch/leagues','<img src="'.$config['fantasy_web_root'].'images/icons/notes_edit.png" width="48" height="48" />'); ?><br />
             Manage Leagues</li>
         </ul>
         <br clear="all" /><br />
         <h3>Tools and Utilities</h3>
         <ul class="iconmenu">
-        	<li><?php echo anchor('member','<img src="'.$config['fantasy_web_root'].'images/icons/user.png" width="48" height="48" border="0" />'); ?><br />
+        	<li><?php echo anchor('member','<img src="'.$config['fantasy_web_root'].'images/icons/user.png" width="48" height="48" />'); ?><br />
             Manage Members</li>
-            <li><?php echo anchor('admin/userActivations','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
+            <li><?php echo anchor('admin/userActivations','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" />'); ?><br />
 			Users requiring activation
 			<?php
 			if (isset($requiring_activation) && $requiring_activation > 0) { ?>
@@ -327,9 +327,9 @@
 			}
 			?>
 			</li>
-            <li><?php echo anchor('admin/configAbout','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" border="0" />'); ?><br />
+            <li><?php echo anchor('admin/configAbout','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" />'); ?><br />
             Edit &quot;About&quot; Page</li>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" border="0" />',array('rel'=>'remove')); ?><br />
+            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'remove')); ?><br />
             Uninstall Database</li>
             <li></li>
             <li></li>
@@ -342,11 +342,11 @@
         <br clear="all" /><br />
         <h3>Project/Bug Tracking Database</h3>
         <ul class="iconmenu">
-            <li><?php echo anchor('/search/projects','<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" border="0" />'); ?><br />
+            <li><?php echo anchor('/search/projects','<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" />'); ?><br />
             View Project List</li>
-            <li><?php echo anchor('/search/bugs','<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" border="0" />'); ?><br />
+            <li><?php echo anchor('/search/bugs','<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" />'); ?><br />
             View Bug Database</li>
-            <li><?php echo anchor('/bug_resolve','<img src="'.$config['fantasy_web_root'].'images/icons/process_accept.png" width="48" height="48" border="0" />'); ?><br />
+            <li><?php echo anchor('/bug_resolve','<img src="'.$config['fantasy_web_root'].'images/icons/process_accept.png" width="48" height="48" />'); ?><br />
             Resolve a bug</li>
         </ul>
         <?php } ?>
@@ -361,7 +361,7 @@
 
 	<?php if (isset($dataUpdate) || isset($configUpdate)) { ?>
 	<div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:235px;">
+    <table cellpadding="0" cellspacing="0" style="width:235px;">
     <tr class='title'>
     	<td style='padding:3px; color:#FF0'>UPDATE NOTICE</td>
     </tr>
@@ -389,59 +389,168 @@
     </div>
 	<?php
 	}
-	?>
 
-	<?php
-	if (isset($league_info) && $config['last_sql_load_time'] != EMPTY_DATE_TIME_STR && isset($missingTables) && sizeof($missingTables) > 0) { ?>
-    <div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:235px;">
-    <tr class='title'>
-    	<td style='padding:3px; color:#FF0'>MySQL DATA WARNING</td>
-    </tr>
-    <tr>
-    	<td class="hsc2_l" style='padding:6px'>
-        <span class="error" style="margin:0px; width:90%;"><b>Required tables missing!</b>
-        <br /><br />
-        The following <b>required</b> OOTP MySQL data tables were not found in your database.
-        Please assure all required tables list on the individual
-        <?php echo anchor('admin/listSQLFiles','SQL file list'); ?> page are loaded before proceeding
-        with your game.
-        <br /><br />
-       <ul><?php foreach ($missingTables as $tableName) {
-        	echo("<li><b>".$tableName."</b></li><br />");
-	   } ?>
-       </ul>
-       </span>
-        </td>
-    </tr>
-    </table>
-    </div>
-    <?php
-	}
-	if (isset($missingFiles) && sizeof($missingFiles) > 0) { ?>
-    <div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:235px;">
-    <tr class='title'>
-    	<td style='padding:3px; color:#FF0'>MySQL DATA FILE WARNING</td>
-    </tr>
-    <tr>
-    	<td class="hsc2_l" style='padding:6px'>
-        <span class="error" style="margin:0px; width:90%;"><b>Required files are missing!</b>
-        <br /><br />
-        There are <b><?php print(sizeof($missingFiles)); ?> required</b> OOTP MySQL data files missing from the default database upload directory.
-        <br /><br />
-        Please assure all required files have been uploaded to <?php print($config['sql_file_path']); ?>, then proceed to the
-        <?php echo anchor('admin/listSQLFiles','SQL file list'); ?> page to upload your OOTP game data.
-       </span>
-        </td>
-    </tr>
-    </table>
-    </div>
-    <?php
-	}
+	/*------------------------------------------------
+	/	LEAGUE STATUS BOX
+	/
+	/	Added 1.0.3 PROD
+	/-----------------------------------------------*/
+	$icons = array();
+	$icons['error'] = '<img src="'.PATH_IMAGES.'icons/icon_fail.png" width="20" height="20" align="absmiddle" />';
+	$icons['success'] = '<img src="'.PATH_IMAGES.'icons/icon_pass.png" width="20" height="20" align="absmiddle" />';
+	$icons['info'] = '<img src="'.PATH_IMAGES.'icons/icon_info.gif" width="20" height="20" align="absmiddle" />';
+	$class = "success";
 	?>
-	<div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:235px;">
+	<div class='textbox statusBox'>
+    <table cellpadding="0" cellspacing="0">
+    <tr class='title'>
+    	<td><?php if ($currDate <= $startDate) { echo("Pre-Season"); } ?> Leagues Status</td>
+    </tr>
+	<tr>
+    	<td>
+			<?php 
+			// PRE_SEASON CHECKS
+			if ($currDate <= $startDate) { ?>
+				<!-- TABLES FILES-->
+				<?php if ((isset($missingTables) && sizeof($missingTables) != 0) && (isset($missingFiles) && sizeof($missingFiles) > 0)) { 
+					$class = "error";
+					$message = anchor('admin/listSQLFiles','Required SQL Files missing!');
+				} else { 
+					$class = "success";
+					$message = "All Required SQL Files Present";
+				} 
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				?>
+				<!-- MISSING LOADED  -->
+				<?php if (isset($league_info) && $config['last_sql_load_time'] != EMPTY_DATE_TIME_STR && isset($missingTables) && sizeof($missingTables) > 0) { 
+					$class = "error";
+					$message = anchor('admin/listSQLFiles','Required tables missing!');
+				} else { 
+					$class = "success";
+					$message = "All tables loaded";
+				} 
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				?>
+				<!-- PLAYERS LOADED -->
+				<?php
+				if ($playerCount == 0) {
+					$class = "error";
+					$message = $this->lang->line('dash_error_no_players_short');
+				} else { 
+					$class = "success";
+					$message = $playerCount." Players Loaded.";
+				} 
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				?>
+				<!-- SCORING PERIODS LOADED -->
+				<?php
+				if (isset($periodCount) && $periodCount > 0) {
+					$class = "success";
+					$message = $periodCount." Scoring Periods Loaded.";
+				} else { 
+					$class = "error";
+					$message = "No scoring periods were found";
+				} 
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				?>
+				<!-- LEAGUES ON SITE -->
+				<?php
+				if (isset($activeleagueCount) && $activeleagueCount > 0) {
+					$class = "success";
+					$message = $activeleagueCount." Active Fantasy Leagues";
+				} else { 
+					$class = "error";
+					$message = "No active fantasy leagues were found";
+				} 
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				?>
+				<!-- DRAFT STATUSES -->
+				<?php if ((isset($draftsCompleted) && isset($activeleagueCount)) && $draftsCompleted < $activeleagueCount) { 
+					echo('<span><strong>League Draft Status</strong></span><br />');
+					if (isset($draftsNotSet) && count($draftsNotSet) > 0) {
+						$class = "error";
+						$message = count($draftsNotSet)." Drafts Not Started";
+						foreach ($draftsNotSet as $id => $leagueName) {
+							$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+						}
+						echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+					}
+					if (isset($draftsInProgress) && count($draftsInProgress) > 0) {
+						$class = "info";
+						$message = count($draftsInProgress)." Drafts in Progress";
+						foreach ($draftsInProgress as $id => $leagueName) {
+							$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+						}
+						echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+					}
+					if (isset($draftsNotFinished) && count($draftsNotFinished) > 0) {
+						$class = "error";
+						$message = count($draftsNotFinished)." Drafts Run and not Completed";
+						foreach ($draftsNotFinished as $id => $leagueName) {
+							$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+						}
+						echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+					}
+					if ($draftsCompleted > 0) {
+						$class = "success";
+						$message = $draftsCompleted." Drafts Completed";
+						echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+					}
+					echo('<span style="margin:0; padding: 0; height:2px; background-color:#606060; width:96%;display: block;"></span><br />');
+				} else { 
+					$class = "success";
+					$message = "All Drafts Completed.";
+					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				} 
+				?>
+				<!-- GAMES GENERATED -->
+				<?php
+				if (isset($missingGames) && $missingGames > 0) {
+					$class = "error";
+					$message = $missingGames." Leagues missing schedules";
+				} else { 
+					$class = "success";
+					$message = "All League Schedules Created";
+				} 
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+
+			} else { 
+				
+			}
+			// ROSTERS CHECK
+			if (isset($draftsCompleted) && $draftsCompleted > 0 && $draftsCompleted == $activeleagueCount) { 
+				if (isset($invalidRosters) && count($invalidRosters) > 0) {
+					$class = "error";
+					$message = count($invalidRosters)." Leagues have Invalid Rosters";
+					foreach ($invalidRosters as $id => $leagueName) {
+						$message .= '<br />'.anchor('/league/rosters/'.$id, $leagueName);
+					}
+				} else {
+					$class = "success";
+					$message = "All League Rosters are Valid!";
+				}
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+			}
+			// RATINGS CHECK
+			if (isset($rotisserieCount) && $rotisserieCount > 0) { 
+				if (isset($ratingsCount) && $ratingsCount == 0) {
+					$class = "error";
+					$message = "Player ratings missing";
+				} else {
+					$class = "success";
+					$message = "Player ratings run";
+				}
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+			}
+			?>
+		</td>
+	</tr>
+    </table>
+    </div>
+
+
+	<div class='textbox statusBox'>
+    <table cellpadding="0" cellspacing="0">
     <tr class='title'>
     	<td style='padding:3px'>Game Stats</td>
     </tr>
@@ -463,9 +572,7 @@
         <?php if (isset($periodCount) && $periodCount != 0) {
 			echo($periodCount."<br />");
 			echo anchor('admin/configScoringPeriods','View/Edit Scoring Period Schedule')."<br />";
-		} else {
-        echo('<br /><span class="error" style="margin:0px; width:90%;"><strong>Warning:</strong> No scoring periods were found.</span>'); } ?>
-
+		} ?>
 		<?php
 		// 	EDIT 1.0.4
 		//	SIM SUMMARIES
@@ -477,11 +584,12 @@
         <br /><b>Last SQL Data Upload:</b><br /> <?php echo(date('m/d/Y h:m:s A',strtotime($config['last_sql_load_time']))); ?> <br />
         <br /><b>Last Sim Processed:</b><br /> <?php if ($config['last_process_time'] != EMPTY_DATE_TIME_STR) { echo(date('m/d/Y h:m:s A',strtotime($config['last_process_time']))); }
 		else { echo("No scoring periods processed yet."); } ?>
-        <br /><br /><b>OOTP Players Loaded:</b>
-        <?php if ($playerCount > 0) { echo($playerCount); }
-		else { echo('<br /><span class="error" style="margin:0px; width:90%;">'.$this->lang->line('dash_error_no_players_short').'</span>'); } ?>
+        <br /><br /><b>OOTP Players Loaded:</b> <?php echo($playerCount); ?>
+        
         <?php
-		} else { ?>
+		} else { 
+			// NO DB FILES LOADED YET 
+			?>
         <span class="error" style="margin:0px; width:90%;"><strong>League Files not loaded</strong>
         <br /><br />
 		You need to load your game's MySQL database files using the <strong>Database Functions</strong> tools on this page to view stats based on your game.</span>
@@ -492,19 +600,19 @@
     </div>
     <br clear="all" />
 	<div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:235px;">
+    <table cellpadding="0" cellspacing="0">
     <tr class='title'>
     	<td style='padding:3px'>News</td>
     </tr>
     <tr>
     	<td class="hsc2_l" style='padding:6px'>
-        <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" />
+        <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" />
 		<?php echo anchor('/news/submit/mode/add/type_id/'.NEWS_FANTASY_GAME, 'Add News for Site'); ?>
-        <p />
-        <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" />
+        <p>
+        <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" />
 		<?php echo anchor('/news/submit/mode/add/type_id/'.NEWS_PLAYER, 'Add Player News'); ?>
-       	<p />
-        <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" />
+       	<p>
+        <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" />
 		<?php echo anchor('/search/news/', 'Browse All News'); ?>
 
         </td>
@@ -512,26 +620,43 @@
     </table>
     </div>
     <br clear="all" />
-	<div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:235px;">
+	<div class='textbox statusBox'>
+    <table cellpadding="0" cellspacing="0">
     <tr class='title'>
-    	<td style='padding:3px'>All Leagues</td>
-    </tr>
-    <tr class='headline'>
-    	<td style='padding:3px'>* = private league</td>
+    	<td style='padding:3px'>Fantasy Leagues Overview</td>
     </tr>
     <tr>
     	<td class="hsc2_l">
-        <?php if (isset($leagues) && sizeof($leagues) > 0) { ?>
-        <ul id="league_list">
-        	<?php foreach($leagues as $id => $details) { ?>
-            <li>
-            <?php if (isset($details['avatar']) && !empty($details['avatar'])) { ?>
-            <img align="absmiddle" width="24" height="24" src="<?php echo(PATH_LEAGUES_AVATARS.$details['avatar']); ?>" border="0" alt="<?php echo($details['league_name']); ?>" title="<?php echo($details['league_name']); ?>" />
-			<?php } ?>
-			<?php echo(anchor('/league/home/'.$id, $details['league_name'])); if ($details['access_type'] != 1) { echo('*'); } ?></li>
-        	<?php } ?>
-        </ul>
+		<?php if (isset($leagues) && sizeof($leagues) > 0) { ?>
+		<table cellpadding="1" cellspacing="0">
+		<?php foreach($leagues as $id => $details) { ?>	
+		<tr>
+			<td>
+			<?php
+			$icon = 'icon_pass.png';
+			$alt = 'Active';
+			if ($details['league_status'] == -1) { 
+				$icon = 'icon_fail.png';
+				$alt = 'Inactive';
+			} else if ($details['league_status'] ==2) {
+				$icon = 'icon_fail_minor.png';
+				$alt = 'Suspended';
+			} else if ($details['league_status'] == 3) {
+				$icon = 'img_icon_garbage.gif';
+				$alt = 'Removed';
+			}
+			echo('<img src="'.PATH_IMAGES.'icons/'.$icon.'" width="16" height="16" alt="'.$alt.'" title="'.$alt.'"/>'); ?>
+			</td>
+			<td>
+			<?php if ($details['access_type'] != 1) { echo('<img src="'.$config['fantasy_web_root'].'images/icons/lock.png" width="16" height="16" alt="Private" title="Private" />'); } ?>
+			</td>
+			<td><?php if (isset($details['avatar']) && !empty($details['avatar'])) { ?>
+            <img align="absmiddle" width="24" height="24" src="<?php echo(PATH_LEAGUES_AVATARS.$details['avatar']); ?>" alt="<?php echo($details['league_name']); ?>" title="<?php echo($details['league_name']); ?>" />
+			<?php } ?></td>
+			<td><?php echo(anchor('/league/home/'.$id, $details['league_name'])); ?></td>
+		</tr>
+		<?php } ?>
+		</table>
         <?php } else { ?>
         	No Public Leagues are available at this time.
         <?php } ?>
@@ -540,8 +665,8 @@
     </table>
     </div>
 	<br clear="all" /><br />
-    <div class='textbox'>
-    <table cellpadding="0" cellspacing="0" border="0" style="width:235px;">
+    <div class='textbox statusBox'>
+    <table cellpadding="0" cellspacing="0">
     <tr class='title'>
     	<td style='padding:3px'>Fantasy Mod Info</td>
     </tr>
@@ -563,7 +688,6 @@
     </table>
     </div>
 	<br clear="all" /><br />
-
 </div>
 
 <br class="clear" />

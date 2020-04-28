@@ -55,7 +55,18 @@
             <td class="center-align"><?php echo $row['max_teams']; ?></td>
              
              <td class="center-align"><?php echo ($row['access_type']); ?></td>
-             <td class="center-align"><?php echo ($row['league_status']); ?></td>
+             <td class="center-align"><?php 
+              $color = "#000";
+              switch ($row['league_status']) {
+                 case "Active":
+                    $color = "#080";
+                    break;
+                case "Inactive":
+                case "Suspended":
+                    $color = "#C00";
+                    break;
+             }
+             echo ('<span style="color:'. $color .';font-weight:bold;">'.$row['league_status'].'</span>'); ?></td>
              <td class="center-align"><?php if ($row['commissioner_id'] != -1) {
 				 echo anchor('/user/profile/mode/view/id/'.$row['commissioner_id'],resolveUsername($row['commissioner_id'])); 
 			 } ?></td>

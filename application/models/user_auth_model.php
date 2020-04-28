@@ -569,6 +569,38 @@ class user_auth_model extends base_model {
 		return intval($row->userCount);
 	}
 	/**
+	 * 	GET USER LIST
+	 * 	Returns an array of users. LIMIT is defaulted to 5 (for Admin Dashboard)
+	 *  AND returns all users regardless of status unless overridden
+	 * 
+	 * @param		$limit	{Int}		LIMIT of records, default is 5
+	 * @return		$status	{Int}		Status ID, if none passed, returns ALL
+	 * @return		{Array}	Users list or Empty array
+	 * @since		1.0.3 PROD
+	 * 
+	 */
+	public function getUserList($limit = 5, $status = false){
+		$this->db->select('id,username,email,dateCreated');
+		$this->db->limit($limit);
+		
+		if ($status !== false) {
+			$this->db->where($status);
+		}
+		$query = $this->db->get($this->tblName);
+		$users = array();
+		//print($this->db->last_query()."<br />");
+        if ($query->num_rows() > 0) {
+			foreach ($query->result() as $row) {
+				array_push($users,array('id'=>$row->id,'username'=>$row->username,'email'=>$row->email,
+										'dateCreated'=>$row->dateCreated));
+			}
+		} else {
+			$this->errorCode = 1;
+			$this->statusMess = "No users were found.";
+		}
+		return $users;
+	}
+	/**
 	 * 	GET DATE DETAILS
 	 * 	Gets the date stamps for the users Auth record
 	 * 

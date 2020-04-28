@@ -78,7 +78,7 @@
 						Update Draft Schedule</li>
 	                <?php 
 					}
-					if ($draftStatus == 0) { ?>
+					if ($draftStatus == -1) { ?>
 						<li><?php echo anchor('/league/initlaizeDraft/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/configure.png" width="48" height="48" border="0" />'); ?><br />
 						Initialize Draft</li>
 	                <?php }
