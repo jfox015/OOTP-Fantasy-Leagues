@@ -66,20 +66,98 @@
 			} ?>
 			<p>
 			<br clear="all" />
-			<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
+			<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" /> 
 			<?php echo anchor('/search/news/', 'More League News'); ?><br />
 			<?php 
 			if ($loggedIn && $isOwner) {
 				echo('<img src="'.$config['fantasy_web_root'].'images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> '.anchor('/news/submit/mode/add/type_id/'.NEWS_LEAGUE.'/var_id/'.$league_id,'Add News Article'));
 			}
+			/*------------------------------------------------
+			/	INJURY STATUS MODULE
+			/-----------------------------------------------*/
 			?>
+			<div class='textbox injuryBox'>
+				<table cellpadding="1" cellspacing="1" >
+				<thead>	
+					<tr class="title">
+						<td class="lhl" colspan="5"><img src="<?php echo(PATH_IMAGES); ?>icons/icon_injury_cross.png" width="16" height="16" alt="Injured" title="Injured" align="absmiddle" /> 
+						Injured Players</td>
+					</tr>
+					<tr>
+						<th width="30"></th>
+						<th>Player</th>
+						<th>On DL</th>
+						<th width="185">Injury</th>
+						<th>Days on DL</th>
+				</thead>
+				<tbody>
+					<?php if (isset($injured_list) && sizeof($injured_list) > 0) {
+						$rowcount = 0;
+						foreach($injured_list as $player) {
+							if (($rowcount % 2) == 0) { $class="sl_1"; } else { $class="sl_2"; }
+					?>
+					<tr class="<?php echo($class); ?>">
+						<?php
+						$htmlpath=$config['ootp_html_report_path'];
+						$filepath=$config['ootp_html_report_root'];
+						$imgpath=$filepath.URL_PATH_SEPERATOR."images".URL_PATH_SEPERATOR."person_pictures".URL_PATH_SEPERATOR."player_".$player['player_id'].".png";
+							## Check for photo by player ID
+						?>
+						<td>
+						<?php 
+						if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/player_".$player['player_id'].".png' width='28'>";} else {
+							echo "<img src='".$htmlpath."images/person_pictures/default_player_photo.png'>";   ## Show default
+						} 
+						?>
+						</td>
+						<td><?php echo(anchor('/player/info/'.$player['id'], $player['player_name'])." "); 
+						$pos = unserialize($playerData['positions']);
+						$gmPos = '';
+						if (is_array($pos) && sizeof($pos) > 0) {
+							foreach($pos as $position) {
+								if ($position != 25) {
+									if (!empty($gmPos)) $gmPos .= ",";
+									$gmPos .= get_pos($position);
+								}
+							}
+						}
+						?></td>
+						<td class="negative"><?php 
+						$injStatus = '';
+						if (isset($player['injury_dtd_injury']) && $player['injury_dtd_injury'] == 1) {
+							$injStatus .= "Questionable - ";
+						} else if (isset($player['injury_career_ending']) && $player['injury_career_ending'] == 1) {
+							$injStatus .= "Career Ending Injury! ";
+						} else {
+							$injStatus .= "Injured";
+						}
+						echo($injStatus);
+						?></td>
+						<td><?php if (isset($player['injury_id'])) { echo(getInjuryName($player['injury_id'])); } else { echo("Unknown"); } ?></td>
+						<td><?php echo($player['injury_dl_left']); ?></td>
+					</tr>
+					<?php
+						$rowcount++;
+						}
+					?>
+					<?php 
+					} else { ?>
+					<tr>
+						<td colspan="5">There are no injured players on the <?php echo($thisItem['teamname']); ?> roster!</td>
+					</tr>
+					<?php
+					} // END if
+					?>
+				</tbody>
+				</table>
+			</div>
 			<?php
 			/*------------------------------------------------
 			/	TEAM TRANSACTIONS MODULE
 			/-----------------------------------------------*/
 			?>
 			<div class='textbox'>
-				<table style="margin:6px" class="sortable" cellpadding="0" cellspacing="0" border="0" width="100%">
+				<table style="margin:6px" class="sortable" cellpadding="0" cellspacing="0" width="100%">
 				<tr>
 					<td>
 					<?php if (isset($transaction_summary) && sizeof($transaction_summary) > 0) { 

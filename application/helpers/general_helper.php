@@ -551,7 +551,7 @@ function makeInjuryStatusString($row) {
 		$injury_name = getInjuryName($row['injury_id']);
 	}
 	$injStatus .= $injury_name;
-	if ((isset($row['injury_dl_left']) && $row['injury_dl_left'] > 0)) {
+	if ((isset($row['injury_dl_left']) && $row['injury_dl_left'] > 0) || (isset($row['is_on_dl']) && $row['is_on_dl'] == 1 || (isset($row['is_on_dl60']) && $row['is_on_dl60'] == 1))) {
 		$injStatus .= ", on DL - ".$row['injury_dl_left']." Days Left";
 	}
 	if (isset($row['injury_left']) && ($row['injury_left'] > 0 || (isset($row['injury_dl_left']) && $row['injury_left'] > $row['injury_dl_left']))) {
@@ -560,7 +560,7 @@ function makeInjuryStatusString($row) {
 	return $injStatus;
 }
 /**
- *	MAKE ELIDGIBILUITY STRING
+ *	MAKE ELIDGIBILITY STRING
  *
  *	Converts an array of positions into a readable list of position acroymns.
  *

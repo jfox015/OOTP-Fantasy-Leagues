@@ -721,7 +721,11 @@ tr.s2_l, tr.sl_2 {
     text-align: right;
     border: none;
     display: block;
-    float: left;
+	float: left;
+}
+.textbox.injuryBox td {
+	padding:5px;
+	font-size:13px;
 }
 
 /*-------------------------------------------

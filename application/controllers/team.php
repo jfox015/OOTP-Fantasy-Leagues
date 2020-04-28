@@ -2500,6 +2500,8 @@ class team extends BaseEditor {
 			} // END if
 		}
 
+		// INJURED PLAYERS
+		$this->data['injured_list'] = $this->player_model->getInjuredPlayers($curr_period, $this->dataModel->id);
 		$this->makeNav();
 
 		parent::showInfo();
