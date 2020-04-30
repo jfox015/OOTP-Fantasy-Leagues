@@ -807,49 +807,53 @@ class user extends MY_Controller {
 	 * 
 	 **/
 	public function profiles() {
-		$this->getURIData();
-		$view = $this->views['PROFILE'];
-		$this->data['profile'] = NULL;
-		if (isset($this->uriVars['id'])) {
-			$userId = -1;
-			if (preg_match('/^[0-9]*$/',trim(intval($this->uriVars['id'])))) {
-				$userId = $this->uriVars['id'];
-			} else if (preg_match('/[A-z0-9]$/',$this->uriVars['id'])) {
-				//echo("String id");
-				// LOOK UP USER ID
-				$userId = $this->user_auth_model->getUserId($this->uriVars['id']);
-				//if ($userId === false) $userId = $this->uriVars['id'];
-			}
-			if ($this->user_meta_model->load($userId,'userId')) {
-				$this->data['profile'] = $this->user_meta_model->profile();
-				$dates = $this->user_auth_model->getDateDetails($userId);
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$view = $this->views['PROFILE'];
+			$this->data['profile'] = NULL;
+			if (isset($this->uriVars['id'])) {
+				$userId = -1;
+				if (preg_match('/^[0-9]*$/',trim(intval($this->uriVars['id'])))) {
+					$userId = $this->uriVars['id'];
+				} else if (preg_match('/[A-z0-9]$/',$this->uriVars['id'])) {
+					//echo("String id");
+					// LOOK UP USER ID
+					$userId = $this->user_auth_model->getUserId($this->uriVars['id']);
+					//if ($userId === false) $userId = $this->uriVars['id'];
+				}
+				if ($this->user_meta_model->load($userId,'userId')) {
+					$this->data['profile'] = $this->user_meta_model->profile();
+					$dates = $this->user_auth_model->getDateDetails($userId);
 
-                $currPeriod = false;
-                if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
-                    $currPeriod = $this->params['config']['current_period']-1;
-                }
-                $this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$userId,$currPeriod);
+					$currPeriod = false;
+					if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
+						$currPeriod = $this->params['config']['current_period']-1;
+					}
+					$this->data['thisItem']['userTeams'] = $this->user_meta_model->getUserTeams(false,$userId,$currPeriod);
 
-				$this->data['dateCreated'] = $dates['dateCreated'];
-				$this->data['dateModified'] = $dates['dateModified'];
-				$this->data['subTitle'] = 'User Profile';
+					$this->data['dateCreated'] = $dates['dateCreated'];
+					$this->data['dateModified'] = $dates['dateModified'];
+					$this->data['subTitle'] = 'User Profile';
+				} else {
+					$this->session->set_flashdata('message', '<span class="error">No matching user profile was found. It\'s possible the record has been renamed, moved or deleted.</span>');
+					$this->data['subTitle'] = 'User Profiles';
+					$this->data['users'] = loadSimpleDataList('username');
+					$this->params['pageType'] = PAGE_FORM;
+				$view = $this->views['PROFILE_PICK'];
+				}
 			} else {
-				$this->session->set_flashdata('message', '<span class="error">No matching user profile was found. It\'s possible the record has been renamed, moved or deleted.</span>');
 				$this->data['subTitle'] = 'User Profiles';
 				$this->data['users'] = loadSimpleDataList('username');
 				$this->params['pageType'] = PAGE_FORM;
-			$view = $this->views['PROFILE_PICK'];
+				$view = $this->views['PROFILE_PICK'];
 			}
+			$this->params['content'] = $this->load->view($view, $this->data, true);
+			$this->makeNav();
+			$this->displayView();
 		} else {
-			$this->data['subTitle'] = 'User Profiles';
-			$this->data['users'] = loadSimpleDataList('username');
-			$this->params['pageType'] = PAGE_FORM;
-			$view = $this->views['PROFILE_PICK'];
+			$this->session->set_flashdata('message', $this->lang->line('user_register_existing'));
+			redirect('user/login');
 		}
-		$this->params['content'] = $this->load->view($view, $this->data, true);
-		$this->makeNav();
-		$this->displayView();
-		
 	}
 	/**
 	 * 	REGISTER.

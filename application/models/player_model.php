@@ -348,6 +348,7 @@ class player_model extends base_model {
 		if ($scoring_period_id === false) { $scoring_period_id = 1; }
 		
 		$playerIds = "";
+		$players = array();
 		if ($team_id !== false) {
 			if (!function_exists('getBasicRoster')) {
 				$this->load->helper('roster');
@@ -358,34 +359,36 @@ class player_model extends base_model {
 				$playerIds .= $player['id'];
 			}
 		}
-		$players = array();
-		$sql = "SELECT fp.id, fp.player_id,first_name,last_name,positions,injury_is_injured,injury_dtd_injury,injury_id,injury_career_ending,injury_dl_left,injury_left,is_on_dl,is_on_dl60,is_active,is_on_secondary,dl_days_this_year ";
-		$sql .= "FROM fantasy_players as fp ";
-		$sql .= "LEFT JOIN players as p ON p.player_id = fp.player_id ";
-		$sql .= "LEFT JOIN players_roster_status as prs ON prs.player_id = fp.player_id ";
-		$sql .= "WHERE p.player_id=prs.player_id ";
-		if ($team_id !== false) {
-			$sql .= "AND fp.id IN (".$playerIds.") ";
-		}
-		$sql .= "AND (injury_is_injured=1 OR is_on_dl=1 OR is_on_dl60=1)";
-		$query = $this->db->query($sql);
-		//echo($this->db->last_query()."<br />");
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				if ($idsOnly === false) {
-					array_push($players, array('id'=>$row->id,'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name,
-											  'positions'=>$row->positions,'injury_is_injured'=>$row->injury_is_injured, 'injury_dtd_injury'=>$row->injury_dtd_injury,
-											  'injury_career_ending'=>$row->injury_career_ending, 'injury_dl_left'=>$row->injury_dl_left,
-											  'is_on_dl'=>$row->is_on_dl, 'is_on_dl60'=>$row->is_on_dl60,'is_active'=>$row->is_active, 'is_on_secondary'=>$row->is_on_secondary, 
-											  'dl_days_this_year'=>$row->dl_days_this_year,'injury_id'=>$row->injury_id
-											  )
-							   );
-				} else {
-					array_push($players, $row->id);
+		// ASSURE THERE ARE PLAYERS ON THE TEAMS ROSTER TO CHECK
+		if (!empty($playerIds)) {
+			$sql = "SELECT fp.id, fp.player_id,first_name,last_name,positions,injury_is_injured,injury_dtd_injury,injury_id,injury_career_ending,injury_dl_left,injury_left,is_on_dl,is_on_dl60,is_active,is_on_secondary,dl_days_this_year ";
+			$sql .= "FROM fantasy_players as fp ";
+			$sql .= "LEFT JOIN players as p ON p.player_id = fp.player_id ";
+			$sql .= "LEFT JOIN players_roster_status as prs ON prs.player_id = fp.player_id ";
+			$sql .= "WHERE p.player_id=prs.player_id ";
+			if ($team_id !== false) {
+				$sql .= "AND fp.id IN (".$playerIds.") ";
+			}
+			$sql .= "AND (injury_is_injured=1 OR is_on_dl=1 OR is_on_dl60=1)";
+			$query = $this->db->query($sql);
+			//echo($this->db->last_query()."<br />");
+			if ($query->num_rows() > 0) {
+				foreach($query->result() as $row) {
+					if ($idsOnly === false) {
+						array_push($players, array('id'=>$row->id,'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name,
+												'positions'=>$row->positions,'injury_is_injured'=>$row->injury_is_injured, 'injury_dtd_injury'=>$row->injury_dtd_injury,
+												'injury_career_ending'=>$row->injury_career_ending, 'injury_dl_left'=>$row->injury_dl_left,
+												'is_on_dl'=>$row->is_on_dl, 'is_on_dl60'=>$row->is_on_dl60,'is_active'=>$row->is_active, 'is_on_secondary'=>$row->is_on_secondary, 
+												'dl_days_this_year'=>$row->dl_days_this_year,'injury_id'=>$row->injury_id
+												)
+								);
+					} else {
+						array_push($players, $row->id);
+					}
 				}
 			}
+			$query->free_result();
 		}
-		$query->free_result();
 		return $players;
 	}
 	public function getOOTPTeam($player_id = false) {
