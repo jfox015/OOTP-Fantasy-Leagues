@@ -33,7 +33,7 @@
 .player_points td { color:red; }
 
 div.player{font-size:24px;font-weight:bold;text-transform:uppercase;}
-div.playerbio{height:105px;font-weight:normal;font-size:10px; line-height:18px;}
+div.playerbio{height:105px;font-weight:normal;font-size:13px; line-height:18px;}
 .playerpic{margin-right:0px; padding:1px;border:1px solid #303030 ;background:#fff;}
 
 /* COMICS SPECIFIC STYLES */

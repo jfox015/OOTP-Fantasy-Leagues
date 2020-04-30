@@ -1,45 +1,13 @@
-    <div id="secondary">
-        <?php
-        if ($accessLevel >= ACCESS_WRITE) { ?>
-        <section id="site-tools">
-            <div class="widget widget_header">
-                News Tools
-            </div>
-            <div class="widget widget_text">
-                <img src="<?php echo(PATH_IMAGES.'icons/add.png'); ?>" width="48" height="48" alt="Add" title="Add" align="absmiddle" /> 
-                <?php echo(anchor('/news/submit/mode/add/type_id/'.$type_id,'Add a New Article',['style'=>'font-weight:bold;'])); ?>
-            </div>
-            <?php
-            if (isset($article_id) && ($accessLevel == ACCESS_ADMINISTRATE || ((isset($article['author_id']) && !empty($article['author_id'])) && $currUser == $article['author_id']))) { ?>
-            <div class="widget widget_text">
-                <img src="<?php echo(PATH_IMAGES.'icons/notes_edit.png'); ?>" width="48" height="48" alt="Add" title="Add" align="absmiddle" /> 
-                <?php echo(anchor('/news/submit/mode/edit/id/'.$article_id,'Edit this Article',['style'=>'font-weight:bold;'])); ?>
-            </div>
-            <?php } ?>
-        </section>
-        <?php
-        }
-        ?>
-
-        <?php
-        if (isset($news_types) && count($news_types) > 0) { ?>
-        <section id="recent-posts" class="widget widget_recent_entries"> 
-            <h2 class="widget-title">Categories</h2>		
-            <ul>
-                <?php
-                foreach($news_types as $news_type_id => $news_type_name) { 
-                    if (isset($news_type_id) && !empty($news_type_id) && $news_type_id != -1 && $type_id != $news_type_id) { ?>
-                <li class="cat-item cat-item-6"><?php echo(anchor('/news/articles/type_id/'.$news_type_id, $news_type_name)); ?></li>
-                <?php 
-                    } // END if
-                } // END foreach
-                ?>
-            </ul>
-        </section>
-        <?php
-        }   // END if
-        ?>
-    </div>
+<?php
+$typeIdStr = "";
+$varIdStr = "";
+if (isset($type_id) && !empty($type_id) && $type_id != -1) {
+    $typeIdStr = "/type_id/".$type_id;
+}
+if (isset($var_id) && !empty($var_id) && $var_id != -1) {
+    $varIdStr = "/var_id/".$var_id;
+}
+?>
     <?php
     if ((isset($extra_data['leagueDetails']) && count($extra_data['leagueDetails']) > 0) ||
        (isset($extra_data['playerDetails']) && count($extra_data['playerDetails']) > 0) ||
@@ -49,10 +17,10 @@
         <table cellpadding="0" cellspacing="0">
             <thead>	
                 <tr class="title">
-                    <td class='hsc2_l'><?php echo($extra_data['typeTitle']); ?> Details</td>
+                    <td class='hsc2_l' id="details_title"><?php echo($extra_data['typeTitle']); ?> Details</td>
                 </tr>
                 <tr class="headline">
-                    <td class='hsc2_l'>
+                    <td class='hsc2_l' id="details_headline">
                     <?php
                     $boxTitle="";
                     switch($type_id) {
@@ -112,7 +80,11 @@
                                     echo('No Commissioner');
                                 }?>
                             <br />
-                            <?php echo(anchor('/league/home/'.$extra_data['leagueDetails']['id'], $extra_data['leagueDetails']['league_name'].' Homepage',['style'=>'font-weight:bold;'])); ?>
+                            <?php 
+                            if (isset($article_id)) {
+                                echo(anchor('/news/articles'.$typeIdStr.$varIdStr,' More '.$extra_data['leagueDetails']['league_name'].' News',['style'=>'font-weight:bold;']).'<br />');
+                            }
+                            echo(anchor('/league/home/'.$extra_data['leagueDetails']['id'], $extra_data['leagueDetails']['league_name'].' Homepage',['style'=>'font-weight:bold;'])); ?>
                             </div>
                         </div>
                     <?php
@@ -145,9 +117,11 @@
                                 echo ordinal_suffix($extra_data['playerDetails']['draft_pick'],1)." pick in the ".ordinal_suffix($extra_data['playerDetails']['draft_round'],1)." round of ";
                                 if ($extra_data['playerDetails']['draft_year']==0) {echo "inaugural";} else {echo $extra_data['playerDetails']['draft_year'];}
                             }
-                            ?>
-                            <br /><br />
-                            <?php echo(anchor('/players/info/'.$extra_data['playerDetails']['id'],'Fantasy Player Page',['style'=>'font-weight:bold'])); ?><br />
+                            echo('<br /><br />');
+                            if (isset($article_id)) {
+                                echo(anchor('/news/articles'.$typeIdStr.$varIdStr,' More '.$extra_data['playerDetails']['first_name']." ".$extra_data['playerDetails']['last_name'].' News',['style'=>'font-weight:bold;']).'<br />');
+                            }
+                            echo(anchor('/players/info/'.$extra_data['playerDetails']['id'],'Fantasy Player Page',['style'=>'font-weight:bold'])); ?><br />
                             <b><a href="<?php echo($config['ootp_html_report_path']); ?>players/player_<?php echo($extra_data['playerDetails']['player_id']); ?>.html">OOTP Player Page</a></b>
                         </div>
                     <?php
@@ -184,7 +158,11 @@
                                     }
                                 ?>
                                 <br />
-                                <?php echo(anchor('/team/info/'.$extra_data['teamDetails']['id'], $teamName.' Homepage',['style'=>'font-weight:bold;'])); ?>
+                                <?php 
+                                if (isset($article_id)) {
+                                    echo(anchor('/news/articles'.$typeIdStr.$varIdStr,' More '.$teamName.' News',['style'=>'font-weight:bold;']).'<br />');
+                                }
+                                echo(anchor('/team/info/'.$extra_data['teamDetails']['id'], $teamName.' Homepage',['style'=>'font-weight:bold;'])); ?>
                             </div>
                         </div>
                     <?php
@@ -195,6 +173,91 @@
             </tbody>
         </table>
     </div>
+    <div class="clear"></div>
     <?php
     } // END if details set
     ?>
+    <div id="secondary">
+        <?php
+        if ($accessLevel >= ACCESS_WRITE && !isset($mode)) { ?>
+        <section id="site-tools">
+            <div class="widget widget_header">
+                News Tools
+            </div>
+            <div class="widget widget_text">
+                <img src="<?php echo(PATH_IMAGES.'icons/add.png'); ?>" width="48" height="48" alt="Add" title="Add" align="absmiddle" /> 
+                <?php echo(anchor('/news/submit/mode/add'.$typeIdStr.$varIdStr,'Add a New Article',['style'=>'font-weight:bold;'])); ?>
+            </div>
+            <?php
+            if (isset($article_id) && ($accessLevel == ACCESS_ADMINISTRATE || ((isset($article['author_id']) && !empty($article['author_id'])) && $currUser == $article['author_id']))) { ?>
+            <div class="widget widget_text">
+                <img src="<?php echo(PATH_IMAGES.'icons/notes_edit.png'); ?>" width="48" height="48" alt="Add" title="Add" align="absmiddle" /> 
+                <?php echo(anchor('/news/submit/mode/edit/id/'.$article_id,'Edit this Article',['style'=>'font-weight:bold;'])); ?><br />
+            </div>
+            <div class="widget widget_text">
+                <img src="<?php echo(PATH_IMAGES.'icons/database_remove.png'); ?>" width="48" height="48" alt="Add" title="Add" align="absmiddle" /> 
+                <?php echo(anchor('/news/submit/mode/delete/id/'.$article_id,'Delete this Article',['style'=>'font-weight:bold;'])); ?>
+            </div>
+            <?php } ?>
+        </section>
+    </div>
+        <?php
+        }
+        //------------------------------------------------
+        // UPDATE 1.0.2
+        //------------------------------------------------
+        // SOCIAL MEDAI BOX AND OPTION				
+        if (isset($article_id) && isset($config['sharing_enabled']) && $config['sharing_enabled'] == 1) { ?>
+        <div class='textbox right-column'>
+        <table cellpadding="0" cellspacing="0">
+        <tr class='title'>
+            <td style='padding:3px'>Share this story</td>
+        </tr>
+        <tr>
+            <td style='padding:12px'>
+            <?php 
+            $buttonsDrawn = false;
+            if (isset($config['share_addtoany']) && $config['share_addtoany'] == 1) { ?>
+            <!-- AddToAny BEGIN -->
+            <!-- AddToAny BEGIN -->
+            <div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+            <a class="a2a_dd" href="https://www.addtoany.com/share"></a>
+            <a class="a2a_button_facebook"></a>
+            <a class="a2a_button_twitter"></a>
+            <a class="a2a_button_email"></a>
+            <a class="a2a_button_reddit"></a>
+            </div>
+            <script>
+            var a2a_config = a2a_config || {};
+            a2a_config.onclick = 1;
+            </script>
+            <script async src="https://static.addtoany.com/menu/page.js"></script>
+            <!-- AddToAny END -->
+            <!-- AddToAny END -->
+            <?php } ?>
+            </td>
+        </tr></table>
+        </div>
+        <div class="clear"></div>
+        <?php 
+        } 
+        if (isset($news_types) && count($news_types) > 0) { ?>
+    <div id="secondary">
+        <section id="recent-posts" class="widget widget_recent_entries"> 
+            <h2 class="widget-title">Categories</h2>		
+            <ul>
+                <?php
+                foreach($news_types as $news_type_id => $news_type_name) { 
+                    if (isset($news_type_id) && !empty($news_type_id) && $news_type_id != -1) {
+                ?>
+                <li class="cat-item cat-item-6"><?php echo(anchor('/news/articles/type_id/'.$news_type_id.$typeVarStr, $news_type_name)); ?></li>
+                <?php 
+                    } // END if
+                } // END foreach
+                ?>
+            </ul>
+        </section>
+        <?php
+        }   // END if
+        ?>
+    </div>

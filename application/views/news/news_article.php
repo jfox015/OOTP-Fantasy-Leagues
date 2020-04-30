@@ -47,7 +47,7 @@ if (isset($var_id) && !empty($var_id) && $var_id != -1) {
             <footer class="entry-footer">
                 <div class="clear"></div>
                 <span class="cat-links">
-                    <?php echo(anchor('/news/articles/'.$typeIdStr.$varIdStr,$articleType['newsType'],['class'=>'cat_link'])); ?>
+                    <?php echo(anchor('/news/articles'.$typeIdStr.$varIdStr,$articleType['newsType'],['class'=>'cat_link'])); ?>
                 </span>
             </footer><!-- .entry-footer -->
             <div class="clear"></div>

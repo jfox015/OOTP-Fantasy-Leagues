@@ -220,10 +220,11 @@ class news extends BaseEditor {
 											  'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
 											  'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
 			$this->data['type_id'] = $typeId;
+			$this->data['news_type_name'] = $this->data['news_types'][$typeId];
 			$this->data['var_id'] = $varId;
 
 			$this->makeNav();						
-			$this->data['subTitle'] = $this->typeTitle." News Articles";
+			$this->data['subTitle'] = "News";
 			$this->data['pageTitle'] = $this->typeTitle." News Articles";
 			$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
 			$this->params['content'] = $this->load->view($this->views['ARTICLES'], $this->data, true);
@@ -324,25 +325,34 @@ class news extends BaseEditor {
 				$this->isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 				$this->isLeagueCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
 			}
-			switch ($typeId) {
-				// League
-				case 2:	
-					$this->typeTitle = 'League';
+		}
+		switch ($typeId) {
+			// League
+			case 2:	
+				$this->typeTitle = 'League';
+				if ($varId != -1) {
 					$this->leagueDetails = $this->league_model->getLeagueDetails();
-					break;
-				// PLAYER
-				case 3:
-					$this->typeTitle = 'Player';
+					if (!empty($this->leagueDetails['league_name'])) $this->typeTitle = $this->leagueDetails['league_name'];
+				} 
+				break;
+			// PLAYER
+			case 3:
+				$this->typeTitle = 'Player';
+				if ($varId != -1) {
 					$this->load->model('player_model');
 					$this->player_model->load($varId);
 					$this->playerDetails = $this->player_model->getPlayerDetails($varId);
-					break;
-				case 4:	
-					$this->typeTitle = 'Team';
+					if (!empty($this->playerDetails['first_name'])) $this->typeTitle = $this->playerDetails['first_name']." ".$this->playerDetails['last_name'];
+				}
+				break;
+			case 4:	
+				$this->typeTitle = 'Team';
+				if ($varId != -1) {
 					$this->teamDetails = $this->team_model->getTeamDetails();
+					if (!empty($this->teamDetails['teamname'])) $this->typeTitle = $this->teamDetails['teamname']." ".$this->teamDetails['teamnick'];
 					$this->isTeamOwner = $this->teamDetails['owner_id'] == $this->params['currUser'];
-					break;
-			}
+				}
+				break;
 		}
 		return true;
 	}
@@ -442,7 +452,58 @@ class news extends BaseEditor {
 			$form->hidden('storyDateY',$datesArr[0]);
 			$form->span($datesArr[1]."/".$datesArr[2]."/".$datesArr[0],array('class'=>'form_span'));
 		}
-		if ($typeId == NEWS_PLAYER) {
+		
+		if ($typeId == NEWS_LEAGUE) {
+			/*$leagueLabel = "Select ";
+			$form->label('League', '');
+			$this->load->model('league_model');
+			if ($varId != -1) {
+				$form->span($this->league_model->getLeagueName($varId),array('class'=>'form_span'));
+				$form->br();
+				$leagueLabel = "Change ";
+			}*/
+			$leagues = $this->league_model->getLeagues(-1);
+			$leagueArr = array(-1 =>'Select League');
+			if (sizeof($leagues) > 0) {
+				$idx = 0;
+				foreach($leagues as $league_id => $leagueData) {
+					if (($this->league_model->userHasAccess($this->params['currUser'], $league_id) || $this->league_model->userIsCommish($this->params['currUser'], $league_id)) || $this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
+						$leagueArr[$league_id] = $leagueData['league_name'];
+					}
+				}
+			}
+			if (count($leagueArr) > 0)
+				$form->select('var_id|var_id',$leagueArr,'League:',($this->input->post('var_id') ? $this->input->post('var_id') : $varId));
+			else
+				$form->hidden('var_id',$varId);
+			
+		} else if ($typeId == NEWS_TEAM) {
+			if ($varId != -1) {
+				$this->load->model('team_model');
+				$teamDetails = $this->team_model->getTeamDetails($varId);
+				$league_id = $teamDetails['league_id'];
+				$this->league_model->load($league_id);
+				$teams = $this->league_model->loadLeagueTeams($league_id);
+				$teamsArr = array(-1 =>'Select Team');
+				if (sizeof($teams) > 0) {
+					$idx = 0;
+					if (!function_exists('getTeamOwnerId')) {
+						$this->load->helper('roster');
+					}
+					foreach($teams as $team_id => $teamname) {
+						if (($this->league_model->userHasAccess($this->params['currUser'], $league_id) || $this->params['currUser'] == getTeamOwnerId($team_id) || $this->league_model->userIsCommish($this->params['currUser'], $league_id)) || $this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
+							$teamsArr[$team_id] = $teamname;
+						}
+					}
+				}
+				if (count($teamsArr) > 0)
+					$form->select('var_id|var_id',$teamsArr,'Select Team:',($this->input->post('var_id') ? $this->input->post('var_id') : $varId),'required');
+				else
+					$form->hidden('var_id',$varId);
+			} else {
+				$form->hidden('var_id',$varId);
+			}
+		} else if ($typeId == NEWS_PLAYER) {
 			// GET LIST OF PLAYERS
 			$this->load->model('player_model');
 			$players = $this->player_model->getOOTPPlayers(false,false,false,false,false,false,true);
@@ -513,9 +574,19 @@ class news extends BaseEditor {
 			$form->hidden('id',$this->recordId);
 		} else {
 			$form->hidden('mode','add');
+			$this->data['mode'] = 'add';
 		}
 		$this->form = $form;
 		$this->data['form'] = $form->get();
+
+		if ($typeId > 1) { $this->setSupportingInformation($typeId, $varId); }
+
+		$this->data['news_types'] = loadSimpleDataList('newsType');
+		$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
+											'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
+											'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
+		$this->data['news_type_name'] = $this->data['news_types'][$typeId];
+		$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
 	}
 	
 	protected function preview() {

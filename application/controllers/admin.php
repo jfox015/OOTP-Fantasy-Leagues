@@ -91,7 +91,7 @@ class admin extends MY_Controller {
 
 			$this->data['missingTables'] = $this->ootp_league_model->getMissingTables();
 
-			$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'], -1);
+			$this->data['leagues'] = $this->league_model->getLeagues(-1);
 
 			$this->data['in_season'] = $this->ootp_league_model->in_season();
 
@@ -1437,7 +1437,7 @@ class admin extends MY_Controller {
 		/*------------------------------
 		/	LOAD LEAGUES
 		/---------------------------*/
-		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
+		$this->data['leagues'] = $this->league_model->getLeagues(-1);
 		$summary .= "Leagues Loaded = ".sizeof($this->data['leagues'])."<br />";
 		/*------------------------------
 		/	PROCESS WAIVERS PER LEAGUE
@@ -1535,7 +1535,7 @@ class admin extends MY_Controller {
 		$status = '';
 		// CHECK FOR DUPLICATE
 		$mess = // UPDATE PLAYER SCORING FOR THIS PERIOD
-		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
+		$this->data['leagues'] = $this->league_model->getLeagues(-1);
 		$error = false;
 		foreach($this->data['leagues'] as $id => $details) {
 			if ($details['league_type'] == LEAGUE_SCORING_HEADTOHEAD) {
@@ -1665,7 +1665,7 @@ class admin extends MY_Controller {
 		/*------------------------------
 		/	LOAD LEAGUES
 		/---------------------------*/
-		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'],-1);
+		$this->data['leagues'] = $this->league_model->getLeagues(-1);
 
 		/*------------------------------
 		/	UPDATE LEAGUE SCORING

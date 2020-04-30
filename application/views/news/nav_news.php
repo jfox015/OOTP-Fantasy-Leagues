@@ -3,7 +3,9 @@
     $typeIdStr = "";
     $varIdStr = "";
 		if (isset($thisItem['id']) && $thisItem['id'] != -1 && $thisItem['id'] != 'add') {
-      $itemId = $thisItem['id'];
+        $itemId = $thisItem['id'];
+      //echo("Type_id = '".$type_id."'<br />");
+      //echo("var_id = '".$var_id."'<br />");
       if (isset($type_id) && !empty($type_id) && $type_id != -1) {
         $typeIdStr = "/type_id/".$type_id;
       }
@@ -25,6 +27,6 @@
       } ?>
         <h3>More News Tools</h3>
         <ul class="nav">
-            <li><?php echo( anchor('/news/articles/'.$typeIdStr.$varIdStr,'View All News Articlest')); ?></li>
-            <li><?php echo( anchor('/news/submit/add/'.$typeIdStr.$varIdStr,'Add a new Article')); ?></li>
+            <li><?php echo( anchor('/news/articles'.$typeIdStr.$varIdStr,'View All News')); ?></li>
+            <li><?php echo( anchor('/news/submit/add'.$typeIdStr.$varIdStr,'Add a new Article')); ?></li>
         </ul>

@@ -58,7 +58,7 @@ class home extends MY_Controller {
 		$this->data['news'] = $this->news_model->getNewsByParams(NEWS_FANTASY_GAME);
 		$this->data['excerptMaxChars'] = 350;
 		
-		$this->data['leagues'] = $this->league_model->getLeagues($this->params['config']['ootp_league_id'], 1, 1);
+		$this->data['leagues'] = $this->league_model->getLeagues(1, 1);
 		$this->data['splashContent'] = $this->load->view('home_splash', false, true);
 		$this->params['content'] = $this->load->view('homepage', $this->data, true);
 		$this->params['subTitle'] = "Welcome to OOTP Fantasy Leagues";

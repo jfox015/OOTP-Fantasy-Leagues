@@ -27,15 +27,14 @@ input.error {
 	padding-top:4px;
 }
 .richEditor {
-	width:600px;
-	/*float:left;*/
+    width: 367px !important;
+	float:left;
 	margin:3px 0 3px 6px;
 	padding:0 0 6px 0;
 	clear:none;
 	width:auto;
 	height:auto;
 }
-
 .nicEdit-panel {
 		width:329px;
 		float:left;
@@ -44,8 +43,16 @@ input.error {
 .nicEdit-panel-wide {
 		width:725px;
 		float:left;
-		clear:right;
+        clear:right;
 }
+.nicEdit-main {
+    width: 330px !important;
+}
+.richEditor:nth-child(2) {
+    margin-left: 208px;
+    width: 330px;
+}
+
 .formLabel {
 	text-align:right;
 	font-weight:bold;

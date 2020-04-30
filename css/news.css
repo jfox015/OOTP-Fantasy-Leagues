@@ -38,7 +38,12 @@
     color: #333;
     line-height: 22px; 
     margin: 5px 0;
-}    
+}
+
+.content-area article.single img {
+  max-width: 560px;
+  min-width:245px;
+}
 .content-area article.excerpt .entry-content ul, .content-area article.excerpt .entry-content ol, .content-area article.single .entry-content ul, .content-area article.single .entry-content ol {
     margin: 10px;
     padding: 0 10px;
@@ -128,7 +133,8 @@
     width: 280px;
 }
 .content-area article.excerpt .excerpt-thumb img {
-    width: 280px;
+    max-width: 280px;
+    min-width: 100px;
 }
     .content-area article.excerpt .excerpt-thumb .author-cont {
       position: absolute;

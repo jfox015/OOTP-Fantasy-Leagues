@@ -895,11 +895,11 @@ class league_model extends base_model {
 	/**
 	 *	GET LEAGUES.
 	 *	Returns a list of public leagues.
-	 *  @param	$league_id - If not specified, no league filter is applied.
 	 *	@param	$type - 1 = Public, -1 = all (admin only)
+	 *	@param	$status - 1 = Public, -1 = all (admin only)
 	 *	@return	array of league information
 	 */
-	public function getLeagues($league_id = false, $type=1, $status = false) {
+	public function getLeagues($type=1, $status = false) {
 		$leagues = array();
 		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id, league_status, access_type, league_type, leagueType, max_teams, regular_scoring_periods, games_per_team');
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
@@ -969,7 +969,7 @@ class league_model extends base_model {
 		return $leagues;
 	}
 	
-	protected function loadLeagueTeams($league_id = false) {
+	public function loadLeagueTeams($league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$teamNames = array();
 		$this->db->select("id, teamname, teamnick");

@@ -194,7 +194,7 @@
 				} else {
 					echo(get_pos($thisItem['role']));
 				}
-				 ?></div><br />
+				 ?></div>
                 <div class="playerbio" height="105">
                     <strong>Team:</strong> <a href="<?php echo($htmlpath); ?>teams/team_<?php echo($thisItem['team_id']); ?>.html" target="_blank"><?php echo(" ".$thisItem['team_name']." ".$thisItem['teamNickname']); ?></a>
                     | <strong>Nickname:</strong> <?php echo($thisItem['playerNickname']); ?>
@@ -392,28 +392,6 @@
 				} else { ?>
                 <tr>
                 <td>No news was found for this player.</td></tr>
-                <?php }
-				if ($accessLevel == ACCESS_ADMINISTRATE) { ?>
-                <tr>
-                    <td>
-                    <?php
-                    if (isset($playerNews) && sizeof($playerNews) > 0) { 
-                    ?>
-                    <p>
-                    <br clear="all" />
-                    <div class="button_bar" style="text-align:right;">
-                    <?php 
-                    echo anchor('/news/articles/type_id/'.NEWS_PLAYER.'/var_id/'.$thisItem['id'], '<button class="sitebtn news">More News</button>');
-                    echo anchor('/news/submit/mode/edit/id/'.$news['id'], '<button class="sitebtn edit">Edit</button>');
-                    echo(anchor('/news/submit/mode/add/type_id/'.NEWS_PLAYER.'/var_id/'.$thisItem['id'],'<button class="sitebtn edit">Add News</button>'));
-                    ?>
-                    </div>
-                    <?php
-                    }
-                    ?>
-                    </td>
-                </tr>
-                <?php } ?>
                 <tr class='headline'>
                     <td>Injury Report</td>
                 </tr>
@@ -457,7 +435,25 @@
                     <td><?php echo($playerNews['fantasy_analysis']); ?><br />
                     (Updated <?php if (isset($playerNews['news_subject'])) { echo(date('m/d/Y',strtotime($playerNews['news_date']))); } ?>). </td>
                 </tr>
-                <?php } ?>
+                <?php } 
+                }
+				        ?>
+                <tr>
+                    <td>
+                    <div class="button_bar" style="text-align:right;">
+                    <?php 
+                    echo anchor('/news/articles/type_id/'.NEWS_PLAYER.'/var_id/'.$thisItem['id'], '<button class="sitebtn news">More News</button>');
+                    if ($accessLevel == ACCESS_ADMINISTRATE) {
+                      if (isset($playerNews) && sizeof($playerNews) > 0) { 
+                        echo anchor('/news/submit/mode/edit/id/'.$news['id'], '<button class="sitebtn edit">Edit</button>');
+                        echo anchor('/news/submit/mode/delete/id/'.$news['id'], '<button class="sitebtn edit">Delete</button>');
+                      }
+                      echo(anchor('/news/submit/mode/add/type_id/'.NEWS_PLAYER.'/var_id/'.$thisItem['id'],'<button class="sitebtn news">Add News</button>'));
+                    }
+                    ?>
+                    </div>
+                    </td>
+                </tr>
                 </table>
                 </div>
                 <div style="margin:6px 0 6px 0;min-height:12px;"><br clear="all" class="clear" /></div>

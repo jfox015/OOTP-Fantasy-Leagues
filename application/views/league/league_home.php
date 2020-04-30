@@ -10,6 +10,11 @@
             <img src="<?php echo($avatar); ?>" width="100" height="100" alt="<?php echo($thisItem['league_name']); ?>" 
             title="<?php echo($thisItem['league_name']); ?>" /> 
             <h1><?php echo($thisItem['league_name']); ?></h1>
+            <?php
+            if (isset($thisItem['description']) && !empty($thisItem['description'])) { 
+                echo('<br /><strong>'.$thisItem['description'].'</strong<br />');
+            }
+            ?>
         </div>
 
         <div class="news_title">
@@ -96,10 +101,39 @@
 	</div>
     <div id="right-column">
     	<?php 
+        /*------------------------------------------------
+		/	CONTACT COMMISSIONER LINK
+		/-----------------------------------------------*/
 		print(anchor('/league/leagueContact/'.$league_id,'<img src="'.PATH_IMAGES.'/btn_contact_commish.png" width="220" height="57" border="0" alt="Contact the commissioner" title="Contact the commissioner" />'));
 		print('<br /><br /> ');
-		?>
-		<?php 
+        /*------------------------------------------------
+		/	LEAGUE STATUS MODULE
+        /-----------------------------------------------*/
+        if (isset($thisItem['league_status']) && !empty($thisItem['league_status']) && $thisItem['league_status'] != 1) {
+            if ($thisItem['league_status'] ==2) {
+                $class="warn";
+                $message = "This League is currently inactive. It is bypassed in all League Sims. Please contact the Site Administrator with questions.";
+            } else {
+                $class="error";
+                $message = "This League has been suspended or removed. Any actions taken will have no effect on Sim Processing. Please contact the Site Administrator with questions.";
+            }
+        ?>
+        <div class='textbox right-column'>
+            <table cellpadding="0" cellspacing="0">
+                <thead>	
+                <tr class="title">
+                    <td class='hsc2_l'>League Status</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="<?php echo($class); ?>"><?php echo($message); ?></span></td>
+                </tr>
+            </tbody>
+            </table>
+        </div>
+        <?php
+        }
 		/*------------------------------------------------
 		/	DRAFT MODULE
 		/-----------------------------------------------*/

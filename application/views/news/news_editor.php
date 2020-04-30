@@ -1,9 +1,12 @@
+	<?php 
+	$htmlpath=$config['ootp_html_report_path'];
+	?>
 	<script type="text/javascript" src="<?php print($config['fantasy_web_root']); ?>js/jquery.md5.js"></script>
 	<script type="text/javascript" src="<?php print($config['fantasy_web_root']); ?>js/nicEdit.js"></script>
 	<script type="text/javascript">
     var ajaxWait = '<img src="<?php print($config['fantasy_web_root']); ?>images/icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
 	var responseError = '<img src="<?php print($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
-	var league_id = <?php print($league_id); ?>;
+	//var league_id = <?php print($league_id); ?>;
 	$(document).ready(function(){		   
 		$('#delete').click(function() {
 			document.location.href = '<?php print($config['fantasy_web_root']); ?>news/delete/<?php print($thisItem['id']); ?>';
@@ -40,49 +43,43 @@
 	function selectPlayer(obj) {
 		//alert (obj.id);
 		var url = "<?php print($config['fantasy_web_root']); ?>players/getInfo/player_id/"+obj.id+cacheBuster();
-		$('div#playerDetails').html(ajaxWait);
+		$('div.player_info').html(ajaxWait);
 		$.getJSON(url, function(data){
-			$('div#playerDetails').empty();
+			$('div.player_info').empty();
+			$('#details_title').empty();
+			$('#details_headline').empty();
 			if (data.code.indexOf("200") != -1) {
-				$('div#playerDetails').append(drawPlayerInfo(data));
-				if (data.status.indexOf(":") != -1) {
-					var status = data.status.split(":");
-					$('div#draftStatus').addClass(status[0].toLowerCase());
-					$('div#draftStatus').html(status[1]);
-				} else {
-					$('div#draftStatus').addClass('success');
-					$('div#draftStatus').html('Player Info Not Found');
+				$('div.player_info').append(drawPlayerInfo(data));
+				var item = data.result.items[0];
+				var titleName = "Not Found";
+				var headline = "";
+				if (item.id != '' && item.player_name != '') {
+					titleName = item.player_name + " Details";
+					headline = item.pos + " " + item.player_name;
 				}
-				$('div#draftStatusBox').fadeIn("slow",function() { setTimeout('fadeStatus("active")',15000); });
+				$('#details_title').append(titleName);
+				$('#details_headline').append(headline);
 			} else {
-				var outHTML = '<tr align="left" valign="top">';
-				outHTML += '<td colspan="3">No player info found.</td>';
-				outHTML += '</tr>';
-				$('div#playerDetails').append(outHTML);
+				var outHTML = '<div class="playerpic" style="float:left;width:50px;">';
+				outHTML += '<img src="<?php echo($htmlpath); ?>images/person_pictures/default_player_photo.png">';
+				outHTML += '</div>';
+                outHTML += '<div class="player" style="float:left; width: 65%;padding: 0 8px;">';
+                outHTML += 'The selected Player was not found.';
+				outHTML += '</div>';
+				$('div.player_info').append(outHTML);
 			}
 		});	
 	}
 	function drawPlayerInfo(data) {
-		var outHTML = '<table cellspacing=0 cellpadding=3 width="250px">';
-		outHTML += '<tr align="left" valign="top">';
-		outHTML += '<td width="35%">';
-		var count = 0;
+		var outHTML = '';
 		var item = data.result.items[0];
 		if (item.id != '' && item.player_name != '') {
-			outHTML += '<img src="<?php print($config['ootp_html_report_path']); ?>images/player_'+item.player_id+'.png" border="0" align="left" /></td>';
-			outHTML += '<td width="65%"><b><a target="_blank" href="<?php print($config['fantasy_web_root']); ?>players/info/player_id/'+item.id+'" style="font-weight:bold;font-size:larger;">'+item.player_name+'</a></b><br />';
-			outHTML += item.team_name+'<br />';
-			if (item.pos == 1) {
-				outHTML += item.role+'<br />';
-			} else {
-				outHTML += item.position+'<br />';
-			}
-			outHTML += '</td>';
-			outHTML += '</tr>';
-			count++;
+			outHTML += '<div class="playerpic" style="float:left;width:80px;">';
+			outHTML += "<img src='<?php echo($htmlpath); ?>images/person_pictures/player_" + item.player_id + ".png' width='80'>";
+			outHTML += '<div class="player" style="float:left; width: 65%;padding: 0 8px;">';
+			outHTML += '<strong>Team:</strong> ' + item.team_name+'<br />';	    
+			outHTML += '</div>';
 		}
-		outHTML += '</tr>';
-		outHTML += '</table>';
 		return outHTML;
 	}
     </script>
@@ -118,32 +115,7 @@
         </table>
       </div>
     </div>
-    <?php if (isset($type_id) && $type_id == NEWS_PLAYER) { ?>
-    <div id="right-column">
-        <div class="textbox" style="width:261px;">
-        <table cellspacing=0 cellpadding=3 width="250px">
-        <tr class='title'><td colspan=3>Player Details</td></tr>
-        <tr class='s1'>
-        <td>
-        <div id="playerDetails">
-        <table cellspacing=0 cellpadding=3 width="250px">
-        <tr align="left" valign="top">
-        	<td width="35%">
-            <img src='<?php print($config['ootp_html_report_path']); ?>images/default_player_photo.png' border="0" align="left" />
-            </td>
-            <td width="65%">
-            <b>No Player Selected.</b><br /><br />Select a player from the "Select Player" drop down to preview their information.
-            <br />
-        	</td>
-        </tr>
-        </table>
-        </div>
-        </td>
-        </tr>
-        </table>
-		</div>
-		&nbsp;
-    	<br clear="all" /> 
-    </div>
-    <?php } ?>
-    <p /><br />
+    <!-- RIGHT COLUMN -->
+	<div id="right-column">
+    <?php echo($secondary); ?>
+	</div>

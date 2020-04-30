@@ -221,6 +221,7 @@ class league extends BaseEditor {
 
 		$this->data['thisItem']['league_name'] = $this->dataModel->league_name;
 		$this->data['thisItem']['description'] = $this->dataModel->description;
+		$this->data['thisItem']['league_status'] = $this->dataModel->league_status;
 		$this->data['thisItem']['memberCount'] = $this->dataModel->getMemberCount();
 
 		$statusStr = '';

@@ -387,7 +387,7 @@ INSERT INTO `fantasy_leagues_types` (`id`, `leagueType`, `shortDesc`, `active`) 
 INSERT INTO `fantasy_leagues_types` (`id`, `leagueType`, `shortDesc`, `active`) VALUES(4, 'Head to Head', 'h2h', 1);
 CREATE TABLE IF NOT EXISTS `fantasy_news` (`id` int(11) NOT NULL auto_increment,  `type_id` int(11) NOT NULL,  `var_id` int(11) NOT NULL,  `author_id` int(11) NOT NULL,  `news_date` timestamp NOT NULL default CURRENT_TIMESTAMP,  `news_subject` mediumtext collate utf8_unicode_ci NOT NULL,  `news_body` longtext collate utf8_unicode_ci NOT NULL,  `fantasy_analysis` longtext collate utf8_unicode_ci NOT NULL,  `image` varchar(500) collate utf8_unicode_ci NOT NULL, PRIMARY KEY  (`id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1 ;
 CREATE TABLE IF NOT EXISTS `fantasy_news_type` (`id` tinyint(4) NOT NULL auto_increment,  `newsType` varchar(250) collate utf8_unicode_ci NOT NULL, PRIMARY KEY  (`id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=5 ;
-INSERT INTO `fantasy_news_type` (`id`, `newsType`) VALUES(1, 'Fantasy Game');
+INSERT INTO `fantasy_news_type` (`id`, `newsType`) VALUES(1, 'Fantasy');
 INSERT INTO `fantasy_news_type` (`id`, `newsType`) VALUES(2, 'League');
 INSERT INTO `fantasy_news_type` (`id`, `newsType`) VALUES(3, 'Player');
 INSERT INTO `fantasy_news_type` (`id`, `newsType`) VALUES(4, 'Team');

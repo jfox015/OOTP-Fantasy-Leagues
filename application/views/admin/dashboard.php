@@ -311,7 +311,10 @@
 			} // END if
 			?>
 			<li><?php echo anchor('/search/doSearch/leagues','<img src="'.$config['fantasy_web_root'].'images/icons/notes_edit.png" width="48" height="48" />'); ?><br />
-            Manage Leagues</li>
+			Manage Leagues</li>
+			<li><?php echo anchor('/search/doSearch/news','<img src="'.$config['fantasy_web_root'].'images/icons/icon_news_globe.png" width="48" height="48" />'); ?><br />
+			Manage News</li>
+			
         </ul>
         <br clear="all" /><br />
         <h3>Tools and Utilities</h3>

@@ -1,6 +1,6 @@
 <div id="single-column" class="newslist">
 	<article class="hero-area">
-        <img src="<?php echo(PATH_IMAGES); ?>news_header_fantasy.jpg" class="splash" />
+        <img src="<?php echo(PATH_IMAGES); ?>news_header_<?php echo(strtolower($news_type_name)); ?>.jpg" class="splash" />
 		<h2><?php echo($pageTitle); ?></h2>
 	</article>
 </div>
@@ -8,13 +8,13 @@
 <?php
 $typeIdStr = "";
 $varIdStr = "";
+if (isset($type_id) && !empty($type_id) && $type_id != -1) {
+    $typeIdStr = "/type_id/".$type_id;
+}
+if (isset($var_id) && !empty($var_id) && $var_id != -1) {
+    $varIdStr = "/var_id/".$var_id;
+}
 if (isset($articles) && count($articles) > 0) {
-    if (isset($type_id) && !empty($type_id) && $type_id != -1) {
-        $typeIdStr = "/type_id/".$type_id;
-    }
-    if (isset($var_id) && !empty($var_id) && $var_id != -1) {
-        $varIdStr = "/var_id/".$var_id;
-    }
     
     //echo("Article Count = ".count($articles).'<br />');
     if (count($articles)> 1) {
@@ -61,7 +61,7 @@ if (isset($articles) && count($articles) > 0) {
                     <div class="date"><?php echo(date('F j, Y',strtotime($article['news_date']))); ?></div><br />
                     <span class="cat-links">
                         <?php echo(anchor('/user/profiles/'.$article['author_id'], $article['author_name'],['class'=>'cat_link'])); ?> <span class="separator"></span>
-                        <?php echo(anchor('/news/articles/'.$typeIdStr.$varIdStr,$article['newsType'],['class'=>'cat_link'])); ?>
+                        <?php echo(anchor('/news/articles'.$typeIdStr.$varIdStr,$article['newsType'],['class'=>'cat_link'])); ?>
                     </span>    
                 </div><!-- .entry-meta -->
             </header><!-- .entry-header -->
@@ -97,7 +97,7 @@ if (isset($articles) && count($articles) > 0) {
 </div>
             <?php
                 $articlesDrawn = 0;
-                if ($articlesPerColumn == 1 && $totalArticlesDrawn == 1) { ?>
+                if ($articlesPerColumn == 1 &&  count($articles) == 1 && $totalArticlesDrawn == 1) { ?>
 <div id="left-column-article" class="content-area"><article class="excerpt"><div class="entry-content">&nbsp;</div></article></div>
                 <?php
                 } // END if

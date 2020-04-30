@@ -11,6 +11,7 @@ function top_nav($logged_in = false, $show_admin = false, $userTeams = array()) 
 				</div>';
 	array_push($nav,array('url'=>'','label'=>'<span class="opener">Leagues</span>','menu'=>$leagueSubMenu));*/
 	array_push($nav,array('url'=>'/league/leagueList','label'=>'Leagues'));
+	array_push($nav,array('url'=>'/news/articles','label'=>'News'));
 	$ctrlr = 'user';
 	if ($logged_in) {
 		if ($show_admin) {

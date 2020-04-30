@@ -29,7 +29,7 @@
             <td style="text-align:left;"><?php echo($row['type_id']); ?></td>
             <?php 
 			if ($loggedIn && $accessLevel == ACCESS_ADMINISTRATE) { ?>
-            <td style="text-align:left;"><?php echo(resolveOwnerName($row['author_id'])); ?></td>
+            <td style="text-align:left;"><?php echo(anchor('/user/profiles/'.$row['author_id'], resolveOwnerName($row['author_id']))); ?></td>
             <td class="last" nowrap="nowrap">
             <?php
 			echo( anchor('/news/submit/mode/edit/id/'.$row['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/edit-icon.gif" width="16" height="16" alt="Edit" title="Edit" />'));
