@@ -7,41 +7,63 @@
 	</article>
 </div>
 <div id="center-column" class="homepage">
-	<div class="layout homepage">
-		<div class="layout-column">
-			<div class="headline">Public Leagues for the <?php echo($leagueName); ?></div>
-			<section class="content">
-			<?php 
-			if (isset($leagues) && sizeof($leagues) > 0) { 
-				foreach($leagues as $id => $details) { 
-					?>
-					<section class="teamLinks flex">
-						<figure class="logo-lg">
-							<?php
-							if (isset($details['avatar']) && !empty($details['avatar'])) { 
-								$avatar = PATH_LEAGUES_AVATARS.$details['avatar']; 
-							} else {
-								$avatar = PATH_LEAGUES_AVATARS.DEFAULT_AVATAR;
-							} 
-							?>
-							<img align="absmiddle" src="<?php echo($avatar); ?>" 
-							alt="<?php echo($details['league_name']); ?>" title="<?php echo($details['league_name']); ?>" />
-						</figure>
-						<div class="flexContent">
-							<?php echo(anchor('/league/home/'.$id, $details['league_name'],['class' => 'teamLink'])); ?>
-							<div class="TeamLinks-Links">
-								<?php echo($details['league_type_lbl']." League"); ?>
-							</div>
-						</div>
-					</section>
-				<?php
-				} // END foreach($divisionData['teams']
+		<h3>Public Leagues for the <?php echo($leagueName); ?></h3>
+		<div class="layout homepage">
+		<?php 
+		if (isset($leagues) && sizeof($leagues) > 0) {
+			if (count($leagues)> 1) {
+				$leaguesPerColumn = intval(count($leagues) / 2);
+				if (($leaguesPerColumn % 2) != 0) { $leaguesPerColumn++; }
 			} else {
-				echo("No Public Leagues are available at this time.");
-			}  // END if (isset($leagues)
-			?>
+				$leaguesPerColumn =  1;
+			}
+			$totalleaguesDrawn = 0;
+			$leaguesDrawn = 0;
+
+			foreach($leagues as $id => $details) { 
+				if ($leaguesDrawn == 0 || $leaguesDrawn == $leaguesPerColumn) {
+					if ($leaguesDrawn == $leaguesPerColumn) {
+						$leaguesDrawn = 0;
+					} // END if ($leaguesDrawn == $leaguesPerColumn)
+				?>
+		<div class="layout-column">
+			<section class="content">
+				<?php
+				} // END if ($articlesDrawn == 0 || $articlesDrawn == $articlesPerColumn)
+				?>
+				<section class="teamLinks flex">
+					<figure class="logo-lg">
+						<?php
+						if (isset($details['avatar']) && !empty($details['avatar'])) { 
+							$avatar = PATH_LEAGUES_AVATARS.$details['avatar']; 
+						} else {
+							$avatar = PATH_LEAGUES_AVATARS.DEFAULT_AVATAR;
+						} 
+						?>
+						<img align="absmiddle" src="<?php echo($avatar); ?>" 
+						alt="<?php echo($details['league_name']); ?>" title="<?php echo($details['league_name']); ?>" />
+					</figure>
+					<div class="flexContent">
+						<?php echo(anchor('/league/home/'.$id, $details['league_name'],['class' => 'teamLink'])); ?>
+						<div class="TeamLinks-Links">
+							<?php echo($details['league_type_lbl']." League"); ?>
+						</div>
+					</div>
+				</section>
+				<?php
+			$leaguesDrawn++;
+			$totalleaguesDrawn++;
+			if ($leaguesDrawn == $leaguesPerColumn || $totalleaguesDrawn == count($leagues)) { ?>
 			</section>
 		</div>
+				<?php
+                $leaguesDrawn = 0;
+				} // END if
+			} // END foreach($leagues as $id => $article) 
+		} else {
+			echo('<div class="layout-column"><section class="content">No Public Leagues are available at this time.</section></div>');
+		}  // END if (isset($leagues)
+		?>
 	</div>
 	<br clear="all" /><br />
     <div class="news_title home">

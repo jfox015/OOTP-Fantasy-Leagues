@@ -191,6 +191,13 @@ a.register:hover {
 	background: rgba(6, 6, 68, 0.7);
 	z-index: 999;
 }
+.homepage h3 {
+	margin: 0px;
+	padding: 0px;
+	font-size:24px;
+	color:rgb(11, 0, 36);
+}
+
 .home_news {
 	position: relative;
 }
@@ -209,17 +216,6 @@ a.register:hover {
 	margin: 0;
 }
 
-
-/*-----------------------------------------------
-/	NEWS STYLE UPDATES
-/-----------------------------------------------*/
-article.excerpt .excerpt-thumb {
-    position: relative;
-    display: block;
-    margin-bottom: 25px;
-    line-height: 0;
-    min-height: 100px;
-}
 /*-------------------------------------------------
 /	TEXT BOX CLASS UPDATES
 /	@since PROD 1.0.3
@@ -359,10 +355,10 @@ div.rule {
 }
 .layout-column:first-child {
 	margin-right: 20px;
-	width: 58%;
+	width: 51%;
 }
 .layout-column:last-child {
-	width: 41%;
+	width: 48%;
 }
 .layout-column {
 	padding-right: 6px;

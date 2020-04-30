@@ -63,7 +63,7 @@
 			}
 			echo('<span class="news_body">'.$dispNews);
 			if (strlen($newsBody) > $maxChars) {
-				echo('&nbsp;&nbsp;'.anchor('/news/article/id/'.$newsId.$typeIdStr.$varIdStr,'Read more...').'</span>');
+				echo('&nbsp;&nbsp;'.anchor('/news/article/id/'.$newsId.'/type_id/'.NEWS_LEAGUE.'/var_id/'.$league_id,'Read more...').'</span>');
 			}
         } else {
        		echo("No news is available at this time.");
