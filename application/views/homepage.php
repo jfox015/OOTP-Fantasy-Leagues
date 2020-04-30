@@ -48,53 +48,74 @@
 		<h3>Fantasy Leagues News</h3>
 	</div>
 	<div class="rule"></div>
-	<?php 
-	if (isset($news) && sizeof($news)) { 
-		
-		$dispNews = '';
-		if (isset($news[0]['news_subject']) && !empty($news[0]['news_subject'])) { 
-        	echo('<h3>'.$news[0]['news_subject'].'</h3>');
-        }
-		if (isset($news[0]['image']) && !empty($news[0]['image'])) {
-		// GET IMAGE DIMENSIONS
-		$size = getimagesize(FCPATH.'images\news\\'.$news[0]['image']);
-		if (isset($size) && sizeof($size) > 0) {
-			if ($size[0] > $size[1]) {
-				$class = "wide";
-			} else {
-				$class = "tall";
+	<div class="home_news">
+		<?php 
+		if (isset($news) && sizeof($news)) { 
+			
+			$dispNews = '';
+			
+			if (isset($news[0]['image']) && !empty($news[0]['image'])) {
+			// GET IMAGE DIMENSIONS
+			$size = getimagesize(FCPATH.'images'.URL_PATH_SEPERATOR.'news'.URL_PATH_SEPERATOR.$news[0]['image']);
+			if (isset($size) && sizeof($size) > 0) {
+				if ($size[0] > $size[1]) {
+					$class = "wide";
+				} else {
+					$class = "tall";
+				}
 			}
-		}
-		?>
-        <img src="<?php echo(PATH_NEWS_IMAGES.$news[0]['image']); ?>" align="left" class="league_news_<?php echo($class); ?>" />
-        <?php } ?>
-        
-        <?php if (isset($news[0]['news_date']) && !empty($news[0]['news_date'])) { 
-        	echo('<span class="league_date">'.date('l, M d',strtotime($news[0]['news_date'])).'</span>&nbsp; --&nbsp;');
-        } ?>
-        <?php if (isset($news[0]['news_body']) && !empty($news[0]['news_body'])) { 
-			$maxChars = 500;
-			if (strlen($news[0]['news_body']) > $maxChars) {
-				$dispNews = substr($news[0]['news_body'],0,$maxChars);
-			} else {
-				$dispNews = $news[0]['news_body'];
-			}
-			echo('<span class="news_body">'.$dispNews);
-			if (strlen($news[0]['news_body']) > $maxChars) {
-				echo('&nbsp;&nbsp;'.anchor('/news/info/'.$news[0]['id'],'Read more...').'</span>');
-			}
-        }
-	}  else {
-		echo("No news is available at this time.");
-	} ?>
+			?>
+			<div class="home_news_img">
+				<img src="<?php echo(PATH_NEWS_IMAGES.$news[0]['image']); ?>" class="league_news_<?php echo($class); ?>" />
+			</div>
+			<?php } ?>
+			<div class="home_news_body">
+				<?php
+				if (isset($news[0]['news_subject']) && !empty($news[0]['news_subject'])) { 
+					echo('<h3>'.$news[0]['news_subject'].'</h3><br />');
+				}
+				if (isset($news[0]['news_date']) && !empty($news[0]['news_date'])) { 
+				echo('<span class="league_date">'.date('l, M d',strtotime($news[0]['news_date'])).'</span>&nbsp; --&nbsp;');
+				} ?>
+				<?php if (isset($news[0]['news_body']) && !empty($news[0]['news_body'])) { 
+					//$maxChars = 500;
+					if (strlen($news[0]['news_body']) > $excerptMaxChars) {
+						$dispNews = substr($news[0]['news_body'],0,$excerptMaxChars);
+					} else {
+						$dispNews = $news[0]['news_body'];
+					}
+					echo('<span class="news_body">'.$dispNews);
+
+					$typeIdStr = "";
+					$varIdStr = "";
+					if (isset($news[0]['type_id']) && !empty($news[0]['type_id']) && $news[0]['type_id'] != -1) {
+						$typeIdStr = "/type_id/".$news[0]['type_id'];
+					}
+					if (isset($news[0]['var_id']) && !empty($news[0]['var_id']) && $news[0]['var_id'] != -1) {
+						$varIdStr = "/var_id/".$var_id;
+					}
+					if (strlen($news[0]['news_body']) > $excerptMaxChars) {
+						echo('&nbsp;&nbsp;'.anchor('/news/article/id/'.$news[0]['id'].$typeIdStr.$varIdStr,'Read more...').'</span>');
+					}
+				}
+				?>
+			</div>
+		<?php
+		}  else {
+			echo("No news is available at this time.");
+		} ?>
+	</div>
 	<p>&nbsp;&nbsp;
 	<br clear="all" />
-	<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" /> 
-	<?php echo anchor('/search/news/', 'More News'); ?><br />
+	<div class="button_bar" style="text-align:right;">
+	<?php echo anchor('/news/articles/'.NEWS_FANTASY_GAME, '<button id="btnClear" class="sitebtn adddrop" style="display:inline-block;">More News</button>'); ?>
 	<?php 
-	if ($loggedIn && $accessLevel == ACCESS_ADMINISTRATE) {
-		echo('<img src="'.$config['fantasy_web_root'].'images/icons/icon_add.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" /> '.anchor('/news/submit/mode/add/type_id/'.NEWS_FANTASY_GAME,'Add News Article'));
+	if ($loggedIn && $accessLevel >= ACCESS_WRITE) {
+		echo(anchor('/news/submit/mode/add/type_id/'.NEWS_FANTASY_GAME,'<button id="btnSubmit" class="sitebtn adddrop" style="display:inline-block;">Add Article</button>'));
 	}
+	?>
+	</div>
+	<?php
     if (isset($message) && !empty($message)) { ?>
     <?php echo($message); ?>
 	<br /><br />

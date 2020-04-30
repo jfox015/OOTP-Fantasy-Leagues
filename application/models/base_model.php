@@ -326,6 +326,24 @@ class base_model extends Model implements Serializable {
 		}
 		return $success;
 	}
+	/**
+	 *	DUMP ARRAY
+	 *	Dumps all field, regular and read only, to an output array
+	 *	@param		dumpAll		{Boolean}		TRUE TO dump regular and Read only fields
+	 *	@return		Array of fields and data.
+	 */
+	public function dumpArray($dumpAll= true) {
+		$outArr = array();
+		foreach($this->allFields as $field) {
+			$outArr[$field] = $this->$field;
+		} // END foreach
+		if ($dumpAll) {
+			foreach($this->readOnlyList as $field) {
+				$outArr[$field] = $this->$field;
+			} // END foreach
+		} // END if
+		return $outArr;
+	}
 	public function dumpData() {
 		$outHTML = "";
 		foreach($this->allFields as $field) {

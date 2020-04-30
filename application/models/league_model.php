@@ -560,15 +560,39 @@ class league_model extends base_model {
 	}
 	/**
 	 * 	USER HAS ACCESS
+	 * 	Returns TRUE Or FALSE if the passed user has access to the LEague (I.E. is a team owner). 
+	 *  Modified version of isLeagueMember to add access restriction checking
+	 *  @param	$user_id	{int}	The USER ID to check for ownership of a team
+	 *  @param	$league_id	{int}	League ID var, if FALSE, defaults to models ID
+	 *  @return				{int}	Count value, 0 if no teams open
+	 * 
+	 * 	@since	1.0.3 PROD
+	 * 
+	 */
+	public function userHasAccess($user_id = false, $league_id = false) {
+
+		$access = false;
+		if ($user_id === false || $user_id == -1) { return false; }
+		if ($league_id === false) { $league_id = $this->id; }
+		if ($league_id === false || $league_id == -1) { return false; }
+		//print "user id = ".$user_id."<ber />";
+		$ownerIds = $this->getOwnerIds($league_id);
+		//print "has access? = ".(in_array($user_id,$ownerIds) ? "yes":"no")."<ber />";
+		$access = ($this->access_type != -1 || ($this->access_type == -1 && (sizeof($ownerIds) > 0 && in_array($user_id,$ownerIds))));
+		return $access;
+	}
+	/**
+	 * 	IS LEAGUE MEMBER
 	 * 	Returns TRUE Or FALSE if the passed user has access to the LEague (I.E. is a team owner)
 	 *  @param	$user_id	{int}	The USER ID to check for ownership of a team
 	 *  @param	$league_id	{int}	League ID var, if FALSE, defaults to models ID
 	 *  @return				{int}	Count value, 0 if no teams open
 	 * 
 	 * 	@since	1.0.6 Beta
+	 *  @changelog			Changed from userHasAccess to isLeagueMmember
 	 * 
 	 */
-	public function userHasAccess($user_id = false, $league_id = false) {
+	public function isLeagueMember($user_id = false, $league_id = false) {
 
 		$access = false;
 		if ($user_id === false || $user_id == -1) { return false; }
@@ -579,8 +603,8 @@ class league_model extends base_model {
 		//print "has access? = ".(in_array($user_id,$ownerIds) ? "yes":"no")."<ber />";
 		$access = (sizeof($ownerIds) > 0 && in_array($user_id,$ownerIds));
 		return $access;
-
 	}
+
 	/**
 	 * 	GET OPEN TEAM COUNT
 	 * 	Function that gets the number of unowned teams for the given league ID
@@ -1146,6 +1170,28 @@ class league_model extends base_model {
 		$query2->free_result();
 		return $teams;
 	}
+	public function getLeagueDetails($league_id = false) {
+
+		if ($league_id === false) { $league_id = $this->id; }
+		
+		$league = array();
+		$this->db->select($this->tblName.'.id,league_name,accessType,description,'.$this->tblName.'.avatar,leagueType,max_teams,league_status,leagueStatus,commissioner_id,games_per_team,regular_scoring_periods,playoff_rounds,accept_requests,firstName, lastName, username');
+		$this->db->join('fantasy_leagues_status','fantasy_leagues_status.id = '.$this->tblName.'.league_status','left');
+		$this->db->join('fantasy_leagues_types','fantasy_leagues_types .id = '.$this->tblName.'.league_type','left');
+		$this->db->join('fantasy_leagues_access','fantasy_leagues_access.id = '.$this->tblName.'.access_type','left');
+		$this->db->join('users_core','users_core.id = '.$this->tblName.'.commissioner_id','left');
+		$this->db->join('users_meta','users_meta.userId = '.$this->tblName.'.commissioner_id','left');
+		$this->db->where($this->tblName.'.id',$league_id);
+		$query = $this->db->get($this->tblName);
+		$teams = array();
+		if ($query->num_rows() > 0) {
+			$league = $query->row_array();
+			$commish = (!empty($league['firstName']) && !empty($league['lastName'])) ? $league['firstName']." ".$league['lastName'] : $league['username'];
+			$league['commissioner'] = $commish;
+		}
+		$query->free_result();
+		return $league;
+	}
 
 	public function getFullLeageDetails($league_id = false, $noOwner = false) {
 		if ($league_id === false) { $league_id = $this->id; }
@@ -1188,7 +1234,6 @@ class league_model extends base_model {
 		$query->free_result();
 		return $divisions;
 	}
-
 	public function getLeagueStandings($curr_period_id = false,$league_id = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 

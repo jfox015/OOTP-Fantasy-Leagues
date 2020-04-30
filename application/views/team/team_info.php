@@ -25,7 +25,7 @@
 			}
 			if (isset($newsImage) && !empty($newsImage)) { 
 			// GET IMAGE DIMENSIONS
-			$size = getimagesize(FCPATH.'images\news\\'.$newsImage);
+			$size = getimagesize(FCPATH.'images'.URL_PATH_SEPERATOR.'news'.URL_PATH_SEPERATOR.$newsImage);
 			if (isset($size) && sizeof($size) > 0) {
 				if ($size[0] > $size[1]) {
 					$class = "wide";
@@ -59,19 +59,22 @@
 				}
 				echo('<span class="news_body">'.$dispNews);
 				if (strlen($newsBody) > $maxChars) {
-					echo('&nbsp;&nbsp;'.anchor('/news/info/'.$newsId,'Read more...').'</span>');
+					echo('&nbsp;&nbsp;'.anchor('/news/article/'.$newsId,'Read more...').'</span>');
 				}
 			} else {
 				echo("No news is available at this time.");
 			} ?>
 			<p>
 			<br clear="all" />
-			<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" alt="Add" title="add" align="absmiddle" /> 
-			<?php echo anchor('/search/news/', 'More League News'); ?><br />
+			<div class="button_bar" style="text-align:right;">
+			<?php echo anchor('/news/articles/type_id/'.NEWS_TEAM.'/var_id/'.$thisItem['team_id'], '<button id="btnClear" class="sitebtn news">More News</button>'); ?>
 			<?php 
 			if ($loggedIn && $isOwner) {
-				echo('<img src="'.$config['fantasy_web_root'].'images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> '.anchor('/news/submit/mode/add/type_id/'.NEWS_LEAGUE.'/var_id/'.$league_id,'Add News Article'));
+				echo(anchor('/news/submit/mode/add/type_id/'.NEWS_TEAM.'/var_id/'.$thisItem['team_id'],'<button id="btnSubmit" class="sitebtn news">Add Article</button>'));
 			}
+			?>
+			</div>
+			<?php
 			/*------------------------------------------------
 			/	INJURY STATUS MODULE
 			/-----------------------------------------------*/
@@ -110,8 +113,9 @@
 						} 
 						?>
 						</td>
-						<td><?php echo(anchor('/player/info/'.$player['id'], $player['player_name'])." "); 
-						$pos = unserialize($playerData['positions']);
+						<td>
+						<?php
+						$pos = unserialize($player['positions']);
 						$gmPos = '';
 						if (is_array($pos) && sizeof($pos) > 0) {
 							foreach($pos as $position) {
@@ -121,6 +125,7 @@
 								}
 							}
 						}
+						echo($gmPos." ".anchor('/players/info/'.$player['id'], $player['player_name'])); 
 						?></td>
 						<td class="negative"><?php 
 						$injStatus = '';

@@ -18,6 +18,56 @@ class news extends BaseEditor {
 	 *	@var $_NAME:Text
 	 */
 	var $_NAME = 'news';
+	/**
+	 *	NEWS LANDING LIMIT
+	 *	@var $newsLandingLimit:Int
+	 */
+	var $newsLandingLimit = 20;
+	/**
+	 *	EXERPT MAX CHARS
+	 *	@var $excerptMaxChars:Int
+	 */
+	var $excerptMaxChars = 125;
+	/**
+	 *	TYPE TITLE
+	 *	@var $hasAccess:String
+	 */
+	var $typeTitle = 'Fantasy';
+	/**
+	 *	HAS ACCESS
+	 *	@var $hasAccess:Boolean
+	 */
+	var $hasAccess = true;
+	/**
+	 *	LEAGUE DETAILS
+	 *	@var $leagueDetails:Array
+	 */
+	var $leagueDetails = array();
+	/**
+	 *	TEAM DETAILS
+	 *	@var $teamDetails:Array
+	 */
+	var $teamDetails = array();
+	/**
+	 *	PLAYER DETAILS
+	 *	@var $playerDetails:Array
+	 */
+	var $playerDetails = array();
+	/**
+	 *	IS ADMIN
+	 *	@var $isAdmin:Boolean
+	 */
+	var $isAdmin = false;
+	/**
+	 *	IS LEAGUE COMMISH
+	 *	@var $isLeagueCommish:Boolean
+	 */
+	var $isLeagueCommish = false;
+	/**
+	 *	IS TOWN OWNER
+	 *	@var $isTeamOwner:Boolean
+	 */
+	var $isTeamOwner = false;
 	/*--------------------------------
 	/	C'TOR
 	/-------------------------------*/
@@ -45,19 +95,24 @@ class news extends BaseEditor {
 		$this->modelName = 'news_model';
 		
 		$this->views['EDIT'] = 'news/news_editor';
-		$this->views['VIEW'] = 'news/news_info';
+		$this->views['VIEW'] = 'news/news_article';
 		$this->views['FAIL'] = 'news/news_message';
 		$this->views['SUCCESS'] = 'news/news_message';
 		$this->views['IMAGE'] = 'news/news_image';
 		$this->views['PREVIEW'] = 'news/news_preview';
+		$this->views['ARTICLES'] = 'news/news_articles';
+		$this->views['ARTICLE'] = 'news/news_article';
+		$this->views['SECONDARY'] = 'news/news_secondary';
 		
 		$this->restrictAccess = true;
-		$this->minAccessLevel = ACCESS_WRITE;
+		$this->minAccessLevel = ACCESS_READ;
 		
+		//$this->enqueStyle('font-awesome.min.css');
+		$this->enqueStyle('news.css');
 		$this->debug= false;
 	}
 	/*--------------------------------
-	/	PRIVATE FUNCTIONS
+	/	PUBLIC FUNCTIONS
 	/-------------------------------*/
 	public function image() {
 		if ($this->params['loggedIn']) {
@@ -127,6 +182,183 @@ class news extends BaseEditor {
 		}
 	}
 	/**
+	 *  ARTICLES.
+	 *	Displays the news landing page with a list of articles. Can be filtered by category
+	 *
+	 * 	@since 	1.0.3 PROD
+	 *
+	 */
+	public function articles() {
+		$this->getURIData();
+
+		if (!$this->dataModel) {
+			$this->load->model($this->modelName);
+		}
+		$typeId = -1;
+		$varId = -1;
+		
+		if (isset($this->uriVars['type_id'])) {
+			$typeId = $this->uriVars['type_id'];
+		} else {
+			$typeId = NEWS_FANTASY_GAME;
+		}
+		if (isset($this->uriVars['var_id'])) {
+			$varId = $this->uriVars['var_id'];
+		} else {
+			$varId = -1;
+		}
+
+		if ($typeId > 1) { $this->setSupportingInformation($typeId, $varId); }
+
+		if ($this->hasAccess) {
+
+			$this->data['articles'] = $this->dataModel->getNewsByParams($typeId, $varId, $this->newsLandingLimit);
+			$this->data['related'] = $this->dataModel->getRelatedArticles($this->dataModel->id);
+			$this->data['excerptMaxChars'] = $this->excerptMaxChars;
+			$this->data['news_types'] = loadSimpleDataList('newsType');
+			$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
+											  'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
+											  'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
+			$this->data['type_id'] = $typeId;
+			$this->data['var_id'] = $varId;
+
+			$this->makeNav();						
+			$this->data['subTitle'] = $this->typeTitle." News Articles";
+			$this->data['pageTitle'] = $this->typeTitle." News Articles";
+			$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
+			$this->params['content'] = $this->load->view($this->views['ARTICLES'], $this->data, true);
+			$this->displayView();
+		} else {
+			$this->data['subTitle'] = "Unauthorized Access";
+			$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		}		
+	}
+	/**
+	 *  ARTICLE.
+	 *	Displays an individual news article
+	 *
+	 * 	@since 	1.0.3 PROD
+	 *
+	 */
+	public function article() {
+		$this->getURIData();
+
+		if (!$this->dataModel) {
+			$this->load->model($this->modelName);
+		}
+		if (isset($this->uriVars['id'])) {
+			$this->dataModel->load($this->uriVars['id']);
+		}
+
+		$typeId = -1;
+		$varId = -1;
+		if (isset($this->uriVars['type_id'])) {
+			$typeId = $this->uriVars['type_id'];
+		} else {
+			$typeId = NEWS_FANTASY_GAME;
+		}
+		if (isset($this->uriVars['var_id'])) {
+			$varId = $this->uriVars['var_id'];
+		} else {
+			$varId = -1;
+		}
+
+		if ($typeId > 1) { $this->setSupportingInformation($typeId, $varId); }
+
+		if ($this->hasAccess) {
+
+			$this->data['article'] = $this->dataModel->dumpArray();
+			$this->data['author'] = $this->dataModel->getArticleAuthor($this->dataModel->id);
+			$this->data['articleType'] = $this->dataModel->getArticleType($this->dataModel->id);
+
+			$this->data['related'] = $this->dataModel->getRelatedArticles($this->dataModel->id);
+			$this->data['news_types'] = loadSimpleDataList('newsType');
+			$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
+											  'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
+											  'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
+			$this->data['type_id'] = $typeId;
+			$this->data['var_id'] = $varId;
+			$this->data['article_id'] = $this->uriVars['id'];
+
+			$this->makeNav();						
+			$this->data['subTitle'] = $this->typeTitle." News Articles";
+			$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
+			$this->params['content'] = $this->load->view($this->views['ARTICLE'], $this->data, true);
+			$this->displayView();
+		} else {
+			$this->data['subTitle'] = "Unauthorized Access";
+			$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		}			
+	}
+	/*---------------------------------------------------------------------
+	/
+	/	PROTECTED FUNCTIONS
+	/
+	/--------------------------------------------------------------------*/
+	/**
+	 *	SET SUPPORTING INFORMATION.
+	 *	Creates a sub nav menu for the given content category.
+	 *
+	 *	@param		$typeId		{int}	The article type (category)
+	 *	@param		$varId		{int}	The variable ID param
+	 *	@return					{Void}	Sets Members vars with details
+	 *	@since 					1.0.3 PROD
+	 *	@access					protected
+	 *	
+	 */
+	protected function setSupportingInformation($typeId = -1, $varId = -1) {
+		
+		$this->load->model('league_model');
+		$this->load->model('team_model');
+		if ($varId != -1) {
+			if ($typeId == 2 || $typeId == 4) {
+				$league_id = $varId;
+				if ($typeId == 4) {
+					$this->team_model->load($varId);
+					$league_id = $this->team_model->league_id;
+				}
+				$this->league_model->load($league_id);
+				$this->hasAccess = $this->league_model->userHasAccess($this->params['currUser']);
+				$this->isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+				$this->isLeagueCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
+			}
+			switch ($typeId) {
+				// League
+				case 2:	
+					$this->typeTitle = 'League';
+					$this->leagueDetails = $this->league_model->getLeagueDetails();
+					break;
+				// PLAYER
+				case 3:
+					$this->typeTitle = 'Player';
+					$this->load->model('player_model');
+					$this->player_model->load($varId);
+					$this->playerDetails = $this->player_model->getPlayerDetails($varId);
+					break;
+				case 4:	
+					$this->typeTitle = 'Team';
+					$this->teamDetails = $this->team_model->getTeamDetails();
+					$this->isTeamOwner = $this->teamDetails['owner_id'] == $this->params['currUser'];
+					break;
+			}
+		}
+		return true;
+	}
+	/**
+	 *	MAKE NAV.
+	 *	Creates a sub nav menu for the given content category.
+	 *
+	 *	@access	protected
+	 *	@return					{Void}
+	 *	@since 	1.0
+	 */
+	protected function makeNav() {
+		$lg_admin = false;
+		array_push($this->params['subNavSection'], news_nav($lg_admin));
+	}
+	/**
 	 *	GET URI DATA.
 	 *	Parses out an id or other parameters from the uri string
 	 *
@@ -140,6 +372,7 @@ class news extends BaseEditor {
 			$this->uriVars['var_id'] = $this->input->post('var_id');
 		} // END if
 	}
+
 	protected function makeForm() {
 		
 		$this->data['preview'] = $this->preview();

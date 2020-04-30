@@ -43,7 +43,6 @@ function top_nav($logged_in = false, $show_admin = false, $userTeams = array()) 
 	return $nav;
 }
 function about_nav($bug_link = "") {
-	//$nav = array(array('url'=>'/about','label'=>'About'));
 	$nav = array(array('url'=>'/about','label'=>'About This Site'));
 	array_push($nav,array('url'=>'/about/about_mod','label'=>'About OOTP Fantasy Leagues'));
 	array_push($nav,array('url'=>'/about/contact','label'=>'Contact'));
@@ -53,6 +52,12 @@ function about_nav($bug_link = "") {
 		$bug_url = '/about/bug_report';
 	}
 	array_push($nav,array('url'=>$bug_url,'label'=>'Report a Bug'));
+	return $nav;
+}
+
+function news_nav() {
+	$nav = array(array('url'=>'/news/articles','label'=>'News Home'));
+	array_push($nav,array('url'=>'/news/submit/mode/add/','label'=>'Add News'));
 	return $nav;
 }
 

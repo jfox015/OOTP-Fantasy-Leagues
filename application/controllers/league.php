@@ -50,7 +50,7 @@ class league extends BaseEditor {
 				$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 				$isCommish = $this->dataModel->userIsCommish($this->params['currUser']) ? true: false;
 				if (!$isAdmin && !$isCommish) {
-					if ($this->params['currUser'] == -1 || !$this->dataModel->userHasAccess($this->params['currUser'])) {
+					if ($this->params['currUser'] == -1 || !$this->dataModel->isLeagueMember($this->params['currUser'])) {
 						redirect('/league/privateLeague/'.$this->uriVars['id']);
 					}
 				}
@@ -2057,7 +2057,7 @@ class league extends BaseEditor {
 			$this->data['thisItem']['teams'] = $this->dataModel->getTeamDetails();
 		}
 
-		$this->data['hasAccess'] = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->dataModel->userHasAccess($this->params['currUser']) : false;
+		$this->data['hasAccess'] = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->dataModel->isLeagueMember($this->params['currUser']) : false;
 
 
 		$this->params['subTitle'] = "Fantasy League Overview";

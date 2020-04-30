@@ -77,7 +77,7 @@ class team extends BaseEditor {
 				$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 				$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
 				if (!$isAdmin && !$isCommish) {
-					if (!$this->league_model->userHasAccess($this->params['currUser'])) {
+					if (!$this->league_model->isLeagueMember($this->params['currUser'])) {
 						redirect('/league/privateLeague/'.$this->uriVars['id']);
 					}
 				}

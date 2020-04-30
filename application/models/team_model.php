@@ -78,6 +78,8 @@ class team_model extends base_model {
 		$this->tblName = 'fantasy_teams';
 		$this->tables['ROSTERS'] = 'fantasy_rosters';
 		$this->tables['PLAYERS'] = 'fantasy_players';
+		$this->tables['LEAGUES'] = 'fantasy_leagues';
+		$this->tables['DIVISIONS'] = 'fantasy_divisions';
 		$this->tables['OOTP_PLAYERS'] = 'players';
 		$this->tables['TRANSACTIONS'] = 'fantasy_transactions';
 		$this->tables['SCORING'] = 'fantasy_players_scoring';
@@ -1651,6 +1653,34 @@ class team_model extends base_model {
 	/
 	/
 	/------------------------------------------------------*/
+	/**
+	 *	GET TEAM DETAILS.
+	 *	Returns the details for the given team.
+	 *  @param	$team_id - (OPTIONAL)
+	 *	@return	array of pitchers
+	 */
+	public function getTeamDetails($team_id = false) {
+		
+		if ($team_id === false && $this->id != -1) { $team_id = $this->id; }
+		if ($team_id === false) { return false; }
+		
+		$team = array();
+		$this->db->select($this->tblName.'.id,'.$this->tblName.'.league_id,league_name,division_id,division_name, teamname,teamnick,owner_id,'.$this->tblName.'.avatar,firstName, lastName, username');
+		$this->db->join($this->tables['LEAGUES'], $this->tables['LEAGUES'].'.id = '.$this->tblName.'.league_id','left');
+		$this->db->join($this->tables['DIVISIONS'], $this->tables['DIVISIONS'].'.id = '.$this->tblName.'.division_id','left');
+		$this->db->join('users_core','users_core.id = '.$this->tblName.'.owner_id','left');
+		$this->db->join('users_meta','users_meta.userId = '.$this->tblName.'.owner_id','left');
+		$this->db->where($this->tblName.'.id', $team_id);
+		$query = $this->db->get($this->tblName);
+		//print($this->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			$team = $query->row_array();
+			$owner = (!empty($team['firstName']) && !empty($team['lastName'])) ? $team['firstName']." ".$team['lastName'] : $team['username'];
+			$team['owner'] = $owner;
+		}
+		$query->free_result();
+		return $team;
+	}
 	/**
 	 *	GET BATTERS.
 	 *	Returns a list of batters for the specified team. Scoring period ID gets the list fot eh current or requested scoring period.

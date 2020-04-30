@@ -48,7 +48,8 @@
         ?>
         <br />
 
-        <?php if (isset($newsBody) && !empty($newsBody)) { 
+        <?php
+        if (isset($newsBody) && !empty($newsBody)) { 
 			$maxChars = 500;
 			if (strlen($newsBody) > $maxChars) {
 				$dispNews = substr($newsBody,0,$maxChars);
@@ -57,20 +58,21 @@
 			}
 			echo('<span class="news_body">'.$dispNews);
 			if (strlen($newsBody) > $maxChars) {
-				echo('&nbsp;&nbsp;'.anchor('/news/info/'.$newsId,'Read more...').'</span>');
+				echo('&nbsp;&nbsp;'.anchor('/news/article/id/'.$newsId.$typeIdStr.$varIdStr,'Read more...').'</span>');
 			}
         } else {
        		echo("No news is available at this time.");
         } ?>
         <p>
         <br clear="all" />
-        <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_search.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> 
-		<?php echo anchor('/search/news/', 'More League News'); ?><br />
-		<?php 
-		if ($loggedIn && $isOwner) {
-			echo('<img src="'.$config['fantasy_web_root'].'images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="add" align="absmiddle" /> '.anchor('/news/submit/mode/add/type_id/'.NEWS_LEAGUE.'/var_id/'.$league_id,'Add News Article'));
-		}
+        <div class="button_bar" style="text-align:right;">
+        <?php echo anchor('/news/articles/type_id/'.NEWS_LEAGUE.'/var_id/'.$league_id, '<button id="btnClear" class="sitebtn news">More News</button>'); ?>
+        <?php 
+        if ($loggedIn && $accessLevel >= ACCESS_WRITE) {
+            echo(anchor('/news/submit/mode/add/type_id/'.NEWS_LEAGUE.'/var_id/'.$league_id,'<button id="btnSubmit" class="sitebtn news">Add Article</button>'));
+        }
         ?>
+        </div>
         <?php
 		/*------------------------------------------------
 		/	LEAGUE TRANSACTIONS MODULE

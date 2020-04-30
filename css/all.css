@@ -161,30 +161,65 @@ a.register:hover {
 /*------------------------------------------------
 /	HOMEPAGE
 /-----------------------------------------------*/
-.homepage .hero-area {
+.homepage .hero-area, .newslist .hero-area  {
 	width:100%;
 	z-index: 1;
 	position: relative;
 	height: 185px;
 }
+.newslist .hero-area  {
+	height: 165px;
+}
 .homepage .hero-area img.splash {
 	width:925px;
 	height:175px;
 }
+.newslist .hero-area img.splash {
+	width:925px;
+	height:150px;
+}
 
-.homepage .hero-area  > h2 {
+.homepage .hero-area  > h2, .newslist .hero-area  > h2 {
 	position: absolute;
 	top: 35px;
 	left: 40px;
 	/*padding:0px;
 	margin: 0 0 8px 0;*/
 	font: bold 21px/24px Tahoma, Geneva, sans-serif;
-	color:#eeeeee;
+	color:#ddd;
 	padding: 18px;
-	background: rgba(0, 0, 0, 0.7);
+	background: rgba(6, 6, 68, 0.7);
 	z-index: 999;
 }
+.home_news {
+	position: relative;
+}
+.home_news .home_news_img, .home_news .home_news_body {
+	float:left;
+}
+.home_news .home_news_img {
+	margin-right: 15px;
+	width: 35%;
+}.home_news .home_news_body {
+	margin: 0;
+	width: 62%;
+}
+.home_news h3 {
+	font-size:18px;
+	margin: 0;
+}
 
+
+/*-----------------------------------------------
+/	NEWS STYLE UPDATES
+/-----------------------------------------------*/
+article.excerpt .excerpt-thumb {
+    position: relative;
+    display: block;
+    margin-bottom: 25px;
+    line-height: 0;
+    min-height: 100px;
+}
 /*-------------------------------------------------
 /	TEXT BOX CLASS UPDATES
 /	@since PROD 1.0.3
@@ -303,14 +338,15 @@ div.rule {
 	margin: 4px 0 6px 0;
 }
 
-
-
 #left-column { width: 185px; float:left; margin-right:10px;  }
 #left-column-wide { width: 245px; float:left; margin-right:10px;  }
+#left-column-article { width: 280px; float:left; margin-right:20px;  }
+#left-column-article-dbl { width: 560px; float:left; margin:0 20px; }
 #center-column { width: 655px; float:left; margin-right:10px; height:100%; }
 #center-column-med { width: 535px; float:left; margin-right:10px; }
 #center-column-short { width: 400px; float:left; margin-right:10px; }
 #right-column { width: 265px; float:left;}
+#right-column-mid { width: 320px; float:left;}
 #right-column-wide { width: 375px; float:left;}
 #single-column { width: 925px; float:left;}
 
@@ -402,7 +438,7 @@ figure.logo-lg, figure.logo-exlg {
 /---------------------------*/
 .sitebtn {
 	display: inline-block;
-	font-family: "Montserrat", "Trebuchet MS", Helvetica, sans-serif;
+	font-family: Helvetica, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	position: relative;
 	padding: 0.8em 1.4em;
@@ -454,7 +490,7 @@ figure.logo-lg, figure.logo-exlg {
 	background: #083b2e;
 }
 .create_league:after {
-	content: "\00b1";
+	content: "\002B";
 }
 .create_league:hover:after {
 	-webkit-animation: wiggle 0.05s alternate ease infinite;
@@ -472,9 +508,27 @@ figure.logo-lg, figure.logo-exlg {
 	background: #5f0303;
 }
 .register:after {
-	content: "\003e";
+	content: "\003E";
 }
 .register:hover:after {
+	-webkit-animation: wiggle 0.05s alternate ease infinite;
+	animation: wiggle 0.05s alternate ease infinite;
+}
+
+.login {
+	background: #028fd1;
+}
+.login:hover {
+	background: #0b6d8b;
+}
+.login:active,
+.login:focus {
+	background: #067c85;
+}
+.login:after {
+	content: "\003E";
+}
+.login:hover:after {
 	-webkit-animation: wiggle 0.05s alternate ease infinite;
 	animation: wiggle 0.05s alternate ease infinite;
 }
@@ -490,7 +544,7 @@ figure.logo-lg, figure.logo-exlg {
 	background: #003;
 }
 .lineup:after {
-	content: "\00b1";
+	content: "\00BB";
 }
 .lineup:hover:after {
 	-webkit-animation: wiggle 0.05s alternate ease infinite;
@@ -519,6 +573,70 @@ figure.logo-lg, figure.logo-exlg {
 .adddrop:hover:after {
 	-webkit-animation: none;
 	animation: none;
+}
+
+.news {
+	background: rgb(3, 121, 129);
+    width: 76px;
+    min-width: 0px;
+    margin-right: 3px;
+    padding: 0.5em 0.3em;
+	float: left;
+}
+.news:hover {
+	background: rgb(0, 148, 123);
+}
+.news:active,
+.news:focus {
+	background: rgb(2, 177, 177);
+}
+.news:after {
+	content: "";
+}
+.news:hover:after {
+	-webkit-animation: none;
+	animation: none;
+}
+
+.edit {
+	background: #900;
+    width: 76px;
+    min-width: 0px;
+    margin-right: 3px;
+    padding: 0.5em 0.3em;
+	float: left;
+}
+.edit:hover {
+	background: #700;
+}
+.edit:active,
+.edit:focus {
+	background: #C00;
+}
+.edit:after {
+	content: "";
+}
+.edit:hover:after {
+	-webkit-animation: none;
+	animation: none;
+}
+
+.readmore {
+	background: #4a4a4a;
+}
+.readmore:hover {
+	background: #202020;
+}
+.readmore:active,
+.readmore:focus {
+	background: #5b5b5b;
+}
+.readmore:after {
+	content: "\00BB";
+}
+.readmore:hover:after {
+	-webkit-animation: wiggle 0.05s alternate ease infinite;
+	animation: wiggle 0.05s alternate ease infinite;
 }
 
 /*--------------------------------------------

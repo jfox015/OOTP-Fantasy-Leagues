@@ -152,6 +152,7 @@ class player_model extends base_model {
 			$details['first_name'] = "Not";
 			$details['last_name'] = "Found";
 		}
+		//echo($this->db->last_query()."<br />");
 		return $details;
     }
 	public function getPlayersDetails($players = array()) {

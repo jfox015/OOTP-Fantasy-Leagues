@@ -36,7 +36,7 @@ $(document).ready(function(){
             $form->span(anchor('/user/forgotten_password','Forgot your password?'),array('class'=>'field_caption'));
             $form->space();
             $form->fieldset('',array('class'=>'button_bar'));
-            $form->submit('Login');
+            $form->submit('Login',array('class'=>'sitebtn login'));
             echo($form->get());
             ?>
             </td>

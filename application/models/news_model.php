@@ -121,11 +121,88 @@ class news_model extends base_model {
 		}
 		return $success;
 	}
+	/**
+	* 	GET ARTICLE AUTHOR
+	* 	Returns the author information for the passed article
+	*
+	* 	@param	$article_id		(int)	The article ID)
+	* 	@return					(Array)	Aarray of author information
+	* 	@since	1.0.3 PROD
+	*/
+	public function getArticleAuthor($article_id = false) {
+		
+		if ($article_id === false) $article_id = $this->id;
+		
+		if ($article_id == -1) return;
+
+		$author = array();
+		$this->db->select($this->tblName.'.id, firstName, lastName, username, author_id');
+		$this->db->join('users_core',$this->tblName.'.author_id = users_core.id','left');
+		$this->db->join('users_meta',$this->tblName.'.author_id = users_meta.userId','left');
+		$this->db->from($this->tblName);
+		$this->db->where($this->tblName.'.id',$article_id);
+		$query = $this->db->get();
+		//print($this->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			$author = $query->row_array();
+			$authorName = (!empty($author['firstName']) && !empty($author['lastName'])) ? $author['firstName']." ".$author['lastName'] : $author['username'];
+			$author['authorName'] = $authorName;
+		}
+		$query->free_result();
+		return $author;
+	}/**
+	* 	GET ARTICLE TYPE (Category)
+	* 	Returns the category name for the passed article
+	*
+	* 	@param	$type_id		(int)	The article type identifier (Global, league, team or player)
+	* 	@param	$var_id			(int)	Article Type value
+	* 	@param	$articleLimit	(int)	OPTIONAL Record count limiter
+	* 	@param	$excludeId		(int)	OPTIONAL ID to 
+	* 	@return					(int)	Affected Row count
+	*
+	* 	@since	1.0
+	*	@changelog	1.0.3 PROD		Expanded return values for new news->articles page
+	*/
+	public function getArticleType($article_id = false) {
+		
+		if ($article_id === false) $article_id = $this->id;
+		
+		if ($article_id == -1) return;
+
+		$type = array();
+		$this->db->select('type_id, newsType');
+		$this->db->join('fantasy_news_type',$this->tblName.'.type_id = fantasy_news_type.id','left');
+		$this->db->from($this->tblName);
+		$this->db->where($this->tblName.'.id',$article_id);
+		$query = $this->db->get();
+		//print($this->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			$type = $query->row_array();
+		}
+		$query->free_result();
+		return $type;
+	}
+
+	/**
+	* 	GET NEWS BY PARAMS.
+	* 	This function call news articles. If a given article type, which can be global, league, player or team, 
+	* 	is passed, it overrides the basic global type.
+	*
+	* 	@param	$type_id		(int)	The article type identifier (Global, league, team or player)
+	* 	@param	$var_id			(int)	Article Type value
+	* 	@param	$articleLimit	(int)	OPTIONAL Record count limiter
+	* 	@param	$excludeId		(int)	OPTIONAL ID to 
+	* 	@return					(int)	Affected Row count
+	*
+	* 	@since	1.0
+	*	@changelog	1.0.3 PROD		Expanded return values for new news->articles page
+	*/
 	public function getNewsByParams($type_id = 1, $var_id = -1, $articleLimit = 1, $excludeId = false) {
 		
 		$news = array();
-		$this->db->select($this->tblName.'.id, firstName, lastName, author_id, news_subject, news_body, fantasy_analysis, image, news_date');
+		$this->db->select($this->tblName.'.id, firstName, lastName, author_id, news_subject, news_body, fantasy_analysis, image, news_date, type_id, newsType, var_id');
 		$this->db->join('users_meta',$this->tblName.'.author_id = users_meta.userId','left');
+		$this->db->join('fantasy_news_type',$this->tblName.'.type_id = fantasy_news_type.id','left');
 		$this->db->from($this->tblName);
 		$this->db->where('type_id',$type_id);
 		$this->db->where('var_id',$var_id);
@@ -134,6 +211,7 @@ class news_model extends base_model {
 			$this->db->limit($articleLimit);
 		}
 		$query = $this->db->get();
+		//print($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				if ($excludeId === false || ($excludeId !== false && $row->id != $excludeId)) {
@@ -146,7 +224,8 @@ class news_model extends base_model {
 					array_push($news,array('id'=>$row->id,'author_name'=>$authorName,'author_id'=>$row->author_id, 
 														  'news_subject'=>$row->news_subject,'news_body'=>$row->news_body,
 														  'fantasy_analysis'=>$row->fantasy_analysis,'image'=>$row->image,
-														  'news_date'=>$row->news_date));
+														  'news_date'=>$row->news_date,'type_id'=>$row->type_id,'newsType'=>$row->newsType,
+														  'var_id '=>$row->var_id));
 				}
 			}
 		}

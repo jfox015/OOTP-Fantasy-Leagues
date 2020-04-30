@@ -396,13 +396,22 @@
 				if ($accessLevel == ACCESS_ADMINISTRATE) { ?>
                 <tr>
                     <td>
-                    <?php if (isset($playerNews) && sizeof($playerNews) > 0) { ?>
-                    <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/stock_mail-compose.png" width="16" height="16" border="0" alt="Edit" title="Edit" align="absmiddle" />
-					<?php echo anchor('/news/submit/mode/edit/id/'.$news['id'], 'Edit This Article'); ?>&nbsp;
-                    <?php } ?>
-                    <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_add.gif" width="16" height="16" border="0" alt="Add" title="Add" align="absmiddle" />
-					<?php echo anchor('/news/submit/mode/add/type_id/'.NEWS_PLAYER.'/var_id/'.$thisItem['id'], 'Add Player News'); ?>
-                    <p /></td>
+                    <?php
+                    if (isset($playerNews) && sizeof($playerNews) > 0) { 
+                    ?>
+                    <p>
+                    <br clear="all" />
+                    <div class="button_bar" style="text-align:right;">
+                    <?php 
+                    echo anchor('/news/articles/type_id/'.NEWS_PLAYER.'/var_id/'.$thisItem['id'], '<button class="sitebtn news">More News</button>');
+                    echo anchor('/news/submit/mode/edit/id/'.$news['id'], '<button class="sitebtn edit">Edit</button>');
+                    echo(anchor('/news/submit/mode/add/type_id/'.NEWS_PLAYER.'/var_id/'.$thisItem['id'],'<button class="sitebtn edit">Add News</button>'));
+                    ?>
+                    </div>
+                    <?php
+                    }
+                    ?>
+                    </td>
                 </tr>
                 <?php } ?>
                 <tr class='headline'>
