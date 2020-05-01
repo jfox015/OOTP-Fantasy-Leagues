@@ -11,7 +11,7 @@ $varIdStr = "";
 if (isset($type_id) && !empty($type_id) && $type_id != -1) {
     $typeIdStr = "/type_id/".$type_id;
 }
-if (isset($var_id) && !empty($var_id) && $var_id != -1) {
+if (isset($var_id) && !empty($var_id) && $var_id !== false) {
     $varIdStr = "/var_id/".$var_id;
 }
 if (isset($articles) && count($articles) > 0) {
@@ -24,9 +24,15 @@ if (isset($articles) && count($articles) > 0) {
     }
     $totalArticlesDrawn = 0;
     $articlesDrawn = 0;
-    foreach($articles as $id => $article) {
-        //echo("articlesDrawn = ".$articlesDrawn."<br />");
-        //echo("totalArticlesDrawn = ".$totalArticlesDrawn."<br />");
+    foreach($articles as $article) {
+        $aTypeIdStr = $typeIdStr;
+        if (isset($article['type_id']) && !empty($article['type_id']) && $article['type_id'] !== false) {
+            $aTypeIdStr = "/type_id/".$article['type_id'];
+        }
+        $aVarIdStr = $varIdStr;
+        if (isset($article['var_id']) && !empty($article['var_id']) && $article['var_id'] !== false) {
+            $aVarIdStr = "/var_id/".$article['var_id'];
+        }   
         if ($articlesDrawn == 0 || $articlesDrawn == $articlesPerColumn) {
             if ($articlesDrawn == $articlesPerColumn) {
                 $articlesDrawn = 0;
@@ -40,9 +46,39 @@ if (isset($articles) && count($articles) > 0) {
         <article class="excerpt">
             <header class="entry-header">
                 <h2 class="entry-title">
-                    <?php echo(anchor('/news/article/'.$id, $article['news_subject'],['rel'=>'bookmark'])); ?>
+                    <?php echo(anchor('/news/article/id/'.$article['id'].$aTypeIdStr.$aVarIdStr, $article['news_subject'],['rel'=>'bookmark'])); ?>
                 </h2>    
                 <div class="entry-meta">
+                    <?php
+                    if (isset($article['var_id']) && !empty($article['var_id']) && $article['var_id'] !== false) { 
+                        if (!function_exists('getLeagueName')) {
+                            $this->load->helper('roster');
+                        }
+                    ?>
+                    <span class="cat-links">
+                        <?php
+                        $boxTitle="";
+                        switch($type_id) {
+                            case 2:
+                                $boxTitle=getLeagueName($article['var_id']);
+                                break;
+                            case 3:
+                                $details = getPlayerBasics($article['var_id']);
+                                if ($details['position'] != 1) {
+                                    $boxTitle = get_pos($details['position']);
+                                } else {
+                                    $boxTitle = get_pos($details['role']);
+                                }
+                                $boxTitle .= " ".$details['first_name']." ".$details['last_name'];
+                                break;
+                            case 4:
+                                $boxTitle=getTeamName($article['var_id']);
+                                break;
+                        } // END SWITCH
+                        echo($boxTitle);
+                        ?>
+                    </span>
+                    <?php } ?>
                     <div class="excerpt-thumb">
                         <!--div class="thumb-social">
                             <ul>
@@ -55,7 +91,7 @@ if (isset($articles) && count($articles) > 0) {
                         if (isset($article['image']) && !empty($article['image']) && file_exists(PATH_NEWS_IMAGES_WRITE.$article['image'])) {
                             $img = PATH_NEWS_IMAGES.$article['image'];
                         }
-                        echo(anchor('/news/article/'.$id.$typeIdStr.$varIdStr,'<img src="'.$img.'" class="attachment-post-thumb size-post-thumb wp-post-image">',['class'=>"excerpt-thumb"]));
+                        echo(anchor('/news/article/id/'.$article['id'].$aTypeIdStr.$aVarIdStr,'<img src="'.$img.'" class="attachment-post-thumb size-post-thumb wp-post-image">',['class'=>"excerpt-thumb"]));
                         ?>
                     </div>
                     <div class="date"><?php echo(date('F j, Y',strtotime($article['news_date']))); ?></div><br />
@@ -85,7 +121,7 @@ if (isset($articles) && count($articles) > 0) {
             </div><!-- .entry-content -->
 
             <footer class="entry-footer">
-                <?php echo(anchor('/news/article/id/'.$article['id'].$typeIdStr.$varIdStr,'<button class="sitebtn readmore">Read More</button>')); ?>
+                <?php echo(anchor('/news/article/id/'.$article['id'].$aTypeIdStr.$aVarIdStr,'<button class="sitebtn readmore">Read More</button>')); ?>
                 <div class="clear"></div>
             </footer><!-- .entry-footer -->
             <div class="clear"></div>

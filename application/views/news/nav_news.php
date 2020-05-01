@@ -9,7 +9,7 @@
       if (isset($type_id) && !empty($type_id) && $type_id != -1) {
         $typeIdStr = "/type_id/".$type_id;
       }
-      if (isset($var_id) && !empty($var_id) && $var_id != -1) {
+      if (isset($var_id) && !empty($var_id) && $var_id !== false) {
           $varIdStr = "/var_id/".$var_id;
       }
 		

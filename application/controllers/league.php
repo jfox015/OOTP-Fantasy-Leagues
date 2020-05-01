@@ -41,7 +41,7 @@ class league extends BaseEditor {
 		// IF WE HAVE A LEAGUE ID AND THE LEAGUE TURNS OUT TO BE PRIVATE, CHECK IF THE CURRENT USER
 		// HAS ACCESS AND IF NOT, ROUTE TO A PRIVATE LEAGUE VIEW
 		$this->getURIData();
-		if (($this->uri->segment(2) != 'requestTeam' && $this->uri->segment(2) != 'requestResponse' && $this->uri->segment(2) != 'privateLeague') && isset($this->uriVars['id'])) {
+		if (($this->uri->segment(2) != 'leagueContact' && $this->uri->segment(2) != 'requestTeam' && $this->uri->segment(2) != 'requestResponse' && $this->uri->segment(2) != 'privateLeague') && isset($this->uriVars['id'])) {
 
 			$this->load->model($this->modelName,'dataModel');
 			$this->dataModel->load($this->uriVars['id']);
@@ -91,28 +91,31 @@ class league extends BaseEditor {
 		if ($this->params['config']['useTrades'] == 1 && isset($this->uriVars['id'])) {
 			if (!isset($this->dataModel)) {
 				$this->load->model($this->modelName,'dataModel');
-			}
+			} // END if
 			// COMMISH APPROVAL ALERT
 			if ($this->params['loggedIn'] && $this->params['config']['approvalType'] == 1 && $this->params['currUser'] == $this->dataModel->getCommissionerId()) {
 				$this->load->model('team_model');
 				$this->tradeLists['forAppproval'] = $this->team_model->getTradesForScoringPeriod($this->uriVars['id'], $this->getScoringPeriod(), false, false, false, false, TRADE_PENDING_COMMISH_APPROVAL);
-			}
+			} // END if
 			// LEAGUE APPROVAL
 			if ($this->params['config']['approvalType'] == 2 && $this->params['config']['protestPeriodDays'] > 0) {
 				$this->tradeLists['inLeagueReview'] = $this->dataModel->getTradesInLeagueReview($this->getScoringPeriod(),$this->uriVars['id'],$this->params['config']['protestPeriodDays']);
-			}
+			} // END if
 			$this->data['tradeLists'] = $this->tradeLists;
 			// TRADES EXPIRATION
 			if ($this->params['config']['tradesExpire'] == 1) {
 				$this->league_model->expireOldTrades($this->uriVars['id'], false, $this->debug);
-			}
-		}
+			} // END if
+		} // END if
 
 		$this->debug = false;
 	}
 	/*---------------------------------------
 	/	CONTROLLER SUBMISSION HANDLERS
 	/--------------------------------------*/
+	/**
+	 *	PRIVATE LEAGUES.
+	 */
 	public function privateLeague() {
 		$this->makeNav(true);
 		$this->data['subTitle'] = "Private League";
@@ -426,25 +429,30 @@ class league extends BaseEditor {
 
 			$toMail = $this->user_auth_model->getEmail($this->dataModel->commissioner_id);
 			if (isset($toMail) && !empty($toMail)) {
-
-				$sent = sendEmail($toMail, $this->input->post('email'), $this->input->post('name'),
-									$this->input->post('subject'), $message, "Site Admin", 'email_contact_');
-
+				if (ENVIRONMENT == "production") {
+					$this->outMess = "Email sending to the Commissioner.";
+					$sent = sendEmail($toMail, $this->input->post('email'), $this->input->post('name'),
+									  $this->input->post('subject'), $message, "Site Admin", 'email_contact_');
+				} else {
+					$sent = true;
+				}
 				if ($sent) {
-					$outMess = "Thank you. Your submission has been sent successfully.<p />
-					<b>Hera re the details of your submission:</b><p />
-					<b>From:</b> ".$this->input->post('name')."<br />
-					<b>Subject:</b> ".$this->input->post('subject')."<p />
-					<b>Details:</b> ".$this->input->post('details');
+					$outMess = "Thank you. Your submission has been sent successfully.<p />";
 					if ($this->debug) {
 						$outMess .= "<h3>Technical Details</h3>
-						<b>To:</b> ".$toMail;
+						<b>To:</b> ".$toMail."<br />\n
+						<b>Here are the details of the submission:</b><p />
+						<b>From:</b> ".$this->input->post('name')."<br />
+						<b>Subject:</b> ".$this->input->post('subject')."<p />
+						<b>Details:</b> ".$this->input->post('details');
+						$outMess .= $this->outMess;
 					} // END if
 				} else {
 					$outMess  = "There was a problem with your submission. The email could not be sent at this time. Please try again later.";
+					if ($this->debug) { if (!empty($this->outMess)) $outMess .= $this->outMess; }
 				} // END if
 			} else {
-				$outMess  = "There was a problem with your submission. A propper recipient email address could not be found.";
+				$outMess  = "There was a problem with your submission. A recipient email address could not be found.";
 			} // END if
 			$this->data['theContent'] = $outMess;
 			$this->params['content'] = $this->load->view($this->views['SUCCESS'], $this->data, true);

@@ -24,6 +24,11 @@
 			obj.id = $('#var_id').val();
 			selectPlayer(obj);
 		});
+		$('#removeImage').click(function (e) {
+			e.preventDefault();
+			$('#uploadedImage').remove();
+			$('#detailsForm').submit();
+		});
 		<?php if ((isset($type_id) && $type_id == NEWS_PLAYER) && (isset($var_id) && !empty($var_id) && $var_id != -1)) { ?>
 		var obj = new Object();
 		obj.id = <?php print($var_id); ?>;

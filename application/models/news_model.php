@@ -197,7 +197,7 @@ class news_model extends base_model {
 	* 	@since	1.0
 	*	@changelog	1.0.3 PROD		Expanded return values for new news->articles page
 	*/
-	public function getNewsByParams($type_id = 1, $var_id = -1, $articleLimit = 1, $excludeId = false) {
+	public function getNewsByParams($type_id = 1, $var_id = false, $articleLimit = 1, $excludeId = false) {
 		
 		$news = array();
 		$this->db->select($this->tblName.'.id, firstName, lastName, author_id, news_subject, news_body, fantasy_analysis, image, news_date, type_id, newsType, var_id');
@@ -205,7 +205,9 @@ class news_model extends base_model {
 		$this->db->join('fantasy_news_type',$this->tblName.'.type_id = fantasy_news_type.id','left');
 		$this->db->from($this->tblName);
 		$this->db->where('type_id',$type_id);
-		$this->db->where('var_id',$var_id);
+		if ($var_id !== false) {
+			$this->db->where('var_id',$var_id);
+		}
 		$this->db->order_by("id",'desc');
 		if ($articleLimit > 0) {
 			$this->db->limit($articleLimit);
@@ -225,7 +227,7 @@ class news_model extends base_model {
 														  'news_subject'=>$row->news_subject,'news_body'=>$row->news_body,
 														  'fantasy_analysis'=>$row->fantasy_analysis,'image'=>$row->image,
 														  'news_date'=>$row->news_date,'type_id'=>$row->type_id,'newsType'=>$row->newsType,
-														  'var_id '=>$row->var_id));
+														  'var_id'=>$row->var_id));
 				}
 			}
 		}

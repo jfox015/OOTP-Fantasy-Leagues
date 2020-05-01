@@ -522,7 +522,7 @@ figure.logo-lg, figure.logo-exlg {
 	background: #067c85;
 }
 .login:after {
-	content: "\003E";
+	content: "\00bb";
 }
 .login:hover:after {
 	-webkit-animation: wiggle 0.05s alternate ease infinite;

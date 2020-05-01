@@ -163,17 +163,23 @@ class BaseEditor extends MY_Controller {
 						$this->beforeAdd();
 					} else if ($this->mode == "edit") {
 						$this->beforeEdit();
-					} 
+					}
 					$this->makeForm();
-					//echo($this->input->post('submitted')."<br />");
-					if ($this->input->post('submitted') && (!$this->input->post('showPreview') || $this->input->post('showPreview') == -1)) {
+					if ($this->input->post('submitted') || ($this->input->post('showPreview') && $this->input->post('showPreview') != -1)) {
 						if ($this->processForm()) {
-							//echo("Form Success"."<br />");
-							$this->outMess = $this->lang->line('form_complete_success');
-							$this->messageType = MESSAGE_SUCCESS;
-							$this->complete();
+							if ($this->input->post('showPreview') && $this->input->post('showPreview') != -1) {
+								$this->data['previewContent'] = $this->preview();
+								$this->outMess = $this->lang->line('form_preview');
+								$this->messageType = MESSAGE_NOTICE;
+								$this->showPreview();
+							} else {
+								$this->outMess = $this->lang->line('form_complete_success');
+								$this->messageType = MESSAGE_SUCCESS;
+								$this->complete();
+							}
 						} else {
 							//echo("Form Fail"."<br />");
+							$_POST['showPreview'] = -1;
 							$this->outMess = str_replace('[ERROR_MESSAGE]',$this->dataModel->statusMess,$this->lang->line('form_complete_fail'));
 							$this->form->errors .= $this->form->error_string_open.$this->outMess.$this->form->error_string_close;
 							$fv = & _get_validation_object();
@@ -316,36 +322,51 @@ class BaseEditor extends MY_Controller {
 	 * @return	Boolean		TRUE on succes, FALSE on ERROR
 	 */
 	protected function processForm() {
+		if ($this->debug) {
+			echo("PROCESS FORM<br/>");
+			echo("this->form = ".(($this->form === true) ? 'true' : 'false')."<br/>");
+			echo("this->input->post('validForm') = ".($this->input->post('validForm') ? 'true' : 'false')."<br/>");
+		}
 		$success = false;
-		if ($this->form) {
+		$valid = false;
+		if ($this->input->post('validForm')) {
+			$valid = true;
+		} else if ($this->form) {
 			$this->form->validate();
 			if ($this->form->valid) {
 				$valid = true;
 				if (isset($this->params['customValidate'])) {
 					$valid = $this->customValidation();
 				}
-				if ($valid) {
-					//echo("Valid? ".(($valid) ? 'true' : 'false')."<br />");
-					$this->dataModel->applyData($this->input,$this->params['currUser']);
-					if ($this->dataModel->save()) {
-						$this->outMess = "Your submission was completed successfully.";
-						$this->messageType = 'success';
-						$success = true;
-					}
-				}
 			}
 		}
+		if ($valid) {
+			if (!$this->input->post('showPreview') || $this->input->post('showPreview') == -1) {
+				$this->dataModel->applyData($this->input,$this->params['currUser']);
+				if ($this->dataModel->save()) {
+					$this->outMess = "Your submission was completed successfully.";
+					$this->messageType = 'success';
+					$success = true;
+				}
+			} else {
+				$success = true;
+			}
+		}
+		
+		$this->outMess = " No Errors were encountered.";
 		if (!$success) {
-			//$this->outMess = "Errors were encountered processing your request.";
-			if (!empty($this->form->errors) && empty($this->outMess)) {
-				$this->outMess = $this->form->errors;
+			if (!empty($this->form->errors)) {
+				$this->outMess = "Errors were encountered processing your request.";
+				$this->outMess .= $this->form->errors;
 			} else if ($this->dataModel->errorCode != -1) {
-				$this->outMess = $this->dataModel->statusMess;
+				$this->outMess .= $this->dataModel->statusMess;
 			}
 			$this->messageType = 'fail';
 		}
 		if ($this->debug) {
-			$this->data['dump'] = $this->dataModel->dumpData();
+			echo("success = ".(($success === true) ? 'true' : 'false')."<br/>");
+			if ($success) {$this->data['dump'] = $this->dataModel->dumpData(); }
+			echo("Errors = ".$this->outMess."<br />");
 		}
 		return $success;
 	}
@@ -423,6 +444,25 @@ class BaseEditor extends MY_Controller {
 		$this->data['thisItem']['ownerId'] = (isset($this->dataModel->recordOwnerId) ? $this->dataModel->recordOwnerId : -1);
 		$this->data['currUser'] = $this->params['currUser'];
 		$this->params['content'] = $this->load->view($this->views['EDIT'],$this->data,true);
+		$this->params['pageType'] = PAGE_FORM;
+		$this->displayView();
+	}
+	/**
+	 * 	SHOW PREVIEW.
+	 * 	This method displays the preview page.
+	 * 
+	 * 	@return	void
+	 *  @since 1.0.3 PROD
+	 */
+	protected function showPreview() {
+		// Setup header Data
+		$this->data['thisItem']['id'] = $this->recordId;
+		$this->data['thisItem']['ownerId'] = (isset($this->dataModel->recordOwnerId)) ? $this->dataModel->recordOwnerId : -1;
+		$this->data['subTitle'] = "News Preview";
+		$this->data['previewMessage'] = $this->outMess;
+		$this->data['previewMessageType'] = $this->messageType;
+		$this->data['currUser'] = $this->params['currUser'];
+		$this->params['content'] = $this->load->view($this->views['PREVIEW'],$this->data,true);
 		$this->params['pageType'] = PAGE_FORM;
 		$this->displayView();
 	}

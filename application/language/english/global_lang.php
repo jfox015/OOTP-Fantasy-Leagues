@@ -5,11 +5,11 @@ $lang['email_footer'] = "<p>The Commish</p>
 $lang['access_heading_not_authorized'] = "403 Error - Not authorized.";
 $lang['access_not_authorized'] = "We're sorry, but you are not authorized to view this content.";
 
-$lang['private_league_access'] = "We're sorry, but the league you have selected is private and accessible only to members.<p />If you are a member of this league, please [LOGIN_URL] or cobtact the league commissioer or [CONTACT_URL] if you believe you are seeing this message in error.";
+$lang['private_league_access'] = "We're sorry, but the league you have selected is private and accessible only to members.<p />If you are a member of this league, please [LOGIN_URL] or contact the [CONTACT_URL] if you believe you are seeing this message in error.";
 // LEAGUE INVITE
 $lang['league_invite_default'] = '<br>Hi, This is the commissioner of the OOTP Fantasy League, [LEAGUE_NAME]. 
 <br>
-I would like to extend this invitation for you to join my league as a team owner. Our league is based on the baseball text sim <a href="http://www.ootpdevelopments.com/ootp11/" target="_blank">Out of the Park Baseball</a>. 
+I would like to extend this invitation for you to join my league as a team owner. Our league is based on the baseball text sim <a href="http://www.ootpdevelopments.com/" target="_blank">Out of the Park Baseball</a>. 
 <br><br>
 Please click the &quot;Accept the invitation&quot; link provided below to accept my invitation and join the league as a team owner. You can likewise decline my invitation by clicking the &quot;Decline the invitation&quot; link instead.';
 
@@ -49,6 +49,8 @@ $lang['no_user_leagues'] = 'We&#039;re sorry, but you are not allowed to create 
 $lang['form_complete_success'] = "The operation was sucessfully completed.";
 $lang['form_complete_success_delete'] = "The record was sucessfully deleted.";
 $lang['form_complete_fail'] = "[ERROR_MESSAGE]";
+
+$lang['form_preview'] = "This is a live preview of your news article. <b style='color:#A00'>Your article has not yet been saved. Be sure to click Accept and Submit below to save this page.</b>";
 
 // DELETE RECORD
 $lang['form_confirm_delete'] = 'Are you sure you wish to continue with deleting the current [ITEM_TYPE]?

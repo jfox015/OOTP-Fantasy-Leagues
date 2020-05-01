@@ -68,6 +68,11 @@ class news extends BaseEditor {
 	 *	@var $isTeamOwner:Boolean
 	 */
 	var $isTeamOwner = false;
+	/**
+	 *	NEWS BODY
+	 *	@var $news_body:String
+	 */
+	var $news_body = '';
 	/*--------------------------------
 	/	C'TOR
 	/-------------------------------*/
@@ -100,6 +105,7 @@ class news extends BaseEditor {
 		$this->views['SUCCESS'] = 'news/news_message';
 		$this->views['IMAGE'] = 'news/news_image';
 		$this->views['PREVIEW'] = 'news/news_preview';
+		$this->views['PREVIEW_PARTIAL'] = 'news/news_preview_partial';
 		$this->views['ARTICLES'] = 'news/news_articles';
 		$this->views['ARTICLE'] = 'news/news_article';
 		$this->views['SECONDARY'] = 'news/news_secondary';
@@ -195,7 +201,7 @@ class news extends BaseEditor {
 			$this->load->model($this->modelName);
 		}
 		$typeId = -1;
-		$varId = -1;
+		$varId = false;
 		
 		if (isset($this->uriVars['type_id'])) {
 			$typeId = $this->uriVars['type_id'];
@@ -204,19 +210,17 @@ class news extends BaseEditor {
 		}
 		if (isset($this->uriVars['var_id'])) {
 			$varId = $this->uriVars['var_id'];
-		} else {
-			$varId = -1;
 		}
 
 		if ($typeId > 1) { $this->setSupportingInformation($typeId, $varId); }
-
+		
 		if ($this->hasAccess) {
 
 			$this->data['articles'] = $this->dataModel->getNewsByParams($typeId, $varId, $this->newsLandingLimit);
 			$this->data['related'] = $this->dataModel->getRelatedArticles($this->dataModel->id);
 			$this->data['excerptMaxChars'] = $this->excerptMaxChars;
 			$this->data['news_types'] = loadSimpleDataList('newsType');
-			$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
+			$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$this->isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
 											  'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
 											  'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
 			$this->data['type_id'] = $typeId;
@@ -224,16 +228,17 @@ class news extends BaseEditor {
 			$this->data['var_id'] = $varId;
 
 			$this->makeNav();						
-			$this->data['subTitle'] = "News";
+			$this->data['subTitle'] = $this->data['news_type_name']." News";
 			$this->data['pageTitle'] = $this->typeTitle." News Articles";
 			$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
 			$this->params['content'] = $this->load->view($this->views['ARTICLES'], $this->data, true);
-			$this->displayView();
-		} else {
+		} else {					
 			$this->data['subTitle'] = "Unauthorized Access";
-			$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+			$this->data['theContent'] = '<span class="error">Sorry, you are not authorized to access this page.</span>';
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-		}		
+			
+		}
+		$this->displayView();
 	}
 	/**
 	 *  ARTICLE.
@@ -253,7 +258,7 @@ class news extends BaseEditor {
 		}
 
 		$typeId = -1;
-		$varId = -1;
+		$varId = false;
 		if (isset($this->uriVars['type_id'])) {
 			$typeId = $this->uriVars['type_id'];
 		} else {
@@ -261,8 +266,6 @@ class news extends BaseEditor {
 		}
 		if (isset($this->uriVars['var_id'])) {
 			$varId = $this->uriVars['var_id'];
-		} else {
-			$varId = -1;
 		}
 
 		if ($typeId > 1) { $this->setSupportingInformation($typeId, $varId); }
@@ -272,7 +275,7 @@ class news extends BaseEditor {
 			$this->data['article'] = $this->dataModel->dumpArray();
 			$this->data['author'] = $this->dataModel->getArticleAuthor($this->dataModel->id);
 			$this->data['articleType'] = $this->dataModel->getArticleType($this->dataModel->id);
-
+			
 			$this->data['related'] = $this->dataModel->getRelatedArticles($this->dataModel->id);
 			$this->data['news_types'] = loadSimpleDataList('newsType');
 			$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
@@ -286,12 +289,12 @@ class news extends BaseEditor {
 			$this->data['subTitle'] = $this->typeTitle." News Articles";
 			$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
 			$this->params['content'] = $this->load->view($this->views['ARTICLE'], $this->data, true);
-			$this->displayView();
 		} else {
 			$this->data['subTitle'] = "Unauthorized Access";
 			$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		}			
+		$this->displayView();
 	}
 	/*---------------------------------------------------------------------
 	/
@@ -300,7 +303,6 @@ class news extends BaseEditor {
 	/--------------------------------------------------------------------*/
 	/**
 	 *	SET SUPPORTING INFORMATION.
-	 *	Creates a sub nav menu for the given content category.
 	 *
 	 *	@param		$typeId		{int}	The article type (category)
 	 *	@param		$varId		{int}	The variable ID param
@@ -309,28 +311,28 @@ class news extends BaseEditor {
 	 *	@access					protected
 	 *	
 	 */
-	protected function setSupportingInformation($typeId = -1, $varId = -1) {
+	protected function setSupportingInformation($typeId = -1, $varId = false) {
 		
 		$this->load->model('league_model');
 		$this->load->model('team_model');
-		if ($varId != -1) {
-			if ($typeId == 2 || $typeId == 4) {
-				$league_id = $varId;
-				if ($typeId == 4) {
-					$this->team_model->load($varId);
-					$league_id = $this->team_model->league_id;
-				}
-				$this->league_model->load($league_id);
-				$this->hasAccess = $this->league_model->userHasAccess($this->params['currUser']);
-				$this->isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
-				$this->isLeagueCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
+		if ($varId !== false && ($typeId == 2 || $typeId == 4)) {
+			$league_id = $varId;
+			if ($typeId == 4) {
+				$this->team_model->load($varId);
+				$league_id = $this->team_model->league_id;
 			}
+			$this->league_model->load($league_id);
+			if ($this->league_model->access_type == -1) {
+				$this->hasAccess = $this->league_model->userHasAccess($this->params['currUser']);
+			}
+			$this->isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
+			$this->isLeagueCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
 		}
 		switch ($typeId) {
 			// League
 			case 2:	
 				$this->typeTitle = 'League';
-				if ($varId != -1) {
+				if ($varId !== false) {
 					$this->leagueDetails = $this->league_model->getLeagueDetails();
 					if (!empty($this->leagueDetails['league_name'])) $this->typeTitle = $this->leagueDetails['league_name'];
 				} 
@@ -338,7 +340,7 @@ class news extends BaseEditor {
 			// PLAYER
 			case 3:
 				$this->typeTitle = 'Player';
-				if ($varId != -1) {
+				if ($varId !== false) {
 					$this->load->model('player_model');
 					$this->player_model->load($varId);
 					$this->playerDetails = $this->player_model->getPlayerDetails($varId);
@@ -347,7 +349,7 @@ class news extends BaseEditor {
 				break;
 			case 4:	
 				$this->typeTitle = 'Team';
-				if ($varId != -1) {
+				if ($varId !== false) {
 					$this->teamDetails = $this->team_model->getTeamDetails();
 					if (!empty($this->teamDetails['teamname'])) $this->typeTitle = $this->teamDetails['teamname']." ".$this->teamDetails['teamnick'];
 					$this->isTeamOwner = $this->teamDetails['owner_id'] == $this->params['currUser'];
@@ -384,8 +386,6 @@ class news extends BaseEditor {
 	}
 
 	protected function makeForm() {
-		
-		$this->data['preview'] = $this->preview();
 		
 		$form = new Form();
 		
@@ -430,7 +430,7 @@ class news extends BaseEditor {
 		$savedPublishDate = '';
 		if ($this->dataModel->news_date != EMPTY_DATE_TIME_STR) {
 			$savedNewsDate = $this->dataModel->news_date;
-		}
+	}
 		$datesArr= array('','','');
 		if (!empty($newsDate)) {
 			$datesArr = explode("-",date('Y-m-d',strtotime($newsDate)));
@@ -521,7 +521,18 @@ class news extends BaseEditor {
 		$form->label('Article Body', '', array('class'=>'required'));
 		$form->html('<div class="richEditor">');
 		$form->html('<div id="myNicPanel" class="nicEdit-panel"></div>');
-		$form->textarea('news_body','','required|trim',($this->input->post('news_body')) ? $this->input->post('news_body') : $this->dataModel->news_body,array("cols"=>50,"rows"=>8));
+		$news_body = "";
+		if ($this->input->post('news_body')) {
+			$news_body = $this->input->post('news_body');
+		} else if (isset($this->dataModel->news_body) && !empty($this->dataModel->news_body)) {
+			$news_body = $this->dataModel->news_body;
+		}
+		if ($news_body[0] == ">") {
+			$this->news_body = substr($news_body, 1, strlen($news_body));
+		} else {
+			$this->news_body = $news_body;
+		}
+		$form->textarea('news_body','','required|trim', $this->news_body,array("cols"=>50,"rows"=>8));
 		$form->html('</div>');
 		$form->br();
 		if ($typeId == NEWS_PLAYER) {
@@ -530,20 +541,25 @@ class news extends BaseEditor {
 		}
 		
 		//$imgField = 'img'.substr(md5(time()),0,4).'File';
-		$form->iupload ('imageFile','Image',false,array("class"=>"longtext"));
+		$form->iupload ('imageFile','Image',false, array("class"=>"longtext"));
 		//$form->hidden('imgField',$imgField);
 		$imageFile = '';
 		$imagePath = '';
-		if (isset($this->data['thisItem']['uploadedImage'])) {
+		if (isset($this->data['thisItem']['uploadedImage']) && !empty($this->data['thisItem']['uploadedImage'])) {
 			$form->hidden('uploadedImage',$this->data['thisItem']['uploadedImage']);
 			$imageFile = $this->data['thisItem']['uploadedImage'];
 			$imagePath = PATH_NEWS_IMAGES_PREV.$imageFile;
 		} else if (isset($this->dataModel->image) && !empty($this->dataModel->image)) {
 			$imageFile = $this->dataModel->image;
 			$imagePath = PATH_NEWS_IMAGES.$imageFile;
+		} else if ($this->input->post('uploadedImage')) {
+			$form->hidden('uploadedImage|uploadedImage',$this->input->post('uploadedImage'));
+			$imageFile = $this->data['thisItem']['uploadedImage'];
+			$imagePath = PATH_NEWS_IMAGES_PREV.$imageFile;
 		}
 		if (!empty($imageFile) && !empty($imagePath)) {
 			$form->span('Current Image: '.$imageFile.' &nbsp;<img src="'.$imagePath.'" style="width:45px; height:45px;" align="absmiddle" />',array('class'=>'field_caption'));
+			$form->html(anchor('#', 'Remove Image',['id'=>'removeImage']));
 			$form->space();
 		}
 		$form->fieldset('Review Options');
@@ -553,7 +569,7 @@ class news extends BaseEditor {
 		$responses[] = array('1','Yes');
 		$responses[] = array('-1','No');
 		$form->radiogroup ('showPreview',$responses,'Preview',($this->input->post('showPreview') ? '-1' : '1'));
-       	$form->fieldset('');
+		$form->fieldset('');
 		$form->fieldset('',array('class'=>'button_bar'));
 		if ($this->dataModel->id != -1) {
 			$form->button('Delete','delete','button',array('class'=>'button'));	
@@ -578,7 +594,7 @@ class news extends BaseEditor {
 		}
 		$this->form = $form;
 		$this->data['form'] = $form->get();
-
+		//}
 		if ($typeId > 1) { $this->setSupportingInformation($typeId, $varId); }
 
 		$this->data['news_types'] = loadSimpleDataList('newsType');
@@ -587,39 +603,53 @@ class news extends BaseEditor {
 											'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
 		$this->data['news_type_name'] = $this->data['news_types'][$typeId];
 		$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
+
+		$this->makeNav();
 	}
 	
 	protected function preview() {
 		
-		if (($this->input->post('showPreview') && $this->input->post('showPreview') != -1) && $this->input->post('news_subject')) {
-			
-			$this->data['thisItem']['news_date'] = date('m/j/Y',strtotime($this->input->post('storyDateY')."-".$this->input->post('storyDateM')."-".$this->input->post('storyDateD')));
-			$this->data['thisItem']['news_subject'] = $this->input->post('news_subject');
-			$this->data['thisItem']['news_body'] = $this->input->post('news_body');
-			$this->data['thisItem']['author_id'] = $this->input->post('author_id');
-			$this->data['thisItem']['author'] = resolveOwnerName($this->input->post('author_id'));
-			$this->data['thisItem']['image'] = '';
-			$this->data['thisItem']['imageFile'] = '';
-			//$imgField = $this->input->post('imgField');
-			if (isset($_FILES['imageFile']['tmp_name']) && !empty($_FILES['imageFile']['tmp_name'])) {
-				// SAVE THE FILE TO TMP WRITE DIR
-				if (is_writable(DIR_WRITE_PATH.PATH_NEWS_IMAGES_PREV_WRITE)) {
-					$_FILES['imageFile']['name'] = str_replace(" ","_",$_FILES['imageFile']['name']);
-					$target_file_name = DIR_WRITE_PATH.PATH_NEWS_IMAGES_PREV_WRITE.$_FILES['imageFile']['name'];
-					if (move_uploaded_file($_FILES['imageFile']['tmp_name'], $target_file_name)) {
-						chmod($target_file_name,0755);
-						$success = true;
-						$this->data['thisItem']['image'] = $_FILES['imageFile']['name'];
-						$this->data['thisItem']['uploadedImage'] = $_FILES['imageFile']['name'];
-					} // END if
-				}
-			}
-			$this->data['thisItem']['type_id'] = $this->input->post('type_id');
-			$this->data['thisItem']['var_id'] = $this->input->post('var_id');
-			return $this->load->view($this->views['PREVIEW'],$this->data, true);
-		} else {
-			return '';
-		}
+		$this->data['article']['news_date'] = date('m/j/Y',strtotime($this->input->post('storyDateY')."-".$this->input->post('storyDateM')."-".$this->input->post('storyDateD')));
+		$this->data['article']['storyDateY'] = $this->input->post('storyDateY');
+		$this->data['article']['storyDateM'] = $this->input->post('storyDateM');
+		$this->data['article']['storyDateD'] = $this->input->post('storyDateD');
+		$this->data['article']['news_subject'] = $this->input->post('news_subject');
+		$this->data['article']['news_body'] = $this->news_body;
+		$this->data['article']['author_id'] = $this->input->post('author_id');
+		$this->data['article']['authorName'] = resolveOwnerName($this->input->post('author_id'));
+		$this->data['article']['image'] = '';
+		$this->data['article']['imageFile'] = '';
+		//$imgField = $this->input->post('imgField');
+		if (isset($_FILES['imageFile']['tmp_name']) && !empty($_FILES['imageFile']['tmp_name'])) {
+			// SAVE THE FILE TO TMP WRITE DIR
+			if (is_writable(DIR_WRITE_PATH.PATH_NEWS_IMAGES_PREV_WRITE)) {
+				$_FILES['imageFile']['name'] = str_replace(" ","_",$_FILES['imageFile']['name']);
+				$target_file_name = DIR_WRITE_PATH.PATH_NEWS_IMAGES_PREV_WRITE.$_FILES['imageFile']['name'];
+				if (move_uploaded_file($_FILES['imageFile']['tmp_name'], $target_file_name)) {
+					chmod($target_file_name,0755);
+					$success = true;
+					$this->data['article']['image'] = $_FILES['imageFile']['name'];
+					$this->data['article']['uploadedImage'] = $_FILES['imageFile']['name'];
+				} // END if
+			} // END if
+		} // END if
+		$this->data['article']['type_id'] = $this->input->post('type_id');
+		$this->data['article']['var_id'] = $this->input->post('var_id');
+		//$this->data['article']['article_id'] = -1;
+		if ($this->input->post('id') && $this->input->post('id') != 'add')
+			$this->data['article']['article_id'] = $this->input->post('id');
+		
+		if ($typeId > 1) { $this->setSupportingInformation($this->input->post('type_id'), $this->input->post('var_id')); }
+
+		$this->data['news_types'] = loadSimpleDataList('newsType');
+		$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
+											'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
+											'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
+		$this->data['news_type_name'] = $this->data['news_types'][$this->input->post('type_id')];
+		$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
+
+		$previewView = $this->load->view($this->views['PREVIEW_PARTIAL'],$this->data, true);
+		return $previewView;
 	}
 	
 	protected function showInfo() { 

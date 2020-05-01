@@ -59,6 +59,10 @@ class home extends MY_Controller {
 		$this->data['excerptMaxChars'] = 350;
 		
 		$this->data['leagues'] = $this->league_model->getLeagues(1, 1);
+		$this->data['amCommish'] = false;
+		if ($this->params['loggedIn']) {
+			$this->data['amCommish'] = $this->league_model->userIsCommish($this->params['currUser']);
+		}
 		$this->data['splashContent'] = $this->load->view('home_splash', false, true);
 		$this->params['content'] = $this->load->view('homepage', $this->data, true);
 		$this->params['subTitle'] = "Welcome to OOTP Fantasy Leagues";

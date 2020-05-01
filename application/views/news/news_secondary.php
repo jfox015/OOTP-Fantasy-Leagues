@@ -4,11 +4,16 @@ $varIdStr = "";
 if (isset($type_id) && !empty($type_id) && $type_id != -1) {
     $typeIdStr = "/type_id/".$type_id;
 }
-if (isset($var_id) && !empty($var_id) && $var_id != -1) {
+if (isset($var_id) && !empty($var_id) && $var_id !== false) {
     $varIdStr = "/var_id/".$var_id;
 }
 ?>
     <?php
+    /*----------------------------------------------------
+    /   EXTRA INFORMATION BOXES
+    /   Displays infromation about a specific League, 
+    /   Team or Player referenced by an article
+    /---------------------------------------------------*/
     if ((isset($extra_data['leagueDetails']) && count($extra_data['leagueDetails']) > 0) ||
        (isset($extra_data['playerDetails']) && count($extra_data['playerDetails']) > 0) ||
        (isset($extra_data['teamDetails']) && count($extra_data['teamDetails']) > 0)) {  ?>
@@ -176,10 +181,13 @@ if (isset($var_id) && !empty($var_id) && $var_id != -1) {
     <div class="clear"></div>
     <?php
     } // END if details set
-    ?>
+
+    /*-------------------------------------------------
+    /   TOOLS BOX
+    /------------------------------------------------*/
+    if ($accessLevel >= ACCESS_WRITE && !isset($mode)) { ?>
     <div id="secondary">
-        <?php
-        if ($accessLevel >= ACCESS_WRITE && !isset($mode)) { ?>
+        
         <section id="site-tools">
             <div class="widget widget_header">
                 News Tools
@@ -201,12 +209,12 @@ if (isset($var_id) && !empty($var_id) && $var_id != -1) {
             <?php } ?>
         </section>
     </div>
-        <?php
-        }
+    <?php
+    } // END if ($accessLevel >= ACCESS_WRITE && !isset($mode))
+    // END TOOLBOX
         //------------------------------------------------
-        // UPDATE 1.0.2
-        //------------------------------------------------
-        // SOCIAL MEDAI BOX AND OPTION				
+        // SOCIAL MEDIA BOX AND OPTION
+        //------------------------------------------------			
         if (isset($article_id) && isset($config['sharing_enabled']) && $config['sharing_enabled'] == 1) { ?>
         <div class='textbox right-column'>
         <table cellpadding="0" cellspacing="0">
@@ -240,8 +248,13 @@ if (isset($var_id) && !empty($var_id) && $var_id != -1) {
         </div>
         <div class="clear"></div>
         <?php 
-        } 
-        if (isset($news_types) && count($news_types) > 0) { ?>
+        } // END if (isset($article_id)
+        // END SOCIAL MEDIA BOX
+    
+    /*----------------------------------------------------
+    /   NEWS CATEGORIES
+    /---------------------------------------------------*/
+    if (isset($news_types) && count($news_types) > 0) { ?>
     <div id="secondary">
         <section id="recent-posts" class="widget widget_recent_entries"> 
             <h2 class="widget-title">Categories</h2>		
@@ -250,14 +263,15 @@ if (isset($var_id) && !empty($var_id) && $var_id != -1) {
                 foreach($news_types as $news_type_id => $news_type_name) { 
                     if (isset($news_type_id) && !empty($news_type_id) && $news_type_id != -1) {
                 ?>
-                <li class="cat-item cat-item-6"><?php echo(anchor('/news/articles/type_id/'.$news_type_id.$typeVarStr, $news_type_name)); ?></li>
+                <li class="cat-item cat-item-6"><?php echo(anchor('/news/articles/type_id/'.$news_type_id, $news_type_name)); ?></li>
                 <?php 
                     } // END if
                 } // END foreach
                 ?>
             </ul>
         </section>
-        <?php
-        }   // END if
-        ?>
+       
     </div>
+    <?php
+    }   // END if (isset($news_types
+    ?>

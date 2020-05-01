@@ -44,6 +44,8 @@ define('FOPEN_READ_WRITE_CREATE_STRICT',		'x+b');
 |
 */
 //LOGIN
+define("MESSAGE_WARN",'warn');
+define("MESSAGE_INFO",'info');
 define("MESSAGE_NOTICE",'notice');
 define("MESSAGE_FAIL",'error');
 define("MESSAGE_SUCCESS",'success');

@@ -65,6 +65,15 @@
 		}  // END if (isset($leagues)
 		?>
 	</div>
+	<?php 
+	if (!$loggedIn) {
+		echo(anchor('/user/login','<button id="btnSubmit" class="sitebtn login" style="display:inline-block;">Login/Signup to Create League</button>'));
+	} else {
+		if (!$amCommish) {
+			echo(anchor('/league/submit/mode/add','<button id="btnSubmit" class="sitebtn login" style="display:inline-block;">Create a League</button>'));
+		}
+	}
+	?>
 	<br clear="all" /><br />
     <div class="news_title home">
 		<h3>Fantasy Leagues News</h3>
