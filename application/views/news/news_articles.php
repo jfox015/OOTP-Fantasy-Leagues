@@ -19,11 +19,13 @@ if (isset($articles) && count($articles) > 0) {
     //echo("Article Count = ".count($articles).'<br />');
     if (count($articles)> 1) {
         $articlesPerColumn = intval(count($articles) / 2);
+        if (!(count($articles) % 2) == 0) { $articlesPerColumn++; }
     } else {
         $articlesPerColumn =  1;
     }
     $totalArticlesDrawn = 0;
     $articlesDrawn = 0;
+    $columnDrawn = 0;
     foreach($articles as $article) {
         $aTypeIdStr = $typeIdStr;
         if (isset($article['type_id']) && !empty($article['type_id']) && $article['type_id'] !== false) {
@@ -132,6 +134,10 @@ if (isset($articles) && count($articles) > 0) {
             if ($articlesDrawn == $articlesPerColumn || $totalArticlesDrawn == count($articles)) { ?>
 </div>
             <?php
+                $columnDrawn++;
+                if ($columnDrawn == 2 && $totalArticlesDrawn < count($articles)) {
+                    break;
+                }
                 $articlesDrawn = 0;
                 if ($articlesPerColumn == 1 &&  count($articles) == 1 && $totalArticlesDrawn == 1) { ?>
 <div id="left-column-article" class="content-area"><article class="excerpt"><div class="entry-content">&nbsp;</div></article></div>

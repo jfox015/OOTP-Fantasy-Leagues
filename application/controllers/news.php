@@ -227,7 +227,7 @@ class news extends BaseEditor {
 			$this->data['news_type_name'] = $this->data['news_types'][$typeId];
 			$this->data['var_id'] = $varId;
 
-			$this->makeNav();						
+			$this->makeNav();
 			$this->data['subTitle'] = $this->data['news_type_name']." News";
 			$this->data['pageTitle'] = $this->typeTitle." News Articles";
 			$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
@@ -285,7 +285,7 @@ class news extends BaseEditor {
 			$this->data['var_id'] = $varId;
 			$this->data['article_id'] = $this->uriVars['id'];
 
-			$this->makeNav();						
+			$this->makeNav();					
 			$this->data['subTitle'] = $this->typeTitle." News Articles";
 			$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
 			$this->params['content'] = $this->load->view($this->views['ARTICLE'], $this->data, true);
@@ -367,8 +367,7 @@ class news extends BaseEditor {
 	 *	@since 	1.0
 	 */
 	protected function makeNav() {
-		$lg_admin = false;
-		array_push($this->params['subNavSection'], news_nav($lg_admin));
+		array_push($this->params['subNavSection'], news_nav($this->params['loggedIn'], $this->params['accessLevel']));
 	}
 	/**
 	 *	GET URI DATA.
@@ -552,6 +551,7 @@ class news extends BaseEditor {
 		} else if (isset($this->dataModel->image) && !empty($this->dataModel->image)) {
 			$imageFile = $this->dataModel->image;
 			$imagePath = PATH_NEWS_IMAGES.$imageFile;
+			$form->hidden('prevImage',$this->dataModel->image);
 		} else if ($this->input->post('uploadedImage')) {
 			$form->hidden('uploadedImage|uploadedImage',$this->input->post('uploadedImage'));
 			$imageFile = $this->data['thisItem']['uploadedImage'];
@@ -619,7 +619,6 @@ class news extends BaseEditor {
 		$this->data['article']['authorName'] = resolveOwnerName($this->input->post('author_id'));
 		$this->data['article']['image'] = '';
 		$this->data['article']['imageFile'] = '';
-		//$imgField = $this->input->post('imgField');
 		if (isset($_FILES['imageFile']['tmp_name']) && !empty($_FILES['imageFile']['tmp_name'])) {
 			// SAVE THE FILE TO TMP WRITE DIR
 			if (is_writable(DIR_WRITE_PATH.PATH_NEWS_IMAGES_PREV_WRITE)) {
@@ -628,17 +627,24 @@ class news extends BaseEditor {
 				if (move_uploaded_file($_FILES['imageFile']['tmp_name'], $target_file_name)) {
 					chmod($target_file_name,0755);
 					$success = true;
-					$this->data['article']['image'] = $_FILES['imageFile']['name'];
 					$this->data['article']['uploadedImage'] = $_FILES['imageFile']['name'];
 				} // END if
 			} // END if
 		} // END if
+
+		if (empty($_FILES['imageFile']['tmp_name']) && 
+		($this->input->post('uploadedImage') || $this->input->post('prevImage'))) {
+			if ($this->input->post('uploadedImage')) {
+				$this->data['article']['uploadedImage'] = $this->input->post('uploadedImage');
+			} else if ($this->input->post('prevImage')) {
+				$this->data['article']['prevImage'] = $this->input->post('prevImage');
+			}
+		}
 		$this->data['article']['type_id'] = $this->input->post('type_id');
 		$this->data['article']['var_id'] = $this->input->post('var_id');
 		//$this->data['article']['article_id'] = -1;
 		if ($this->input->post('id') && $this->input->post('id') != 'add')
 			$this->data['article']['article_id'] = $this->input->post('id');
-		
 		if ($typeId > 1) { $this->setSupportingInformation($this->input->post('type_id'), $this->input->post('var_id')); }
 
 		$this->data['news_types'] = loadSimpleDataList('newsType');
@@ -649,6 +655,8 @@ class news extends BaseEditor {
 		$this->data['secondary'] = $this->load->view($this->views['SECONDARY'], $this->data, true);
 
 		$previewView = $this->load->view($this->views['PREVIEW_PARTIAL'],$this->data, true);
+		$this->makeNav();
+
 		return $previewView;
 	}
 	
@@ -671,6 +679,7 @@ class news extends BaseEditor {
 		
 		$this->data['thisItem']['related'] = $this->dataModel->getRelatedArticles($this->dataModel->id, 5);
 		$this->params['subTitle'] = "News";
+		$this->makeNav();
 		
 		parent::showInfo();
 	}

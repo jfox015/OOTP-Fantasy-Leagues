@@ -1144,7 +1144,7 @@ class league_model extends base_model {
 					$teams = $teams + array($trow->id=>$trow->teamname." ".$trow->teamnick);
 				} else {
 					$ownerName = $trow->firstName." ".$trow->lastName;
-					if ($trow->owner_id != -1 && $trow->owner_id == $this->commissioner_id) {
+					if (($trow->owner_id != -1 && $this->commissioner_id != -1) && $trow->owner_id == $this->commissioner_id) {
 						$ownerName .= " (Commisioner)";
 					}
 					$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,'avatar'=>$trow->avatar,
@@ -1217,7 +1217,7 @@ class league_model extends base_model {
 				if ($query2->num_rows() > 0) {
 					foreach ($query2->result() as $trow) {
 						$ownerName = $trow->firstName." ".$trow->lastName;
-						if ($trow->owner_id == $this->commissioner_id) {
+						if (($trow->owner_id != -1 && $this->commissioner_id != -1) && $trow->owner_id == $this->commissioner_id) {
 							$ownerName .= " (Commisioner)";
 						}
 						$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,

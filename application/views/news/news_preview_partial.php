@@ -43,9 +43,12 @@
 
                 <div class="entry-content">
                     <?php 
+                    $artImage = "";
                     $img = PATH_NEWS_IMAGES."news_preview_default.jpg";
-                    if (isset($article['image']) && !empty($article['image']) && file_exists(PATH_NEWS_IMAGES_PREV_WRITE.$article['image'])) {
-                        $img = PATH_NEWS_IMAGES_PREV.$article['image'];
+                    if (isset($article['uploadedImage']) && !empty($article['uploadedImage']) && file_exists(PATH_NEWS_IMAGES_PREV_WRITE.$article['uploadedImage'])) {
+                        $img = PATH_NEWS_IMAGES_PREV.$article['uploadedImage'];
+                    } else if (isset($article['prevImage']) && !empty($article['prevImage']) && file_exists(PATH_NEWS_IMAGES_WRITE.$article['prevImage'])) {
+                        $img = PATH_NEWS_IMAGES.$article['prevImage'];
                     }
                     echo('<p><img src="'.$img.'" class="alignnone wp-image-21"></p>');
                     ?>
@@ -71,7 +74,7 @@
         <br />
         <?php
             $mode = 'add';
-            if (isset($thisItem['article_id']) && $thisItem['article_id'] != -1) 
+            if (isset($article['article_id']) && $article['article_id'] != -1) 
                 $mode = 'edit';
             ?>
             <form id="confirmForm" name="confirmForm" action="<?php echo(DIR_APP_ROOT.'news/submit'); ?>" method="post">
@@ -83,12 +86,19 @@
                 <input type="hidden" name="storyDateY" value="<?php echo($article['storyDateY']); ?>" />
                 <input type="hidden" name="type_id" value="<?php echo($article['type_id']); ?>" />
                 <input type="hidden" name="var_id" value="<?php echo($article['var_id']); ?>" />
-                <input type="hidden" name="image" value="<?php echo($article['image']); ?>" />
-                <input type="hidden" name="uploadedImage" value="<?php echo($article['uploadedImage']); ?>" />
+                <?php
+                if (isset($article['uploadedImage']) && !empty($article['uploadedImage']) && file_exists(PATH_NEWS_IMAGES_PREV_WRITE.$article['uploadedImage'])) { ?>
+                    <input type="hidden" name="uploadedImage" value="<?php echo($article['uploadedImage']); ?>" />
+                <?php
+                } else if (isset($article['prevImage']) && !empty($article['prevImage']) && file_exists(PATH_NEWS_IMAGES_PREV_WRITE.$article['prevImage'])) { ?>
+                    <input type="hidden" name="prevImage" value="<?php echo($article['prevImage']); ?>" />
+                <?php
+                }
+                ?>
                 <!-- META FIELDS -->
                 <input type="hidden" name="mode" value="<?php echo($mode); ?>" />
                 <?php
-                if (isset($thisItem['article_id']) && $thisItem['article_id'] != -1) { ?>}
+                if (isset($article['article_id']) && $article['article_id'] != -1) { ?>
                 <input type="hidden" name="id" value="<?php echo($article['article_id']); ?>" />
                 <?php } ?>
                 <input type="hidden" name="validForm" value="1" />

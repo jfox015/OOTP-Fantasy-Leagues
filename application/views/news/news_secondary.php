@@ -185,18 +185,20 @@ if (isset($var_id) && !empty($var_id) && $var_id !== false) {
     /*-------------------------------------------------
     /   TOOLS BOX
     /------------------------------------------------*/
-    if ($accessLevel >= ACCESS_WRITE && !isset($mode)) { ?>
+    if (($accessLevel >= ACCESS_WRITE && !isset($mode)) ||
+    (isset($article_id) && ($accessLevel == ACCESS_ADMINISTRATE || ((isset($article['author_id']) && !empty($article['author_id'])) && $currUser == $article['author_id'])))) { ?>
     <div id="secondary">
-        
         <section id="site-tools">
             <div class="widget widget_header">
                 News Tools
             </div>
+            <?php if ($accessLevel >= ACCESS_WRITE && !isset($mode)) { ?>
             <div class="widget widget_text">
                 <img src="<?php echo(PATH_IMAGES.'icons/add.png'); ?>" width="48" height="48" alt="Add" title="Add" align="absmiddle" /> 
                 <?php echo(anchor('/news/submit/mode/add'.$typeIdStr.$varIdStr,'Add a New Article',['style'=>'font-weight:bold;'])); ?>
             </div>
             <?php
+            } // END if ($accessLevel >= ACCESS_WRITE && !isset($mode))
             if (isset($article_id) && ($accessLevel == ACCESS_ADMINISTRATE || ((isset($article['author_id']) && !empty($article['author_id'])) && $currUser == $article['author_id']))) { ?>
             <div class="widget widget_text">
                 <img src="<?php echo(PATH_IMAGES.'icons/notes_edit.png'); ?>" width="48" height="48" alt="Add" title="Add" align="absmiddle" /> 
@@ -206,7 +208,9 @@ if (isset($var_id) && !empty($var_id) && $var_id !== false) {
                 <img src="<?php echo(PATH_IMAGES.'icons/database_remove.png'); ?>" width="48" height="48" alt="Add" title="Add" align="absmiddle" /> 
                 <?php echo(anchor('/news/submit/mode/delete/id/'.$article_id,'Delete this Article',['style'=>'font-weight:bold;'])); ?>
             </div>
-            <?php } ?>
+            <?php 
+            } // END if (isset($article_id) &&
+            ?>
         </section>
     </div>
     <?php

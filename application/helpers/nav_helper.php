@@ -56,9 +56,10 @@ function about_nav($bug_link = "") {
 	return $nav;
 }
 
-function news_nav() {
+function news_nav($loggedIn = false, $accessLevel = false) {
 	$nav = array(array('url'=>'/news/articles','label'=>'News Home'));
-	array_push($nav,array('url'=>'/news/submit/mode/add/','label'=>'Add News'));
+	if ($loggedIn && $accessLevel >= ACCESS_WRITE)
+		array_push($nav,array('url'=>'/news/submit/mode/add/','label'=>'Add News'));
 	return $nav;
 }
 

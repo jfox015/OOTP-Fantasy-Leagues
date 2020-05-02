@@ -43,7 +43,7 @@ class news_model extends base_model {
 		$this->fieldList = array('type_id','var_id','author_id','news_subject','news_body','fantasy_analysis');
 		$this->conditionList = array('imageFile','storyDateM','storyDateD','storyDateY');
 		$this->readOnlyList = array('image','news_date');
-		$this->textList = array('news_subject','news_body','fantasy_analysis','uploadedImage');  
+		$this->textList = array('news_subject','news_body','fantasy_analysis','uploadedImage','prevImage');  
 		
 		$this->columns_select = array('id','type_id','var_id','author_id','news_subject','news_date');
 		$this->columns_text_search = array('news_subject','news_body');
@@ -56,7 +56,9 @@ class news_model extends base_model {
 	 *
 	 *	Applies custom data values to the object. 
 	 *
-	 * 	@return 	TRUE on success, FALSE on failure
+	 * 	@param	$input			(Object)	Codeigniter Input Object
+	* 	@param	$userId			(int)		OPTIONAL Author identifier
+	* 	@return 	TRUE on success, FALSE on failure
 	 *
 	 */
 	public function applyData($input,$userId = -1) {
@@ -64,14 +66,16 @@ class news_model extends base_model {
 			if ($input->post('storyDateM') && $input->post('storyDateD') && $input->post('storyDateY')) {
 				$this->news_date = $input->post('storyDateY').'-'.$input->post('storyDateM').'-'.$input->post('storyDateD');
 			}
-			//echo("uploadedImage = '".$this->uploadedImage.'"<br />');
-			if (!empty($this->uploadedImage))
+			if (!empty($this->prevImage) && empty($this->uploadedImage) && (!isset($_FILES['imageFile']['name']) && empty($_FILES['imageFile']['name']))) {
+				$this->image = $this->prevImage;
+				$success = true;
+			} else if (empty($this->prevImage) && !empty($this->uploadedImage))
 				$success = $this->useUploadedImage($this->uploadedImage);
-			else if (empty($this->uploadedImage) && isset($_FILES['imageFile']['name']) && !empty($_FILES['imageFile']['name']))
-				$success = $this->uploadFile('image',PATH_NEWS_IMAGES_WRITE,$input,'image',$this->var_id.$_FILES['imageFile']['name']);														 	
+			else if ((empty($this->prevImage) && empty($this->uploadedImage)) && (isset($_FILES['imageFile']['name']) && !empty($_FILES['imageFile']['name'])))
+				$success = $this->uploadFile('image',PATH_NEWS_IMAGES_WRITE,$input,'image',$this->var_id.$_FILES['imageFile']['name']);										 	
 			return true;
 		} else {
-			$this->statusMess = "An error occured applying the data recieved.";
+			$this->statusMess = "An error occured applying the data received.";
 			$this->errorCode = 1;
 			return false;
 		} // END if
