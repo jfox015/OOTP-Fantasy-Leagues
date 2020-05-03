@@ -355,14 +355,14 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					$err=$conn->error;
 				}
 				if (($err!="") && ($query!="")) {
-					$db_errors .= $err.",query=".$query.",prevQuery=".$prevQuery."<br />";
+					$db_errors .= "<br /><br />".$err.",query=".$query.",prevQuery=".$prevQuery."<br />";
 					$errCnt++;
 				}
 				$queries .= $query;
 				$prevQuery = $query;
 			}
 			fclose($fr);
-			if ($errCnt>0) $errors .= "<strong>Database errors occured</strong>.<br />".$db_errors;
+			if ($errCnt>0) $errors .= "<br /><br /><strong>Database errors occured</strong>.<br />".$db_errors;
 
 			//echo("errCnt = ".$errCnt."<br />");
 			if ($errCnt == 0) {
@@ -410,7 +410,7 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 					}
 					if ($err) {
 						$error = true;
-						$errors .= "Error updating config table. Error: ".$err."<br />SQL = ".$sql."<br />";
+						$errors .= "<br /><br />Error updating config table. Error: ".$err."<br />SQL = ".$sql."<br />";
 					} // END if
 				} // END if	
 
@@ -424,7 +424,19 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 				}
 				if ($err) {
 					$error = true;
-					$errors .= "Error updating the draft config table. Error: ".$err."<br />SQL = ".$sql."<br />";
+					$errors .= "<br /><br />Error updating the draft config table. Error: ".$err."<br />SQL = ".$dsql."<br />";
+				} // END if
+
+				// UPDATE DEFAULT NEWS ARTICLE
+				$nsql = "UPDATE fantasy_news ";
+				$nsql .= "SET news_date = '".date('Y-m-d h:m:s',$nowtotime)."' ";
+				$nsql .= "WHERE id = 1";
+				if ($conn->query($nsql) !== TRUE) {
+					$err=$conn->error;
+				}
+				if ($err) {
+					$error = true;
+					$errors .= "<br /><br />Error updating the default news article. Error: ".$err."<br />SQL = ".$nsql."<br />";
 				} // END if
 
 				// ADD ADMIN ACCOUNT

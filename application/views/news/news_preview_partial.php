@@ -44,12 +44,13 @@
                 <div class="entry-content">
                     <?php 
                     $artImage = "";
-                    if (isset($article['uploadedImage']) && !empty($article['uploadedImage']) && file_exists(PATH_NEWS_IMAGES_PREV_WRITE.$article['uploadedImage'])) {
-                        $img = PATH_NEWS_IMAGES_PREV.$article['uploadedImage'];
+                     if (isset($article['uploadedImage']) && !empty($article['uploadedImage']) && file_exists(PATH_NEWS_IMAGES_PREV_WRITE.$article['uploadedImage'])) {
+                        $artImage = PATH_NEWS_IMAGES_PREV.$article['uploadedImage'];
                     } else if (isset($article['prevImage']) && !empty($article['prevImage']) && file_exists(PATH_NEWS_IMAGES_WRITE.$article['prevImage'])) {
-                        $img = PATH_NEWS_IMAGES.$article['prevImage'];
+                        $artImage = PATH_NEWS_IMAGES.$article['prevImage'];
                     }
-                    if (!empty($artImage)) echo('<p><img src="'.$img.'" class="alignnone wp-image-21"></p>');
+
+                    if (!empty($artImage)) echo('<p><img src="'.$artImage.'" class="alignnone wp-image-21"></p>');
                     ?>
                     <p><?php echo($article['news_body']); ?></p>
                     <?php

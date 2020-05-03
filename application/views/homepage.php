@@ -61,7 +61,7 @@
 				} // END if
 			} // END foreach($leagues as $id => $article) 
 		} else {
-			echo('<div class="layout-column"><section class="content">No Public Leagues are available at this time.</section></div>');
+			echo('<div class="layout-column"><section class="content"><h4>No Public Leagues are available at this time.</h4></section></div>');
 		}  // END if (isset($leagues)
 		?>
 	</div>
@@ -106,12 +106,23 @@
 					echo('<h3>'.$news[0]['news_subject'].'</h3><br />');
 				}
 				if (isset($news[0]['news_date']) && !empty($news[0]['news_date'])) { 
-				echo('<span class="league_date">'.date('l, M d',strtotime($news[0]['news_date'])).'</span>&nbsp; --&nbsp;');
-				} ?>
+					echo('<span class="league_date">'.date('l, M d',strtotime($news[0]['news_date'])).'</span>&nbsp; --&nbsp;');
+				} 
+				if (isset($news[0]['author_id']) && !empty($news[0]['author_id'])) { 
+					$authorName = resolveOwnerName($news[0]['author_id']);
+					if (empty($authorName)) {
+						$authorName = resolveUsername($news[0]['author_id']);
+					}
+				}
+				echo('<span class="news_author">'.$authorName.'</span>');
+				echo('<br />');
+				?>
 				<?php if (isset($news[0]['news_body']) && !empty($news[0]['news_body'])) { 
 					//$maxChars = 500;
 					if (strlen($news[0]['news_body']) > $excerptMaxChars) {
 						$dispNews = substr($news[0]['news_body'],0,$excerptMaxChars);
+						$lastSpace = strrpos($dispNews, ' ', -2);
+						$dispNews = substr($dispNews,0,$lastSpace);
 					} else {
 						$dispNews = $news[0]['news_body'];
 					}
@@ -127,6 +138,8 @@
 					}
 					if (strlen($news[0]['news_body']) > $excerptMaxChars) {
 						echo('&nbsp;&nbsp;'.anchor('/news/article/id/'.$news[0]['id'].$typeIdStr.$varIdStr,'Read more...').'</span>');
+					} else {
+						echo('<br>'.anchor('/news/article/id/'.$news[0]['id'].$typeIdStr.$varIdStr,'Read Article').'</span>');
 					}
 				}
 				?>
