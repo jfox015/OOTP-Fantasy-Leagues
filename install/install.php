@@ -366,7 +366,9 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 
 			//echo("errCnt = ".$errCnt."<br />");
 			if ($errCnt == 0) {
-				//$options = get_config_defaults();
+				// EDIT 1.0.3 PROD, setting config dates based on current time, not static time in DB
+				$day = 60*60*24;
+				$nowtotime = strtotime(date("Y-m-d h:m:s"));
 				$options = array('site_name'=>$site_name,
 											'ootp_league_name'=>$ootp_league_name,
 											'ootp_league_id'=>$ootp_league_id,
@@ -376,7 +378,13 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 											'ootp_html_report_path'=>$ootp_html_report_path,
 											'sql_file_path'=>$sql_file_path,
 											'fantasy_web_root'=>$fantasy_web_root,
-											'ootp_html_report_root'=>$ootp_html_report_root);
+											'ootp_html_report_root'=>$ootp_html_report_root,
+											'season_start'=>date("Y-m-d h:m:s",($nowtotime + ($day * 7))),
+											'draft_period'=>date("Y-m-d h:m:s",(($nowtotime + ($day * 14)))),
+											'last_sql_load_time'=>date("Y-m-d h:m:s",($nowtotime - $day)),
+											'last_process_time'=>date("Y-m-d h:m:s",($nowtotime - ($day*2)))
+								);
+		
 				$insert = "";
 				foreach ( $options as $option => $value ) {
 					//echo($option." = ".$value."<br />");
@@ -404,6 +412,19 @@ Please provide the following information.  Don&#8217;t worry, you can always cha
 						$error = true;
 						$errors .= "Error updating config table. Error: ".$err."<br />SQL = ".$sql."<br />";
 					} // END if
+				} // END if	
+
+				// UPDATE DRAFT CONFIG
+				$dsql = "UPDATE fantasy_draft_config ";
+				$dsql .= "SET draftDate = '".date('Y-m-d h:m:s',$nowtotime + ($day * 14))."', ";
+				$dsql .= "dStartDt = '".date('Y-m-d h:m:s',$nowtotime + ($day * 14))."' ";
+				$dsql .= "WHERE id = 1";
+				if ($conn->query($dsql) !== TRUE) {
+					$err=$conn->error;
+				}
+				if ($err) {
+					$error = true;
+					$errors .= "Error updating the draft config table. Error: ".$err."<br />SQL = ".$sql."<br />";
 				} // END if
 
 				// ADD ADMIN ACCOUNT

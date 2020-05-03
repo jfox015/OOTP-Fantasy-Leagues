@@ -29,11 +29,9 @@ if (isset($var_id) && !empty($var_id) && $var_id !== false) {
 
             <div class="entry-content">
                 <?php 
-                $img = PATH_NEWS_IMAGES."news_preview_default.jpg";
                 if (isset($article['image']) && !empty($article['image']) && file_exists(PATH_NEWS_IMAGES_WRITE.$article['image'])) {
-                    $img = PATH_NEWS_IMAGES.$article['image'];
-                }
-                echo('<p><img src="'.$img.'" class="alignnone wp-image-21"></p>');
+                    echo('<p><img src="'.PATH_NEWS_IMAGES.$article['image'].'" class="alignnone wp-image-21"></p>');
+                }     
                 ?>
                 <p><?php echo($article['news_body']); ?></p>
                 <?php

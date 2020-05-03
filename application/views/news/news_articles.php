@@ -89,11 +89,9 @@ if (isset($articles) && count($articles) > 0) {
                             </ul>
                         </div-->
                         <?php 
-                        $img = PATH_NEWS_IMAGES."news_preview_default.jpg";
                         if (isset($article['image']) && !empty($article['image']) && file_exists(PATH_NEWS_IMAGES_WRITE.$article['image'])) {
-                            $img = PATH_NEWS_IMAGES.$article['image'];
+                            echo(anchor('/news/article/id/'.$article['id'].$aTypeIdStr.$aVarIdStr,'<img src="'.PATH_NEWS_IMAGES.$article['image'].'" class="attachment-post-thumb size-post-thumb wp-post-image">',['class'=>"excerpt-thumb"]));
                         }
-                        echo(anchor('/news/article/id/'.$article['id'].$aTypeIdStr.$aVarIdStr,'<img src="'.$img.'" class="attachment-post-thumb size-post-thumb wp-post-image">',['class'=>"excerpt-thumb"]));
                         ?>
                     </div>
                     <div class="date"><?php echo(date('F j, Y',strtotime($article['news_date']))); ?></div><br />

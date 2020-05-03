@@ -40,18 +40,27 @@ class home extends MY_Controller {
 		$this->data['fantasyStatusID'] = $status;
 		$this->data['fantasyStartDate'] = date('m/d/Y',(strtotime($this->params['config']['season_start'])));
 		
+		$this->data['leagueStatus'] = "Unknown";
+		$this->data['leagueName'] = "";
+		$this->data['leagueAbbr'] = "";
+		$this->data['events'] = array();
+		$this->data['current_date'] = "Unknown";
 		// GET OOTP League status
-		$this->data['leagueStatus'] =  $this->ootp_league_model->get_state();
-		$this->data['leagueName'] =  $this->ootp_league_model->name;
-		$this->data['leagueAbbr'] =  $this->ootp_league_model->abbr;
-		$this->data['events'] =  $this->ootp_league_model->getNextEvents();
+		if ($this->ootp_league_model->league_id != -1) {
+			$this->data['leagueStatus'] = $this->ootp_league_model->get_state();
+			$this->data['leagueName'] =  $this->ootp_league_model->name;
+			$this->data['leagueAbbr'] =  $this->ootp_league_model->abbr;
+			$this->data['events'] =  $this->ootp_league_model->getNextEvents();
+			$this->data['current_date'] =  date('m/d/Y',(strtotime($this->ootp_league_model->current_date)));
+		}
+		$seasonStartTime =strtotime($this->params['config']['season_start']);
+		$lastprocessTime =strtotime($this->params['config']['last_process_time']);
 		$lastprocess = $this->params['config']['last_process_time'];
-		if ($lastprocess != EMPTY_DATE_TIME_STR && $lastprocess != EMPTY_DATE_STR) {
+		if ($lastprocess != EMPTY_DATE_TIME_STR && $lastprocess != EMPTY_DATE_STR && $lastprocessTime >= $seasonStartTime) {
 			$this->data['nextSimDate'] =  date('m/d/Y',(strtotime($lastprocess) + ((60*60*24)*3)));
 		} else {
 			$this->data['nextSimDate'] = "Not yet determined";
 		}
-		$this->data['current_date'] =  date('m/d/Y',(strtotime($this->ootp_league_model->current_date)));
 		
 		// GET LATEST NEWS ARTICLE FOR THIS LEAGUE
 		$this->load->model('news_model');

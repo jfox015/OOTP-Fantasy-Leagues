@@ -17,14 +17,16 @@ $(document).ready(function(){
     <?php print($league_list_intro_str); ?>
     <br/>
 	<div id="content">
-        <?php if ($loggedIn && $curr_period_id <= 1) { ?>
-        <div class="top-bar leagues">
-            <button class="sitebtn create_league" rel="create">Create a New League</button>
-        </div>
-        <?php 
-        } else { ?>
-            <br /><span class="message"><b>Interested in Starting a League?</b> The <?php echo($leagueName); ?> has begun it's <?php echo($current_year); ?> season. New Leagues can be added once this season has finished.</span>
-        <?php
+        <?php if ($loggedIn) {
+            if ($curr_period_id <= 1) { ?>
+            <div class="top-bar leagues">
+                <button class="sitebtn create_league" rel="create">Create a New League</button>
+            </div>
+            <?php 
+            } else { ?>
+                <br /><span class="message"><b>Interested in Starting a League?</b> The <?php echo($leagueName); ?> has begun it's <?php echo($current_year); ?> season. New Leagues can be added once this season has finished.</span>
+            <?php
+            }
         }
         /*-------------------------------------------------
         /
@@ -140,8 +142,25 @@ $(document).ready(function(){
             <?php
                 $rowcount++;
             } // END foreach
-        } else {
-                echo("No Teams were Found.");
+        } else { ?>
+            <br />
+            <div class='textbox right-column'>
+            <table cellspacing="0" cellpadding="3">
+            <tr class='title'><td>No Leagues have been created yet.</td></tr>
+            <tr class='headline'>
+                <td><span class="message" style="text-align:center;"><b>Interested in Starting a League?</b></span></td>
+            </tr>
+            <tr class='headline'>
+                <td><span class="message" style="text-align:center;"><?php if ($loggedIn) {
+                    echo(anchor('/league/submit/mode/add','Create a New League today!'));
+                } else {
+                    echo(anchor('/user/register','Signup')." or ".anchor('/user/login','Login')." to create a new League today.");
+                 } ?>
+                </span></td>
+            </tr>
+            </table>
+            </div>
+        <?php
         } // END if (isset($league_list) && sizeof($league_list) > 0)
         ?>
 	</div>

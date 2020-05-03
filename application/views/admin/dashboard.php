@@ -415,7 +415,8 @@
 			// PRE_SEASON CHECKS
 			if ($currDate <= $startDate) { ?>
 				<!-- TABLES FILES-->
-				<?php if ((isset($missingTables) && sizeof($missingTables) != 0) && (isset($missingFiles) && sizeof($missingFiles) > 0)) { 
+				<?php 
+				if ((isset($missingTables) && sizeof($missingTables) != 0) && (isset($missingFiles) && sizeof($missingFiles) > 0)) { 
 					$class = "error";
 					$message = anchor('admin/listSQLFiles','Required SQL Files missing!');
 				} else { 
@@ -425,7 +426,8 @@
 				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 				?>
 				<!-- MISSING LOADED  -->
-				<?php if (isset($league_info) && $config['last_sql_load_time'] != EMPTY_DATE_TIME_STR && isset($missingTables) && sizeof($missingTables) > 0) { 
+				<?php 
+				if (!isset($league_info) && (isset($missingTables) && sizeof($missingTables) > 0)) { 
 					$class = "error";
 					$message = anchor('admin/listSQLFiles','Required tables missing!');
 				} else { 
@@ -468,55 +470,59 @@
 				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 				?>
 				<!-- DRAFT STATUSES -->
-				<?php if ((isset($draftsCompleted) && isset($activeleagueCount)) && $draftsCompleted < $activeleagueCount) { 
-					echo('<span><strong>League Draft Status</strong></span><br />');
-					if (isset($draftsNotSet) && count($draftsNotSet) > 0) {
-						$class = "error";
-						$message = count($draftsNotSet)." Drafts Not Started";
-						foreach ($draftsNotSet as $id => $leagueName) {
-							$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+				<?php 
+				if ($activeleagueCount > 0) {
+					if ($draftsCompleted < $activeleagueCount) { 
+						echo('<span><strong>League Draft Status</strong></span><br />');
+						if (isset($draftsNotSet) && count($draftsNotSet) > 0) {
+							$class = "error";
+							$message = count($draftsNotSet)." Drafts Not Started";
+							foreach ($draftsNotSet as $id => $leagueName) {
+								$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+							}
+							echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 						}
-						echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-					}
-					if (isset($draftsInProgress) && count($draftsInProgress) > 0) {
-						$class = "info";
-						$message = count($draftsInProgress)." Drafts in Progress";
-						foreach ($draftsInProgress as $id => $leagueName) {
-							$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+						if (isset($draftsInProgress) && count($draftsInProgress) > 0) {
+							$class = "info";
+							$message = count($draftsInProgress)." Drafts in Progress";
+							foreach ($draftsInProgress as $id => $leagueName) {
+								$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+							}
+							echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 						}
-						echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-					}
-					if (isset($draftsNotFinished) && count($draftsNotFinished) > 0) {
-						$class = "error";
-						$message = count($draftsNotFinished)." Drafts Run and not Completed";
-						foreach ($draftsNotFinished as $id => $leagueName) {
-							$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+						if (isset($draftsNotFinished) && count($draftsNotFinished) > 0) {
+							$class = "error";
+							$message = count($draftsNotFinished)." Drafts Run and not Completed";
+							foreach ($draftsNotFinished as $id => $leagueName) {
+								$message .= '<br />'.anchor('/league/admin/'.$id, $leagueName);
+							}
+							echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 						}
-						echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-					}
-					if ($draftsCompleted > 0) {
+						if ($draftsCompleted > 0) {
+							$class = "success";
+							$message = $draftsCompleted." Drafts Completed";
+							echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+						}
+						echo('<span style="margin:0; padding: 0; height:2px; background-color:#606060; width:96%;display: block;"></span><br />');
+					} else { 
 						$class = "success";
-						$message = $draftsCompleted." Drafts Completed";
+						$message = "All Drafts Completed.";
 						echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-					}
-					echo('<span style="margin:0; padding: 0; height:2px; background-color:#606060; width:96%;display: block;"></span><br />');
-				} else { 
-					$class = "success";
-					$message = "All Drafts Completed.";
-					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-				} 
+					} 
+				}
 				?>
 				<!-- GAMES GENERATED -->
 				<?php
-				if (isset($missingGames) && $missingGames > 0) {
-					$class = "error";
-					$message = $missingGames." Leagues missing schedules";
-				} else { 
-					$class = "success";
-					$message = "All League Schedules Created";
-				} 
-				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-
+				if ($activeleagueCount > 0) {
+					if (isset($missingGames) && $missingGames > 0) {
+						$class = "error";
+						$message = $missingGames." Leagues missing schedules";
+					} else { 
+						$class = "success";
+						$message = "All League Schedules Created";
+					} 
+					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				}
 			} else { 
 				
 			}
@@ -661,7 +667,7 @@
 		<?php } ?>
 		</table>
         <?php } else { ?>
-        	No Public Leagues are available at this time.
+        	<span class="error">No Leagues are available at this time.</span>
         <?php } ?>
         </td>
     </tr>

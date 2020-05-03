@@ -38,9 +38,9 @@
 		}
 		?>
         <img src="<?php echo(PATH_NEWS_IMAGES.$newsImage); ?>" align="left" border="0" class="league_news_<?php echo($class); ?>" />
-        <?php } ?>
-        
         <?php 
+        } // END if (isset($newsImage) && !empty($newsImage))
+
         if (isset($newsDate) && !empty($newsDate)) { 
         	echo('<span class="league_date">'.date('l, M d',strtotime($newsDate)).'</span>');
         } 
@@ -50,10 +50,6 @@
         if (isset($author) && !empty($author)) { 
         	echo('<span class="news_author">'.$author.'</span>');
         }
-        ?>
-        <br />
-
-        <?php
         if (isset($newsBody) && !empty($newsBody)) { 
 			$maxChars = 500;
 			if (strlen($newsBody) > $maxChars) {

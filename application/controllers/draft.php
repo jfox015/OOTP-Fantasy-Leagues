@@ -361,682 +361,685 @@ class draft extends BaseEditor {
 			$this->params['subTitle'] = "Draft";
 			if ($this->dataModel->id != -1) {
 				//if ($this->dataModel->getDraftStatus() < 3) {
-					$this->dataModel->debug = false;
-					$this->debug = false;
-							 
-					$this->league_model->load($this->dataModel->league_id);
-					$continue = true;
-					if (isset($this->uriVars['action']) && $this->uriVars['action'] != 'selection') {
-						if( $this->params['accessLevel'] != ACCESS_ADMINISTRATE && $this->params['currUser'] != $this->league_model->commissioner_id) {
-							$continue = false;
-						}
+				$this->dataModel->debug = false;
+				$this->debug = false;
+				$this->league_model->load($this->dataModel->league_id);
+				$continue = true;
+				if (isset($this->uriVars['action']) && $this->uriVars['action'] != 'selection') {
+					if( $this->params['accessLevel'] != ACCESS_ADMINISTRATE && $this->params['currUser'] != $this->league_model->commissioner_id) {
+						$continue = false;
+					} // END if
+				} // END if (isset($this->uriVars['action'])
+				if ($continue) {
+					$this->load->model('team_model');
+					if (isset($this->uriVars['team_id'])) {
+						$this->team_model->load($this->uriVars['team_id']);
+						$dteam = intval($this->uriVars['team_id']);
+					} else {
+						$dteam = -1;
 					}
-					if ($continue) {
-						$this->load->model('team_model');
-						if (isset($this->uriVars['team_id'])) {
-							$this->team_model->load($this->uriVars['team_id']);
-							$dteam = intval($this->uriVars['team_id']);
+					if (isset($this->uriVars['action'])) {
+						switch ($this->uriVars['action']) {
+							case 'reset_draft':
+								$this->dataModel->draftReset();
+								redirect('/draft/admin/league_id/'.$this->uriVars['league_id']);
+							case 'clear':
+								$this->dataModel->resetPick($this->uriVars['pick_id']);
+								$this->rescheduleDraft();
+								$this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been reset.</span>');
+								redirect('/draft/load/'.$this->uriVars['league_id']);
+							case 'skip':
+								$this->dataModel->skipPick($this->uriVars['pick_id']);
+								$this->rescheduleDraft();
+								$this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been skipped.</span>');
+								redirect('/draft/load/'.$this->uriVars['league_id']);
+							case 'edit':
+								$this->dataModel->resetPick($this->uriVars['pick_id'],$this->uriVars['league_id'],false,$this->uriVars['pick']);
+								$this->rescheduleDraft();
+								$this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been sucessfully edited.</span>');
+								redirect('/draft/load/'.$this->uriVars['league_id']);
+							case 'rollback':
+								$this->dataModel->rollbackPick($this->uriVars['pick_id']);  
+								$this->rescheduleDraft();
+								$this->session->set_flashdata('message','<span class="success">Draft rolled back to pick '.$this->uriVars['pick_id'].'.</span>');
+								redirect('/draft/load/'.$this->uriVars['league_id']);
+							case 'auto_off':
+								$this->team_model->setAutoDraft(false);
+								$this->session->set_flashdata('message','<span class="success">Auto draft has been disbaled for team ID # '.$dteam.'.</span>');
+								redirect('draft/teamSettings/league_id/'.$this->dataModel->league_id);
+							case 'auto_on_all':
+								$this->team_model->setLeagueAutoDraft($this->uriVars['league_id'],true);
+								$this->session->set_flashdata('message','<span class="success">Auto draft has been enabled for this league.</span>');
+								redirect('/draft/teamSettings/league_id/'.$this->uriVars['league_id']);
+							case 'auto_off_all':
+								$this->team_model->setLeagueAutoDraft($this->uriVars['league_id'],false);
+								$this->session->set_flashdata('message','<span class="success">Auto draft has been disabled for this league.</span>');
+								redirect('/draft/teamSettings/league_id/'.$this->uriVars['league_id']);
+							case 'auto_list_off':
+								$this->team_model->setAutoList(false);
+								$this->session->set_flashdata('message','<span class="success">Auto list usage has been enabled for this league.</span>');
+								redirect('/draft/teamSettings/league_id/'.$this->uriVars['league_id']);
+							case 'auto_list_off_all':
+								$this->team_model->setLeagueAutoList($this->uriVars['league_id'],false);
+								$this->session->set_flashdata('message','<span class="success">Auto list usage has been disabled for this league.</span>');
+								redirect('/draft/teamSettings/league_id/'.$this->uriVars['league_id']);
+							case 'selection':
+							case 'manualpick':
+								$pickingTeam=$this->uriVars['team_id'];
+								break;
+						} // END switch ($this->uriVars['action'])
+						if (isset($this->uriVars['pick_id'])) {
+							$pick_id = intval($this->uriVars['pick_id']);
 						} else {
-							$dteam = -1;
-						}
-						if (isset($this->uriVars['action'])) {
-							switch ($this->uriVars['action']) {
-							   case 'reset_draft':
-								  $this->dataModel->draftReset();
-								  redirect('/draft/admin/league_id/'.$this->uriVars['league_id']);
-							   case 'clear':
-								  $this->dataModel->resetPick($this->uriVars['pick_id']);
-								  $this->rescheduleDraft();
-								  $this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been reset.</span>');
-								  redirect('/draft/load/'.$this->uriVars['league_id']);
-							   case 'skip':
-								  $this->dataModel->skipPick($this->uriVars['pick_id']);
-								  $this->rescheduleDraft();
-								  $this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been skipped.</span>');
-								  redirect('/draft/load/'.$this->uriVars['league_id']);
-							   case 'edit':
-								  $this->dataModel->resetPick($this->uriVars['pick_id'],$this->uriVars['league_id'],false,$this->uriVars['pick']);
-								  $this->rescheduleDraft();
-								  $this->session->set_flashdata('message','<span class="success">Pick '.$this->uriVars['pick_id'].' has been sucessfully edited.</span>');
-								  redirect('/draft/load/'.$this->uriVars['league_id']);
-							   case 'rollback':
-								  $this->dataModel->rollbackPick($this->uriVars['pick_id']);  
-								  $this->rescheduleDraft();
-								  $this->session->set_flashdata('message','<span class="success">Draft rolled back to pick '.$this->uriVars['pick_id'].'.</span>');
-								  redirect('/draft/load/'.$this->uriVars['league_id']);
-							   case 'auto_off':
-								  $this->team_model->setAutoDraft(false);
-								  $this->session->set_flashdata('message','<span class="success">Auto draft has been disbaled for team ID # '.$dteam.'.</span>');
-								  redirect('draft/teamSettings/league_id/'.$this->dataModel->league_id);
-							   case 'auto_on_all':
-								  $this->team_model->setLeagueAutoDraft($this->uriVars['league_id'],true);
-								  $this->session->set_flashdata('message','<span class="success">Auto draft has been enabled for this league.</span>');
-								  redirect('/draft/teamSettings/league_id/'.$this->uriVars['league_id']);
-							   case 'auto_off_all':
-								  $this->team_model->setLeagueAutoDraft($this->uriVars['league_id'],false);
-								  $this->session->set_flashdata('message','<span class="success">Auto draft has been disabled for this league.</span>');
-								  redirect('/draft/teamSettings/league_id/'.$this->uriVars['league_id']);
-							   case 'auto_list_off':
-								  $this->team_model->setAutoList(false);
-								  $this->session->set_flashdata('message','<span class="success">Auto list usage has been enabled for this league.</span>');
-								  redirect('/draft/teamSettings/league_id/'.$this->uriVars['league_id']);
-							   case 'auto_list_off_all':
-								  $this->team_model->setLeagueAutoList($this->uriVars['league_id'],false);
-								  $this->session->set_flashdata('message','<span class="success">Auto list usage has been disabled for this league.</span>');
-								  redirect('/draft/teamSettings/league_id/'.$this->uriVars['league_id']);
-							   case 'selection':
-							   case 'manualpick':
-								  $pickingTeam=$this->uriVars['team_id'];
-								  break;
-							 }
-							 if (isset($this->uriVars['pick_id'])) {
-								$pick_id = intval($this->uriVars['pick_id']);
-							 } else {
-								 $pick_id = "";
-							 } // END if
-							 if (isset($this->uriVars['pick'])) {
-								$dpick = intval($this->uriVars['pick']);
-							 } else {
-								 $dpick = "";
-							 } // END if
-							 // GET DRAFT ELIDGIBLE PLAYERS
-							 if ($this->dataModel->draftBy == 1) {
-								 $values = $this->dataModel->getPlayerValues(); 
-							 } else {
-								$values = $this->dataModel->getPlayerRatings();
-								}
-							 }
-							 // DRAFT SETTINGS FROM CONFIG
-							 $draftEnable=$this->dataModel->draftEnable;
-							 $pauseAuto=$this->dataModel->pauseAuto;
-							 $setToAuto=$this->dataModel->setAuto;
-							 $autoOpen=$this->dataModel->autoOpen;
-							 $flexTimer=$this->dataModel->flexTimer;
-							 $enforceTimer=$this->dataModel->enforceTimer;
-							 $pauseTimer=-1;
+							$pick_id = "";
+						} // END if
+
+						if (isset($this->uriVars['pick'])) {
+							$dpick = intval($this->uriVars['pick']);
+						} else {
+							$dpick = "";
+						} // END if
+
+						// GET DRAFT ELIDGIBLE PLAYERS
+						if ($this->dataModel->draftBy == 1) {
+							$values = $this->dataModel->getPlayerValues(); 
+						} else {
+							$values = $this->dataModel->getPlayerRatings();
+						} // END if
+
+						// DRAFT SETTINGS FROM CONFIG
+						$draftEnable=$this->dataModel->draftEnable;
+						$pauseAuto=$this->dataModel->pauseAuto;
+						$setToAuto=$this->dataModel->setAuto;
+						$autoOpen=$this->dataModel->autoOpen;
+						$flexTimer=$this->dataModel->flexTimer;
+						$enforceTimer=$this->dataModel->enforceTimer;
+						$pauseTimer=-1;
 							 
-							 // DRAFT VARS
-							 $drafted = array();
-							 $lastPick=0;
-							 $pickRound = 0;
-							 $firstPick=999999;
-							 
-							 ##### Get draft order and drafted players #####
-							 $picks = array();
-							 $results = $this->dataModel->getDraftResults();
-							 if (sizeof($results) > 0) {
-								foreach($results as $row) {
-									$tid=$row['team_id'];
-									$pid=$row['player_id'];
-									$round=$row['round'];
-									$rndPick=$row['pick_round'];
-									$pick=$row['pick_overall'];
-									
-									$drafted[$pid]=$pick;
-									$picks[$pick]['player']=$pid;
-									$picks[$pick]['team']=$tid;
-									$picks[$pick]['round']=$round;
-									$picks[$pick]['pick']=$rndPick;
-									$picks[$pick]['due']=$row['due_date']." ".$row['due_time'].":00";
-									
-									if ($pick>$lastPick) {$lastPick=$pick;} // END if
-									if (($pick<$firstPick) && ($pid=='')) {$firstPick=$pick;} // END if
-								} // END foreach
-							} // END if
-							
-							$teamList = array();
-							if ($this->league_model->hasTeams()) {
-								$teamList = $this->league_model->getTeamIdList();
-							} // END if
-							if ($this->debug) {
-								echo("-----------DRAFT INIT--------------<br />");
-								echo("Draft Action = ".$this->uriVars['action']."<br />");
-								echo("Size of values array = ".sizeof($values)."<br />");
-								if (isset($this->uriVars['pick'])) {
-									echo("uri vars dpick = ".$this->uriVars['pick']."<br />");	
-								}
-								echo("first pick = ".$firstPick."<br />");
-								echo("last pick = ".$lastPick."<br />");
-								echo("picking team id = ".$dteam."<br />");
-								echo("Size of picks array = ".sizeof($picks)."<br />");
-								echo("Size of teamList array = ".sizeof($teamList)."<br />");
-							} // END if
-							if (!isset($this->team_model)) {
-								$this->load->model('team_model');
-							} // END if
-							$teams = array();
-							$teamQuotas = array();
-							if (sizeof($teamList) > 0) {
-								foreach ($teamList as $id) {
-									if ($this->team_model->load($id)) {
-										if ($this->uriVars['action']=='auto' && $this->dataModel->setAuto==1 && $this->team_model->auto_draft!=1) {
-											$this->team_model->auto_draft = 1;
-											$this->team_model->auto_round_x=$pickRound-1;
-											$this->team_model->save();
-										} // END if
-										$teams[$id]['auto']=$this->team_model->auto_draft;
-										$teams[$id]['autoList']=$this->team_model->auto_list;
-										$teams[$id]['autoRound']=$this->team_model->auto_round_x;
-										$teams[$id]['owner_id']=$this->team_model->owner_id;
-										$teams[$id]['teamname']=$this->team_model->teamname;
-										$teams[$id]['teamnick']=$this->team_model->teamnick;
-										$teamQuotas[$id] = array();
-									} // END if
-								} // END foreach
-							} // END if
-							$rules = $this->league_model->getRosterRules();
-							$nextPick = 0;
-							if ($this->debug) {
-								echo("Size of teams array = ".sizeof($teams)."<br />");
-								echo("Size of drafted array = ".sizeof($drafted)."<br />");
-								if ($this->uriVars['action']=='auto') {
-									echo("auto option = ".$this->uriVars['auto_option']."<br />");
-								}
-							} // END if
-							if (!isset($this->player_model)) {
-								$this->load->model('player_model');
-							} // END if
-							
-							$breakBeforePick = false;
-							$breakAfterPick = false;
-							$auto_pick_count = 0;
-							$limitToRound = false;
-							$picksMade = 0;
-							/*----------------------------------------------
-							/	AUTO PICK HANDLING
-							/---------------------------------------------*/
-							if ($this->uriVars['action']=='auto') {
+						// DRAFT VARS
+						$drafted = array();
+						$lastPick=0;
+						$pickRound = 0;
+						$firstPick=999999;
+
+						##### Get draft order and drafted players #####
+						$picks = array();
+						$results = $this->dataModel->getDraftResults();
+						if (sizeof($results) > 0) {
+							foreach($results as $row) {
+								$tid=$row['team_id'];
+								$pid=$row['player_id'];
+								$round=$row['round'];
+								$rndPick=$row['pick_round'];
+								$pick=$row['pick_overall'];
 								
-								$auto_option = (isset($this->uriVars['auto_option']) && !empty($this->uriVars['auto_option'])) ? $this->uriVars['auto_option'] : 'current';
-								// DETERMINE EXTENT OF AUTO PICK
-								switch($auto_option) {
-									case "all":
-										$pauseAuto=-1;
-										$setToAuto=1;
-										$autoOpen=1;
-										break;
-									case "round":
-										$limitToRound = true;
-										break;
-									case "x_picks":
-										$auto_pick_count = (isset($this->uriVars['auto_pick_count']) && !empty($this->uriVars['auto_pick_count'])) ? $this->uriVars['auto_pick_count'] : 1;
-										break;
-									case "current":
-										$breakAfterPick = true;
-										break;
-								}
-								// GET TEAMS AUTO LIST
-								$pickList = array();
-								if ($teams[$dteam]['autoList']==1) {
-									$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
-									foreach ($pickList as $pid => $val) {
-										if (!isset($drafted[$val['player_id']])) { $dpick=intval($val['player_id']);break; } // END if
-									}
-								} // END if
+								$drafted[$pid]=$pick;
+								$picks[$pick]['player']=$pid;
+								$picks[$pick]['team']=$tid;
+								$picks[$pick]['round']=$round;
+								$picks[$pick]['pick']=$rndPick;
+								$picks[$pick]['due']=$row['due_date']." ".$row['due_time'].":00";
 								
-								// NO PICK SPECIFIED BY THE AUTO LIST, SO MAKE THE PICK AUTOMATICALLY
-								if ($dpick=="") {
-									$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
-									$dpick = $aPick[0];
-									$teamQuotas = $aPick[1]; 
-								} // END if
-								
-								
-							} // END if
-							/*----------------------------------------------
-							/	END AUTO PICK HANDLING
-							/---------------------------------------------*/
-							if ($this->debug) {
-								print("-----AUTO DRAFT REVIEW---------<br />");
-								print("this->uriVars['action']=='auto' = ".(($this->uriVars['action']=='auto') ? "true" : "false")."<br />");
-								print("auto_option = ".$auto_option."<br />");
-								print("auto_pick_count = ".$auto_pick_count."<br />");
-								print("limitToRound = ".(($limitToRound) ? "true" : "false")."<br />");
+								if ($pick>$lastPick) {$lastPick=$pick;} // END if
+								if (($pick<$firstPick) && ($pid=='')) {$firstPick=$pick;} // END if
+							} // END foreach
+						} // END if
+
+						$teamList = array();
+						if ($this->league_model->hasTeams()) {
+							$teamList = $this->league_model->getTeamIdList();
+						} // END if
+						if ($this->debug) {
+							echo("-----------DRAFT INIT--------------<br />");
+							echo("Draft Action = ".$this->uriVars['action']."<br />");
+							echo("Size of values array = ".sizeof($values)."<br />");
+							if (isset($this->uriVars['pick'])) {
+								echo("uri vars dpick = ".$this->uriVars['pick']."<br />");	
 							}
-							$error = false;
-							$nextPick = 1;
-							$pickRound = 0;
-							$pickNum = 0;
-							$pickOvrall = 0;
-							$nTeams=sizeof($teams);
-							$mailTo = '';
-							$leagueName = $this->league_model->getLeagueName($this->dataModel->league_id);
+							echo("first pick = ".$firstPick."<br />");
+							echo("last pick = ".$lastPick."<br />");
+							echo("picking team id = ".$dteam."<br />");
+							echo("Size of picks array = ".sizeof($picks)."<br />");
+							echo("Size of teamList array = ".sizeof($teamList)."<br />");
+						} // END if
+						if (!isset($this->team_model)) {
+							$this->load->model('team_model');
+						} // END if
+						$teams = array();
+						$teamQuotas = array();
+						if (sizeof($teamList) > 0) {
+							foreach ($teamList as $id) {
+								if ($this->team_model->load($id)) {
+									if ($this->uriVars['action']=='auto' && $this->dataModel->setAuto==1 && $this->team_model->auto_draft!=1) {
+										$this->team_model->auto_draft = 1;
+										$this->team_model->auto_round_x=$pickRound-1;
+										$this->team_model->save();
+									} // END if
+									$teams[$id]['auto']=$this->team_model->auto_draft;
+									$teams[$id]['autoList']=$this->team_model->auto_list;
+									$teams[$id]['autoRound']=$this->team_model->auto_round_x;
+									$teams[$id]['owner_id']=$this->team_model->owner_id;
+									$teams[$id]['teamname']=$this->team_model->teamname;
+									$teams[$id]['teamnick']=$this->team_model->teamnick;
+									$teamQuotas[$id] = array();
+								} // END if
+							} // END foreach
+						} // END if
+
+						$rules = $this->league_model->getRosterRules();
+						$nextPick = 0;
+						if ($this->debug) {
+							echo("Size of teams array = ".sizeof($teams)."<br />");
+							echo("Size of drafted array = ".sizeof($drafted)."<br />");
+							if ($this->uriVars['action']=='auto') {
+								echo("auto option = ".$this->uriVars['auto_option']."<br />");
+							}
+						} // END if
+						if (!isset($this->player_model)) {
+							$this->load->model('player_model');
+						} // END if
+						$breakBeforePick = false;
+						$breakAfterPick = false;
+						$auto_pick_count = 0;
+						$limitToRound = false;
+						$picksMade = 0;
+						/*----------------------------------------------
+						/	AUTO PICK HANDLING
+						/---------------------------------------------*/
+						if ($this->uriVars['action']=='auto') {
+							
+							$auto_option = (isset($this->uriVars['auto_option']) && !empty($this->uriVars['auto_option'])) ? $this->uriVars['auto_option'] : 'current';
+							// DETERMINE EXTENT OF AUTO PICK
+							switch($auto_option) {
+								case "all":
+									$pauseAuto=-1;
+									$setToAuto=1;
+									$autoOpen=1;
+									break;
+								case "round":
+									$limitToRound = true;
+									break;
+								case "x_picks":
+									$auto_pick_count = (isset($this->uriVars['auto_pick_count']) && !empty($this->uriVars['auto_pick_count'])) ? $this->uriVars['auto_pick_count'] : 1;
+									break;
+								case "current":
+									$breakAfterPick = true;
+									break;
+							}
+							// GET TEAMS AUTO LIST
+							$pickList = array();
+							if ($teams[$dteam]['autoList']==1) {
+								$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
+								foreach ($pickList as $pid => $val) {
+									if (!isset($drafted[$val['player_id']])) { $dpick=intval($val['player_id']);break; } // END if
+								}
+							} // END if
+							
+							// NO PICK SPECIFIED BY THE AUTO LIST, SO MAKE THE PICK AUTOMATICALLY
+							if ($dpick=="") {
+								$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
+								$dpick = $aPick[0];
+								$teamQuotas = $aPick[1]; 
+							} // END if
+						} // END if
+
+						/*----------------------------------------------
+						/	END AUTO PICK HANDLING
+						/---------------------------------------------*/
+						if ($this->debug) {
+							print("-----AUTO DRAFT REVIEW---------<br />");
+							print("this->uriVars['action']=='auto' = ".(($this->uriVars['action']=='auto') ? "true" : "false")."<br />");
+							print("auto_option = ".$auto_option."<br />");
+							print("auto_pick_count = ".$auto_pick_count."<br />");
+							print("limitToRound = ".(($limitToRound) ? "true" : "false")."<br />");
+						}
+						$error = false;
+						$nextPick = 1;
+						$pickRound = 0;
+						$pickNum = 0;
+						$pickOvrall = 0;
+						$nTeams=sizeof($teams);
+						$mailTo = '';
+						$leagueName = $this->league_model->getLeagueName($this->dataModel->league_id);
+						
+						if ($this->debug) {
+							echo("---------------------------------------<br />");
+							echo("---------------------------------------<br />");
+							echo("-         STARTING DRAFT LOOP         -<br />");
+							echo("---------------------------------------<br />");
+							echo("---------------------------------------<br />");
+							echo("firstPick = '".$firstPick."'<br />");
+							echo("Current player pick id = '".$dpick."'<br />");
+							echo("breakBeforePick = '".(($breakBeforePick) ? "true" : "false")."'<br />");
+							echo("breakAfterPick = '".(($breakAfterPick) ? "true" : "false")."'<br />");
+						} // END if
+						$this->lang->load('draft');
+
+						/*---------------------------------------------------------
+						/	PROCESS SELECTION
+						/
+						/	Loop from first open slot to final pick of the draft
+						/
+						/--------------------------------------------------------*/
+							
+						for ($i=$firstPick;$i<=$lastPick;$i++) {
+							
+							// ASSURE CURRENT PICK IS AN OPEN (non-drafted) slot. IF NOT, LOOP BACK
+							// 	TO ADVANCE TO NEXT PICK
+							if (isset($picks[$i]['player'])) {
+								continue;
+							} // END if
+							
+							//-----------------------------------------------
+							// ROUND SUMMARY EMAIL
+							//-----------------------------------------------
+							$round = $picks[$i]['round'];
+							//print('round pick = '.$picks[$i]['pick']."<br />");
+							if ($i > 1 && ($picks[$i]['pick'] == 1 || $i == $lastPick)) {
+								if ($this->dataModel->emailDraftSummary == 1) {
+									
+									$message = '';
+									$msg = '';
+									$teamInfo = $this->league_model->getTeamDetails($this->dataModel->league_id);
+									
+									$prevRound = $picks[$i-1]['round'];
+									//print('prevRound = '.$prevRound."<br />");
+									if (!isset($this->player_model)) {
+										$this->load->model('player_model');
+									} // END if
+									$startPick = ($i - $nTeams);
+									//print('i = '.$i.", prevRound = ".$prevRound.", nTeams*prevRound = ".$nTeams*$prevRound."<br />");
+									//print('startPick = '.$startPick."<br />");
+									$roundSummary = "";
+									$stopAt= ($startPick+$nTeams);
+									for ($t=$startPick;$t<$stopAt;$t++) {
+										$tmpTeam=$picks[$t]['team'];
+										$roundSummary.=$picks[$t]['round'].".".$picks[$t]['pick']." - ".anchor('/team/info/'.$tmpTeam,$teams[$tmpTeam]['teamname']." ".$teams[$tmpTeam]['teamnick']);
+										$playerInfo = array();
+										if (isset($picks[$t]['player']) && !empty($picks[$t]['player']) && $picks[$t]['player'] != -999) {
+											$playerInfo = $this->player_model->getPlayerDetails($picks[$t]['player']);
+											if (sizeof($playerInfo) > 0) {
+												$roundSummary.= " picked  ".get_pos($playerInfo['position'])." ".anchor('/players/info/'.$picks[$t]['player'],$playerInfo['first_name']." ".$playerInfo['last_name']);
+											} else {
+												$roundSummary.= "Pick Details unavailable";
+											} // END if
+										} else if ($picks[$t]['player'] == -999) {
+											$roundSummary.= "Pick Skipped";
+										} else {
+											$roundSummary.= "Pick information not available";
+										} // END if 
+										$roundSummary.= "<br />\n";
+									} // END for
+									$nextSummary = "";
+									$stopAt = ($i+$nTeams);
+									$nextSummary.="";
+									for ($z=$i;$z<$stopAt;$z++) {
+										$tmpTeam=$picks[$z]['team'];
+										$nextSummary.=$picks[$z]['round'].".".$picks[$z]['pick']." - ".anchor('/team/info/'.$tmpTeam,$teams[$tmpTeam]['teamname']." ".$teams[$tmpTeam]['teamnick']);
+										if ($this->dataModel->timerEnable == 1) {
+											$nextSummary.=" due at ".$picks[$z]['due'];
+										} // END if
+										$nextSummary.= "<br />\n";
+									} // END for
+									## Generate Subject Line
+									$subject=str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_subject'));
+									$subject=str_replace('[LEAGUE_NAME]',$this->league_model->league_name,$subject);
+									## Generate Message Text
+									$msg = str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_message'));
+									$msg = str_replace('[ROUND_NEXT]', $picks[$i]['round'],$msg);
+									$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+									$msg = str_replace('[ROUND_NUM_SUMMARY]', $roundSummary,$msg);
+									$msg = str_replace('[ROUND_NEXT_SUMMARY]', $nextSummary,$msg);
+									
+									$data['leagueName'] = $this->league_model->league_name;
+									$data['messageBody'] = $msg;
+									$data['title'] = ' Draft Summary';
+									$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+									// LOAD OWNER ID AND EMAILS OF ALL OWNERS OF LEAGUE
+									if ($this->league_model->id == -1) {
+										$this->league_model->load($this->dataModel->league_id);
+									} // END if
+									//print ("league id = ".$this->dataModel->league_id."<br />");
+									$ownerIds = $this->league_model->getOwnerIds($this->dataModel->league_id);
+									//print ("owner id size = ".sizeof($ownerIds)."<br />");
+									if (isset($ownerIds) && sizeof($ownerIds) > 0) {
+										foreach($ownerIds as $owner) {
+											$email = $this->user_auth_model->getEmail($owner);
+											$ownerUsername = $this->user_auth_model->getUsername($owner);
+											if (!empty($email)) {
+												$sent = sendEmail($email,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+												$this->params['config']['site_name']." Administrator",$subject,$message,$ownerUsername,'email_draft_summary_');
+											} // END if
+										} // END foreach
+									}  // END if
+									//	EDIT 1.0.6 - CLEAR EMAIL VARS AFTER SEND
+									unset($roundSummary);
+									unset($nextSummary);
+									unset($message);
+									unset($msg);
+									unset($data['messageBody']);
+								}  // END if
+								
+								//	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
+								// LIMIT TO ROUND CHECK
+								if ($limitToRound && $picksMade > 0) {
+									$breakBeforePick = true;
+									if ($this->debug) {
+										print("Round Limit Reached, breaking draft<BR />");
+									}
+								} // END if
+								
+							} // END if ($rndPick == $nTeams)
+							// ----------------------------------
+							//	END ROUND SUMMARY EMAIL
+							// ----------------------------------
+							
+							/*-----------------------------------------------
+							/	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
+							/--------------------------------------------- */
+							// CHECK IF WE'VE REACHED A PICK LIMIT
+							if ($auto_pick_count > 0 && $picksMade> 0 && $picksMade == $auto_pick_count) {
+								if ($this->debug) {
+									echo("Max auto pick count of ".$auto_pick_count." reached, ".$picksMade." picks made.<br />");
+								}
+								$breakBeforePick = true;
+							} // END if
+							// IF WE SHOULD BREAK OUT OF THE LOOP, DO SO
+							if ($this->debug) {
+								print("breakBeforePick? ".(($breakBeforePick) ? "true" : "false")."<BR />");
+							}
+							
+							if ($breakBeforePick === true) break;
+							// END 1.0.5 EDITS
 							
 							if ($this->debug) {
 								echo("---------------------------------------<br />");
+								echo("------------BEGIN NEW PICK---------------<br />");
 								echo("---------------------------------------<br />");
-								echo("-         STARTING DRAFT LOOP         -<br />");
-								echo("---------------------------------------<br />");
-								echo("---------------------------------------<br />");
-								echo("firstPick = '".$firstPick."'<br />");
-								echo("Current player pick id = '".$dpick."'<br />");
-								echo("breakBeforePick = '".(($breakBeforePick) ? "true" : "false")."'<br />");
-								echo("breakAfterPick = '".(($breakAfterPick) ? "true" : "false")."'<br />");
-							} // END if
-							$this->lang->load('draft');
+								echo("Current Pick = ".$i."<br />");
+								echo("picks made already = '".$picksMade."'<br />");
+								if (isset($picks[$i])) {
+									echo("Current picking team = ".$dteam."<br />");
+									echo("Team for pick = ".$picks[$i]['team']."<br />");
+								}
+							}
+							/*------------------------------------------------
+							/	DRAFT PICK VALIDATION
+							/-----------------------------------------------*/
+							##### Check that team matches active pick #####
+							if (isset($picks[$i]) && $dteam!=$picks[$i]['team']) {
+								$error = true;
+								$this->params['outMess'] =  "Incorrect team for pick $i. ".$picks[$i]['team']." should be picking.";
+							} ## Team trying to draft out of turn
 							
-							/*---------------------------------------------------------
-							/	PROCESS SELECTION
-							/
-							/	Loop from first open slot to final pick of the draft
-							/
-							/--------------------------------------------------------*/
-								
-							for ($i=$firstPick;$i<=$lastPick;$i++) {
-								
-								// ASSURE CURRENT PICK IS AN OPEN (non-drafted) slot. IF NOT, LOOP BACK
-								// 	TO ADVANCE TO NEXT PICK
-								if (isset($picks[$i]['player'])) {
-									continue;
-								} // END if
-								
-								//-----------------------------------------------
-								// ROUND SUMMARY EMAIL
-								//-----------------------------------------------
-								$round = $picks[$i]['round'];
-								//print('round pick = '.$picks[$i]['pick']."<br />");
-								if ($i > 1 && ($picks[$i]['pick'] == 1 || $i == $lastPick)) {
-									if ($this->dataModel->emailDraftSummary == 1) {
-										
-										$message = '';
-										$msg = '';
-										$teamInfo = $this->league_model->getTeamDetails($this->dataModel->league_id);
-										
-										$prevRound = $picks[$i-1]['round'];
-										//print('prevRound = '.$prevRound."<br />");
-										if (!isset($this->player_model)) {
-											$this->load->model('player_model');
-										} // END if
-										$startPick = ($i - $nTeams);
-										//print('i = '.$i.", prevRound = ".$prevRound.", nTeams*prevRound = ".$nTeams*$prevRound."<br />");
-										//print('startPick = '.$startPick."<br />");
-										$roundSummary = "";
-										$stopAt= ($startPick+$nTeams);
-										for ($t=$startPick;$t<$stopAt;$t++) {
-											$tmpTeam=$picks[$t]['team'];
-											$roundSummary.=$picks[$t]['round'].".".$picks[$t]['pick']." - ".anchor('/team/info/'.$tmpTeam,$teams[$tmpTeam]['teamname']." ".$teams[$tmpTeam]['teamnick']);
-											$playerInfo = array();
-											if (isset($picks[$t]['player']) && !empty($picks[$t]['player']) && $picks[$t]['player'] != -999) {
-												$playerInfo = $this->player_model->getPlayerDetails($picks[$t]['player']);
-												if (sizeof($playerInfo) > 0) {
-													$roundSummary.= " picked  ".get_pos($playerInfo['position'])." ".anchor('/players/info/'.$picks[$t]['player'],$playerInfo['first_name']." ".$playerInfo['last_name']);
-												} else {
-													$roundSummary.= "Pick Details unavailable";
-												} // END if
-											} else if ($picks[$t]['player'] == -999) {
-												$roundSummary.= "Pick Skipped";
-											} else {
-												$roundSummary.= "Pick information not available";
-											} // END if 
-											$roundSummary.= "<br />\n";
-										} // END for
-										$nextSummary = "";
-										$stopAt = ($i+$nTeams);
-										$nextSummary.="";
-										for ($z=$i;$z<$stopAt;$z++) {
-											$tmpTeam=$picks[$z]['team'];
-											$nextSummary.=$picks[$z]['round'].".".$picks[$z]['pick']." - ".anchor('/team/info/'.$tmpTeam,$teams[$tmpTeam]['teamname']." ".$teams[$tmpTeam]['teamnick']);
-											if ($this->dataModel->timerEnable == 1) {
-												$nextSummary.=" due at ".$picks[$z]['due'];
-											} // END if
-											$nextSummary.= "<br />\n";
-										} // END for
-										## Generate Subject Line
-										$subject=str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_subject'));
-										$subject=str_replace('[LEAGUE_NAME]',$this->league_model->league_name,$subject);
-										## Generate Message Text
-										$msg = str_replace('[ROUND_NUM]',$prevRound,$this->lang->line('draft_aummary_message'));
-										$msg = str_replace('[ROUND_NEXT]', $picks[$i]['round'],$msg);
-										$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
-										$msg = str_replace('[ROUND_NUM_SUMMARY]', $roundSummary,$msg);
-										$msg = str_replace('[ROUND_NEXT_SUMMARY]', $nextSummary,$msg);
-										
-										$data['leagueName'] = $this->league_model->league_name;
-										$data['messageBody'] = $msg;
-										$data['title'] = ' Draft Summary';
-										$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-										// LOAD OWNER ID AND EMAILS OF ALL OWNERS OF LEAGUE
-										if ($this->league_model->id == -1) {
-											$this->league_model->load($this->dataModel->league_id);
-										} // END if
-										//print ("league id = ".$this->dataModel->league_id."<br />");
-										$ownerIds = $this->league_model->getOwnerIds($this->dataModel->league_id);
-										//print ("owner id size = ".sizeof($ownerIds)."<br />");
-										if (isset($ownerIds) && sizeof($ownerIds) > 0) {
-											foreach($ownerIds as $owner) {
-												$email = $this->user_auth_model->getEmail($owner);
-												$ownerUsername = $this->user_auth_model->getUsername($owner);
-												if (!empty($email)) {
-													$sent = sendEmail($email,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-													$this->params['config']['site_name']." Administrator",$subject,$message,$ownerUsername,'email_draft_summary_');
-												} // END if
-											} // END foreach
-										}  // END if
-										//	EDIT 1.0.6 - CLEAR EMAIL VARS AFTER SEND
-										unset($roundSummary);
-										unset($nextSummary);
-										unset($message);
-										unset($msg);
-										unset($data['messageBody']);
-									}  // END if
-									
-									//	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
-									// LIMIT TO ROUND CHECK
-									if ($limitToRound && $picksMade > 0) {
-										$breakBeforePick = true;
-										if ($this->debug) {
-											print("Round Limit Reached, breaking draft<BR />");
-										}
+							##### Check that player is not yet drafted #####
+							if (isset($drafted[$dpick])) {
+								$error = true;
+								$this->params['outMess'] =  "Player $dpick has already been drafted.";
+							} ## Team trying to draft player already taken
+							
+							##### Check that player is not yet drafted #####
+							if (!isset($values[$dpick])) {
+								$error = true;
+								$this->params['outMess'] =  "Player $dpick is not draft eligible.";
+							}
+							if ($this->debug) {
+								echo("ERROR? = ".($error ? 'true' : 'false')."<br />");
+							}
+							// IF WE PASSED VALIDATION, MAKE A PICK
+							// OTHERWISE< SHOW THE ERROR
+							if (!$error) {
+								##### Make Pick #####
+								$this->dataModel->draftPlayer(date("Y-m-d",time()), date("H:i",time()),$dpick,$dteam,$i);
+								$drafted[$dpick]=$i;
+								$picks[$i]['player']=$dpick;
+								$picks[$i]['team']=$dteam;
+								$picksMade++;
+							} else {
+								$this->data['theContent'] = '<span class="error">'.$this->params['outMess'].'</span>';
+								//continue;
+							}
+							
+							// STOP LOOPING IF WE HAVE HIT AN ERROR OR THE LAST PICK
+							// EDIT 1.0.5
+							// SOMETIME WE WANT TO BREAK AFTER THE PICK IS MADE (AVOID LOOPING)
+							if ($error || $i>$lastPick || $breakAfterPick === true) {
+								break;
+							}
+							if ($this->debug) {
+								echo("Get Next team in draft order<br />");
+							}
+							$dpick = '';
+							##### Get next team in draft order #####
+							for ($j=$i+1;$j<=$lastPick;$j++) {
+								if (isset($picks[$j]['round'])) {
+									if (!isset($picks[$j]['player'])) {
+										$dteam=$picks[$j]['team'];
+										$i=$j-1;
+										$nextPick = $j;
+										break;
 									} // END if
-									
-								} // END if ($rndPick == $nTeams)
-								// ----------------------------------
-								//	END ROUND SUMMARY EMAIL
-								// ----------------------------------
-								
-								/*-----------------------------------------------
-								/	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
-								/--------------------------------------------- */
-								// CHECK IF WE'VE REACHED A PICK LIMIT
-								if ($auto_pick_count > 0 && $picksMade> 0 && $picksMade == $auto_pick_count) {
-									if ($this->debug) {
-										echo("Max auto pick count of ".$auto_pick_count." reached, ".$picksMade." picks made.<br />");
-									}
-									$breakBeforePick = true;
-								} // END if
-								// IF WE SHOULD BREAK OUT OF THE LOOP, DO SO
-								if ($this->debug) {
-									print("breakBeforePick? ".(($breakBeforePick) ? "true" : "false")."<BR />");
-								}
-								
-								if ($breakBeforePick === true) break;
-								// END 1.0.5 EDITS
-								
-								if ($this->debug) {
-									echo("---------------------------------------<br />");
-									echo("------------BEGIN NEW PICK---------------<br />");
-									echo("---------------------------------------<br />");
-									echo("Current Pick = ".$i."<br />");
-									echo("picks made already = '".$picksMade."'<br />");
-									if (isset($picks[$i])) {
-										echo("Current picking team = ".$dteam."<br />");
-										echo("Team for pick = ".$picks[$i]['team']."<br />");
-									}
-								}
-								/*------------------------------------------------
-								/	DRAFT PICK VALIDATION
-								/-----------------------------------------------*/
-								##### Check that team matches active pick #####
-								if (isset($picks[$i]) && $dteam!=$picks[$i]['team']) {
-									$error = true;
-									$this->params['outMess'] =  "Incorrect team for pick $i. ".$picks[$i]['team']." should be picking.";
-								} ## Team trying to draft out of turn
-								
-								##### Check that player is not yet drafted #####
-								if (isset($drafted[$dpick])) {
-									$error = true;
-									$this->params['outMess'] =  "Player $dpick has already been drafted.";
-								} ## Team trying to draft player already taken
-								
-								##### Check that player is not yet drafted #####
-								if (!isset($values[$dpick])) {
-									$error = true;
-									$this->params['outMess'] =  "Player $dpick is not draft eligible.";
-								}
-								if ($this->debug) {
-									echo("ERROR? = ".($error ? 'true' : 'false')."<br />");
-								}
-								// IF WE PASSED VALIDATION, MAKE A PICK
-								// OTHERWISE< SHOW THE ERROR
-								if (!$error) {
-									##### Make Pick #####
-									$this->dataModel->draftPlayer(date("Y-m-d",time()), date("H:i",time()),$dpick,$dteam,$i);
-									$drafted[$dpick]=$i;
-									$picks[$i]['player']=$dpick;
-									$picks[$i]['team']=$dteam;
-									$picksMade++;
 								} else {
-									$this->data['theContent'] = '<span class="error">'.$this->params['outMess'].'</span>';
-									//continue;
-								}
-								
-								// STOP LOOPING IF WE HAVE HIT AN ERROR OR THE LAST PICK
-								// EDIT 1.0.5
-								// SOMETIME WE WANT TO BREAK AFTER THE PICK IS MADE (AVOID LOOPING)
-								if ($error || $i>$lastPick || $breakAfterPick === true) {
+									break;
+								} // END if
+							} // END for
+							// EDIT 1.0.6 - FAIL SAFE IN CASE WE GET HERE AND THE NEXT PICK IS OUTSIDE THE
+							// DRAFT SIZE RANGE
+							if ($j > $lastPick) { break; }
+							if ($this->debug) {
+								echo("Next pick ID = ".$j."<br />");
+								echo("Next pick = ".$nextPick."<br />");
+								echo("Pick Round =  ".$pickRound."<br />");
+								echo("Next team to pick = ".$dteam."<br />");
+								echo($dteam." has auto list? ".($teams[$dteam]['autoList']==1?'true':'false')."<br />");
+							} // END if
+							##### Check team for auto draft list #####
+							if ($teams[$dteam]['autoList']==1) {	   
+								$dpick='';
+								$pid = 0;
+								$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
+								foreach($pickList as $rank =>$data) {
+									$pid = intval($data['player_id']);
 									break;
 								}
-								if ($this->debug) {
-									echo("Get Next team in draft order<br />");
-								}
-								$dpick = '';
-								##### Get next team in draft order #####
-								for ($j=$i+1;$j<=$lastPick;$j++) {
-									if (isset($picks[$j]['round'])) {
-										if (!isset($picks[$j]['player'])) {
-											$dteam=$picks[$j]['team'];
-											$i=$j-1;
-											$nextPick = $j;
-											break;
-										} // END if
-									} else {
-										break;
-									} // END if
-								} // END for
-                                // EDIT 1.0.6 - FAIL SAFE IN CASE WE GET HERE AND THE NEXT PICK IS OUTSIDE THE
-						        // DRAFT SIZE RANGE
-								if ($j > $lastPick) { break; }
-								if ($this->debug) {
-									echo("Next pick ID = ".$j."<br />");
-									echo("Next pick = ".$nextPick."<br />");
-									echo("Pick Round =  ".$pickRound."<br />");
-									echo("Next team to pick = ".$dteam."<br />");
-									echo($dteam." has auto list? ".($teams[$dteam]['autoList']==1?'true':'false')."<br />");
-								} // END if
-								##### Check team for auto draft list #####
-								if ($teams[$dteam]['autoList']==1) {	   
-									$dpick='';
-									$pid = 0;
-									$pickList = $this->dataModel->getUserPicks($teams[$dteam]['owner_id']);
-									foreach($pickList as $rank =>$data) {
-										$pid = intval($data['player_id']);
-										break;
-									}
-								}
-								if (($pid!="") && ($pid!=0) && !isset($drafted[$pid])) {
-									$dpick=$pid;
-								}
-								## - Loop back
-								if ($this->debug) {
-									echo("Team ".$dteam." Auto List pick = '".$dpick."'<br />");
-								}
-								if ($dpick!='') {continue;}
-								
-								if ($this->debug) {
-									echo("-----NO AUTO LIST PICK---<br />");
-									echo("-----FORCE AUTO SELECT, AUTO OPEN NO OWNER TEAM, TEAM AUTO PICK OPTION---<br />");
-								}
-								##### Check if team is not human controlled #####
-                                if ($this->debug) {
-                                   print("J = ".$j."<br />");
-                                }
-
-								$pickRound=$picks[$j]['round'];
-								$pickNum = $picks[$j]['pick'];
-								if ($this->debug) {
-									echo("pauseAuto =  ".$pauseAuto."<br />");
-									echo("autoOpen =  ".$autoOpen."<br />");
-									echo("teams[".$dteam."]['autoRound'] =  ".$teams[$dteam]['autoRound']."<br />");
-									echo("teams[".$dteam."]['auto'] =  ".$teams[$dteam]['auto']."<br />");
-								}
-								if ($this->uriVars['action']=='auto' && ($auto_option == 'all' || //BRUTE FORCE AUTO PICK
-								($auto_option =='x_picks' && $picksMade < $auto_pick_count) || //BRUTE FORCE X NUMBER OF AUTO PICK
-								$limitToRound) || //BRUTE FORCE PICK TO END OF ROUND
-								($pauseAuto==-1 && $this->uriVars['action']!='manualpick') && // NO PAUSING ON AUTO PICK AND NOT A MANUAL PICK
-								((!isset($teams[$dteam]['owner_id']) && $autoOpen==1) // NO OWNER AND WE SHOULD AUTO PICK FOR THEM
-								|| ($teams[$dteam]['auto']==1 && $pickRound>=$teams[$dteam]['autoRound']))) { // TEAM AUTO DRAFT OVER THE ROUND LIMIT
-									
-									## Set human team to auto - if here, already know team is not using list or on auto already
-									if (($this->uriVars['action']!='manualpick' && $this->uriVars['action']!='auto') && 
-									($setToAuto==1) && (isset($teams[$dteam]['owner_id'])) && ($teams[$dteam]['auto']!=1)) {
-										$this->team_model->load($dteam);
-										$this->team_model->setAutoDraft(true);
-										$teams[$dteam]['auto']=1;
-										$teams[$dteam]['autoRound']=$pickRound-1;
-									}
-									
-									
-									## - Determine Auto Pick
-									$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
-									$dpick = $aPick[0];
-									$teamQuotas = $aPick[1];
-									if ($dpick != '') {
-										if ($this->debug) {
-											echo("No human owner team pick = '".$dpick."'<br />");
-										}
-										continue;
-									}
-								}
-								##### Check if next team is past due #####
-								$curTime=time();
-								$pickInst=strtotime($picks[$j]['due']);
-								if (($this->dataModel->timerEnable==1) && ($pickInst<=$curTime) && ($this->uriVars['action']!='manualpick') && ($enforceTimer==1)) {
-									if ($this->debug) {
-										echo("****pICK IS PAST DUE<br />");
-										echo("****ENFORCING TIMER<br />");
-									} 
-									## Determine Auto Pick
-									$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
-									$dpick = $aPick[0];
-									$teamQuotas = $aPick[1];
-									if ($dpick != '') {
-										continue;
-									}
-								}
-								if ($this->debug) {
-									echo("****Last resort auto pick<br />");
-								} 
-								##### Check if team is not human controlled #####
-								if ($dpick == '' && ($this->uriVars['action']!='manualpick'&&$pauseAuto==-1 && $autoOpen==1)) {
-									if ($this->debug) {
-										echo("In the last resort auto pick for team ".$dteam."<br />");
-									} 
-									## - Determine Auto Pick
-									$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
-									$dpick = $aPick[0];
-									$teamQuotas = $aPick[1];
-									if ($dpick != '') {
-										continue;
-									} // END if
-								} // END if
-							
-								if ($this->debug) {
-									echo("Player to be drafted = '".$dpick."'<br />");
-								} // END if
-								##### If we make it here, time for another manual pick #####
-								break;
-							} // END for (draft pick loop)
-							
-							$pickingTeam = $dteam;
-							if (isset($picks[$nextPick]['team'])) {
-								$nextTeam = $picks[$nextPick]['team'];
 							}
-							if (!$error) {
-								if (isset($j) && $j>=$lastPick) {
-									redirect('draft/load/'.$this->uriVars['league_id']);
-								}						
-								/*------------------------------------------
-								/
-								/	EMAIL COMMUNICATIONS
-								/
-								/-----------------------------------------*/
-								// EDIT 7/7/10
-								// CHANGE FROM MASS MAIL FOR EVERY PICK TO SINGLE USER EMAIL
+							if (($pid!="") && ($pid!=0) && !isset($drafted[$pid])) {
+								$dpick=$pid;
+							}
+							## - Loop back
+							if ($this->debug) {
+								echo("Team ".$dteam." Auto List pick = '".$dpick."'<br />");
+							}
+							if ($dpick!='') {continue;}
+							
+							if ($this->debug) {
+								echo("-----NO AUTO LIST PICK---<br />");
+								echo("-----FORCE AUTO SELECT, AUTO OPEN NO OWNER TEAM, TEAM AUTO PICK OPTION---<br />");
+							}
+							##### Check if team is not human controlled #####
+							if ($this->debug) {
+								print("J = ".$j."<br />");
+							}
+
+							$pickRound=$picks[$j]['round'];
+							$pickNum = $picks[$j]['pick'];
+							if ($this->debug) {
+								echo("pauseAuto =  ".$pauseAuto."<br />");
+								echo("autoOpen =  ".$autoOpen."<br />");
+								echo("teams[".$dteam."]['autoRound'] =  ".$teams[$dteam]['autoRound']."<br />");
+								echo("teams[".$dteam."]['auto'] =  ".$teams[$dteam]['auto']."<br />");
+							}
+							if ($this->uriVars['action']=='auto' && ($auto_option == 'all' || //BRUTE FORCE AUTO PICK
+							($auto_option =='x_picks' && $picksMade < $auto_pick_count) || //BRUTE FORCE X NUMBER OF AUTO PICK
+							$limitToRound) || //BRUTE FORCE PICK TO END OF ROUND
+							($pauseAuto==-1 && $this->uriVars['action']!='manualpick') && // NO PAUSING ON AUTO PICK AND NOT A MANUAL PICK
+							((!isset($teams[$dteam]['owner_id']) && $autoOpen==1) // NO OWNER AND WE SHOULD AUTO PICK FOR THEM
+							|| ($teams[$dteam]['auto']==1 && $pickRound>=$teams[$dteam]['autoRound']))) { // TEAM AUTO DRAFT OVER THE ROUND LIMIT
 								
-								//-----------------------------------------------
-								// INDIVIDUAL EMAIL
-								//-----------------------------------------------
-								// GET NEXT PICKING OWNER INFO
-								$nextOwnerEmail = '';
-								if (isset($teams[$dteam]['owner_id']) && !empty($teams[$dteam]['owner_id']) && $teams[$dteam]['owner_id'] != -1 &&
-								$this->dataModel->emailOwnersForPick == 1) {
-									$nextOwnerDetails = $this->user_auth_model->accountDetails($teams[$dteam]['owner_id']);
-									if (isset($nextOwnerDetails)) {
-										$nextOwnerEmail = $nextOwnerDetails->email;
-									}
-									$this->user_meta_model->load($teams[$dteam]['owner_id'],'userId');
-									$nextOwnerName = '';
-									
-									if ($this->user_meta_model->id != -1) {
-										$nextOwnerName = $this->user_meta_model->firstName." " .$this->user_meta_model->lastName;
-									} // END if
-									
-									$msg = $this->lang->line('draft_user_message_pick_next');
-									$msg .= $this->lang->line('email_footer');
-									$msg = str_replace('[USER_NAME]',$nextOwnerName,$msg);
-									$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
-									$msg = str_replace('[DRAFT_URL]', anchor('draft/selection/league_id/'.$this->league_model->id,'Draft Selection Site'),$msg);
-									$data['messageBody'] = $msg;
-									//print("email template path = ".$this->config->item('email_templates')."<br />");
-									$data['leagueName'] = $this->league_model->league_name;
-									$data['title'] = $this->lang->line('draft_email_title_pick_due');
-									$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-									// Generate Subject Line
-									$subject= str_replace('[LEAGUE_NAME]',$leagueName,$this->lang->line('draft_user_subject_pick_next'));
-									$mailTo = $nextOwnerName.' <'.$nextOwnerEmail.'>';
-									// SEND TO OWNER
-									if ((!empty($mailTo)) && (!empty($message)) && ($this->uriVars['action'] !='manualpick')) {
-										$emailSend = sendEmail($mailTo,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
-										$this->params['config']['site_name']." Administrator",$subject,$message,'','email_draft_next_pick_');
-									}
-									unset($data['title']);
-									unset($data['messageBody']);
-									unset($subject);
-									unset($message);
+								## Set human team to auto - if here, already know team is not using list or on auto already
+								if (($this->uriVars['action']!='manualpick' && $this->uriVars['action']!='auto') && 
+								($setToAuto==1) && (isset($teams[$dteam]['owner_id'])) && ($teams[$dteam]['auto']!=1)) {
+									$this->team_model->load($dteam);
+									$this->team_model->setAutoDraft(true);
+									$teams[$dteam]['auto']=1;
+									$teams[$dteam]['autoRound']=$pickRound-1;
 								}
-								/*-----------------------------------------
-								/
-								/	END MESSAGING BLOCK
-								/
-								/-----------------------------------------*/
 								
-								/*-------------------------------------------
-								/	WRAP UP
-								/------------------------------------------*/
-								if ($pickingTeam==$nextTeam && $nextTeam!="" && $this->uriVars['action']!='manualpick') {
-									redirect('draft/selection/league_id/'.$this->uriVars['league_id']);
-								} else {
-									redirect('draft/load/'.$this->uriVars['league_id']);
-								} // END if ($pickingTeam==$nextTeam)
 								
-							} // END if (!$error)
-						} else {
-							$error = true;
-							$this->data['theContent'] = '<span class="error">No draft action was defined.</span>';
-						} // END if
+								## - Determine Auto Pick
+								$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
+								$dpick = $aPick[0];
+								$teamQuotas = $aPick[1];
+								if ($dpick != '') {
+									if ($this->debug) {
+										echo("No human owner team pick = '".$dpick."'<br />");
+									}
+									continue;
+								}
+							}
+							##### Check if next team is past due #####
+							$curTime=time();
+							$pickInst=strtotime($picks[$j]['due']);
+							if (($this->dataModel->timerEnable==1) && ($pickInst<=$curTime) && ($this->uriVars['action']!='manualpick') && ($enforceTimer==1)) {
+								if ($this->debug) {
+									echo("****pICK IS PAST DUE<br />");
+									echo("****ENFORCING TIMER<br />");
+								} 
+								## Determine Auto Pick
+								$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
+								$dpick = $aPick[0];
+								$teamQuotas = $aPick[1];
+								if ($dpick != '') {
+									continue;
+								}
+							}
+							if ($this->debug) {
+								echo("****Last resort auto pick<br />");
+							} 
+							##### Check if team is not human controlled #####
+							if ($dpick == '' && ($this->uriVars['action']!='manualpick'&&$pauseAuto==-1 && $autoOpen==1)) {
+								if ($this->debug) {
+									echo("In the last resort auto pick for team ".$dteam."<br />");
+								} 
+								## - Determine Auto Pick
+								$aPick = $this->makeAutoPick($values, $teamQuotas, $dteam, $rules, $drafted);
+								$dpick = $aPick[0];
+								$teamQuotas = $aPick[1];
+								if ($dpick != '') {
+									continue;
+								} // END if
+							} // END if
+						
+							if ($this->debug) {
+								echo("Player to be drafted = '".$dpick."'<br />");
+							} // END if
+							##### If we make it here, time for another manual pick #####
+							break;
+						} // END for (draft pick loop)
+
+						$pickingTeam = $dteam;
+						if (isset($picks[$nextPick]['team'])) {
+							$nextTeam = $picks[$nextPick]['team'];
+						}
+
+						if (!$error) {
+							if (isset($j) && $j>=$lastPick) {
+								redirect('draft/load/'.$this->uriVars['league_id']);
+							}						
+							/*------------------------------------------
+							/
+							/	EMAIL COMMUNICATIONS
+							/
+							/-----------------------------------------*/
+							// EDIT 7/7/10
+							// CHANGE FROM MASS MAIL FOR EVERY PICK TO SINGLE USER EMAIL
+							
+							//-----------------------------------------------
+							// INDIVIDUAL EMAIL
+							//-----------------------------------------------
+							// GET NEXT PICKING OWNER INFO
+							$nextOwnerEmail = '';
+							if (isset($teams[$dteam]['owner_id']) && !empty($teams[$dteam]['owner_id']) && $teams[$dteam]['owner_id'] != -1 &&
+							$this->dataModel->emailOwnersForPick == 1) {
+								$nextOwnerDetails = $this->user_auth_model->accountDetails($teams[$dteam]['owner_id']);
+								if (isset($nextOwnerDetails)) {
+									$nextOwnerEmail = $nextOwnerDetails->email;
+								}
+								$this->user_meta_model->load($teams[$dteam]['owner_id'],'userId');
+								$nextOwnerName = '';
+								
+								if ($this->user_meta_model->id != -1) {
+									$nextOwnerName = $this->user_meta_model->firstName." " .$this->user_meta_model->lastName;
+								} // END if
+								
+								$msg = $this->lang->line('draft_user_message_pick_next');
+								$msg .= $this->lang->line('email_footer');
+								$msg = str_replace('[USER_NAME]',$nextOwnerName,$msg);
+								$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+								$msg = str_replace('[DRAFT_URL]', anchor('draft/selection/league_id/'.$this->league_model->id,'Draft Selection Site'),$msg);
+								$data['messageBody'] = $msg;
+								//print("email template path = ".$this->config->item('email_templates')."<br />");
+								$data['leagueName'] = $this->league_model->league_name;
+								$data['title'] = $this->lang->line('draft_email_title_pick_due');
+								$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+								// Generate Subject Line
+								$subject= str_replace('[LEAGUE_NAME]',$leagueName,$this->lang->line('draft_user_subject_pick_next'));
+								$mailTo = $nextOwnerName.' <'.$nextOwnerEmail.'>';
+								// SEND TO OWNER
+								if ((!empty($mailTo)) && (!empty($message)) && ($this->uriVars['action'] !='manualpick')) {
+									$emailSend = sendEmail($mailTo,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
+									$this->params['config']['site_name']." Administrator",$subject,$message,'','email_draft_next_pick_');
+								}
+								unset($data['title']);
+								unset($data['messageBody']);
+								unset($subject);
+								unset($message);
+							}
+							/*-----------------------------------------
+							/
+							/	END MESSAGING BLOCK
+							/
+							/-----------------------------------------*/
+							
+							/*-------------------------------------------
+							/	WRAP UP
+							/------------------------------------------*/
+							if ($pickingTeam==$nextTeam && $nextTeam!="" && $this->uriVars['action']!='manualpick') {
+								redirect('draft/selection/league_id/'.$this->uriVars['league_id']);
+							} else {
+								redirect('draft/load/'.$this->uriVars['league_id']);
+							} // END if ($pickingTeam==$nextTeam)
+							
+						} // END if (!$error)
 					} else {
 						$error = true;
-						$this->data['theContent'] = '<span class="error">You do not have sufficient privlidges to perform the requested action.</span>';
-					} // END if
-				//} else {
-				//	$error = true;
-				//	$this->data['theContent'] = '<span class="error">This leagues draft has already been completed.</span>';
-				//}
+						$this->data['theContent'] = '<span class="error">No draft action was defined.</span>';
+					} // END if (isset($this->uriVars['action']))
+
+				} else {
+					$error = true;
+					$this->data['theContent'] = '<span class="error">You do not have sufficient privlidges to perform the requested action.</span>';
+				} // END if ($continue)
+
 			} else {
 				$error = true;
 				$this->data['theContent'] = '<span class="error">A required league identifier could not be found. Your selections could not be processed at this time.</span>';
-			} // END if
+			} // END if ($this->dataModel->id != -1)
+
 			if ($error) {
 				$this->data['subTitle'] = 'Draft: An error occured.';
 				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 				$this->makeNav();
 				$this->displayView();
-			} // END if
+			} // END if ($error)
+
 		} else {
-	        $this->session->set_userdata('loginRedirect',current_url());	
+			$this->session->set_userdata('loginRedirect',current_url());	
 			redirect('user/login');
-	    } // END if
-	}
+		} // END if ($this->params['loggedIn'])
+
+	} // END function process()
+
 	protected function makeEmailHeader() {
 		// CREATE GENERIC EMAIL HEADER
 		$header="From: ".$this->dataModel->replyList."\r\n";

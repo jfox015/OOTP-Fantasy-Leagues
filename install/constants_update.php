@@ -44,6 +44,8 @@ define('FOPEN_READ_WRITE_CREATE_STRICT',		'x+b');
 |
 */
 //LOGIN
+define("MESSAGE_WARN",'warn');
+define("MESSAGE_INFO",'info');
 define("MESSAGE_NOTICE",'notice');
 define("MESSAGE_FAIL",'error');
 define("MESSAGE_SUCCESS",'success');
@@ -51,8 +53,8 @@ define("MESSAGE_SUCCESS",'success');
 define("TEMPLATE_DEFAULT",'template');
 define("TIMEZONE_DEFAULT",'Americas/New_York');
 
-define('EMPTY_DATE_STR','0000-00-00');
-define('EMPTY_DATE_TIME_STR','0000-00-00 00:00:00');
+define('EMPTY_DATE_STR','1970-01-01');
+define('EMPTY_DATE_TIME_STR','1970-01-01 00:00:00');
 
 define('EMPTY_TIME_STR','00:00:00');
 
@@ -138,10 +140,11 @@ define("DB_CONNECTION_FILE","ootpfl_db.php");
 define('QUERY_BASIC',1);
 define('QUERY_STANDARD',2);
 define('QUERY_EXTENDED',3);
+define('QUERY_COMPACT',4);
 
 define('SECURITY_RECAPTHCA',1);
 
-define('OOTP_CURRENT_VERSION',12);
+define('OOTP_CURRENT_VERSION',21);
 /*
 |--------------------------------------------------------------------------
 | File/Path Defaults
@@ -193,6 +196,7 @@ define("PATH_TEAMS_AVATARS",PATH_AVATARS."teams/");
 define("PATH_LEAGUES_AVATAR_WRITE",PATH_AVATARS_WRITE."leagues".URL_PATH_SEPERATOR);
 define("PATH_LEAGUES_AVATARS",PATH_AVATARS."leagues/");
 
+define("NEWS_IMAGE_DEFAULT","news_image_default.jpg");
 define("PATH_NEWS_IMAGES_WRITE",PATH_IMAGES_WRITE."news".URL_PATH_SEPERATOR);
 define("PATH_NEWS_IMAGES",PATH_IMAGES."news/");
 

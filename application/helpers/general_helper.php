@@ -15,7 +15,7 @@ function getFantasyStatus() {
 	// LOAD RELEVANT PROPERTIES
 	$now = time();
 	$ci =& get_instance();
-	$fantasyStart = strtotime($ci->params['config']['season_start']." 00:00:00");
+	$fantasyStart = strtotime($ci->params['config']['season_start']);
 	if ($now < $fantasyStart) {
 		$status = 1; // PRE-SEASON
 	} else if ($now >= $fantasyStart) {

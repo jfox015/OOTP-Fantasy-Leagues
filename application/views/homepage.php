@@ -7,7 +7,7 @@
 	</article>
 </div>
 <div id="center-column" class="homepage">
-		<h3>Public Leagues for the <?php echo($leagueName); ?></h3>
+		<h3>Public Leagues<?php if (isset($leagueName) && !empty($leagueName)) { ?> for the <?php echo($leagueName);  } ?></h3>
 		<div class="layout homepage">
 		<?php 
 		if (isset($leagues) && sizeof($leagues) > 0) {
@@ -178,6 +178,7 @@
 		</table>
 	</div>
 	
+	<?php if (isset($league_info) || ($loggedIn && $accessLevel == ACCESS_ADMINISTRATE)) { ?>
 	<!-- OOTP League Details Box -->
     <div class='textbox right-column'>
         <table cellpadding="0" cellspacing="0" style="width:265px;">
@@ -225,6 +226,7 @@
 		</tr>
 		</table>
     </div>
+	<?php } ?>
 </div>
 
 <br class="clear" />
