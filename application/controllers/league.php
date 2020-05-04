@@ -1930,77 +1930,99 @@ class league extends BaseEditor {
 
 	}
 	protected function makeForm() {
-		$form = new Form();
+		
+		// WE can always EDIT an existign League, but there are restrcitctions for ADDING Leagues
+		if ($this->mode != 'edit' && $this->data['accessLevel'] != ACCESS_ADMINISTRATE) {
+			if (getFantasyStatus() != 1) {
+				$this->outMess = '<span class="warn">Leagues cannot be created anymore once a Fantasy Season has begun play. Please wait until the current Fantasy Season has concluded to try and create a new League.</span>';	
+				$this->status= 1;
+			} else {
+				if ($this->params['config']['users_create_leagues'] != 1) {
+					$this->outMess = '<span class="error">We\'re sorry. Members of this site are not allowed to create their own Leagues. Only an Administrator can create new Leagues.</span>';	
+					$this->status =1;
+				} else {
+					$leagueCount = $this->dataModel->userLeagueCount($this->params['currUser']);
+					if ($leagueCount > 0 && $leagueCount >= $this->params['config']['max_user_leagues']) {
+						$this->outMess = '<span class="error">You have already created <b>'.$leagueCount.'</b> Leagues on this site. Users are allowed to create only <b>'.$this->params['config']['max_user_leagues'].'</b> Leagues by ther Administrator.</span>';	
+						$this->status = 1;
+					} // END if
+				} // END if
+			} // END if
+		} // END if
+		if ($exitStatus == -1) {
 
-		$form->open('/'.$this->_NAME.'/submit/','detailsForm|detailsForm');
+			$form = new Form();
 
-		$form->fieldset('League Details');
+			$form->open('/'.$this->_NAME.'/submit/','detailsForm|detailsForm');
 
-		$form->text('league_name','League Name','required|trim',($this->input->post('league_name')) ? $this->input->post('league_name') : $this->dataModel->league_name,array("class"=>"longtext"));
-		$form->br();
-		$form->textarea('description','Description:','',($this->input->post('description')) ? $this->input->post('description') : $this->dataModel->description,array('rows'=>5,'cols'=>65));
-		$form->br();
-		$responses[] = array('1','Yes');
-		$responses[] = array('-1','No');
-		$form->fieldset('',array('class'=>'radioGroup'));
-		$form->radiogroup ('accept_requests',$responses,'Accept Public Team Requests',($this->input->post('accept_requests') ? $this->input->post('accept_requests') : $this->dataModel->accept_requests),'required');
-		$form->fieldset();
-		$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
-		$form->br();
-		if ($this->mode != 'edit' || $this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
-			$league_type = ($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type;
-			$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',$league_type,'required');
-			$this->data['league_type'] = $league_type;
+			$form->fieldset('League Details');
+
+			$form->text('league_name','League Name','required|trim',($this->input->post('league_name')) ? $this->input->post('league_name') : $this->dataModel->league_name,array("class"=>"longtext"));
 			$form->br();
-			$form->select('max_teams|max_teams',array(8=>8,10=>10,12=>12),'No. of Teams',($this->input->post('max_teams')) ? $this->input->post('max_teams') : $this->dataModel->max_teams,'required');
+			$form->textarea('description','Description:','',($this->input->post('description')) ? $this->input->post('description') : $this->dataModel->description,array('rows'=>5,'cols'=>65));
 			$form->br();
-			if ($this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
-				$form->select('league_status|league_status',loadSimpleDataList('leagueStatus'),'Status',($this->input->post('league_status')) ? $this->input->post('league_status') : $this->dataModel->league_status,'required');
+			$responses[] = array('1','Yes');
+			$responses[] = array('-1','No');
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('accept_requests',$responses,'Accept Public Team Requests',($this->input->post('accept_requests') ? $this->input->post('accept_requests') : $this->dataModel->accept_requests),'required');
+			$form->fieldset();
+			$form->select('access_type|access_type',loadSimpleDataList('accessType'),'Access Type',($this->input->post('access_type')) ? $this->input->post('access_type') : $this->dataModel->access_type,'required');
+			$form->br();
+			if ($this->mode != 'edit' || $this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
+				$league_type = ($this->input->post('league_type')) ? $this->input->post('league_type') : $this->dataModel->league_type;
+				$form->select('league_type|league_type',listLeagueTypes(true,true),'Scoring System',$league_type,'required');
+				$this->data['league_type'] = $league_type;
 				$form->br();
+				$form->select('max_teams|max_teams',array(8=>8,10=>10,12=>12),'No. of Teams',($this->input->post('max_teams')) ? $this->input->post('max_teams') : $this->dataModel->max_teams,'required');
+				$form->br();
+				if ($this->data['accessLevel'] == ACCESS_ADMINISTRATE) {
+					$form->select('league_status|league_status',loadSimpleDataList('leagueStatus'),'Status',($this->input->post('league_status')) ? $this->input->post('league_status') : $this->dataModel->league_status,'required');
+					$form->br();
+				}
+				$form->space();
+				$form->fieldset('Head To Head Options',array('id'=>'optHeadToHead'));
+				$form->select('games_per_team|games_per_team',array(1=>1,2=>2,3=>3),'Games per team',($this->input->post('games_per_team')) ? $this->input->post('games_per_team') : $this->dataModel->games_per_team);
+				$form->nobr();
+				$form->html('<div style-"display:inline-block;margin-top:4px;">Per Scoring Period</div>');
+				$form->br();
+				if (!function_exists('getScoringPeriods')) {
+					$this->load->helper('admin');
+				}
+				$periodCount = sizeof(getScoringPeriods());
+				$periods_choices = array();
+				$counter = $periodCount -2;
+				while ($counter > $periodCount - 7) {
+					$periods_choices = $periods_choices + array($counter => $counter);
+					$counter--;
+				}
+				$form->select('regular_scoring_periods|regular_scoring_periods',$periods_choices,'Playoffs begin in week',($this->input->post('regular_scoring_periods')) ? $this->input->post('regular_scoring_periods') : $this->dataModel->regular_scoring_periods);
+				$form->nobr();
+				$form->html('<div style-"display:inline-block;margin-top:4px;">Scoring Periods Available: '.$periodCount.'</div>');
+				$form->html('<script> var scoring_periods_available = '.$periodCount.';</script>');
+				$form->br();
+				$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
 			}
-			$form->space();
-			$form->fieldset('Head To Head Options',array('id'=>'optHeadToHead'));
-			$form->select('games_per_team|games_per_team',array(1=>1,2=>2,3=>3),'Games per team',($this->input->post('games_per_team')) ? $this->input->post('games_per_team') : $this->dataModel->games_per_team);
+			$form->fieldset('',array('class'=>'button_bar'));
+			$form->button('Delete','delete','button',array('class'=>'button'));
 			$form->nobr();
-			$form->html('<div style-"display:inline-block;margin-top:4px;">Per Scoring Period</div>');
-			$form->br();
-			if (!function_exists('getScoringPeriods')) {
-				$this->load->helper('admin');
-			}
-			$periodCount = sizeof(getScoringPeriods());
-			$periods_choices = array();
-			$counter = $periodCount -2;
-			while ($counter > $periodCount - 7) {
-				$periods_choices = $periods_choices + array($counter => $counter);
-				$counter--;
-			}
-			$form->select('regular_scoring_periods|regular_scoring_periods',$periods_choices,'Playoffs begin in week',($this->input->post('regular_scoring_periods')) ? $this->input->post('regular_scoring_periods') : $this->dataModel->regular_scoring_periods);
+			$form->span(' ','style="margin-right:8px;display:inline;"');
+			$form->button('Cancel','cancel','button',array('class'=>'button'));
 			$form->nobr();
-			$form->html('<div style-"display:inline-block;margin-top:4px;">Scoring Periods Available: '.$periodCount.'</div>');
-			$form->html('<script> var scoring_periods_available = '.$periodCount.';</script>');
-			$form->br();
-			$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
-		}
-		$form->fieldset('',array('class'=>'button_bar'));
-		$form->button('Delete','delete','button',array('class'=>'button'));
-		$form->nobr();
-		$form->span(' ','style="margin-right:8px;display:inline;"');
-		$form->button('Cancel','cancel','button',array('class'=>'button'));
-		$form->nobr();
-		$form->span(' ','style="margin-right:8px;display:inline;"');
-		$form->submit('Submit');
-		$form->hidden('submitted',1);
-		if ($this->recordId != -1) {
-			$form->hidden('mode','edit');
-			$form->hidden('id',$this->recordId);
-		} else {
-			$form->hidden('mode','add');
-			$form->hidden('new_commisioner',$this->params['currUser']);
-		}
-		$this->form = $form;
-		$this->data['form'] = $form->get();
+			$form->span(' ','style="margin-right:8px;display:inline;"');
+			$form->submit('Submit');
+			$form->hidden('submitted',1);
+			if ($this->recordId != -1) {
+				$form->hidden('mode','edit');
+				$form->hidden('id',$this->recordId);
+			} else {
+				$form->hidden('mode','add');
+				$form->hidden('new_commisioner',$this->params['currUser']);
+			}
+			$this->form = $form;
+			$this->data['form'] = $form->get();
 
-		$this->makeNav();
+			$this->makeNav();
+		}
 	}
 	function configInfo() {
 		if ($this->params['loggedIn']) {

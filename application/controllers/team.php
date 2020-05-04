@@ -282,10 +282,10 @@ class team extends BaseEditor {
 			$date1 = new DateTime($this->ootp_league_model->current_date);
 			$date2 = new DateTime($this->ootp_league_model->start_date);
 
-			if ($date1 <= $date2 || sizeof($this->data['curr_period']) < 1) {
+			if ($date1 <= $date2 || $this->data['curr_period'] <= 1) {
 				$this->data['stats_range'] = 1;	
 			} // END if
-			$periodForQuery = $this->data['curr_period']['id'];
+			$periodForQuery = $this->data['curr_period'];
 			if ($this->data['stats_range'] != 0) {
 				$periodForQuery = -1;
 			} // END if

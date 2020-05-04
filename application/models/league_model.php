@@ -456,6 +456,26 @@ class league_model extends base_model {
 		}
 	}
 	/**
+	* 	USER LEAGUE COUNT.
+	* 	<p>Tests f the passed user ID is the leagues commissioner.</p>
+	* 	@param	$userId			{int}			The user Id
+	* 	@param	$league_id		{int}			OPTIONAL - The League Id
+	* 	@return					{Boolean}		TRUE if user is commissioner, FALSE if not
+	*
+	* 	@since	1.0
+	*  	@access	public
+	*/
+	public function userLeagueCount($userId = false) {
+
+		if ($userId === false) { return false; }
+
+		$this->db->select('id');
+		$this->db->from($this->tblName);
+		$this->db->where("commissioner_id",$userId);
+		return $this->db->count_all_results();
+	}
+
+	/**
 	* 	GET COMMISSIONER ID.
 	* 	<p>Returns a leagues commissioenr ID.</p>
 	* 	@param	$league_id		{int}		The League Id

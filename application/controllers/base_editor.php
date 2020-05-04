@@ -78,6 +78,12 @@ class BaseEditor extends MY_Controller {
 	 *	@var $debug:Boolean
 	 */
 	var $debug = false;
+	/**
+	 *	STATUS.
+	 *	Int to decide if submit operations should continue
+	 *	@var $status:Int
+	 */
+	var $status = -1;
 	
 	/*--------------------------------
 	/	C'TOR
@@ -165,50 +171,56 @@ class BaseEditor extends MY_Controller {
 						$this->beforeEdit();
 					}
 					$this->makeForm();
-					if ($this->input->post('submitted') || ($this->input->post('showPreview') && $this->input->post('showPreview') != -1)) {
-						if ($this->processForm()) {
-							if ($this->input->post('showPreview') && $this->input->post('showPreview') != -1) {
-								$this->data['previewContent'] = $this->preview();
-								$this->outMess = $this->lang->line('form_preview');
-								$this->messageType = MESSAGE_NOTICE;
-								$this->showPreview();
-							} else {
-								$this->outMess = $this->lang->line('form_complete_success');
-								$this->messageType = MESSAGE_SUCCESS;
-								$this->complete();
-							}
-						} else {
-							//echo("Form Fail"."<br />");
-							$_POST['showPreview'] = -1;
-							$this->outMess = str_replace('[ERROR_MESSAGE]',$this->dataModel->statusMess,$this->lang->line('form_complete_fail'));
-							$this->form->errors .= $this->form->error_string_open.$this->outMess.$this->form->error_string_close;
-							$fv = & _get_validation_object();
-							$fv->setError('name',$this->outMess);
-							$this->showForm();
-						}
-					} else {
-						if ($this->mode == 'edit') {
-							if ($this->dataModel->id == -1) {
-								$errStr = '';
-								if ($this->dataModel->statusMess != '') {
-									$errStr = $this->dataModel->statusMess;
+
+					if ($this->status == -1) {
+						if ($this->input->post('submitted') || ($this->input->post('showPreview') && $this->input->post('showPreview') != -1)) {
+							if ($this->processForm()) {
+								if ($this->input->post('showPreview') && $this->input->post('showPreview') != -1) {
+									$this->data['previewContent'] = $this->preview();
+									$this->outMess = $this->lang->line('form_preview');
+									$this->messageType = MESSAGE_NOTICE;
+									$this->showPreview();
 								} else {
-									$errStr = "A required id parameter was missing.";
+									$this->outMess = $this->lang->line('form_complete_success');
+									$this->messageType = MESSAGE_SUCCESS;
+									$this->complete();
 								}
-								$this->outMess = str_replace('[ERROR_MESSAGE]',$errStr,$this->lang->line('form_complete_fail'));
-								$this->messageType = MESSAGE_FAIL;
-								$this->showError();
 							} else {
+								//echo("Form Fail"."<br />");
+								$_POST['showPreview'] = -1;
+								$this->outMess = str_replace('[ERROR_MESSAGE]',$this->dataModel->statusMess,$this->lang->line('form_complete_fail'));
+								$this->form->errors .= $this->form->error_string_open.$this->outMess.$this->form->error_string_close;
+								$fv = & _get_validation_object();
+								$fv->setError('name',$this->outMess);
 								$this->showForm();
 							}
 						} else {
-							$this->showForm();
+							if ($this->mode == 'edit') {
+								if ($this->dataModel->id == -1) {
+									$errStr = '';
+									if ($this->dataModel->statusMess != '') {
+										$errStr = $this->dataModel->statusMess;
+									} else {
+										$errStr = "A required id parameter was missing.";
+									}
+									$this->outMess = str_replace('[ERROR_MESSAGE]',$errStr,$this->lang->line('form_complete_fail'));
+									$this->messageType = MESSAGE_FAIL;
+									$this->showError();
+								} else {
+									$this->showForm();
+								}
+							} else {
+								$this->showForm();
+							}
 						}
+					} else {
+						$this->messageType = MESSAGE_FAIL;
+						$this->showError();
 					}
 				}
 		    } else {
-				$this->outMess = '<span class="error">YOu do not have sufficient privlidges to access this page.</span>';	
-				$this->showError();
+				$this->outMess = '<span class="error">You do not have sufficient privlidges to access this page.</span>';	
+				
 			}
 		} else {
 	        $this->session->set_userdata('loginRedirect',current_url());	
