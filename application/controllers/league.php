@@ -1843,7 +1843,7 @@ class league extends BaseEditor {
 			if (isset($this->uriVars['league_id'])) { $this->uriVars['id'] = $this->uriVars['league_id']; }
 			$this->loadData();
 			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
-				//$this->data['type'] = $limit = (isset($this->uriVars['type'])) ? $this->uriVars['type'] : 1;
+				$this->data['type'] = $limit = (isset($this->uriVars['type'])) ? $this->uriVars['type'] : 1;
 				$this->data['limit'] = $limit = (isset($this->uriVars['limit'])) ? $this->uriVars['limit'] : DEFAULT_RESULTS_COUNT;
 				$this->data['pageId'] = $pageId = (isset($this->uriVars['pageId'])) ? $this->uriVars['pageId'] : 1;
 				$startIndex = 0;
@@ -1860,7 +1860,7 @@ class league extends BaseEditor {
 					$this->data['trades'] = $this->team_model->getPendingTrades($this->dataModel->id, false, false, false, true, false, $this->data['limit'],$this->data['startIndex']);
 				} else {
 					$tradeLabel = "All ";
-					$this->data['trades'] = $this->team_model->getAllTrades($this->dataModel->id, false, false, false, true, false, $this->data['limit'],$this->data['startIndex']);
+					$this->data['trades'] = $this->team_model->getAllTrades($this->dataModel->id, true, $this->data['limit'],$this->data['startIndex']);
 				}
 				$this->data['tradeStatus'] = loadSimpleDataList('tradeStatus');
 				//print($this->db->last_query()."<br />");

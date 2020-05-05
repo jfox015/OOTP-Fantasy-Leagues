@@ -679,12 +679,12 @@ class user extends MY_Controller {
         $userTeams = array();
         $currPeriod = false;
         if (strtotime($this->ootp_league_model->current_date) > strtotime($this->ootp_league_model->start_date)) {
-            $currPeriod = ($this->params['config']['current_period']-1);
+            $currPeriod = ($this->params['config']['current_period']- 1);
         } // END if	
         if (isset($this->params['userTeams'])) {
 			$userTeams = $this->params['userTeams'];
         } else {
-            $userTeams = $this->user_meta_model->getUserTeams(false,false,$currPeriod);
+            $userTeams = $this->user_meta_model->getUserTeams(false, false, $currPeriod);
         } // END if	
 
 		if ($func == "view") {
@@ -717,9 +717,7 @@ class user extends MY_Controller {
 					} // END foreach	
 				} // END if	
 				$this->data['countryStr'] = $countryStr;
-				
-				$this->data['userTeams'] = $userTeams;
-				
+								
 				$userDrafts = $this->user_meta_model->getUserDrafts();
 				
 				if (!isset($this->draft_model)) {

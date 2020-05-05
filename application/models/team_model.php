@@ -621,7 +621,7 @@ class team_model extends base_model {
 		}
 		$this->db->order_by('protest_date','desc');
 		$query = $this->db->get($this->tables['TRADE_PROTESTS']);
-
+		//print($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				$ownerStr = getUsername($row->owner_id);
@@ -630,7 +630,6 @@ class team_model extends base_model {
 			} // END foreach
 		} // END if
 		$query->free_result();
-		//print($this->db->last_query()."<br />");
 		return $protests;
 	}
 	/**

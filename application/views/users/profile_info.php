@@ -356,20 +356,23 @@
 					?>
                     </table>
                     </div>
-					<?php } else { ?>
-                    <div class="textbox">
+					<?php 
+						} // END if
+					// } else { ?>
+                    <!--div class="textbox">
 					<table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
-                    <tr class='title'>
-                        <td colspan='8' class='lhl'>No Teams Found</td>
-                    </tr>
+					<tr class='title'>
+                        <td class="lhl"><?php print((($type == 'rot') ? 'Rotisserie' : "Head to Head")." Leagues"); ?></td>
+					</tr>
 					<tr>
 						<td align="center">No teams were found.</td>
 					</tr>
 					</table>
-					</div>
-					<?php } // END if
+					</div-->
+					<?php //} // END if
                     } // ENd foreach
-               }?>
+			   }
+			   ?>
                     <br clear="all" class="clear" />
                     </div>
                     </div>

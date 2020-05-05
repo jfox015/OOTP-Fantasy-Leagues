@@ -330,7 +330,7 @@ class user_meta_model extends base_model {
      */
     public function getTradesForReview($userId = false, $scoring_period_id = false, $team_id = false, $league_id = false, $debug = false) {
 		$tradeReviewList = array();
-        if ($userId === false) { $userId = $this->userId; }
+		if ($userId === false) { $userId = $this->userId; }
 		if ($userId == -1) {
 			$this->errorCode = 1;
 			$this->statusMess = "No user Id was received.";
@@ -340,15 +340,15 @@ class user_meta_model extends base_model {
             if ($league_id !== false) {
                 array_push($league_list,$league_id);
             } else {
-                $league_list = $this->getUserLeagueIds($userId,$scoring_period_id);
+                $league_list = $this->getUserLeagueIds($userId);
             }
 			$team_list = array();
             if ($team_id !== false) {
                 array_push($team_list,$team_id);
             } else {
                 $team_list = $this->getUserTeamIds(false,$userId,$scoring_period_id);
-            }
-            if (sizeof($league_list) > 0) {
+			}
+			if (sizeof($league_list) > 0) {
 				$this->db->select($this->tables['TRADES'].'.id, team_1_id, teamname, teamnick, team_2_id, status, tradeStatus, '.$this->tables['TRADES'].'.league_id, offer_date, response_date, expiration_days');
 				$this->db->join($this->tables['TEAMS'],$this->tables['TRADES'].'.team_1_id = '.$this->tables['TEAMS'].'.id','right outer');
 				$this->db->join('fantasy_teams_trades_status','fantasy_teams_trades_status.id = '.$this->tables['TRADES'].'.status','right outer');
@@ -373,6 +373,7 @@ class user_meta_model extends base_model {
 				}
 				$this->db->orderBy($this->tables['TRADES'].'.league_id','asc');
 				$query = $this->db->get($this->tables['TRADES']);
+				//echo($this->db->last_query()."<br />");
 				if (!function_exists('getTeamName')) {
 					$this->load->helper('roster');
 				}

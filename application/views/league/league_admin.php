@@ -53,7 +53,7 @@
 				</li>
                 <?php } 
                 if ($this->params['config']['useTrades'] == 1) { ?>
-                <li><?php echo anchor('/league/tradeReview/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
+                <li><?php echo anchor('/league/tradeReview/id/'.$league_id.'/type/1','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
             	Pending Trades
 				<?php if (isset($trades) && $trades > 0) { ?>
 					<span class="badge"><?php echo($trades); ?></span>
