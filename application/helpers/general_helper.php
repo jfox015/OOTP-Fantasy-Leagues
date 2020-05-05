@@ -151,7 +151,7 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 		// BATTERS
 		switch ($query_type) {
 			case QUERY_COMPACT:
-				$sql .= 'if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(h)/'.$sqlOperator.'(ab)) as avg,'.$sqlOperator.'(r) as r,'.$sqlOperator.'(hr) as hr,'.$sqlOperator.'(bb) as bb,'.$sqlOperator.'(k) as k,'.$sqlOperator.'(sb) as sb';
+				$sql .= 'if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(h)/'.$sqlOperator.'(ab)) as avg,'.$sqlOperator.'(r) as r,'.$sqlOperator.'(hr) as hr,'.$sqlOperator.'(rbi) as rbi,'.$sqlOperator.'(sb) as sb, if(('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp))/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf)))+if('.$sqlOperator.'(ab)=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(d)+2*'.$sqlOperator.'(t)+3*'.$sqlOperator.'(hr))/'.$sqlOperator.'(ab)) as ops';
 				break;
 			case QUERY_BASIC:
 				$sql .= 'if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(h)/'.$sqlOperator.'(ab)) as avg,'.$sqlOperator.'(hr) as hr,'.$sqlOperator.'(rbi) as rbi,'.$sqlOperator.'(bb) as bb,'.$sqlOperator.'(k) as k,'.$sqlOperator.'(sb) as sb, if(('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp))/('.$sqlOperator.'(ab)+'.$sqlOperator.'(bb)+'.$sqlOperator.'(hp)+'.$sqlOperator.'(sf)))+if('.$sqlOperator.'(ab)=0,0,('.$sqlOperator.'(h)+'.$sqlOperator.'(d)+2*'.$sqlOperator.'(t)+3*'.$sqlOperator.'(hr))/'.$sqlOperator.'(ab)) as ops';
@@ -169,7 +169,7 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 		// PITCHERS
 		switch ($query_type) {
 			case QUERY_COMPACT:
-				$sql .= 'if(w=0,0,'.$sqlOperator.'(w)) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk,'.$sqlOperator.'(s) as s';
+				$sql .= 'if(w=0,0,'.$sqlOperator.'(w)) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(k) as pk,'.$sqlOperator.'(s) as s, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip';
 				break;
 			case QUERY_BASIC:
 				$sql .= 'if(w=0,0,'.$sqlOperator.'(w)) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip,'.$sqlOperator.'(s) as s';
@@ -225,7 +225,7 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
 		// BATTERS
 		switch ($query_type) {
 			case QUERY_COMPACT:
-				$colnames .= "AVG|R|HR|BB|K|SB";
+				$colnames .= "AVG|R|HR|RBI|SB|OPS";
 				break;
 			case QUERY_BASIC:
 				$colnames .= "AVG|HR|RBI|BB|K|SB|OPS";
@@ -241,7 +241,7 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
 	} else {
 		switch ($query_type) {
 			case QUERY_COMPACT:
-				$colnames .= "W|L|ERA|BB|K|SV";
+				$colnames .= "ERA|W|L|K|SV|WHIP";
 				break;
 			case QUERY_BASIC:
 				$colnames .= "W|L|ERA|IP|BB|K|SV|WHIP";
@@ -282,7 +282,7 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
 		// BATTERS
 		switch ($query_type) {
 			case QUERY_COMPACT:
-				$fieldList = array('avg','r','hr','bb','k','sb');
+				$fieldList = array('avg','r','hr','rbi','sb','ops');
 				break;
 			case QUERY_BASIC:
 				$fieldList = array('avg','hr','rbi','bb','k','sb','ops');
@@ -298,7 +298,7 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
 	} else {
 		switch ($query_type) {
 			case QUERY_COMPACT:
-				$fieldList = array('w','l','era','pbb','pk','s');
+				$fieldList = array('era','w','l','pk','s','whip');
 				break;
 			case QUERY_BASIC:
 				$fieldList = array('w','l','era','ip','pbb','pk','s','whip');
@@ -483,7 +483,7 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 					case 'hr9':
 					case 'rating':
 						$val=sprintf("%.2f",$row[$col]);
-						if (($val<1)&&($col=='whip')) {$val=strstr($val,".");}
+						if (($val<1)&&($col=='whip')) {$val=strstr($val,"0.");}
 						$newRow[$col] = $val;
 						break;
 					/*case 'rating':

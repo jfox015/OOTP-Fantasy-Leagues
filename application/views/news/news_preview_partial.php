@@ -56,7 +56,7 @@
                     <?php
                     if (isset($article['fantasy_analysis']) && !empty($article['fantasy_analysis'])) {
                         echo('<h3>Fantasy Analysis</h3>');
-                        echo('<p>'.$article['news_body'].'</p>');
+                        echo('<p>'.$article['fantasy_analysis'].'</p>');
                     }
                     ?>
                 </div><!-- .entry-content -->
@@ -87,6 +87,10 @@
                 <input type="hidden" name="type_id" value="<?php echo($article['type_id']); ?>" />
                 <input type="hidden" name="var_id" value="<?php echo($article['var_id']); ?>" />
                 <?php
+                if (isset($article['fantasy_analysis']) && !empty($article['fantasy_analysis'])) { ?>
+                    <input type="hidden" name="fantasy_analysis" value="<?php echo($article['fantasy_analysis']); ?>" />
+                <?php
+                }
                 if (isset($article['uploadedImage']) && !empty($article['uploadedImage']) && file_exists(PATH_NEWS_IMAGES_PREV_WRITE.$article['uploadedImage'])) { ?>
                     <input type="hidden" name="uploadedImage" value="<?php echo($article['uploadedImage']); ?>" />
                 <?php

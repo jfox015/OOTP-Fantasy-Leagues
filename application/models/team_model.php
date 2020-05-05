@@ -461,8 +461,29 @@ class team_model extends base_model {
             $expireDate = $expiresIn;
         } else {
 		   $expireDate = date('Y-m-d h:i:s',(strtotime(date('Y-m-d 00:00:00')) + ($day * $expiresIn)));
-        */
-        $data = array('team_1_id' =>$team_id, 'send_players' => serialize($sendPlayers), 'team_2_id' => $team2Id,'receive_players' => serialize($receivePlayers),
+		*/
+		// REMOVE ERRANT SEMICOLAN IN MULTIPLE TRADE DEALS
+		$sendPlayerArr = array();
+		foreach ($sendPlayers  as $playerStr) {
+			$tmpPlayer = explode("_",$playerStr);
+			if (strpos($tmpPlayer[0],";") !== false) {
+				$idStr = explode(";",$tmpPlayer[0]);
+				$tmpPlayer[0] = $idStr[0];
+			}
+			//echo("sending player = ".$tmpPlayer[0]."<br />");
+			array_push($sendPlayerArr, implode("_",$tmpPlayer));
+		}
+		$receivePlayerArr = array();
+		foreach ($receivePlayers  as $playerStr) {
+			$tmpPlayer = explode("_",$playerStr);
+			if (strpos($tmpPlayer[0],";") !== false) {
+				$idStr = explode(";",$tmpPlayer[0]);
+				$tmpPlayer[0] = $idStr[0];
+			}
+			//echo("receiving player = ".$tmpPlayer[0]."<br />");
+			array_push($receivePlayerArr, implode("_",$tmpPlayer));
+		}
+		$data = array('team_1_id' =>$team_id, 'send_players' => serialize($sendPlayerArr), 'team_2_id' => $team2Id,'receive_players' => serialize($receivePlayerArr),
 					  'status'=>1, 'league_id'=> $league_id,'comments'=>$comments, 'previous_trade_id'=>$prevTradeId,
 					  'expiration_days'=>$expiresIn,'in_period'=>intval($scoring_period_id));
 
@@ -499,6 +520,11 @@ class team_model extends base_model {
 				if (is_array($players) && sizeof($players) > 0){
 					foreach($players as $playerStr) {
 						$tmpPlayer = explode("_",$playerStr);
+						// REMOVE ERRANT SEMICOLAN IN MULTIPLE TRADE DEALS
+						if (strpos($tmpPlayer[0],";") !== false) {
+							$idStr = explode(";",$tmpPlayer[0]);
+							$tmpPlayer[0] = $idStr[0];
+						}	
 						//print('TMP Player str = '.$playerStr.'<br />');
 						$this->db->flush_cache();
 						$this->db->where('player_id',$tmpPlayer[0]);
@@ -958,13 +984,13 @@ class team_model extends base_model {
 	 * @param  $score_period
 	 * @param  $team_id
 	 */
-	public function getPlayerRosterStatus($player_id = false,$score_period = false, $team_id = false) {
+	public function getPlayerRosterStatus($player_id = false,$score_period_id = false, $team_id = false) {
 		$status = array();
 		$code = -1;
 		$message = "";
 		$count = 0;
 
-		if ($player_id === false || $score_period === false || $team_id === false) { return false; }
+		if ($player_id === false || $score_period_id === false || $team_id === false) { return false; }
 
 		$this->db->flush_cache();
 		$name = "[Name not found]";// GET PLAYER NAME
@@ -981,7 +1007,7 @@ class team_model extends base_model {
 		$this->db->flush_cache();
 		$this->db->where('player_id',$player_id);
 		$this->db->where('team_id',$team_id);
-		$this->db->where('scoring_period_id',$score_period['id']);
+		$this->db->where('scoring_period_id',$score_period_id);
 		$count = $this->db->count_all_results($this->tables['ROSTERS']);
 		if ($count > 0) {
 			$code = 200;
@@ -996,16 +1022,16 @@ class team_model extends base_model {
 	 * GET PLAYERS ROSTER STATUS
 	 * Tests and array of player ids against their roster status.
 	 * @param $players
-	 * @param $score_period
+	 * @param $score_period_id
 	 * @param $team_id
 	 */
-	public function getPlayersRosterStatus($players,$score_period, $team_id) {
+	public function getPlayersRosterStatus($players,$score_period_id, $team_id) {
 		$status = array();
 		if ($players === false || !is_array($players) || sizeof($players) <= 0 ||
-		$score_period === false || $team_id === false) { return false; }
+		$score_period_id === false || $team_id === false) { return false; }
 
 		foreach($players as $player_id) {
-			array_push($status,$this->getPlayerRosterStatus($player_id,$score_period,$team_id));
+			array_push($status,$this->getPlayerRosterStatus($player_id,$score_period_id,$team_id));
 		}
 		return $status;
 	}

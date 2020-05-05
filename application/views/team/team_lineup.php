@@ -112,14 +112,14 @@
 					if (isset($colnames['batters'])) { 
 						$colNames = explode("|", $colnames['batters']);
 						foreach ($colNames as $name) {
-							$headlineBats .= "<td class='hsc2_c stat field_show'>".$name."</td>\n";
+							$headlineBats .= "<td class='hsc2_r stat field_show'>".$name."</td>\n";
 						}
 					}
 					$headlinePitch = '';
 					if (isset($colnames['pitchers'])) { 
 						$colNames = explode("|", $colnames['pitchers']);
 						foreach ($colNames as $name) {
-							$headlinePitch .= "<td class='hsc2_c stat field_show'>".$name."</td>\n";
+							$headlinePitch .= "<td class='hsc2_r stat field_show'>".$name."</td>\n";
 						}
 					}
 					$headlineSched = '';
@@ -224,13 +224,13 @@
 										} // END if
 									} // END if
 								?>
-								<td class='hsc2_l stat field_show'><?php echo('<span style="color:'.$color.';">'.$val.'</span>'); ?></td>
+								<td class='hsc2_r stat field_show'><?php echo('<span style="color:'.$color.';">'.$val.'</span>'); ?></td>
 								<?php
 								} // END foreach
 
 							} else {
 								for ($i = 0; $i < 7; $i++) { ?>
-									<td class='hsc2_l stat field_show'>0</td>
+									<td class='hsc2_r stat field_show'>0</td>
 								<?php
 								}
 							}// END if (isset($playerData['stats'])
@@ -264,8 +264,8 @@
 									echo("<td class='hsc2_l sched field_hide'></td>\n");
 								}
 							} ?>
-                            <td class='hsc2_r' align="right"><?php echo($playerData['own']); ?></td>
-                            <td class='hsc2_r' align="right"><?php echo($playerData['start']); ?></td> 
+                            <td class='hsc2_c'><?php echo($playerData['own']); ?></td>
+                            <td class='hsc2_c'><?php echo($playerData['start']); ?></td> 
 							<?php
 							if ($showAdmin) {
 							?>

@@ -783,7 +783,7 @@
                     
                     <label for="stats_range">Range:</label>
                       <select id='stats_range'>
-                        <?php $types = array(0=>"This Year", 1=>"Last Year", 2=>"Two Years Ago", 4=>"3 Year Average");
+                        <?php $types = array(-1=>"This Year", 1=>"Last Year",2=>"Two Years Ago", 4=>"3 Year Average");
                         foreach ($types as $key => $val) {
                             echo("<option value='$key'");
                             if ($key == $stats_range) { echo(" selected");}

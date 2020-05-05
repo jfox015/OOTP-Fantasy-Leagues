@@ -438,21 +438,26 @@ class team extends BaseEditor {
 			} // END if
 			$this->prepForQuery();
 			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
-				$this->data['stats_range'] = 0;
+				$this->data['stats_range'] = -1;
 			} else {
 				$this->data['stats_range'] = $this->uriVars['stats_range'];
 			} // END if
-			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
+			$date1 = new DateTime($this->ootp_league_model->current_date);
+			$date2 = new DateTime($this->ootp_league_model->start_date);
+			
+			$curr_period = $this->getScoringPeriod();
+			$curr_period_id = $curr_period['id'];
+			if ($date1 <= $date2 || $curr_period_id <= 1) {
 				$this->data['stats_range'] = 1;	
+			} // END if
+			$periodForQuery = $curr_period_id;
+			if ($this->data['stats_range'] != -1) {
+				$periodForQuery = -1;
 			} // END if
 			if (!isset($this->uriVars['stats_source']) || !empty($this->uriVars['stats_source'])) {
 				$this->data['stats_source'] = "sp_all";
 			} else {
 				$this->data['stats_source'] = $this->uriVars['stats_source'];
-			} // END if
-			$periodForQuery = $this->data['scoring_period']['id'];
-			if ($this->data['stats_range'] != 0) {
-				$periodForQuery = -1;
 			} // END if
 			
 			if (!isset($this->uriVars['type']) || empty($this->uriVars['type'])) {
@@ -888,6 +893,10 @@ class team extends BaseEditor {
 					$playerDetails = explode("_",$rawInfo);
 					$id = $playerDetails[0];
 					$id = str_replace(";","",$id);
+					if (strpos($id,";") !== false) {
+						$idStr = explode(";",$id);
+						$id = $idStr[0];
+					}
 					$playerName = $this->player_model->getPlayerName($id);
 				    if (!empty($send_player_str)) { $send_player_str .= "<br />"; }
 					$send_player_str .= anchor('/players/info/player_id/'.$id.'/league_id/'.$this->dataModel->league_id,$playerName);
@@ -903,7 +912,13 @@ class team extends BaseEditor {
 					//print ($rawInfo."<br />");
                     $playerDetails = explode("_",$rawInfo);
 					$id = $playerDetails[0];
+					//echo("raw receive player id before explode = ".$id."<br />");
 					$id = str_replace(";","",$id);
+					if (strpos($id,";") !== false) {
+						$idStr = explode(";",$id);
+						$id = $idStr[0];
+					}
+					//echo("receive player id after explode = ".$id."<br />");
 					$playerName = $this->player_model->getPlayerName($id);
 				    if (!empty($recieve_player_str)) { $recieve_player_str .= "<br />"; }
 					$recieve_player_str .= anchor('/players/info/player_id/'.$id.'/league_id/'.$this->dataModel->league_id,$playerName);
@@ -1058,10 +1073,18 @@ class team extends BaseEditor {
 			$receiveList['ids'] = array();
 			foreach($sendList['all'] as $data) {
 				$tmpPlayer = explode("_",$data);
+				if (strpos($tmpPlayer[0],";") !== false) {
+					$idStr = explode(";",$tmpPlayer[0]);
+					$tmpPlayer[0] = $idStr[0];
+				}
 				array_push($sendList['ids'], $tmpPlayer[0]);
 			}
 			foreach($receiveList['all'] as $data) {
 				$tmpPlayer = explode("_",$data);
+				if (strpos($tmpPlayer[0],";") !== false) {
+					$idStr = explode(";",$tmpPlayer[0]);
+					$tmpPlayer[0] = $idStr[0];
+				}
 				array_push($receiveList['ids'], $tmpPlayer[0]);
 			}
 			// DETEMRINE WHICH PLAYERS FROM EACH LIST ARE PITCHERS AND BATTERS
@@ -2098,16 +2121,16 @@ class team extends BaseEditor {
 	 *	VERIFY ROSTERS FOR TRADE.
 	 *	Checks that players involved in a trade are actually still on the applicable teams active rosters
 	 *
-	 *	@param	$team_id		The primary trade team ID
-	 *	@param	$sendList		Array of players to be sent
-	 *	@param	$team2Id		The second team in the trade ID
-	 *	@param	$receiveList	Array of players to be received
-	 *	@param	$scoring_period	Scoring period Array object
-	 *	@return	$return			Emptry String on success, Message string on error	
-	 *	@since					1.0.4 Beta
-	 *	@see					tradeResponse
+	 *	@param	$team_id				The primary trade team ID
+	 *	@param	$sendList				Array of players to be sent
+	 *	@param	$team2Id				The second team in the trade ID
+	 *	@param	$receiveList			Array of players to be received
+	 *	@param	$scoring_period_id		Scoring period ID
+	 *	@return	$return					Emptry String on success, Message string on error	
+	 *	@since							1.0.4 Beta
+	 *	@see							tradeResponse
 	 */
-	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period) {
+	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period_id) {
 		
 		$rosterMessages = "";
 		$sendIds = array();
@@ -2120,13 +2143,13 @@ class team extends BaseEditor {
 			$tmpPlayer = explode("_",$data);
 			array_push($receiveListIds,$tmpPlayer[0]);
 		}
-		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period, $team_id);
+		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period_id, $team_id);
 		foreach($sendRosterStatus as $status) {
 			if($status['code'] == 404) {
 				$rosterMessages .= $this->dataModel->getTeamName($team_id).": ".$status['message']."<br />";
 			}
 		}
-		$recieveRosterStatus = $this->dataModel->getPlayersRosterStatus($receiveListIds,$scoring_period,$team2Id);
+		$recieveRosterStatus = $this->dataModel->getPlayersRosterStatus($receiveListIds,$scoring_period_id,$team2Id);
 		foreach($recieveRosterStatus as $status) {
 			if($status['code'] == 404) {
 				$rosterMessages .= $this->dataModel->getTeamName($team2Id).": ".$status['message']."<br />";

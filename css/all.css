@@ -727,6 +727,13 @@ tr.s2_l, tr.sl_2 {
 	background-color: #FFFFFF !important;
 }
 
+td.hsc2_l.stat, td.hsc2_r {
+	text-align: right;
+}
+td.hsc2_c.stat, td.hsc2_c {
+	text-align: center;
+}
+
 .textbox.statsbox table, .textbox.gamebox table {
 	border-collapse: collapse;
     width: 100%;

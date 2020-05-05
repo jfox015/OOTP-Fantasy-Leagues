@@ -615,6 +615,7 @@ class news extends BaseEditor {
 		$this->data['article']['storyDateD'] = $this->input->post('storyDateD');
 		$this->data['article']['news_subject'] = $this->input->post('news_subject');
 		$this->data['article']['news_body'] = $this->news_body;
+		$this->data['article']['fantasy_analysis'] = $this->input->post('fantasy_analysis');
 		$this->data['article']['author_id'] = $this->input->post('author_id');
 		$this->data['article']['authorName'] = resolveOwnerName($this->input->post('author_id'));
 		$this->data['article']['image'] = '';
