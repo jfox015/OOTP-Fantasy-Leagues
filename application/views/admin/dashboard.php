@@ -399,6 +399,7 @@
 	/	Added 1.0.3 PROD
 	/-----------------------------------------------*/
 	$icons = array();
+	$icons['warn'] = '<img src="'.PATH_IMAGES.'icons/icon_alert.png" width="20" height="20" align="absmiddle" />';
 	$icons['error'] = '<img src="'.PATH_IMAGES.'icons/icon_fail.png" width="20" height="20" align="absmiddle" />';
 	$icons['success'] = '<img src="'.PATH_IMAGES.'icons/icon_pass.png" width="20" height="20" align="absmiddle" />';
 	$icons['info'] = '<img src="'.PATH_IMAGES.'icons/icon_info.gif" width="20" height="20" align="absmiddle" />';
@@ -411,6 +412,11 @@
     </tr>
 	<tr>
     	<td>
+			<?php
+			if (isset($requiring_activation) && $requiring_activation > 0) { 
+				echo('<span class="warn">'.$icons['warn'].' '.anchor('admin/userActivations',$requiring_activation.' users require activation').'</span>');
+			}
+			?>
 			<?php 
 			// PRE_SEASON CHECKS
 			if ($currDate <= $startDate) { ?>

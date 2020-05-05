@@ -234,7 +234,7 @@ class admin extends MY_Controller {
 					// IF DRAFT IS COMPLETE, VALIDATE ROSTERS
 					if ($draftStatus == 5 && $details['league_status'] == 1 && $this->ootp_league_model->league_id != -1) {
 						$this->league_model->errorCode = -1;
-						$this->league_model->validateRosters($this->data['currPeriodConfig']['id'], $id);
+						$this->league_model->validateRosters($this->data['currPeriodConfig'], $id);
 						if ($this->league_model->errorCode == 1) $invalidRosters[$id] = $details['league_name'];
 					}
 				}
