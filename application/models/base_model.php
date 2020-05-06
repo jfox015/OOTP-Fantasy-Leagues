@@ -237,7 +237,9 @@ class base_model extends Model implements Serializable {
 				} // END if
 			} // END foreach
 			foreach($this->textList as $field) {
-				$this->$field = ($input->post($field) ? $input->post($field) : "");
+				if ($input->post($field)) {
+					$this->$field = $input->post($field);
+				}
 			} // END foreach
 		} catch (Exception $e) {
 			$success = false;

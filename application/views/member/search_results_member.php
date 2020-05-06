@@ -14,8 +14,9 @@
 		<?php 
         $rowCount = 0;
         foreach ($searchResults as $row) { 
+            if (($rowCount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }
             ?>
-		<tr class="<?php echo(($rowCount % 2) == 0 ? "bg" : ""); ?>">				
+            <tr style="background-color:<?php echo($color); ?>">				
             <td class="style1" style="text-align:left;"><?php echo(anchor('member/info/'.$row['id'],$row['username'])); ?></td>
             <td><a href="mailto:<? echo $row['email']; ?>"><?php echo $row['email']; ?></a></td>
             <td><?php echo date('m/d/Y', strtotime($row['dateCreated'])); ?></td>

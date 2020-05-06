@@ -528,7 +528,8 @@ class team_model extends base_model {
 						//print('TMP Player str = '.$playerStr.'<br />');
 						$this->db->flush_cache();
 						$this->db->where('player_id',$tmpPlayer[0]);
-                        $this->db->where('league_id',$league_id);
+						$this->db->where('league_id',$league_id);
+						$this->db->where('scoring_period_id',$trade['in_period']);
 						if ($tmpPlayer[1] == "LF" || $tmpPlayer[1] == "CF" || $tmpPlayer[1] == "RF") {
 							$tmpPlayer[1] = "OF";
 						}
@@ -655,14 +656,24 @@ class team_model extends base_model {
 	public function getTradesForScoringPeriod($league_id = false, $scoring_period_id = -1, $team_id = false, $team_2_id = false, $exclude_team_id = false, $countProtests = false, $status = 100, $limit = -1, $startIndex = 0) {
 		if ($league_id === false) $league_id = $this->league_id;
 		$trades = $this->getTradeData($league_id, $team_id, false, false, $status, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
-		$moreTrades = $this->getTradeData($league_id, false, $team_id, false, $status, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
+		// 1.0.3 Fix - PREVENT CALLING THE SAME QUERY TWICE WHEN GETTING TRADES NOT FOR THE CURRENT TEAM BUT FOR LEAGUE
+		if (!$team_id === false || !$team_2_id === false)
+			$moreTrades = $this->getTradeData($league_id, false, $team_id, false, $status, $exclude_team_id, $countProtests, $scoring_period_id, $limit, $startIndex);
 		// EDIT 1.0.3
 		// FIXED INCOMING OFFERS NOT BEING APPENDED TO THE FIRST LIST
 		if (sizeof($moreTrades) > 0) {
-			foreach($moreTrades as $mtrade){
-				array_push($trades, $mtrade);
-			}
-		}
+			foreach($moreTrades as $mtrade) {
+				$found = false;
+				foreach($trades as $tradeData) {
+					if ($mtrade['id'] == $tradeData['id']) {
+						$found = true;
+						break;
+					} // END if
+				} // END foreach($trades 
+				if (!$found) 
+					array_push($trades, $mtrade); // END if
+			} // END foreach($moreTrades 
+		} // END if
         return $trades;
 	}
 	/**
@@ -710,8 +721,29 @@ class team_model extends base_model {
 			$row = $query->row();
 			$team_1_name = $this->getTeamName($row->team_1_id);
 			$team_2_name = $this->getTeamName($row->team_2_id);
+			// FIX ERRNAT SEMI COLAN ISSUE
+			$sendPlayerArr = array();
+			$sendPlayers = unserialize($row->send_players);
+			foreach($sendPlayers as $playerStr) {
+				$tmpPlayer = explode("_",$playerStr);
+				if (strpos($tmpPlayer[0],";") !== false) {
+					$idStr = explode(";",$tmpPlayer[0]);
+					$tmpPlayer[0] = $idStr[0];
+				}
+				array_push($sendPlayerArr, implode("_",$tmpPlayer));
+			}
+			$receivePlayerArr = array();
+			$receive_players = unserialize($row->receive_players);
+			foreach($receive_players as $playerStr) {
+				$tmpPlayer = explode("_",$playerStr);
+				if (strpos($tmpPlayer[0],";") !== false) {
+					$idStr = explode(";",$tmpPlayer[0]);
+					$tmpPlayer[0] = $idStr[0];
+				}
+				array_push($receivePlayerArr, implode("_",$tmpPlayer));
+			}
 			$trade = array('trade_id'=>$row->id, 'offer_date'=>$row->offer_date, 'team_1_name'=>$team_1_name,'team_1_id'=>$row->team_1_id,
-													  'send_players'=>unserialize($row->send_players), 'receive_players'=>unserialize($row->receive_players),
+													  'send_players'=>$sendPlayerArr, 'receive_players'=>$receivePlayerArr,
 													  'team_2_name'=>$team_2_name,'team_2_id'=>$row->team_2_id, 'previous_trade_id'=>$row->previous_trade_id, 'in_period'=>$row->in_period,
 													  'status'=>$row->status,'tradeStatus'=>$row->tradeStatus,'comments'=>$row->comments,'expiration_days'=>$row->expiration_days,
 													  'response_date'=>$row->response_date);
@@ -788,9 +820,18 @@ class team_model extends base_model {
 					if (isset($row->$field) && !empty($row->$field) && strpos($row->$field,":")) {
 						$fieldData = unserialize($row->$field);
 						if (is_array($fieldData) && sizeof($fieldData) > 0) {
-							//echo("size of ".$field." data = ".sizeof($fieldData)."<br />");
-							$playerDetails = getFantasyPlayersDetails($fieldData);
-							foreach ($fieldData as $playerId) {
+							// SANITIZE ERRANT SEMICOLANS FROM PLAYER IDS
+							$playerDataArr = array();
+							foreach($fieldData as $key => $plyr) {
+								$playerData = explode("_",$plyr);
+								if (strpos($playerData[0],";") !== false) {
+									$idStr = explode(";",$playerData[0]);
+									$playerData[0] = $idStr[0];
+								}
+								array_push($playerDataArr, implode("_",$playerData));
+							}
+							$playerDetails = getFantasyPlayersDetails($playerDataArr);
+							foreach ($playerDataArr as $playerId) {
 								//echo($field." player id = ".$playerId."<br />");
 								$playerStr = '';
 								if (isset($playerDetails[$playerId])) {
@@ -1656,7 +1697,7 @@ class team_model extends base_model {
 			} // END if
 			$this->db->order_by('player_position, player_role');
 			$query = $this->db->get('fantasy_players');
-			//echo("last SQL positions = ".$this->db->last_query()."<br />");
+			//echo($this->db->last_query()."<br />");
 			if ($query->num_rows() > 0) {
 				foreach ($query->result() as $row) {
 					$tmpData = array('player_name'=>$row->first_name." ".$row->last_name,'id'=>$row->player_id,'player_position'=>$row->player_position,'player_role'=>$row->player_role,

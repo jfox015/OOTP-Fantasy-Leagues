@@ -172,7 +172,7 @@
 				// CAN MANAGE TRADES VIA THE LEAGUE->ADMIN->Trade tools
 				if (isset($trans_type)) {
 				?>
-                    <div style="display:block;width:90%;position:relative; text-align:center; float:left;">
+                    <div style="display:block;width:58%;position:relative; text-align:center; float:left;">
                     <div id="activeStatusBox"><div id="activeStatus"></div></div>
                     <?php 
                     $action = "tradeResponse";
@@ -184,7 +184,34 @@
                  	<?php
                     if (isset($statusStr) && !empty($statusStr)) { ?>
                         <label for="txt_status">Status:</label>
-                        <div id="txt_status" class="textAreaForDisplay"><?php print($statusStr); ?></div>
+						<?php
+						switch ($statusStr) {
+							case 'Offered':
+							case 'Accepted':
+							case 'Completed':
+								$class = 'success';
+								break;
+							case 'Rejected by Owner':
+							case 'Rejected by League':
+							case 'Rejected by Commissioner':
+							case 'Rejected by Admin':
+							case 'Rejected with Counter':
+							case 'Invalid Trade':
+								$class = 'error';
+								break;
+							case 'Removed':
+							case 'Retracted':
+								$class = 'warn';
+								break;
+							case 'Pending League Approval':
+							case 'Pending Commissioner Approval':
+								$class = 'notice';
+								break;
+							default:
+								$class = 'info';
+						}
+						?>
+						<div id="txt_status" class="textAreaForDisplay <?php echo($class); ?>_txt" style="font-weight:bold;"><?php print($statusStr); ?></div>
                         <?php
                     }
 					if ($config['tradesExpire'] == 1) { ?>
@@ -217,7 +244,7 @@
                         } else { 
                             if (isset($expiration_days) && isset($offer_date)) {
                                 $expireStr = "";
-                                $expireLabel = "Expires";
+                                $expireLabel = "Expires: ";
                                 switch(intval($expiration_days)) {
                                     case -1:
                                         $expireStr = "No expiration";
@@ -336,9 +363,50 @@
                    	
                     </div>
                     </form>
-                    </div>
+					</div>
+					<?php 
+					if (isset($protests) && sizeof($protests) > 0) { ?>
+					<div id="right-column-wide">
+						<div class='textbox right-column'>
+							<table cellpadding="3" cellspacing="0">
+							<thead>	
+								<tr class="title">
+									<td class='hsc2_l' colspan="4">League Protest Details</td>
+								</tr>
+								<tr class="headline">
+									<td class='hsc2_c'>Date</td>
+									<td class='hsc2_c'>Team</td>
+									<td class='hsc2_c'>Owner</td>
+									<td class='hsc2_c' width="60%">Response</td>
+								</tr>
+							</thead>
+							<tbody>
+							<?php
+							$rowcount = 0;
+							foreach ($protests as $tmpProtest) {
+								if ($tmpProtest['trade_id'] == $trade_id) {
+									if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }
+									?>
+									<tr style="background-color:<?php echo($color); ?>">
+										<td class='hsc2_l'><?php echo(date('m/d/Y',strtotime($tmpProtest['protest_date'])));?></td>
+										<td class='hsc2_l'><?php echo($tmpProtest['team_name']);?></td>
+										<td class='hsc2_l'><?php echo($tmpProtest['owner']);?></td>
+										<td class='hsc2_l'><?php echo($tmpProtest['comments']);?></td>
+									</tr>
+								<?php
+								} // END if
+								$rowcount++;
+							} // END foreach
+							?>
+							</tbody>
+							</table>
+						</div>
+					</div>
+					<?php
+					} // END if (isset($protests) && sizeof($protests) > 0) {
+					?>
                  <?php 
-				}
+				} // END if (transType)
 			}
 			?>
       		</div>

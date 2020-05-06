@@ -7,7 +7,7 @@ $lang['team_lineup_adjust'] = 'adjust your lineup';
 // TRADE WORKFLOW MESSAGING
 // OFFER SUBMITTED
 //-------------------------------
-$lang['team_trade_offer_submitted'] = '<p>Your trade offer as submitted sucessfully. The owner of the [ACCEPTING_TEAM_NAME] has been notified of your offer.</p>';
+$lang['team_trade_offer_submitted'] = '<p>Your trade offer was submitted sucessfully. The owner of the [ACCEPTING_TEAM_NAME] has been notified of your offer.</p>';
 // ERROR - ROSTER WARNINGS/ERRORS
 $lang['team_trade_offer_roster_error'] = "Problems were found with this trade offer:<br />[ROSTER_MESSAGES]";
 // INVALID

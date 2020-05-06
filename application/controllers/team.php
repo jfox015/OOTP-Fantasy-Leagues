@@ -493,6 +493,10 @@ class team extends BaseEditor {
 				$sendList['players'] = array();
 				foreach($sendList['all'] as $data) {
 					$tmpPlayer = explode("_",$data);
+					if (strpos($tmpPlayer[0],";") !== false) {
+						$idStr = explode(";",$tmpPlayer[0]);
+						$tmpPlayer[0] = $idStr[0];
+					}
 					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
 					array_push($sendList['players'], $playerData);
 				} // END foreach
@@ -502,6 +506,10 @@ class team extends BaseEditor {
 				$receiveList['players'] = array(); 
 				foreach($receiveList['all'] as $data) {
 					$tmpPlayer = explode("_",$data);
+					if (strpos($tmpPlayer[0],";") !== false) {
+						$idStr = explode(";",$tmpPlayer[0]);
+						$tmpPlayer[0] = $idStr[0];
+					}
 					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
 					array_push($receiveList['players'], $playerData);
 				} // END foreach
@@ -1195,7 +1203,7 @@ class team extends BaseEditor {
 				$this->data['formatted_stats']['team_id1']['batters']= $this->load->view($this->views['STATS_TABLE'], $this->data, true);
 			}
 			
-			if ($this->data['trans_type'] == 4) {
+			if ($this->data['trans_type'] == 4 || $this->data['trans_type'] == 5) {
 				$this->data['protests'] = $this->dataModel->getTradeProtests($this->data['league_id']);
 			}
 			$this->data['comments']  = (isset($trade['comments'])) ? $trade['comments'] : "";

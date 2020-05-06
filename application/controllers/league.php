@@ -1132,7 +1132,7 @@ class league extends BaseEditor {
 				array_push($excludeList,$team_id);
 			}
 		}
-
+		//echo("Size of exclude list = ".count($excludeList)."<br />");
 		// GET GAMES
 		$games = $this->dataModel->getGamesForPeriod($curr_period_id,$excludeList);
 		if (!is_array($games) || sizeof($games) == 0) {
@@ -1932,7 +1932,7 @@ class league extends BaseEditor {
 	protected function makeForm() {
 		
 		// WE can always EDIT an existign League, but there are restrcitctions for ADDING Leagues
-		if ($this->mode != 'edit' && $this->data['accessLevel'] != ACCESS_ADMINISTRATE) {
+		if ((!isset($this->mode) || (isset($this->mode) && $this->mode != 'edit')) && $this->data['accessLevel'] < ACCESS_ADMINISTRATE) {
 			if (getFantasyStatus() != 1) {
 				$this->outMess = '<span class="warn">Leagues cannot be created anymore once a Fantasy Season has begun play. Please wait until the current Fantasy Season has concluded to try and create a new League.</span>';	
 				$this->status= 1;
@@ -1949,7 +1949,7 @@ class league extends BaseEditor {
 				} // END if
 			} // END if
 		} // END if
-		if ($exitStatus == -1) {
+		if ($this->status == -1) {
 
 			$form = new Form();
 

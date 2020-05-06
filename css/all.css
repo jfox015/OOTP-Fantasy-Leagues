@@ -727,10 +727,13 @@ tr.s2_l, tr.sl_2 {
 	background-color: #FFFFFF !important;
 }
 
-td.hsc2_l.stat, td.hsc2_r {
+td.hsc2_l {
+	text-align: left;
+}
+td.hsc2_r {
 	text-align: right;
 }
-td.hsc2_c.stat, td.hsc2_c {
+td.hsc2_c {
 	text-align: center;
 }
 
@@ -943,3 +946,4 @@ td.hsc2_c.stat, td.hsc2_c {
 	font-weight:bold;
 	color:#151617;
 }
+#tradeStatus, #listStatusBox { float: left; }

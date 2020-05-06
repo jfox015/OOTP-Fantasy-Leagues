@@ -425,12 +425,18 @@ function updateOwnership($playerId = false) {
 	$ci->db->where('league_status',1);
 	$league_count = $ci->db->count_all_results();
 	
+	if (!function_exists('load_config')) {
+		$ci->load->helper('config');
+	}
+	$config = load_config();
+
 	$own = 0;
 	$start = 0;
 	$ci->db->select("team_id, player_status");
 	$ci->db->from("fantasy_rosters");
-	$ci->db->group_by("league_id");
+	//$ci->db->group_by("league_id");
 	$ci->db->where("player_id",$playerId);
+	$ci->db->where("scoring_period_id",$config['current_period']);
 	$rQuery = $ci->db->get();
 	foreach($rQuery->result() as $rRow) {
 		$own++;

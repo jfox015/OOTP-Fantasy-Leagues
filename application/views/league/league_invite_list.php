@@ -108,21 +108,21 @@
             <p style="text-align:left;" />
             Invites currently outstanding for this league.
             
-            <div class='tablebox'>
+            <div class='textbox'>
             <table cellspacing="0" cellpadding="3" width="625">
             <tr class='title'><td colspan="3">Pending Invites</td></tr>
-            <tr class='headline' align="center">
+            <tr class='headline' class='hsc2_c'>
                 <td width="40%">E-Mail</td>
                 <td width="30%">Date Sent</td>
                 <td width="30%">Team</td>
             </tr>
             <?php 
             if (isset($thisItem['invites']) && sizeof($thisItem['invites']) > 0) {
-               $rowCount = 0;
-			   foreach ($thisItem['invites'] as $row) {
-				$cls="s".($rowCount%2+1);
-				?>
- 				<tr class="<?php echo($cls); ?>" style="text-align:left;">
+            	$rowCount = 0;
+				foreach ($thisItem['invites'] as $row) {
+					if (($rowCount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }
+            	?>
+                <tr style="background-color:<?php echo($color); ?>">
 					<td><?php echo($row['to_email']); ?></td>
                     <td><?php echo(date('M, j Y h:m A',strtotime($row['send_date']))); ?></td>
 					<td><?php echo(anchor('team/info/'.$row['team_id'],$row['team'])); ?></td>
@@ -131,7 +131,7 @@
 				$rowCount++;
 				} 
 			} else { ?>
-            <tr class='s1_1' align="center">
+            <tr class='s1_1' class='hsc2_c'>
                 <td colspan="3">No pending invitations were found.</td>
             </tr>
             <?php } ?>
@@ -144,10 +144,10 @@
             
         <h1>Pending Requests</h1>
         <div class="content-form">
-            <div class='tablebox'>
+            <div class='textbox'>
             <table cellspacing="0" cellpadding="3" width="625">
             <tr class='title'><td colspan="4">Pending Team Requests</td></tr>
-            <tr class='headline' align="center">
+            <tr class='headline' class='hsc2_c'>
                 <td width="25%">Username</td>
                 <td width="25%">Date Requested</td>
                 <td width="25%">Team</td>
@@ -157,9 +157,9 @@
             if (isset($thisItem['requests']) && sizeof($thisItem['requests']) > 0) {
                $rowCount = 0;
 			   foreach ($thisItem['requests'] as $row) {
-				$cls="s".($rowCount%2+1);
-				?>
- 				<tr class="<?php echo($cls); ?>" style="text-align:left;">
+					if (($rowCount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }
+            	?>
+                <tr style="background-color:<?php echo($color); ?>">
 					<td><?php echo(anchor('/user/profiles/'.$row['user_id'],$row['username'])); ?></td>
                     <td><?php echo(date('M, j Y h:m A',strtotime($row['date_requested']))); ?></td>
 					<td><?php echo(anchor('team/info/'.$row['team_id'],$row['team'])); ?></td>
@@ -171,7 +171,7 @@
 				$rowCount++;
 				} 
 			} else { ?>
-            <tr class='s1_1' align="center">
+            <tr class='s1_1' class='hsc2_c'>
                 <td colspan="4">No pending invitations were found.</td>
             </tr>
             <?php } ?>
@@ -179,8 +179,9 @@
             </div> 
         </div>
 		<br clear="all" />
-		<?php print(anchor('league/clearRequestQueue/'.$league_id,'<img src="'.PATH_IMAGES.'/icons/icon_fail.png" width="16" height="16" border="0" alt="Reject" align="absmiddle" /> Clear Team Request Queue'))?>
-
-        <p /><br />
+		<div style="width:100%; text-align:right;">
+		<?php print(anchor('league/clearRequestQueue/'.$league_id,'<button class="sitebtn lineup">Clear Request Queue</button>'))?>
+		</div>
+        <p><br />
     </div>
-    <p /><br />
+    <p><br />
