@@ -1127,22 +1127,27 @@ class team extends BaseEditor {
 			// GET STATS FOR PLAYERS IN TRADE OFFER
 			$this->prepForQuery();
 			if (!isset($this->uriVars['stats_range']) || empty($this->uriVars['stats_range'])) {
-				$this->data['stats_range'] = 0;
+				$this->data['stats_range'] = -1;
 			} else {
 				$this->data['stats_range'] = $this->uriVars['stats_range'];
-			}
-			if ($this->ootp_league_model->current_date < $this->ootp_league_model->start_date || sizeof($this->data['scoring_periods']) < 1) {
+			} // END if
+			$date1 = new DateTime($this->ootp_league_model->current_date);
+			$date2 = new DateTime($this->ootp_league_model->start_date);
+			
+			$curr_period = $this->getScoringPeriod();
+			$curr_period_id = $curr_period['id'];
+			if ($date1 <= $date2 || $curr_period_id <= 1) {
 				$this->data['stats_range'] = 1;	
-			}
+			} // END if
+			$periodForQuery = $curr_period_id;
+			if ($this->data['stats_range'] != -1) {
+				$periodForQuery = -1;
+			} // END if
 			if (!isset($this->uriVars['stats_source']) || !empty($this->uriVars['stats_source'])) {
 				$this->data['stats_source'] = "sp_all";
 			} else {
 				$this->data['stats_source'] = $this->uriVars['stats_source'];
-			}
-			$periodForQuery = $this->data['scoring_period']['id'];
-			if ($this->data['stats_range'] != 0) {
-				$periodForQuery = -1;
-			}
+			} // END if
 			
 			// TEAM META DATA FOR DISPLAY
 			$this->data['team_id1'] = -1;

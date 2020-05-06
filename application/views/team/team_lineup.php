@@ -143,6 +143,7 @@
 						<?php 
 						$roster_types = array('active','reserve','injured');
 						foreach ($roster_types as $type) { 
+							$batHeaderDrawn = false;
 							$pitchHeaderDrawn = false;
 							?>
                         <tr class='title'>
@@ -157,7 +158,7 @@
 						<?php
 						if (isset($thisItem['players_'.$type]) && sizeof($thisItem['players_'.$type]) > 0) { 
 						$rowcount = 0;
-						echo($headlines['batting']);
+						//echo($headlines['batting']);
 						foreach($thisItem['players_'.$type] as $id => $playerData) {
 
 							if ($playerData['position'] != 1) {
@@ -178,6 +179,10 @@
 										$gmPos .= get_pos($position);
 									}
 								}
+							}
+							if (!$batHeaderDrawn && $playerData['position'] != 1) {
+								echo($headlines['batting']);
+								$batHeaderDrawn = true;
 							}
 							if (!$pitchHeaderDrawn && $playerData['position'] == 1) {
 								echo($headlines['pitching']);

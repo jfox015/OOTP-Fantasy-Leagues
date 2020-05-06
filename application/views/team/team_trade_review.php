@@ -3,6 +3,7 @@
 	var teamId = <?php print($team_id); ?>;
 	var teamId1 = <?php print($team_id1); ?>;
 	var teamId2 = <?php print($team_id2); ?>;
+	var league_id = <?php print($league_id); ?>;
 	$(document).ready(function(){
 		$('#btnEdit').click(function(){
 			var proceed = true;
@@ -65,6 +66,17 @@
 			$('div#activeStatus').empty();
 			$('div#activeStatusBox').hide();
 		});
+		$('#btnRefresh').click(function(){
+			var proceed = true;
+			if ($('#comments').val() != "") {
+				proceed = confirm("Are you sure you want to reload the page? This will clear your current comments and cannot be undone. Do you want to proceed?");
+			}
+			if (proceed) {// GATHER VALUE FOR SUBMISSION
+				var stats_range = $('select#stats_range').val();	
+				var stats_source = $('select#stat_source').val();
+				document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/tradeReview/league_id/'+league_id+'/team_id/'+teamId+'/trade_id/'+$('input#trade_id').val()+'/trans_type/<?php echo($trans_type); ?>/stats_range/'+$('#stats_range').val();
+			}
+		});
 	});
 	function showMessage(type, message) {
 		$('div#activeStatus').addClass(type.toLowerCase());
@@ -113,10 +125,25 @@
 				}
 			}
 			if (!empty($outMess)) { print('<span class="'.$msgClass.'">'.$outMess.'</span>'); }
-
-			if (isset($formatted_stats) && sizeof($formatted_stats) > 0) { ?>
+			?>
+			<div id="optionsBar" style="width:100%;position:realtive;">
+                	<div id="trade_options" style="float:right; padding-right:8px;">                    
+                    <label for="stats_range">Stats Range:</label>
+                      <select id='stats_range'>
+                        <?php $types = array(-1=>"This Year", 1=>"Last Year",2=>"Two Years Ago", 4=>"3 Year Average");
+                        foreach ($types as $key => $val) {
+                            echo("<option value='$key'");
+                            if ($key == $stats_range) { echo(" selected");}
+                            echo(">$val</option>");
+                        } ?>
+                      </select>
+                    <input type='submit' id="btnRefresh" class='submitButton' value='Go' />
+                    </div>
+                    <br clear="all" class="clearfix clear" />
+                </div>
+			<?php			
+			if (isset($formatted_stats) && sizeof($formatted_stats) > 0) {
             
-            <?php
 				$lists = array('team_id2','team_id1');
 				// If this is recipient viewing the trade, swap the order
 				if (isset($trans_type) && $trans_type == 2) {

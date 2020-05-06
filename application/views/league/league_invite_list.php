@@ -139,7 +139,7 @@
             </div>
             
             <br clear="all" />
-            <p/>
+            <p>
          </div>
             
         <h1>Pending Requests</h1>
@@ -179,9 +179,14 @@
             </div> 
         </div>
 		<br clear="all" />
+		<?php 
+		if (isset($thisItem['requests']) && sizeof($thisItem['requests']) > 0) { ?>
 		<div style="width:100%; text-align:right;">
 		<?php print(anchor('league/clearRequestQueue/'.$league_id,'<button class="sitebtn lineup">Clear Request Queue</button>'))?>
 		</div>
         <p><br />
+		<?php
+		}
+		?>
     </div>
     <p><br />

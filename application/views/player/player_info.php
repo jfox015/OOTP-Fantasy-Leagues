@@ -329,7 +329,9 @@
 									$showButton = false;
 									echo('<span class="notice">You have a waiver claim pending for this player.</span>');
 									$action = 'claim';
-								}
+								} if (sizeof($userTeamId[0]) == 0) {
+                  $showButton = false;
+                }
 								if ($showButton) {
 									echo('<input type="button" class="button" id="'.$league_id.'|'.$userTeamId[0].'|'.$thisItem['id'].'" rel="addPlayer" name="addPlayer" value="Pick up this Player" />');
 									$action = 'add';
