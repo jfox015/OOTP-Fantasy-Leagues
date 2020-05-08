@@ -92,14 +92,15 @@ class league extends BaseEditor {
 			if (!isset($this->dataModel)) {
 				$this->load->model($this->modelName,'dataModel');
 			} // END if
+			$curr_period = $this->getScoringPeriod();
 			// COMMISH APPROVAL ALERT
 			if ($this->params['loggedIn'] && $this->params['config']['approvalType'] == 1 && $this->params['currUser'] == $this->dataModel->getCommissionerId()) {
 				$this->load->model('team_model');
-				$this->tradeLists['forAppproval'] = $this->team_model->getTradesForScoringPeriod($this->uriVars['id'], $this->getScoringPeriod(), false, false, false, false, TRADE_PENDING_COMMISH_APPROVAL);
+				$this->tradeLists['forAppproval'] = $this->team_model->getTradesForScoringPeriod($this->uriVars['id'], $curr_period['id'], false, false, false, false, TRADE_PENDING_COMMISH_APPROVAL);
 			} // END if
 			// LEAGUE APPROVAL
 			if ($this->params['config']['approvalType'] == 2 && $this->params['config']['protestPeriodDays'] > 0) {
-				$this->tradeLists['inLeagueReview'] = $this->dataModel->getTradesInLeagueReview($this->getScoringPeriod(),$this->uriVars['id'],$this->params['config']['protestPeriodDays']);
+				$this->tradeLists['inLeagueReview'] = $this->dataModel->getTradesInLeagueReview($curr_period['id'],$this->uriVars['id'],$this->params['config']['protestPeriodDays']);
 			} // END if
 			$this->data['tradeLists'] = $this->tradeLists;
 			// TRADES EXPIRATION
@@ -272,6 +273,8 @@ class league extends BaseEditor {
 		$query->free_result();
 
 		$this->data['thisItem']['commissionerName'] = $commishName;
+		$this->data['currUser'] = $this->params['currUser'];
+		$this->data['isLeagueMember'] = $this->dataModel->isLeagueMember($this->params['currUser'], $this->dataModel->id);
 
 		$this->params['content'] = $this->load->view($this->views['HOME'], $this->data, true);
 		$this->makeNav();
@@ -307,7 +310,16 @@ class league extends BaseEditor {
 				$invites = count($this->dataModel->getLeagueInvites(true));
 				$requests = count($this->dataModel->getLeagueRequests(true));
 				$this->data['invites_requets'] = $invites + $requests;
-				
+				$rosterValidation = $this->dataModel->validateRosters($this->params['config']['current_period'], $this->uriVars['id']);
+				$rosterIssues = 0;
+				if ($this->dataModel->errorCode == 1) {
+					foreach($rosterValidation as $status) {
+						if ($status['rosterValid'] == -1) {
+							$rosterIssues++;
+						}
+					}
+				}
+				$this->data['rosterIssues'] = $rosterIssues;
 				$this->makeNav();
 				$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
 			} else {

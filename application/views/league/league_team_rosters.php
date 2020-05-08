@@ -54,7 +54,7 @@
 								$class = "negative";
 								$img = "icon_fail.png";
 								$label = "FAIL";
-							} else if ($status['rosterValid'] == -1) {
+							} else if ($status['rosterValid'] == 100) {
 								$class = "message";
 								$img = "icon_info.gif";
 								$label = "SKIPPED";

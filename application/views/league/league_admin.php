@@ -32,7 +32,11 @@
 				Edit Teams/Owners</li>
 				<?php if ($draftEnabled && $draftStatus >= 5) { ?>
 				<li><?php echo anchor('/league/rosters/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" border="0" />'); ?><br />
-				Check Teams Roster Status</li>
+				Check Teams Roster Status
+					<?php if (isset($rosterIssues) && $rosterIssues > 0) { ?>
+						<span class="badge"><?php echo($rosterIssues); ?></span>
+					<?php }	?>
+				</li></li>
 				<?php } ?>
             </ul> 
             <br clear="all" /><br />
@@ -130,7 +134,7 @@
 			<?php
 		$drawn = false;
 		if (isset($tradeLists['forAppproval']) && sizeof($tradeLists['forAppproval']) > 0) {
-			print('<span class="error_txt">Approval NOTICE:</span> There are currently <b>'.sizeof($tradeLists['forAppproval']).'</b> trades requiring commissioner approval.<br />');
+			print('<span class="warn">Approval NOTICE</span><br />There are currently <b>'.sizeof($tradeLists['forAppproval']).'</b> trades requiring commissioner approval.<br />');
 			$drawn = true;
 		} // END if
 		if (isset($tradeLists['inLeagueReview']) && sizeof($tradeLists['inLeagueReview']) > 0) {

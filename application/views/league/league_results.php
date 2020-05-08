@@ -22,7 +22,9 @@
         }
         ?>
 
-		<?php if (isset($games) && sizeof($games) > 0) { ?>
+        <?php 
+        $winners = array();
+        if (isset($games) && sizeof($games) > 0) { ?>
         <div align="center" style="width:800px;margin:auto 0;">
             <div class='textbox'>
             <table cellpadding="0" cellspacing="0" border="0" style="width:800px;">
@@ -46,11 +48,13 @@
                 $homeColor = "#fff";
                 $awayColor = "#fff";
                 if ($data['home_team_score'] > $data['away_team_score']) {
+                    array_push($winners, $data['home_team_id']);
                     $homeColor = "#E6EFC2";
                     $awayColor = "#FBE3E4";
                 } else if ($data['home_team_score'] < $data['away_team_score']) {
+                    array_push($winners, $data['away_team_id']);
                     $homeColor = "#FBE3E4";
-                   $awayColor = "#E6EFC2";
+                    $awayColor = "#E6EFC2";
                 }
                 if ($data['home_team_id'] == $owned_team) {
                     $homeColor = "#FCB97C";
@@ -93,14 +97,26 @@
         <div style="width:925px; margin-top:12px;">
             <?php 
 			$gameCount= 0;
-			foreach($game_data as $type => $team_data) { 
-				$left = 0;
+			foreach($game_data as $type => $team_data) {
+                $left = 0;
 				if ($gameCount == 1) { $left = 455; }
 			?>
-            <div style="float:left; width:420px;border:1px solid black;margin-right:12px;">
-                <table cellpadding="5" cellspacing="0" border="0" width="100%">
+            <div class="textbox" style="width:420px; clear:none;margin-right:12px;">
+                <table cellpadding="5" cellspacing="0" width="100%">
+                <?php 
+                $linkColor ="#000";            
+                foreach($winners as $winner_Id) {
+                    if ($winner_Id == $team_data['id']) {
+                        $linkColor = "#009b77";
+                        break;
+                    }
+                }
+				if ($team_data['id'] == $owned_team) {
+                    $linkColor = "#fc9b7e";
+                }
+                ?>
                 <tr class='title'>
-                    <td colspan='4' class='lhl'><?php echo($team_data['team_name']); ?></td>
+                    <td colspan='4' class='lhl'><?php echo(anchor('/team/info/'.$team_data['id'], $team_data['team_name'],['style'=>'font-weight:bold; color:'.$linkColor.';','class' => 'teamLink-link'])); ?></td>
                 </tr> 
                 <tr class='headline'>
                     <td class='hsc2_c' width="5%">POS</td>

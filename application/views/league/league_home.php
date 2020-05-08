@@ -45,10 +45,12 @@
         	echo('<span class="league_date">'.date('l, M d',strtotime($newsDate)).'</span>');
         } 
         if (isset($newsDate) && !empty($newsDate) && isset($author) && !empty($author)) { 
-            echo(", ");
+            echo(" | ");
+        } else {
+            echo("<br />");
         }
         if (isset($author) && !empty($author)) { 
-        	echo('<span class="news_author">'.$author.'</span>');
+        	echo('<span class="news_author">'.$author.'</span><br />');
         }
         if (isset($newsBody) && !empty($newsBody)) { 
 			$maxChars = 500;
@@ -69,7 +71,7 @@
         <div class="button_bar" style="text-align:right;">
         <?php echo anchor('/news/articles/type_id/'.NEWS_LEAGUE.'/var_id/'.$league_id, '<button id="btnClear" class="sitebtn news">More News</button>'); ?>
         <?php 
-        if ($loggedIn && $accessLevel >= ACCESS_WRITE) {
+        if ($loggedIn && ($accessLevel >= ACCESS_WRITE || $thisItem['commissionerId'] == $currUser|| $isLeagueMember === true)) {
             echo(anchor('/news/submit/mode/add/type_id/'.NEWS_LEAGUE.'/var_id/'.$league_id,'<button id="btnSubmit" class="sitebtn news">Add Article</button>'));
         }
         ?>
