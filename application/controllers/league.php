@@ -276,6 +276,12 @@ class league extends BaseEditor {
 		$this->data['currUser'] = $this->params['currUser'];
 		$this->data['isLeagueMember'] = $this->dataModel->isLeagueMember($this->params['currUser'], $this->dataModel->id);
 
+		// WAIVERS AND WAIVER ORDER
+		$this->data['useWaivers'] = $this->params['config']['useWaivers'];
+		if ($this->data['useWaivers'] == 1) {
+			$this->data['waiverOrder'] = $this->team_model->getWaiverOrder($this->dataModel->id);
+		}
+		$this->data['current_period'] = $this->params['config']['current_period'];
 		$this->params['content'] = $this->load->view($this->views['HOME'], $this->data, true);
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;
@@ -305,11 +311,12 @@ class league extends BaseEditor {
 
 				$this->load->model('team_model');
 				// Data for Alert Notifications
-				$this->data['waiver_clainms'] = count($this->dataModel->getWaiverClaims());
+				$this->data['waiver_claims'] = count($this->dataModel->getWaiverClaims());
 				$this->data['trades'] = count($this->team_model->getPendingTrades($this->dataModel->id));
 				$invites = count($this->dataModel->getLeagueInvites(true));
 				$requests = count($this->dataModel->getLeagueRequests(true));
 				$this->data['invites_requets'] = $invites + $requests;
+				// ROSTER ALERTS
 				$rosterValidation = $this->dataModel->validateRosters($this->params['config']['current_period'], $this->uriVars['id']);
 				$rosterIssues = 0;
 				if ($this->dataModel->errorCode == 1) {
@@ -320,6 +327,17 @@ class league extends BaseEditor {
 					}
 				}
 				$this->data['rosterIssues'] = $rosterIssues;
+				// WAIVERS AND WAIVER ORDER
+				$this->data['useWaivers'] = $this->params['config']['useWaivers'];
+				$this->data['waiverOrder'] = $this->team_model->getWaiverOrder($this->dataModel->id);
+				$this->data['current_period'] = $this->params['config']['current_period'];
+
+
+				$currDate = strtotime($this->data['league_info']->current_date);
+				$startDate = strtotime($this->data['league_info']->start_date);
+				$firstPeriodStart = strtotime($startDate);
+				$this->data['preseason'] = ($currDate <= $startDate && $currDate<=$firstPeriodStart);
+
 				$this->makeNav();
 				$this->params['content'] = $this->load->view($this->views['ADMIN'], $this->data, true);
 			} else {

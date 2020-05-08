@@ -6,6 +6,13 @@
        
     <div id="single-column">
         <div class="top-bar"> <h1><?php echo $subTitle; ?></h1></div>
+		<?php if ($preseason) { ?>
+		<span class="notice">
+		<?php print($leeague_admin_intro_str); ?>
+		</span>
+		<?php
+		} // END if ($preseason)
+		?>
 	</div>
 	<div id="center-column" class="dashboard">
         <div class='textbox'>
@@ -51,8 +58,8 @@
                 <?php if ($this->params['config']['useWaivers'] == 1) { ?>
                 <li><?php echo anchor('/league/waiverClaims/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/user_accept.png" width="48" height="48" border="0" />'); ?><br />
             	Pending Waiver Claims
-				<?php if (isset($waiver_clainms) && $waiver_clainms > 0) { ?>
-					<span class="badge"><?php echo($waiver_clainms); ?></span>
+				<?php if (isset($waiver_claims) && $waiver_claims > 0) { ?>
+					<span class="badge"><?php echo($waiver_claims); ?></span>
 				<?php }	?>
 				</li>
                 <?php } 
@@ -120,43 +127,78 @@
 	</div>
         
 	<div id="right-column">
-	<?php
-	if (isset($tradeLists) && sizeof($tradeLists) > 0) {
-	?>
-	<div class='textbox' style="margin-left:10px;">
-	<table cellpadding="0" cellspacing="0" border="0" style="width:250px;" class="dashboard">
-	<tr class='title'>
-		<td style="padding:3px">League Transaction Information</td>
-	</tr>
-	<tr>
-		<td style="padding:12px; line-height:1.5;">
-		<b>Trades</b><br />
-			<?php
-		$drawn = false;
-		if (isset($tradeLists['forAppproval']) && sizeof($tradeLists['forAppproval']) > 0) {
-			print('<span class="warn">Approval NOTICE</span><br />There are currently <b>'.sizeof($tradeLists['forAppproval']).'</b> trades requiring commissioner approval.<br />');
-			$drawn = true;
-		} // END if
-		if (isset($tradeLists['inLeagueReview']) && sizeof($tradeLists['inLeagueReview']) > 0) {
-			print('There are currently <b>'.sizeof($tradeLists['inLeagueReview']).'</b> trades waiting under review by the league .<br />');
-			$drawn = true;
-		} // END if
-		if ($drawn) {
-			print('<br />You can review, approve and/or reject trades on the '.anchor('/league/tradeReview/'.$league_id,'Trade Review Page').'<br />');
-		} else {
-			print("There are no trades pending league or admin review at this time.");
-		}
+		<?php
+		if (isset($tradeLists) && sizeof($tradeLists) > 0) {
 		?>
-		</td>
-	</tr>
-	</table>
-	</div>
-	<br clear="all" /><br />
-	<?php
-	} // END if
-	?>
-	<span class="notice">
-	<?php print($leeague_admin_intro_str); ?>
-	</span>
+		<div class='textbox right-column' style="margin-left:10px;">
+		<table cellpadding="3" cellspacing="0">
+		<tr class='title'>
+			<td>League Transaction Information</td>
+		</tr>
+		<tr>
+			<td>
+			<b>Trades</b><br />
+				<?php
+			$drawn = false;
+			if (isset($tradeLists['forAppproval']) && sizeof($tradeLists['forAppproval']) > 0) {
+				print('<span class="warn">Approval NOTICE</span><br />There are currently <b>'.sizeof($tradeLists['forAppproval']).'</b> trades requiring commissioner approval.<br />');
+				$drawn = true;
+			} // END if
+			if (isset($tradeLists['inLeagueReview']) && sizeof($tradeLists['inLeagueReview']) > 0) {
+				print('There are currently <b>'.sizeof($tradeLists['inLeagueReview']).'</b> trades waiting under review by the league .<br />');
+				$drawn = true;
+			} // END if
+			if ($drawn) {
+				print('<br />You can review, approve and/or reject trades on the '.anchor('/league/tradeReview/'.$league_id,'Trade Review Page').'<br />');
+			} else {
+				print("There are no trades pending league or admin review at this time.");
+			}
+			?>
+			</td>
+		</tr>
+		</table>
+		</div>
+		<br clear="all" /><br />
+		<?php
+		} // END if
+		/*-----------------------------------------------------
+		/	WAIVER ORDER BOX
+		/	Displays if Waivers are enabled
+		/---------------------------------------------------*/
+		if ((isset($useWaivers) && $useWaivers == 1)) {
+		?>
+		<div class='textbox right-column' style="margin-left:10px;">
+		<table cellpadding="3" cellspacing="0">
+		<thead>
+		<tr class='title'>
+			<td colspan="2">Period <?php echo($current_period); ?> Waiver Order</td>
+		</tr>
+		<tr class="headline">
+			<td>Rank</td>
+			<td>Team</td>
+		</tr>
+		</thead>
+		<tbody>
+		<?php
+		$rowcount = 0;
+			foreach ($waiverOrder as $teamInfo) {
+			if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } // END if
+		?>
+		<tr style="background-color:<?php echo($color); ?>">
+			<td><?php echo($teamInfo['waiver_rank']); ?></td>
+			<td><?php echo($teamInfo['teamname']." ".$teamInfo['teamnick']); ?></td>
+		</tr>
+		<?php
+				$rowcount++;
+			} // END foreach ($waiverOrder as $teamInfo)
+		?>
+		</tbody>
+		</table>
+		</div>
+		<br clear="all" />
+		<div style="float:left;margin-left:10px;">Waiver Order is updated following each Sim.</div>
+		<?php
+		} // END if ((isset($useWaivers) && $useWaivers == 1))
+		?>
 	</div>
     <p>&nbsp;</p>

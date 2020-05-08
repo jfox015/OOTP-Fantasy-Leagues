@@ -252,6 +252,12 @@ class admin extends MY_Controller {
 				$this->load->model('player_model');
 			}
 			$this->data['ratingsCount'] = $this->player_model->getPlayersHaveRatings();
+			// Pre and Regualr Season operations markers
+			$this->data['ratings_run'] = $this->params['config']['ratings_run'];
+			$this->data['player_update_run'] = $this->params['config']['player_update_run'];
+			$this->data['update_eligible_run'] = $this->params['config']['update_eligible_run'];
+			$this->data['useWaivers'] = $this->params['config']['useWaivers'];
+			$this->data['waivers_processed'] = $this->params['config']['waivers_processed'];
 			//  END 1.0.3 PROD MODS
 
 			$this->params['content'] = $this->load->view($this->views['DASHBOARD'], $this->data, true);
@@ -1328,6 +1334,7 @@ class admin extends MY_Controller {
 			$status = "error:".$mess;
 		} else {
 			$status = "OK";
+			update_config('player_update_run',1);
 		}
 		$code = 200;
 		//$this->data['message'] = $status;
@@ -1351,6 +1358,7 @@ class admin extends MY_Controller {
 			$status = "error:".$mess;
 		} else {
 			$status = "OK";
+			update_config('update_eligible_run',1);
 		}
 		$code = 200;
 
@@ -1394,6 +1402,7 @@ class admin extends MY_Controller {
 			// TODO - LOG SUMMARY SOMEWHERE
 			$status = "OK";
 			$outMess = "Ratings updated successfully.";
+			update_config('ratings_run',1);
 		}
 		$code = 200;
 
@@ -1670,12 +1679,16 @@ class admin extends MY_Controller {
 		/*------------------------------
 		/	UPDATE LEAGUE SCORING
 		/-----------------------------*/
+		$typeRot = 0;
 		foreach($this->data['leagues'] as $id => $details) {
 			$summary .= $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
 			if ($this->league_model->errorCode != -1) {
 				$mess =  $this->league_model->statusMess;
 				$summary .= $this->lang->line('sim_include_errors');
 				$summary .= "<ul>".$mess."</ul>";
+			}
+			if ($details['league_type'] != LEAGUE_SCORING_HEADTOHEAD) {
+				$typeRot++;
 			}
 		}
 		$simResult = 1;
@@ -1695,6 +1708,13 @@ class admin extends MY_Controller {
 			$mess = $this->lang->line('sim_ajax_success');
 			update_config('last_process_time',date('Y-m-d h:m:s'));
 			update_config('current_period',($score_period['id']+1));
+			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
+				update_config('waivers_processed','1');
+			}
+			update_config('player_update_run','-1');
+			update_config('update_eligible_run','-1');
+			if ($typeRot > 0)
+				update_config('ratings_run','-1');
 		}
 		/*------------------------------
 		/	CLOSE THE BENCHMARK

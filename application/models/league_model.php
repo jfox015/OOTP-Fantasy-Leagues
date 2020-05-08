@@ -3179,7 +3179,8 @@ class league_model extends base_model {
 				$summary .= "cleared = ".$this->db->affected_rows()."  of ".$numClaims." waiver claims for this player<br />";
 			} // END if
 			// REMOVE PLAYER FROM WAIVERS
-			if (!$debug) {$this->db->where('player_id',$player['player_id']);
+			if (!$debug) {
+				$this->db->where('player_id',$player['player_id']);
 				$this->db->where('league_id',$league_id);
 				$this->db->where('waiver_period',$period_id);
 				$this->db->delete($this->tables['WAIVERS']);

@@ -75,7 +75,7 @@
 			event.preventDefault();
 		});
         $('a[rel=remove]').click(function (event) {
-            refreshAfterUpdate = true;
+            refreshAfterUpdate = true; 
 			alertAfterUpdate = "All fantasy tables have been deleted. Thank you for using the mod. You will redirected to a new page in 5 second.";
             redirectAfterUpdate = "<?php echo($config['fantasy_web_root']); ?>media/nodb.php";
 		    if (confirm("Are you sure you want to perform this operation? This will remove ALL the tables in the database and render the mod unusable unless you reinstall.")) {
@@ -183,14 +183,21 @@
 		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.
 		<br clear="all" /><br />
 		<ul class="iconmenu">
-			<?php if ($last_process_time < $last_sql_load_time && $league_info->current_date > $league_info->start_date && (isset($leagues) && sizeof($leagues) > 0)) { ?>
+			<?php if ($last_process_time < $last_sql_load_time && (isset($leagues) && sizeof($leagues) > 0) && $currDate>=strtotime($currPeriodConfig['date_end'])) { ?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" />',array('rel'=>'sim')); ?><br />
 			Process Current Sim Results</li><?php } ?>
 			<?php
 			// LEAGUE SETTINGS
 			if (isset($leagues) && sizeof($leagues) > 0) { ?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" />',array('rel'=>'upavail')); ?><br />
-			Update Players</li>
+			Update Players
+			<?php
+			if (isset($player_update_run) && $player_update_run == -1) { ?>
+				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Info outdated" title="Player Info outdated" /></span>
+			<?php
+			}
+			?>
+			</li>
 			<?php
 			} else { ?>
 			<li><img src="<?php echo(PATH_IMAGES); ?>icons/stock_new-appointment.png"
@@ -200,9 +207,23 @@
 			<?php } // END if
 			?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
-			Update Player Elidgibility</li>
+			Update Player Elidgibility
+			<?php
+			if (isset($update_eligible_run) && $update_eligible_run == -1) { ?>
+				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Eligibility outdated" title="Player Eligibility outdated" /></span>
+			<?php
+			}
+			?>
+			</li>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'rating')); ?><br />
-			Update Player Ratings</li>
+			Update Player Ratings
+			<?php
+			if (isset($ratings_run) && $ratings_run == -1) { ?>
+				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Ratings outdated" title="Player Ratings outdated" /></span>
+			<?php
+			}
+			?>
+			</li>
 			<?php
 			 if ($config['last_process_time'] > $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && $summary_size > 0) { ?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'resetSim')); ?><br />
@@ -230,15 +251,45 @@
 			?>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'reset')); ?><br />
             Reset game to Pre-season</li>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" />',array('rel'=>'avail')); ?><br />
-            Import Available Players</li>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar_empty.png" width="48" height="48" />',array('rel'=>'sched')); ?><br />
-            Generate Scoring Schedule</li>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
-			Update Player Elidgibility</li>
-			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'rating')); ?><br />
-			Update Player Ratings</li>
             <?php
+			if ($playerCount <= 0) { 
+			?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" />',array('rel'=>'avail')); ?><br />
+            Import Available Players</li>
+			<?php
+			} else  { 
+			?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/repeat.png" width="48" height="48" />',array('rel'=>'upavail')); ?><br />
+			Update Players
+			<?php
+			if (isset($player_update_run) && $player_update_run == -1) { ?>
+				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Info outdated" title="Player Info outdated" /></span>
+			<?php
+			}
+			?>
+			</li>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
+			Update Player Elidgibility<?php
+			if (isset($update_eligible_run) && $update_eligible_run == -1) { ?>
+				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Eligibility outdated" title="Player Eligibility outdated" /></span>
+			<?php
+			}
+			?>
+			</li>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'rating')); ?><br />
+			Update Player Ratings<?php
+			if (isset($ratings_run) && $ratings_run == -1) { ?>
+				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Ratings outdated" title="Player Ratings outdated" /></span>
+			<?php
+			}
+			?>
+			</li>
+            <?php
+			} // END if ($playerCount <= 0) 
+			?>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar_empty.png" width="48" height="48" />',array('rel'=>'sched')); ?><br />
+            Generate Scoring Schedule</li>
+			<?php
 			// LEAGUE SETTINGS
 			if (isset($leagues) && sizeof($leagues) > 0) { ?>
             <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/calendar.png" width="48" height="48" />',array('rel'=>'games')); ?><br />
@@ -546,14 +597,50 @@
 				}
 				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 			}
+			// PLAYER UPDATE CHECK
+			if (isset($player_update_run)) {
+				if ($player_update_run == -1) { 
+					$class = "error";
+					$message = "Players info outdated";
+				} else {
+					$class = "success";
+					$message = "Players are up to date";
+				}
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+			}
+			// PLAYER ELIDGIBILITY CHECK
+			if (isset($update_eligible_run)) {
+				if ($update_eligible_run == -1) { 
+					$class = "error";
+					$message = "Position Eligibility outdated";
+				} else {
+					$class = "success";
+					$message = "Eligibility up to date";
+				}
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+			}
 			// RATINGS CHECK
-			if (isset($rotisserieCount) && $rotisserieCount > 0) { 
+			if (isset($rotisserieCount) && $rotisserieCount > 0 || isset($ratings_run)) { 
 				if (isset($ratingsCount) && $ratingsCount == 0) {
 					$class = "error";
 					$message = "Player ratings missing";
+				} else if ($ratings_run == -1) {
+					$class = "error";
+					$message = "Player ratings outdated";
 				} else {
 					$class = "success";
-					$message = "Player ratings run";
+					$message = "Player Ratings up to date";
+				}
+				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+			}
+			// AUTO WAIVERS CHECK
+			if (isset($useWaivers) && isset($waivers_processed)) { 
+				if ($waivers_processed == -1) {
+					$class = "error";
+					$message = "Waivers not run";
+				} else {
+					$class = "success";
+					$message = "Waivers up to date";
 				}
 				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 			}

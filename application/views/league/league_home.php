@@ -12,7 +12,7 @@
             <h1><?php echo($thisItem['league_name']); ?></h1>
             <?php
             if (isset($thisItem['description']) && !empty($thisItem['description'])) { 
-                echo('<br /><strong>'.$thisItem['description'].'</strong<br />');
+                echo('<br /><strong>'.$thisItem['description'].'</strong><br />');
             }
             ?>
         </div>
@@ -37,7 +37,7 @@
 			}
 		}
 		?>
-        <img src="<?php echo(PATH_NEWS_IMAGES.$newsImage); ?>" align="left" border="0" class="league_news_<?php echo($class); ?>" />
+        <img src="<?php echo(PATH_NEWS_IMAGES.$newsImage); ?>" class="league_news_<?php echo($class); ?>" />
         <?php 
         } // END if (isset($newsImage) && !empty($newsImage))
 
@@ -82,7 +82,7 @@
 		/-----------------------------------------------*/
 		?>
 		<div class='textbox'>
-            <table style="margin:6px" class="sortable" cellpadding="0" cellspacing="0" border="0" width="615px">
+            <table style="margin:6px" class="sortable" cellpadding="0" cellspacing="0" width="615px">
             <tr>
             <td>
             <?php if (isset($transaction_summary)) { 
@@ -102,7 +102,7 @@
         /*------------------------------------------------
 		/	CONTACT COMMISSIONER LINK
 		/-----------------------------------------------*/
-		print(anchor('/league/leagueContact/'.$league_id,'<img src="'.PATH_IMAGES.'/btn_contact_commish.png" width="220" height="57" border="0" alt="Contact the commissioner" title="Contact the commissioner" />'));
+		print(anchor('/league/leagueContact/'.$league_id,'<img src="'.PATH_IMAGES.'/btn_contact_commish.png" width="220" height="57" alt="Contact the commissioner" title="Contact the commissioner" />'));
 		print('<br /><br /> ');
         /*------------------------------------------------
 		/	LEAGUE STATUS MODULE
@@ -140,7 +140,7 @@
 			if ($draftInfo['draftStatus'] > 0 && $draftInfo['draftStatus'] < 5) {
 		?>
 		<div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0">
+        <table cellpadding="0" cellspacing="0">
         <tr class='title'>
             <td style='padding:3px'>League Draft</td>
         </tr>
@@ -166,8 +166,8 @@
 			} else {
 				echo "<strong>In the meantime:</strong><br /><br />";
 			}
-			echo '<img src="'.$config['fantasy_web_root'].'images/icons/application_edit.png" width="32" height="32" border="0" alt="" style="padding-right:6px; padding-bottom:6px;" title="" align="left" /> '.anchor('/draft/selection/league_id/'.$league_id.'/team_id/'.$user_team_id,$outText).'<br clear="all" /><br />';          
-        	echo '<img src="'.$config['fantasy_web_root'].'images/icons/search.png" width="32" height="32" border="0" alt="" style="padding-right:6px; padding-bottom:6px;" title="" align="left" /> <a href="'.$config['ootp_html_report_path'].'leagues/league_'.$config['ootp_league_id'].'_players.html">Scout Players</a>';
+			echo '<img src="'.$config['fantasy_web_root'].'images/icons/application_edit.png" width="32" height="32" alt="" style="padding-right:6px; padding-bottom:6px;" title="" align="left" /> '.anchor('/draft/selection/league_id/'.$league_id.'/team_id/'.$user_team_id,$outText).'<br clear="all" /><br />';          
+        	echo '<img src="'.$config['fantasy_web_root'].'images/icons/search.png" width="32" height="32" alt="" style="padding-right:6px; padding-bottom:6px;" title="" align="left" /> <a href="'.$config['ootp_html_report_path'].'leagues/league_'.$config['ootp_league_id'].'_players.html">Scout Players</a>';
         	?>
             </td>
         </tr>
@@ -179,7 +179,7 @@
 		// STANDINGS MODULE
         ?>
         <div class='textbox right-column'>
-            <table cellpadding="5" cellspacing="0" border="0">
+            <table cellpadding="5" cellspacing="0">
             <tr class='title'>
                 <td colspan='5'>Standings</td>
             </tr>
@@ -274,7 +274,7 @@
 		/-----------------------------------------------*/
 		if (isset($gameList) && sizeof($gameList) > 0) { ?>
         <div class='textbox right-column'>
-        <table cellpadding="5" cellspacing="0" border="0">
+        <table cellpadding="5" cellspacing="0">
         <tr class='title'>
             <td style='padding:3px'>Game Scores</td>
         </tr>
@@ -284,11 +284,11 @@
         </tr>
         <tr>
             <td style='padding:3px'>
-            <table cellpadding="2" cellspacing="1" border="0" style="width:100%;">
+            <table cellpadding="2" cellspacing="1" style="width:100%;">
             <?php
 			$rowCount = 0;
             foreach($gameList as $game_id => $data) { ?>
-            <tr align=left class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>">
+            <tr class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>">
                 <?php 
 
                 $homeTeamArr = explode(" ",$data['home_team_name']);
@@ -312,13 +312,53 @@
         </tr>
         </table>
         </div>
-		<?php } 
+        <?php 
+        } 
+        /*-----------------------------------------------------
+		/	WAIVER ORDER BOX
+		/	Displays if Waivers are enabled
+		/---------------------------------------------------*/
+		if ((isset($useWaivers) && $useWaivers == 1)) {
+        ?>
+        <div class='textbox right-column'>
+        <table cellpadding="3" cellspacing="0">
+        <thead>
+        <tr class='title'>
+            <td colspan="2">Period <?php echo($current_period); ?> Waiver Order</td>
+        </tr>
+        <tr class="headline">
+            <td>Rank</td>
+            <td>Team</td>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        $rowcount = 0;
+            foreach ($waiverOrder as $teamInfo) {
+            if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } // END if
+        ?>
+        <tr style="background-color:<?php echo($color); ?>">
+            <td><?php echo($teamInfo['waiver_rank']); ?></td>
+            <td><?php echo($teamInfo['teamname']." ".$teamInfo['teamnick']); ?></td>
+        </tr>
+        <?php
+                $rowcount++;
+            } // END foreach ($waiverOrder as $teamInfo)
+        ?>
+        </tbody>
+        </table>
+        </div>
+        <br clear="all" />
+        <div style="float:left;">Waiver Order is updated following each Sim.</div>
+        <?php
+        } // END if ((isset($useWaivers) && $useWaivers == 1))
+
 		/*------------------------------------------------
 		/	LEAGUE DETAILS MODULE
 		/-----------------------------------------------*/
 		?>
         <div class='textbox right-column'>
-        <table cellpadding="5" cellspacing="0" border="0">
+        <table cellpadding="5" cellspacing="0">
         <tr class='title'>
             <td style='padding:3px'>League Details</td>
         </tr>
