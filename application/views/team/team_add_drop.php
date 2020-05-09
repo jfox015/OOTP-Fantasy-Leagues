@@ -460,7 +460,7 @@
 			if (data.code.indexOf("200") != -1 || data.code.indexOf("300") != -1) {
 				$('div#pickList').append(drawResults(data,'itemPick',"Click to Add"));
 				$('select#list_type').val(listType);
-				sorttable.makeSortable(document.getElementById("stats_table"));
+				//sorttable.makeSortable(document.getElementById("stats_table"));
 			} else {
 				$('div#pickList').append('<div id="listColumn1" class="listcolumn"><ul> <li>No players were returned.</li> </ul> </div>');
 			}
@@ -497,7 +497,7 @@
 			if (type == "notice") { type = "list"; }
 		}
 		if (type == "stats") {
-			outHTML += '<table cellpadding="4" cellspacing="1" border="0" class="sortable" id="stats_table" style="width:100%;">';
+			outHTML += '<table cellpadding="4" cellspacing="1" class="sortable-table" id="stats_table" style="width:100%;">';
 			outHTML += '<thead>';
 			outHTML += '<tr class="headline">';
 			var cols = colnames.split("|");
@@ -505,13 +505,13 @@
 				switch (cols[i]) {
 					case 'Player':
 					case 'POS':
-						outHTML += '<td height="17" class="hsn2" style="text-align:left;">'+cols[i]+'</td>';
+						outHTML += '<th height="17" class="hsn2" style="text-align:left;">'+cols[i]+'</th>';
 						break;
 					case 'Team':
 					case 'Draft':
 						break;
 					default:
-						outHTML += '<td class="hsn2" style="text-align:center;">'+cols[i]+'</td>';
+						outHTML += '<th class="hsn2" style="text-align:center;">'+cols[i]+'</th>';
 						break;
 				}
 			}
@@ -606,7 +606,7 @@
         <div class="top-bar"><h1><?php echo($subTitle); ?></h1></div>
         
         <h2><?php echo($team_name); ?></h2>
-            <p /><br />
+            <p><br />
             <b>Players  on roster:</b>
             <br />
     </div>
@@ -630,7 +630,7 @@
                 <?php } ?>
                     	<li><img alt="Remove" title="Remove" rel="itemRemove" id="<?php echo($player['id']); ?>" 
                         src="<?php echo($config['fantasy_web_root']); ?>images/icons/icon_fail.png" width="16" 
-                        height="16" align="absmiddle" border="0" /> 
+                        height="16" align="absmiddle" /> 
                         <?php if ($player['player_position'] == 1) {
 							$pos = $player['player_role'];
 						} else {
@@ -659,7 +659,7 @@
 				}
 			?>
             </div>
-            <p />&nbsp;<br clear="all" /><br />
+            <p>&nbsp;<br clear="all" /><br />
             <b>Add a Player</b>
             <br />
             <div id="pickStatusBox"><div id="pickStatus"></div></div>
@@ -773,7 +773,7 @@
             <div id="right-column">
             	<div id="listStatusBox"><div id="listStatus"></div></div>
             	<div class='textbox'>
-                <table cellpadding="0" cellspacing="0" border="0" width="265px">
+                <table cellpadding="0" cellspacing="0" width="265px">
                 <tr class='title'>
                     <td style='padding:3px'>Transaction Summary</td>
                 </tr>
@@ -782,12 +782,12 @@
                 </tr>
                 <tr>
                     <td style='padding:3px'>
-                    <table cellpadding="2" cellspacing="1" border="0" style="width:100%;">
+                    <table cellpadding="2" cellspacing="1" style="width:100%;">
                     <tr>
                     	<td>
                         <div id="playersToAdd">
                         <table>
-                        <tr align=left class="s1_2">
+                        <tr class="s1_2">
                             <td width="40%">No players added yet</td>
                         </tr>
                         </table>
@@ -802,12 +802,12 @@
                 </tr>
                 <tr>
                     <td style='padding:3px'>
-                    <table cellpadding="2" cellspacing="1" border="0" style="width:100%;">
+                    <table cellpadding="2" cellspacing="1" style="width:100%;">
                     <tr>
                     	<td>
                         <div id="playersToDrop">
                         <table>
-                        <tr align=left class="s1_2">
+                        <tr class="s1_2">
                             <td width="40%">No players added yet</td>
                         </tr>
                         </table>
@@ -833,7 +833,7 @@
 				/-----------------------------------------------------*/
 				if (isset($waiver_claims) && sizeof($waiver_claims) > 0) { ?>
                 <div class='textbox'>
-                <table cellpadding="3" cellspacing="1" border="0" width="265px">
+                <table cellpadding="3" cellspacing="1" width="265px">
                 <tr class='title'>
                     <td style='padding:3px' colspan="3">Pending Waivers Claims</td>
                 </tr>
@@ -847,8 +847,8 @@
 				if (sizeof($waiver_claims) > 0) {
 					foreach ($waiver_claims as $claimData) { 
 						$bg = (($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'; ?>
-                <tr bgcolor="<?php echo($bg); ?>">
-					<td align="left"><?php 
+                <tr style="background-color:<?php echo($bg); ?>">
+					<td><?php 
 					$pos = -1;
 					if ($claimData['position'] == 1) {
 						if ($claimData['role'] == 13) {
@@ -865,8 +865,8 @@
 					}
 					
 					echo(get_pos($pos)." ".anchor('/players/info/league_id/'.$league_id.'/player_id/'.$claimData['player_id'],$claimData['player_name'])); ?></td>
-                	<td align="center"><?php echo($claimData['waiver_period']); ?></td>
-                    <td align="center">
+                	<td class="hsc2_c"><?php echo($claimData['waiver_period']); ?></td>
+                    <td class="hsc2_c">
 					<?php 
                     echo( anchor('/team/removeClaim/team_id/'.$team_id.'/id/'.$claimData['id'],'<img src="'.$config['fantasy_web_root'].'images/icons/hr.gif" width="16" height="16" alt="Delete" title="Delete" />')); ?></td>
                 </tr>
@@ -887,7 +887,7 @@
 				/-----------------------------------------------------*/
 				if (isset($waiver_order) && sizeof($waiver_order) > 0) { ?>
                 <div class='textbox'>
-                <table cellpadding="3" cellspacing="1" border="0" width="265px">
+                <table cellpadding="3" cellspacing="1" width="265px">
                 <tr class='title'>
                     <td style='padding:3px' colspan="2">Waivers Order</td>
                 </tr>
@@ -903,9 +903,9 @@
 				if (sizeof($waiver_order) > 0) {
 					foreach ($waiver_order as $teamData) { 
 						$bg = (($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'; ?>
-                <tr bgcolor="<?php echo($bg); ?>" style="background:<?php echo($bg); ?>">
-					<td align="center"><?php echo($teamData['waiver_rank']); ?></td>
-                    <td align="left"><?php echo(anchor('/team/info/'.$teamData['id'],$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
+                <tr style="background-color:<?php echo($bg); ?>">
+					<td class="hsc2_c"><?php echo($teamData['waiver_rank']); ?></td>
+                    <td class="hsc2_l"><?php echo(anchor('/team/info/'.$teamData['id'],$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
                 </tr>
                 <?php $rowNum++;
 				} 
@@ -918,4 +918,4 @@
                 </div>
             	<?php } ?>
             </div>
-    <p /><br />
+    <p><br />

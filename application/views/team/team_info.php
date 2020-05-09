@@ -34,7 +34,7 @@
 				}
 			}
 			?>
-			<img src="<?php echo(PATH_NEWS_IMAGES.$newsImage); ?>" align="left" border="0" class="league_news_<?php echo($class); ?>" />
+			<img src="<?php echo(PATH_NEWS_IMAGES.$newsImage); ?>" class="league_news_<?php echo($class); ?>" />
 			<?php } ?>
 			
 			<?php 
@@ -125,19 +125,22 @@
 								}
 							}
 						}
-						echo($gmPos." ".anchor('/players/info/'.$player['id'], $player['player_name'])); 
-						?></td>
-						<td class="negative"><?php 
+						echo($gmPos." ".anchor('/players/info/player_id/'.$player['id'].'/league_id/'.$league_id, $player['player_name'])); 
+						?>
+						</td>
+						<?php 
 						$injStatus = '';
+						$class = "negative";
 						if (isset($player['injury_dtd_injury']) && $player['injury_dtd_injury'] == 1) {
-							$injStatus .= "Questionable - ";
+							$injStatus .= "Questionable";
+							$class="warning";
 						} else if (isset($player['injury_career_ending']) && $player['injury_career_ending'] == 1) {
-							$injStatus .= "Career Ending Injury! ";
+							$injStatus .= "Career Ending Injury!";
 						} else {
 							$injStatus .= "Injured";
 						}
-						echo($injStatus);
-						?></td>
+						?>
+						<td class="<?php echo($class); ?>"><?php echo($injStatus); ?></td>
 						<td><?php if (isset($player['injury_id'])) { echo(getInjuryName($player['injury_id'])); } else { echo("Unknown"); } ?></td>
 						<td><?php echo($player['injury_dl_left']); ?></td>
 					</tr>
@@ -162,7 +165,7 @@
 			/-----------------------------------------------*/
 			?>
 			<div class='textbox'>
-				<table style="margin:6px" class="sortable" cellpadding="0" cellspacing="0" width="100%">
+				<table style="margin:6px" class="sortable-table" cellpadding="0" cellspacing="0" width="100%">
 				<tr>
 					<td>
 					<?php if (isset($transaction_summary) && sizeof($transaction_summary) > 0) { 
@@ -461,7 +464,7 @@
 				<table cellpadding="0" cellspacing="0">
 				<thead>
 				<tr class='title'>
-					<td>Recent and Upcoming Games</td>
+					<td colspan="3">Recent and Upcoming Games</td>
 				</tr>
 				<?php 
 				if (isset($recentGames) && sizeof($recentGames) > 0) {
@@ -557,5 +560,109 @@
 			</div>
 			<?php
 			} // END if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD)
+			/*------------------------------------------------------
+			/	PROJECTED STARTERS
+			/-----------------------------------------------------*/
+			//echo("Size of pitcher arr = ".sizeof($thisItem['pitchers'])."<br />");
+			//echo("Size of schedules arr = ".sizeof($thisItem['schedules'])."<br />");
+			if ((isset($thisItem['pitchers']) && sizeof($thisItem['pitchers']) > 0) && (isset($thisItem['schedules']) && sizeof($thisItem['schedules']) > 0)) {
 			?>
-		</div>
+			<div class='textbox right-column'>
+				<table cellpadding="0" cellspacing="0">
+				<thead>
+				<tr class='title'>
+					<td colspan="4">Upcoming Starting Pitchers</td>
+				</tr>
+				<tr class='headline'>
+					<td></td>
+					<td>Name</td>
+					<td>Date</td>
+					<td width="5%">Opp.</td>
+				</tr>
+				</thead>
+				<tbody>
+				<?php
+				$rowcount = 0;
+				foreach($thisItem['pitchers'] as $player_id => $playerData) {
+					$playerSched = $thisItem['schedules']['players_active'][$player_id];
+					if (isset($playerSched) && sizeof($playerSched) > 0) {
+						$drawn = 0;
+						$limit = $config['sim_length'];
+						$iconStr = $config['ootp_html_report_path'].'images/dot1.gif';
+						$hasStarts = false;
+						foreach ($playerSched as $game_id => $game_data) {
+							if ($game_data['start'] == 1) {
+								$hasStarts = true;
+								break;
+							} // END if
+						} // END foreach
+						if ($hasStarts) {
+							if (($rowcount % 2) == 0) { $class="sl_1"; } else { $class="sl_2"; }
+							?>
+						<tr class="<?php echo($class); ?>">
+							<?php
+							$htmlpath=$config['ootp_html_report_path'];
+							$filepath=$config['ootp_html_report_root'];
+							$imgpath=$filepath.URL_PATH_SEPERATOR."images".URL_PATH_SEPERATOR."person_pictures".URL_PATH_SEPERATOR."player_".$player_id.".png";
+								## Check for photo by player ID
+							?>
+							<td style="vertical-align:middle">
+							<?php 
+							if (file_exists($imgpath)) {echo "<img src='".$htmlpath."images/person_pictures/player_".$player_id.".png' width='40'>";} else {
+								echo "<img src='".$htmlpath."images/person_pictures/default_player_photo.png' width='40'>";   ## Show default
+							}
+							?>
+							</td>
+							<td style="vertical-align:middle">
+							<?php echo(anchor('/players/info/player_id/'.$playerData['id'].'/league_id/'.$league_id, $playerData['first_name']." ".$playerData['last_name'])); ?>
+							</td>
+							<td colspan="2" width="45%" style="vertical-align:middle">
+								<table width="100%" cellpadding="2" cellspacing="0">
+
+							<?php
+							foreach ($playerSched as $game_id => $game_data) {
+								if ($game_data['start'] == 1) {
+								?>
+								<tr>
+									<td width="75%"><strong>
+									<?php echo(date('m/j/Y',strtotime($game_data['game_date'])).", ".($game_data['game_time'] - 1200)." PM"); ?>
+									</strong></td>
+									<?php
+									if ($game_id > 0) {
+									?>
+									<td><strong>
+									<?php
+									if ($playerData['team_id'] == $game_data['home_team']) {
+										if (isset($thisItem['team_list'][$game_data['away_team']])) {
+											echo(strtoupper($thisItem['team_list'][$game_data['away_team']]['abbr']));
+										}
+									} else {
+										if (isset($thisItem['team_list'][$game_data['home_team']])) {
+											echo("@".strtoupper($thisItem['team_list'][$game_data['home_team']]['abbr']));
+										}
+									}
+									?></strong>
+									</td>
+									<?php
+									}
+								?>
+								</tr>
+							<?php
+								}
+							}
+							?>
+							</table>
+							</td>
+						</tr>
+						<?php
+							$rowcount++;
+						} // END if has Starts
+					}
+				}
+				?>
+				</tbody>
+				</table>
+			</div>
+			<?php
+			}
+			?>

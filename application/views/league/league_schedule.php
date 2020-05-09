@@ -11,7 +11,7 @@
             <div class="top-bar"><h1><?php echo($thisItem['league_name']); ?> Schedule</h1></div>
             
             <div class='textbox'>
-                <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
+                <table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" border="0" width="560px">
                 <tr class='title'>
                     <td colspan='5' class='lhl'><?php echo($thisItem['league_name']); ?></td>
                 </tr>

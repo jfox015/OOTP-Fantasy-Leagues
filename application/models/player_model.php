@@ -74,23 +74,50 @@ class player_model extends base_model {
 		return $count;
 	}
 
-	public function getStartingPitchers($league_id = false) {
-		if ($league_id === false) { return; }
-
+	public function getStartingPitchers($playerList = false) {
+		
+		//if ($league_id === false) { return; }
+		
+		$playerInStr = "";
+		$teamList = "";
+		if ($playerList !== false && sizeof($playerList) > 0) {
+			$playerInStr = "(";
+			$teamList = "(";
+			foreach($playerList as $player_id => $playerInfo) {
+				
+				if ($playerInStr != "(") $playerInStr .= ",";
+				$playerInStr .= $player_id;
+				
+				if ($teamList != "(") $teamList .= ",";
+				$teamList .= $playerInfo['team_id'];
+			}
+			$playerInStr .= ")";
+			$teamList .= ")";
+		}
 		$result = -1;
 		$details = array();
-		$this->db->select($this->tables['OOTP_STARTERS'].'.*, name, nickname');
-		$this->db->join($this->tables['OOTP_TEAMS'],$this->tables['OOTP_TEAMS'].'.team_id = '.$this->tables['OOTP_STARTERS'].'.team_id','left');
-		//$this->db->join('players','players.player_id = .'$this->tables['OOTP_STARTERS'].'.player_id','left');
-		$this->db->where($this->tables['OOTP_TEAMS'].'.league_id',$league_id);
-		$this->db->where($this->tables['OOTP_STARTERS'].'.starter_0 <>',0);
+		$this->db->select();
+		$where = "";
+		if ($playerList !== false) {
+			if (!empty($playerInStr)) {
+				$where =  '(starter_0 IN '.$playerInStr.' OR starter_1 IN '.$playerInStr;
+				$where .= ' OR starter_2 IN '.$playerInStr. 'OR starter_3 IN '.$playerInStr;
+				$where .= ' OR starter_4 IN '.$playerInStr. 'OR starter_5 IN '.$playerInStr;
+				$where .= ' OR starter_6 IN '.$playerInStr. 'OR starter_7 IN '.$playerInStr.')';
+			}
+			if (!empty($teamList)) {
+				$where .= ' AND team_id IN '.$teamList;
+			}
+		}
+		$this->db->where($where);
 		$query = $this->db->get($this->tables['OOTP_STARTERS']);
 		//echo($this->db->last_query()."<br />");
 		if ($query->num_rows > 0) {
 			foreach($query->result() as $row) {
 				array_push($details, array('team_id'=>$row->team_id, 'starter_0'=>$row->starter_0,
-					'starter_1'=>$row->starter_1,'starter_2'=>$row->starter_2,'starter_3'=>$row->starter_4,'starter_4'=>$row->starter_5,'starter_5'=>$row->starter_5,'starter_6'=>$row->starter_6,
-				'name'=>$row->name, 'nickname'=>$row->nickname));
+					'starter_1'=>$row->starter_1,'starter_2'=>$row->starter_2,'starter_3'=>$row->starter_4,
+					'starter_4'=>$row->starter_5,'starter_5'=>$row->starter_5,'starter_6'=>$row->starter_6,
+					'starter_7'=>$row->starter_7));
 			}
 		}
 		$query->free_result();

@@ -720,11 +720,20 @@ th.center-align, td.center-align {
 th.right-align, td.right-align {
 	text-align:right;
 }
-tr.s1_l, tr.sl_1 {
+tr.s1_l, tr.sl_1, tr.sl_1 td {
 	background-color: #EAEAEA !important;
 }
-tr.s2_l, tr.sl_2 {
+tr.s2_2, tr.sl_2, tr.sl_2 td {
 	background-color: #FFFFFF !important;
+}
+tr.s1_3, tr.sl_3, tr.sl_3 td {
+	background-color: #89A3BC !important;
+}
+tr.s1_4, tr.sl_4, tr.sl_4 td {
+	background-color: #C4BB97 !important;
+}
+tr.s1_5, tr.sl_5, tr.sl_5 td {
+	background-color: #CC9933 !important;
 }
 
 td.hsc2_l {

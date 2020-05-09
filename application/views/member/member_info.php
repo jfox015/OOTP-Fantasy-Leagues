@@ -65,7 +65,7 @@
 					foreach($teamList as $type => $teams) {
 						if (sizeof($teams) > 0) {
 					?>
-                    <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
+                    <table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" border="0" width="560px">
                     <tr class='title'>
                     	<?php $cols = 3; ?>
                         <td colspan='<?php print($cols); ?>' class='lhl'><?php print((($type == 'rot') ? 'Rotisserie' : "Head to Head")." Leagues"); ?></td>
@@ -105,7 +105,7 @@
                     </table>
                     </div>
 					<?php } else { ?>
-					<table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
+					<table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" border="0" width="560px">
                     <tr class='title'>
                         <td colspan='8' class='lhl'>No Teams Found</td>
                     </tr>

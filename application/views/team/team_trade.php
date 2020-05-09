@@ -629,7 +629,7 @@
 			if (type == "notice") { type = "list"; }
 		}
 		if (type == "stats") {
-			outHTML += '<table cellpadding="4" cellspacing="1" class="sortable" id="stats_table" style="width:100%;">';
+			outHTML += '<table cellpadding="4" cellspacing="1" class="sortable-table" id="stats_table" style="width:100%;">';
 			outHTML += '<thead>';
 			outHTML += '<tr class="headline">';
 			var cols = colnames.split("|");
@@ -693,7 +693,7 @@
 			outHTML += '</table>';
 		}
 		if (rownum == 0) {
-			outHTML += '<table cellpadding="4" cellspacing="1" class="sortable" id="stats_table" style="width:100%;">';
+			outHTML += '<table cellpadding="4" cellspacing="1" class="sortable-table" id="stats_table" style="width:100%;">';
 			outHTML += '<tr>';
 			outHTML += '<td colspan="8">No Players were found</td>';
 			outHTML += '</tr>';

@@ -1,4 +1,4 @@
-				<table class="sortable" cellpadding="3" cellspacing="1" border="0" width="96%" style="border:1px solid #606060;">
+				<table class="sortable-table" cellpadding="3" cellspacing="1" width="96%" style="border:1px solid #606060;">
 				<?php if (!isset($showEffective) || (isset($showEffective) && $showEffective != -1)) { $cols = 4; } else { $cols = 3; } ?>
                 <thead>
                 <tr class='title'>
@@ -16,17 +16,18 @@
                 </tr>
 				<?php 
                 if (isset($thisItem['transactions']) && sizeof($thisItem['transactions']) > 0) { 
-					 $rowcount = 0;foreach($thisItem['transactions'] as $details) { ?>
-						<?php 
-						if ($details['trans_owner'] == TRANS_OWNER_OWNER || $details['trans_owner'] == TRANS_OWNER_OTHER) {
-							if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; }  // END if
+                     $rowcount = 0;
+                     foreach($thisItem['transactions'] as $details) { ?>
+                        <?php 
+                        if ($details['trans_owner'] == TRANS_OWNER_OWNER || $details['trans_owner'] == TRANS_OWNER_OTHER) {
+							if (($rowcount %2) == 0) { $class = "sl_1"; } else { $class = "sl_2"; }  // END if
 						} else if ($details['trans_owner'] == TRANS_OWNER_COMMISH) { 
-							$color = "#89A3BC"; 
+							$class = "sl_3"; 
 						} else if ($details['trans_owner'] == TRANS_OWNER_ADMIN) { 
-							$color = "#C4BB97"; 
+							$class = "sl_4";
 						}
 						?>
-                        <tr style="background-color:<?php echo($color); ?>" align="left" valign="top">
+                        <tr class="<?php echo($class); ?>">
                             <td class='hsc2_l'><?php echo(date('m/d/Y h:m:s A',strtotime($details['trans_date']))); ?></td>
                             <td class='hsc2_l'><?php 
                             if (isset($thisItem['teamList'][$details['team_id']])) {
@@ -41,13 +42,13 @@
                             }
                             ?></td>
                             <td class='hsc2_l'>
-                            <table width="100%" cellpadding="0" cellspacing="2" border="0">
+                            <table width="100%" cellpadding="0" cellspacing="2">
                             <?php 
                             $transTypes = array('added'=>'Added','dropped'=>'Dropped','claimed'=>'Claimed off waivers','tradedTo'=>'Sent','tradedFrom'=>'Received');
                            	
                             foreach ($transTypes as $field => $label) {
                                 if (isset($details[$field]) && sizeof($details[$field]) > 0) { ?>
-                                <tr align="left" valign="top">
+                                <tr>
                                     <td width="30%"><b><?php echo($label); ?>:</b></td>
                                     <td width="70%"><?php 
 									$numDrawn = 0;

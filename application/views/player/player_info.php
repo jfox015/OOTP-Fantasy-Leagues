@@ -1,6 +1,6 @@
 <script type="text/javascript" charset="UTF-8">
-	var ajaxWait = '<img src="<?php echo(PATH_IMAGES); ?>icons/ajax-loader.gif" width="28" height="28" border="0" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
-	var responseError = '<img src="<?php echo(PATH_IMAGES); ?>icons/icon_fail.png" width="24" height="24" border="0" align="absmiddle" />&nbsp;';
+	var ajaxWait = '<img src="<?php echo(PATH_IMAGES); ?>icons/ajax-loader.gif" width="28" height="28" align="absmiddle" />&nbsp;Operation in progress. Please wait...';
+	var responseError = '<img src="<?php echo(PATH_IMAGES); ?>icons/icon_fail.png" width="24" height="24" align="absmiddle" />&nbsp;';
 	var fader = null;
 	//var team_id = <?php //$team_id ?>;
 	var league_id = <?php echo($league_id); ?>;
@@ -137,9 +137,9 @@
     <div id="subPage">
         <div id="content">
         		<?php $name = $thisItem['first_name']." ".$thisItem['last_name']; ?>
-    		<table width="925" cellpadding="0" cellspacing="0" border="0" class="teamheader">
+    		<table width="925" cellpadding="0" cellspacing="0" class="teamheader">
             <tr>
-            <td width="120" height="140" align="center">
+            <td width="120" height="140" style="text-align: center;">
 
             <div class="playerpic" style="width:90px;">
             <?php
@@ -246,8 +246,8 @@
                     <a href="<?php echo($config['ootp_html_report_path']); ?>players/player_<?php echo($thisItem['player_id']); ?>.html">OOTP Player Page</a>
                         </div>
 					</td>
-					<td width="160" height="120" align="center" valign="middle">
-					<?php echo anchor('/team/info/'.$thisItem['team_id'],'<img border="0" src="'.$htmlpath.'images/team_logos/'.$thisItem['logo_file_name'].'">'); ?>
+					<td width="160" height="120" style="text-align: center;" valign="middle">
+					<?php echo anchor('/team/info/'.$thisItem['team_id'],'<img src="'.$htmlpath.'images/team_logos/'.$thisItem['logo_file_name'].'">'); ?>
 					</td>
 					</tr>
 					</table>
@@ -256,7 +256,7 @@
             <div id="metaColumn">
             <?php if (isset($league_id) && !empty($league_id) && $league_id != -1) { ?>
             <div class='textbox'>
-                <table cellpadding="2" cellspacing="0" border="0" width="325">
+                <table cellpadding="2" cellspacing="0" width="325">
                 <tr class='title'>
                     <td>Roster Status</td>
                 </tr>
@@ -270,7 +270,7 @@
                     <tr>
                         <td style="line-height:2.0;">
                         <b>Current Team:</b><br />
-                        <?php if (!empty($current_team['avatar'])) { echo('<img src="'.PATH_TEAMS_AVATARS.$current_team['avatar'].'"width="32" align="absmiddle" height="32" border="0" /> &nbsp;'); }
+                        <?php if (!empty($current_team['avatar'])) { echo('<img src="'.PATH_TEAMS_AVATARS.$current_team['avatar'].'"width="32" align="absmiddle" height="32" /> &nbsp;'); }
 						if ($current_team['id'] != -1) {
 							echo(anchor('/team/info/'.$current_team['id'],$current_team['teamname']));
 						} else {
@@ -366,7 +366,7 @@
 
 
             <div class='textbox'>
-                <table cellpadding="2" cellspacing="0" border="0" width="325">
+                <table cellpadding="2" cellspacing="0" width="325">
                 <tr class='title'>
                     <td>Latest News</td>
                 </tr>
@@ -462,12 +462,12 @@
 
 					<!-- LAST 7 GAMES -->
                 <div class='textbox'>
-                <table cellpadding="2" cellspacing="0" border="0" width="325">
+                <table cellpadding="2" cellspacing="0" width="325">
                 <tr class='title'>
                     <td>Last Seven Games</td>
                 </tr>
 				<tr class='headline'>
-                    <table width=100% cellpadding=2 cellspacing=1 border=0>
+                    <table width=100% cellpadding=2 cellspacing=1>
                 	<?php  if ($thisItem['position'] != 1) { ?>
 					<tr align=center class=bg4>
                         <td><strong></strong></td>
@@ -484,7 +484,7 @@
 						if (isset($recentGames) && sizeof($recentGames) > 0) {
 							$rowCount = 0;
 							foreach($recentGames as $game) { ?>
-                       <tr height="17" class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" align="center" valign="middle">
+                       <tr height="17" class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" style="text-align: center;" valign="middle">
 
                         <td><?php echo(date('m/d',strtotime($game['date']))); ?></td>
                         <td><?php echo(strtoupper($game['opp'])); ?></td>
@@ -519,7 +519,7 @@
 						if (isset($recentGames) && sizeof($recentGames) > 0) {
 							$rowCount = 0;
 							foreach($recentGames as $game) { ?>
-                     <tr  height=17  class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" align="center" valign="middle">
+                     <tr  height=17  class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" style="text-align: center;" valign="middle">
                         <?php
 							$ip = $game['ip'];
 							$er = $game['er'];
@@ -553,26 +553,26 @@
                 </div>
 
                 <div class='textbox'>
-                <table cellpadding="2" cellspacing="0" border="0" width="325">
+                <table cellpadding="2" cellspacing="0" width="325">
                 <tr class='title'>
                     <td>Upcoming Schedule</td>
                 </tr>
                 <tr class='headline'>
-                    <table width=100% cellpadding=2 cellspacing=1 border=0>
+                    <table width=100% cellpadding=2 cellspacing=1>
 					<tr align=center class=bg4>
                         <td><strong>Date</strong></td>
                         <td><strong>Time</strong></td>
                         <td><strong>OPP</strong></td>
                     </tr>
                     <?php
-					$games = $upcomingGames['players_active'][$thisItem['id']];
+					$games = $upcomingGames['players_active'][$thisItem['player_id']];
 					if (isset($games) && sizeof($games) > 0) {
 						$drawn = 0;
 						$limit = $config['sim_length'];
 						$lastDate = "";
 						$rowCount = 0;
 						foreach ($games as $game_id => $game_data) { ?>
-							<tr  height=17  class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" align="center" valign="middle">
+							<tr  height=17  class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" style="text-align: center;" valign="middle">
                             <td>
 							<?php if (isset($game_data['game_date'])) {
 								$lastDate = $game_data['game_date'];
@@ -588,6 +588,7 @@
                             <td><?php if (isset($game_data['game_time'])) { echo(date('h:m A',strtotime($game_data['game_time']))); } else { echo(" - - "); } ?> </td>
                             <td><?php
 							if ($game_id > 0) {
+								$iconStr = $config['ootp_html_report_path'].'images/dot1.gif';
 								if ($thisItem['team_id'] == $game_data['home_team']) {
 									if (isset($teamList[$game_data['away_team']])) {
 										echo(strtoupper($teamList[$game_data['away_team']]['abbr']));
@@ -596,7 +597,9 @@
 									if (isset($teamList[$game_data['home_team']])) {
 										echo("@".strtoupper($teamList[$game_data['home_team']]['abbr']));
 									}
-								}
+                }
+                if ($game_data['start'] != -1)
+											echo('&nbsp;<img src="'.$iconStr.'" />');
 							}
 							$drawn++;
 							$rowCount++;
@@ -620,20 +623,20 @@
 
                 	<!-- OWN/START BOX -->
                 <div class='textbox'>
-                <table cellpadding="2" cellspacing="0" border="0" width="575">
+                <table cellpadding="2" cellspacing="0" width="575">
                 <tr class='title'>
                     <td>Owned/Started</td>
                 </tr>
 				<tr class='headline'>
 					<td>
-                    <table width=100% cellpadding=2 cellspacing=1 border=0>
-                    <tr align=center class=headline>
+                    <table width=100% cellpadding=2 cellspacing=1>
+                    <tr class="headline">
                         <td><strong>Start This Week</strong></td>
                         <td><strong>Change</strong></td>
                         <td><strong>Own This Week</strong></td>
                         <td><strong>Change</strong></td>
                     </tr>
-                    <tr  height=17 align="center"  class="bg2" style="font-size:12px; font-weight:bold;" align="center" valign="middle">
+                    <tr  height=17 class="bg2" style="font-size:12px; font-weight:bold; text-align: center" valign="middle">
                         <td><?php echo($thisItem['start']); ?></td>
                         <td><span style="color:#<?php
 						$change = 0;
@@ -671,7 +674,7 @@
 				if (!isset($scoring_type) || (isset($scoring_type) && $scoring_type == LEAGUE_SCORING_HEADTOHEAD)) {
 				?>
                 <div class='textbox'>
-                <table cellpadding="2" cellspacing="0" border="0" width="575">
+                <table cellpadding="2" cellspacing="0" width="575">
                 <tr class='title'>
                     <td>Fantasy Trend</td>
                 </tr>
@@ -686,8 +689,8 @@
 
                     	<div id="playerbars" height="100%" class="bg2" style="position:relative; width:100%; border-left:0px; border-right:0px; border-bottom:0px;">
                 		<div class='fc' style='padding: 0px; border-top: 0px'>
-                        <table width=96% border=0 cellpadding=0 cellspacing=0 class="player_points">
-                        <tr align=center valign=bottom>
+                        <table width=96% cellpadding=0 cellspacing=0 class="player_points">
+                        <tr>
                         <?php
 						for($i = 1; $i < $scoringPeriods; $i++) {
 							$height = 0;
@@ -696,23 +699,23 @@
 							} else if ($playerPoints[$i] != 0 && $playerPoints[$i] >= $pointsMax) {
 								$height = 100;
 							} ?>
-                            <td><?php echo($playerPoints[$i]); ?><br /><img src="<?php echo($config['fantasy_web_root']); ?>images/dot_red.gif" width="12" height="<?php echo($height); ?>"></td>
-                            <td><img src=<?php echo($config['fantasy_web_root']); ?>images/dot_clear.gif width="2" height="1"></td>
+                            <td style="text-align:center; vertical-align:bottom;"><?php echo($playerPoints[$i]); ?><br /><img src="<?php echo($config['fantasy_web_root']); ?>images/dot_red.gif" width="12" height="<?php echo($height); ?>"></td>
+                            <td style="text-align:center; vertical-align:bottom;"><img src="<?php echo($config['fantasy_web_root']); ?>images/dot_clear.gif" width="2" height="1"></td>
                         <?php } ?>
                         </tr>
-                        <tr align=center>
+                        <tr >
                         <?php
 						for($i = 1; $i < $scoringPeriods; $i++) {
 							$height = ($playerPoints[$i] < $pointsMax) ? intval($playerPoints[$i] / $pointsMax) : 100; ?>
-                        	<td style="color:black;"><?php echo($i); ?></td>
+                        	  <td style="color:black; text-align:center;"><?php echo($i); ?></td>
                             <td></td>
                         <?php } ?>
                         </tr>
                         </table>
-                        <table width=96% border=0 cellspacing=1 cellpadding=2>
-                        <tr bgcolor=#E8ECEE align=center>
-                        <td colspan=52>Fantasy Points by Week. &nbsp;
-                        (<img src=<?php echo($config['fantasy_web_root']); ?>images/dot_red.gif width=10 height=10> Actual)
+                        <table width=96% cellspacing=1 cellpadding=2>
+                        <tr>
+                        <td colspan="52" style="background-color:#E8ECEE, text-align:center;">Fantasy Points by Week. &nbsp;
+                        (<img src="<?php echo($config['fantasy_web_root']); ?>images/dot_red.gif" width="10" height="10"> Actual)
                         &nbsp;&nbsp;&nbsp;Note: Points are rounded down.<br></td>
                         </tr>
                         </table>
@@ -726,7 +729,7 @@
 
                 	<!-- CURRETN SEASON STATS -->
                 <div class='textbox'>
-                <table cellpadding="2" cellspacing="0" border="0" width="575">
+                <table cellpadding="2" cellspacing="0" width="575">
                 <tr class='title'>
                     <td><?php if (isset($statYear)) { echo($statYear); } else { echo(data('Y',time())); } ?> Stats</td>
                 </tr>
@@ -734,8 +737,8 @@
                 <?php
 				$rowsDrawn = 0; ?>
 					<td>
-                    <table width="100%" cellpadding=2 cellspacing=1 border=0>
-                    <tr align=center class=bg4>
+                    <table width="100%" cellpadding=2 cellspacing=1>
+                    <tr class="bg4">
                     <?php  if ($thisItem['position'] != 1) {
 						$ab = isset($playerStats['ab']) ? $playerStats['ab'] : 0;
 						$h = isset($playerStats['h']) ? $playerStats['h'] : 0;
@@ -780,30 +783,30 @@
 					   }
 					   if (!$rowsDrawn) $rowsDrawn = true;
 						?>
-                        <td width="9%"><b>BA</b></td>
-                        <td width="9%"><b>AB</b></td>
-                        <td width="9%"><b>R</b></td>
-                        <td width="9%"><b>HR</b></td>
-                        <td width="9%"><b>RBI</b></td>
-                        <td width="9%"><b>BB</b></td>
-                        <td width="9%"><b>KO</b></td>
-                        <td width="9%"><b>SB</b></td>
-                        <td width="9%"><b>WIFF%</b></td>
-                        <td width="9%"><b>WALK%</b></td>
-                        <td width="9%"><b>XBH</b></td>
+                        <td class="hsc2_c" width="9%"><b>BA</b></td>
+                        <td class="hsc2_c" width="9%"><b>AB</b></td>
+                        <td class="hsc2_c" width="9%"><b>R</b></td>
+                        <td class="hsc2_c" width="9%"><b>HR</b></td>
+                        <td class="hsc2_c" width="9%"><b>RBI</b></td>
+                        <td class="hsc2_c" width="9%"><b>BB</b></td>
+                        <td class="hsc2_c" width="9%"><b>KO</b></td>
+                        <td class="hsc2_c" width="9%"><b>SB</b></td>
+                        <td class="hsc2_c" width="9%"><b>WIFF%</b></td>
+                        <td class="hsc2_c" width="9%"><b>WALK%</b></td>
+                        <td class="hsc2_c" width="9%"><b>XBH</b></td>
                     </tr>
-                    <tr  height=17  class="bg2" align="center" valign="middle">
-                    	<td><?php echo($avg); ?></td>
-                        <td><?php echo($ab); ?></td>
-                        <td><?php echo($r); ?></td>
-                        <td><?php echo($hr); ?></td>
-                        <td><?php echo($rbi); ?></td>
-                        <td><?php echo($bb); ?></td>
-                        <td><?php echo($k); ?></td>
-                        <td><?php echo($sb); ?></td>
-                        <td><?php echo($wiff); ?></td>
-                        <td><?php echo($walk); ?></td>
-                        <td><?php echo($xbh); ?></td>
+                    <tr  height="17" class="bg2">
+                    	  <td class="hsc2_c" style="vertical-align:middle;"><?php echo($avg); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($ab); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($r); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($hr); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($rbi); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($bb); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($k); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($sb); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($wiff); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($walk); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($xbh); ?></td>
                     </tr>
                     <?php } else {
 							$w = isset($playerStats['w']) ? $playerStats['w'] : 0;
@@ -858,37 +861,37 @@
 						   }
 						   if (!$rowsDrawn) $rowsDrawn = true;
 						?>
-                        <td width="9%"><b>W</b></td>
-                        <td width="9%"><b>L</b></td>
-                        <td width="9%"><b>ERA</b></td>
-                        <td width="9%"><b>S</b></td>
-                        <td width="9%"><b>INN</b></td>
-                        <td width="9%"><b>K</b></td>
-                        <td width="9%"><b>BB</b></td>
-                        <td width="9%"><b>WHIP</b></td>
-                        <td width="9%"><b>K/9</b></td>
-                        <td width="9%"><b>BB/9</b></td>
-                        <td width="9%"><b>HR/9</b></td>
+                        <td class="hsc2_c" width="9%"><b>W</b></td>
+                        <td class="hsc2_c" width="9%"><b>L</b></td>
+                        <td class="hsc2_c" width="9%"><b>ERA</b></td>
+                        <td class="hsc2_c" width="9%"><b>S</b></td>
+                        <td class="hsc2_c" width="9%"><b>INN</b></td>
+                        <td class="hsc2_c" width="9%"><b>K</b></td>
+                        <td class="hsc2_c" width="9%"><b>BB</b></td>
+                        <td class="hsc2_c" width="9%"><b>WHIP</b></td>
+                        <td class="hsc2_c" width="9%"><b>K/9</b></td>
+                        <td class="hsc2_c" width="9%"><b>BB/9</b></td>
+                        <td class="hsc2_c" width="9%"><b>HR/9</b></td>
                     </tr>
-                    <tr  height=17  class="bg2" align="center" valign="middle">
-                    	<td><?php echo($w); ?></td>
-                        <td><?php echo($l); ?></td>
-                        <td><?php echo($era); ?></td>
-                        <td><?php echo($s); ?></td>
-                        <td><?php echo($ip); ?></td>
-                        <td><?php echo($k); ?></td>
-                        <td><?php echo($bb); ?></td>
-                        <td><?php echo($whip); ?></td>
-                        <td><?php echo($k9); ?></td>
-                        <td><?php echo($bb9); ?></td>
-                        <td><?php echo($hr9); ?></td>
+                    <tr  height=17  class="bg2">
+                    	<td class="hsc2_c" style="vertical-align:middle;"><?php echo($w); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($l); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($era); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($s); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($ip); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($k); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($bb); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($whip); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($k9); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($bb9); ?></td>
+                        <td class="hsc2_c" style="vertical-align:middle;"><?php echo($hr9); ?></td>
                     </tr>
                     <?php } ?>
                     </tr>
                    <?php
 					if (!$rowsDrawn) { ?>
-                    <tr  height=17  class="bg2" align="right" valign="middle">
-                    	<td colspan="8" align=center>No Stats Were Found</td>
+                    <tr  height=17  class="bg2" valign="middle">
+                    	<td colspan="8" class="hsc2_c">No Stats Were Found</td>
                     </tr>
                      <?php } ?>
                      </table>
@@ -899,14 +902,14 @@
 
                 	<!-- CURRETN ELIDIBILITY -->
                 <div class='textbox'>
-                <table cellpadding="2" cellspacing="0" border="0" width="575">
+                <table cellpadding="2" cellspacing="0" width="575">
                 <tr class='title'>
                     <td>Eligibility</td>
                 </tr>
 				<tr class='headline'>
 					<td>
                     <?php $pos = unserialize($thisItem['positions']); ?>
-					<table width=100% cellpadding=2 cellspacing=1 border=0>
+					<table width=100% cellpadding=2 cellspacing=1>
                 	<!--tr  height=17  class="bg2" align="center" valign="middle">
                         <td colspan="10">
                         <?php
@@ -918,19 +921,19 @@
 							}
 						} echo ($pos_list);?> </td>
                     </tr-->
-                    <tr align=center class=headline><td><strong>Pos.</strong></td>
-                        <td><strong>C</strong></td>
-                        <td><strong>1B</strong></td>
-                        <td><strong>2B</strong></td>
-                        <td><strong>3B</strong></td>
-                        <td><strong>SS</strong></td>
-                        <td><strong>OF</strong></td>
-                        <td><strong>U</strong></td>
-                        <td><strong>SP</strong></td>
-                        <td><strong>RP</strong></td>
+                    <tr class="headline"><td><strong>Pos.</strong></td>
+                        <td class="hsc2_c"><strong>C</strong></td>
+                        <td class="hsc2_c"><strong>1B</strong></td>
+                        <td class="hsc2_c"><strong>2B</strong></td>
+                        <td class="hsc2_c"><strong>3B</strong></td>
+                        <td class="hsc2_c"><strong>SS</strong></td>
+                        <td class="hsc2_c"><strong>OF</strong></td>
+                        <td class="hsc2_c"><strong>U</strong></td>
+                        <td class="hsc2_c"><strong>SP</strong></td>
+                        <td class="hsc2_c"><strong>RP</strong></td>
                     </tr>
-                    <tr  height=17  class="bg2" align="center" valign="middle">
-                        <td  align=left>Eligible At:</td>
+                    <tr  height=17  class="bg2" valign="middle">
+                        <td>Eligible At:</td>
                         <?php
 						$posToTest = array(2,3,4,5,6,20,25,11,12);
 						foreach($posToTest as $testPos) { ?>
@@ -952,7 +955,7 @@
 </div>
 
 <div class='textbox'>
-<table cellpadding=2 cellspacing=0 border=0>
+<table cellpadding="2" cellspacing="0">
 <tr class='title'><td>Career Stats</td></tr>
 <?php
 $poy = array();
@@ -999,8 +1002,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    $yearStats = array();
    echo "  <tr><td>\n";
    echo "   <div class='tablebox'>\n";
-   echo "    <table cellpadding=0 cellspacing=0 border=0><tr class='title'><td colspan=22>Batting Stats</td></tr><tr><td>\n";
-   echo "    <table cellpadding=2 cellspacing=0 border=0 class='sortable' width='910px'>\n";
+   echo "    <table cellpadding=0 cellspacing=0><tr class='title'><td colspan=22>Batting Stats</td></tr><tr><td>\n";
+   echo "    <table cellpadding=2 cellspacing=0 class='sortable' width='910px'>\n";
    echo "     <thead><tr class='headline'>";
    echo "<td class='hsc2_l'>Year/Team</td>";
    echo "<td class='hsc2'>Age</td>";
@@ -1434,9 +1437,10 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       if ($tabbr=="" && isset($teams[$tid][$year])) {$tabbr=$teams[$tid][$year];}
 	  $expTable.= $yr.' - '.$tabbr;
 	  if($hasTeamHTML) { $expTable.='</a>'; }
-	  $expTable.="</td>";
+	  //$expTable.="</td>";
 	  // END HTML LINK EDIT
       if (isset($as[$yr])) {$expTable.=" (AS)";}
+      
       $expTable.="</td>";
       $expTable.="<td>$age</td>";
       $expTable.="<td>$pa</td>";
@@ -1893,8 +1897,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    ##### Display Expanded Batting Stats
    echo "  <tr><td>\n";
    echo "   <div class='tablebox'>\n";
-   echo "    <table cellpadding=0 cellspacing=0 border=0><tr class='title'><td colspan=22>Expanded Batting Stats</td></tr><tr><td>\n";
-   echo "    <table cellpadding=2 cellspacing=0 border=0 class='sortable' width='910px'>\n";
+   echo "    <table cellpadding=0 cellspacing=0><tr class='title'><td colspan=22>Expanded Batting Stats</td></tr><tr><td>\n";
+   echo "    <table cellpadding=2 cellspacing=0 class='sortable' width='910px'>\n";
    echo "     <thead><tr class='headline'>";
    echo "<td class='hsc2_l'>Year/Team</td>";
    echo "<td class='hsc2'>Age</td>";
@@ -1928,8 +1932,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	 /-----------------------------------------------------------------------*/
    echo "  <tr><td>\n";
    echo "   <div class='tablebox'>\n";
-   echo "    <table cellpadding=0 cellspacing=0 border=0><tr class='title'><td colspan=22>Pitching Stats</td></tr><tr><td>\n";
-   echo "    <table cellpadding=2 cellspacing=0 border=0 class='sortable' width='910px'>\n";
+   echo "    <table cellpadding=0 cellspacing=0><tr class='title'><td colspan=22>Pitching Stats</td></tr><tr><td>\n";
+   echo "    <table cellpadding=2 cellspacing=0 class='sortable' width='910px'>\n";
    echo "     <thead><tr class='headline'>";
    echo "<td class='hsc2_l'>Year/Team</td>";
    echo "<td class='hsc2'>Age</td>";
@@ -2402,7 +2406,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       if ($tabbr=="" && isset($teams[$tid][$year])) {$tabbr=$teams[$tid][$year];}
 	  $expTable.= $yr.' - '.$tabbr;
 	  if($hasTeamHTML) { $expTable.='</a>'; }
-	  $expTable.="</td>";
+	  //$expTable.="</td>";
 	  // END HTML LINK EDIT
 
       if (isset($as[$yr])) {$expTable.=" (AS)";}
@@ -2853,8 +2857,8 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    ##### Display Expanded Pitching Stats
    echo "  <tr><td>\n";
    echo "   <div class='tablebox'>\n";
-   echo "    <table cellpadding=0 cellspacing=0 border=0><tr class='title'><td colspan=22>Expanded Pitching Stats</td></tr><tr><td>\n";
-   echo "    <table cellpadding=2 cellspacing=0 border=0 class='sortable' width='910px'>\n";
+   echo "    <table cellpadding=0 cellspacing=0><tr class='title'><td colspan=22>Expanded Pitching Stats</td></tr><tr><td>\n";
+   echo "    <table cellpadding=2 cellspacing=0 class='sortable' width='910px'>\n";
    echo "     <thead><tr class='headline'>";
    echo "<td class='hsc2_l'>Year/Team</td>";
    echo "<td class='hsc2'>Age</td>";

@@ -3,34 +3,34 @@
 			?>
 
                 <!-- STATS BODY -->
-            <table cellpadding="4" cellspacing="1" border="0" class='sortable' style="width:100%;">
+            <table cellpadding="4" cellspacing="1" class='sortable-table' style="width:100%;">
             <thead>    
-            <tr class="headline sortable">
+            <tr class="headline">
                 <?php
                 $cols = explode("|",$colnames);
                 foreach ($cols as $colname) { 
                     switch ($colname) {
                         case 'Player':
                         case 'POS':
-							echo('<td height="17" class="hsn2" style="text-align:left;">'.$colname.'</td>');
+							echo('<th height="17" class="hsn2" style="text-align:left;">'.$colname.'</th>');
 							break;
                         case 'Team':
                             if ((isset($league_id) && !empty($league_id) && $league_id != -1) && (!isset($showTeam) || (isset($showTeam) && $showTeam != -1))) {
-								echo('<td height="17" class="hsn2" style="text-align:left;">'.$colname.'</td>');
+								echo('<th height="17" class="hsn2" style="text-align:left;">'.$colname.'</th>');
 							}
                             break;
 						case 'Add':
                             if (isset($showTrans) && $showTrans != -1) {
-								echo('<td class="hsn2" style="text-align:center;">'.$colname.'</td>');
+								echo('<th class="hsn2" style="text-align:center;">'.$colname.'</th>');
 							}
                             break;
 						case 'Draft':
                             if (isset($showDraft) && $showDraft != -1) {
-								echo('<td class="hsn2" style="text-align:center;">'.$colname.'</td>');
+								echo('<th class="hsn2" style="text-align:center;">'.$colname.'</th>');
 							}
                             break;
                         default:
-                            echo('<td class="hsn2" style="text-align:center;">'.$colname.'</td>');
+                            echo('<th class="hsn2 numeric-sort" style="text-align:center;">'.$colname.'</th>');
                             break;
                     }
                 }
@@ -45,13 +45,14 @@
             if (isset($player_stats) && sizeof($player_stats) > 0 && isset($fields) && sizeof($fields) > 0) {
                 $rownum=0;
                 foreach($player_stats as $row) {
-					$id = $row['id'];
+                    $id = $row['id'];
+                    $class = "";
                     if (isset($league_id) && !empty($league_id) && $league_id != -1 && (isset($player_teams[$id]) && isset($userTeamId) && $player_teams[$id] == $userTeamId[0])) {
-                        $bg = "#CC9933";
+                        $class = "sl_5";
                     } else {
-                        $bg = (($rownum % 2) == 0) ? '#E0E0E0' : '#fff';
+                        $class = (($rownum % 2) == 0) ? 'sl_1' : 'sl_2';
                     }
-                    echo("<tr bgcolor='".$bg."' style='background:".$bg."'>");
+                    echo("<tr class='".$class."'>");
                     foreach($fields as $col) {
 						$showCol = true;
 						switch($col){

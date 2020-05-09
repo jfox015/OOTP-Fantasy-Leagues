@@ -244,6 +244,7 @@
 							if (isset($playerSched) && sizeof($playerSched) > 0) {
 								$drawn = 0;
 								$limit = $config['sim_length'];
+								$iconStr = $config['ootp_html_report_path'].'images/dot1.gif';
 								foreach ($playerSched as $game_id => $game_data) { ?>
 									<td class='hsc2_l sched field_hide'><?php
 									if ($game_id > 0) {//if($game_data['game_date'] > $thisItem['visible_week'][$drawn]) {
@@ -259,6 +260,8 @@
 												echo("@".strtoupper($thisItem['team_list'][$game_data['home_team']]['abbr']));
 											}
 										}
+										if ($game_data['start'] != -1)
+											echo('&nbsp;<img src="'.$iconStr.'" />');
 									}
 									$drawn++;
 									if ($drawn == $limit) break;

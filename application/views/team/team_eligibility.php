@@ -41,7 +41,7 @@
 			
 				<!-- TEAM ELIGIBILITY BOX -->
             <div class='textbox'>
-                <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="1" border="0" width="915px">
+                <table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="1" border="0" width="915px">
                 <tr class="title">
 				<td colspan="<?php print(((isset($roster_rules)) ? sizeof($roster_rules)+1: 1)); ?>">Games Played By Position for the <?php print($lgyear); ?> season</td>
                 </tr>

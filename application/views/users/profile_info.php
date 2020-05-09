@@ -160,7 +160,7 @@
 						if (sizeof($teams) > 0) {
 					?>
                     <div class='textbox'>
-                    <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="560px">
+                    <table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" border="0" width="560px">
                     <tr class='title'>
                     	<?php 
 						$cols = 7;

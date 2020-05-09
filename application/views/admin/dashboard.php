@@ -225,7 +225,7 @@
 			?>
 			</li>
 			<?php
-			 if ($config['last_process_time'] > $config['last_sql_load_time'] && $league_info->current_date > $league_info->start_date && $summary_size > 0) { ?>
+			 if ($last_process_time > $last_sql_load_time && $summary_size > 0) { ?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'resetSim')); ?><br />
 			Undo last Sim</li>
 			<?php

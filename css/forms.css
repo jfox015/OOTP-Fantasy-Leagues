@@ -53,6 +53,16 @@ input.error {
     width: 330px;
 }
 
+table.sortable-table tbody tr:nth-child(2n) td {
+    background: #E0E0E0;
+  }
+  table.sortable-table tbody tr:nth-child(2n+1) td {
+    background: #fff;
+  }
+  table.sortable-table tbody tr.owned td, table.sortable-table tbody tr.owned:nth-child(2n) td, table.sortable-table tbody tr.owned:nth-child(2n+1) td {
+    background: #CC9933;
+  }
+
 .formLabel {
 	text-align:right;
 	font-weight:bold;

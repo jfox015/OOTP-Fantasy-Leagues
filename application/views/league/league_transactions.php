@@ -64,7 +64,7 @@
             echo "</div>"; 
 			?>
             <div class='textbox'>
-                <table style="margin:6px" class="sortable" cellpadding="0" cellspacing="0" border="0" width="915px">
+                <table style="margin:6px" class="sortable-table" cellpadding="0" cellspacing="0" border="0" width="915px">
                 <tr>
 				<td><?php if (isset($transaction_summary)) { 
 					echo($transaction_summary); 

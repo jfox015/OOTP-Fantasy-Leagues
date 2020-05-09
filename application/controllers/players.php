@@ -28,7 +28,7 @@ class players extends MY_Controller {
 		$this->views['MESSAGE'] = 'player/player_message';
 		$this->views['INFO'] = 'player/player_info';
 		$this->views['STATS'] = 'player/player_stats';
-		$this->enqueScript('sorttable.js');
+		//$this->enqueScript('sorttable.js');
 	}
 	/*--------------------------------
 	/	PUBLIC FUNCTIONS
@@ -344,7 +344,8 @@ class players extends MY_Controller {
 			$this->data['awardName'] = getLeagueAwardsNames($this->params['config']['ootp_league_id']);
 
 			$this->data['recentGames'] = $this->dataModel->getRecentGameStats($this->params['config']['ootp_league_id'],$this->ootp_league_model->current_date,date('Y',strtotime($this->ootp_league_model->current_date)));
-			$this->data['upcomingGames'] = getPlayerSchedules(array(0=>array($pid=>array('team_id'=>$this->data['thisItem']['team_id'],'position'=>$this->data['thisItem']['position'],'role'=>$this->data['thisItem']['role']))),$this->ootp_league_model->current_date, $this->params['config']['sim_length']);
+			$ootp_team_id = getPlayerOOTPTeam($this->dataModel->player_id);
+			$this->data['upcomingGames'] = getPlayerSchedules(array(0=>array($this->dataModel->player_id=>array('team_id'=>$ootp_team_id,'position'=>$this->data['thisItem']['position'],'role'=>$this->data['thisItem']['role']))),$this->ootp_league_model->current_date, $this->params['config']['sim_length']);
 
 			$this->data['careerStats'] = $this->dataModel->getCareerStats($this->params['config']['ootp_league_id']);
 			$this->data['teams'] = getOOTPTeamAbbrs($this->params['config']['ootp_league_id'],date('Y',strtotime($this->ootp_league_model->current_date)));

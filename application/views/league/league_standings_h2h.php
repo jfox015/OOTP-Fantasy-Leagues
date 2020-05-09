@@ -17,7 +17,7 @@
             </div>
             <?php } ?>
             <div class='textbox'>
-                <table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0">
+                <table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" border="0">
                 <?php 
                 if (isset($thisItem['divisions']) && sizeof($thisItem['divisions']) > 0) { 
                 foreach($thisItem['divisions'] as $id=>$divisionData) { ?>

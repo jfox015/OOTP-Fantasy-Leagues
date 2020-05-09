@@ -2092,7 +2092,53 @@ class team extends BaseEditor {
 	/-------------------------------------------*/
 	/**
 	 *	
-	 *	ADD STATS TO PLAYERS LISt
+	 *	GET STARTING PITCHERS
+	 *	This function looks up upcoming startrs and arranges them in array of days
+	 *
+	 * 	@param $team_id				{int}		Fantasy team ID to get pithcing roster
+	 *  @param $scoring_period_id 	{int}		The scoring period to pull the roster from
+	 *  @return						{Array}		Array of days with starting pitchers
+	 *	
+	 *	@since	1.0.3 PROD
+	 */
+	protected function getStartingPitchers($team_id = false, $scoring_period_id = false) {
+
+		if ($team_id === false) return false;
+		if ($scoring_period_id === false) $scoring_period_id = $this->params['config']['current_period'];
+
+		// GET PITCHERS FOR TEAM
+		$pitchers = $this->dataModel->getPitchers($scoring_period_id, $team_id, -999);
+
+		$this->load->model('player_model');
+		$starters = $this->player_model->getStartingPitchers($pitchers);
+
+		$player_id_list = array();
+		foreach($pitchers as $player_id => $playerData) {
+			$player_id_list[$playerData['id']] = $player_id;
+		}
+
+		$startingDays = array(0=>array(),1=>array(),2=>array(),3=>array(),4=>array(),5=>array(),6=>array());
+		if (sizeof($starters) > 0) {
+			foreach($starters as $teamData) {
+				//PROCESS EACH TEAMS STARTERS
+				$day = 0;
+				while ($day < 8) {
+					foreach($player_id_list as $id => $player_id) {
+						if ($teamData['starter_'.$day] == $player_id) {
+							array_push($startingDays[$day], $player_id_list[$teamData['starter_'.$day]]);
+							break;
+						}
+					}
+					$day++;
+				}
+			}
+		}
+
+		return $startingDays;
+	}
+	/**
+	 *	
+	 *	ADD STATS TO PLAYERS LIST
 	 *	This function takes stats created by $this->dataModel->getTeamStats() and
 	 *	adds them to the Players array as a new 'stats' item.
 	 *
@@ -2100,7 +2146,7 @@ class team extends BaseEditor {
 	 *  @param $stats 	{Array}		Array of stats arrays
 	 *  @return			{Array}		A copy of the original players array with a stats entry for each matching player
 	 *	
-	 *	@since	1.0.4
+	 *	@since	1.0.3 PROD
 	 */
 	protected function addStatsToPlayerList($players = false, $stats = false) {
 
@@ -2540,6 +2586,11 @@ class team extends BaseEditor {
 		$this->data['injured_list'] = $this->player_model->getInjuredPlayers($curr_period, $this->dataModel->id);
 		$this->makeNav();
 
+		// UPCOMING STARTERS
+		$this->data['thisItem']['pitchers'] = $this->dataModel->getPitchers($curr_period['id'], $this->dataModel->id, -999);
+		$this->data['thisItem']['schedules'] = getPlayerSchedules($this->dataModel->getCompleteRoster($curr_period['id']),$curr_period['date_start'],$this->params['config']['sim_length']);
+		$this->data['thisItem']['team_list'] = getOOTPTeams($this->params['config']['ootp_league_id'],false);
+		
 		parent::showInfo();
 	}
 	/**

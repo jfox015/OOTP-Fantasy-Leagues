@@ -82,7 +82,7 @@
 		/-----------------------------------------------*/
 		?>
 		<div class='textbox'>
-            <table style="margin:6px" class="sortable" cellpadding="0" cellspacing="0" width="615px">
+            <table style="margin:6px" class="sortable-table" cellpadding="0" cellspacing="0" width="615px">
             <tr>
             <td>
             <?php if (isset($transaction_summary)) { 

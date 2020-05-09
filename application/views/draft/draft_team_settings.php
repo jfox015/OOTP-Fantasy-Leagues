@@ -15,7 +15,7 @@
     		<div class="top-bar"><h1><?php echo($subTitle); ?></h1></div>
             <p /><br />
 			<div class='textbox'>
-				<table style="margin:6px" class="sortable" cellpadding="5" cellspacing="0" border="0" width="565px">
+				<table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" border="0" width="565px">
 				<tr class='title'>
                 	<td colspan="5" style="padding:3px;">Owner Draft Settings</td>
                 </tr>

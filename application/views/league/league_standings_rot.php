@@ -23,7 +23,7 @@
             </div>
             <?php } ?>
             <div class='textbox'>
-                <table style="margin:6px" class="sortable" cellpadding="8" cellspacing="2" border="0">
+                <table style="margin:6px" class="sortable-table" cellpadding="8" cellspacing="2" border="0">
                 <?php 
                 if (isset($thisItem['teams']) && sizeof($thisItem['teams']) > 0 && 
 					isset($thisItem['rules']) && sizeof($thisItem['rules']) > 0) { 

@@ -404,9 +404,92 @@ if ( ! function_exists('getLeagueAwardsNames')) {
 		return $awardName;
 	}
 }
+/**----------------------------------------------------------
+/
+/	GET PLAYERS OOTP TEAM
+/	Returns the OOTP Team ID for the passed player_id
+/
+/	@param	$player_id 		(int)	The OOTP Player_id
+/	@return					(int)	Team id or -1
+/
+/	@since	1.0.3 PROD
+/
+/-----------------------------------------------------------*/
+if ( ! function_exists('getPlayerOOTPTeam')) {
+	function getPlayerOOTPTeam($player_id) {
+		
+		if (!isset($ci)) $ci =& get_instance();
+		/**
+		 * GET PROJECTED PITCHING  STARTS
+		 */
+		$team_id = -1;
+		$ci->db->flush_cache();
+		$ci->db->select('team_id');
+		$ci->db->where('player_id', $player_id);
+		$query = $ci->db->get('players');
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$team_id = $row->team_id;
+		}
+		$query->free_result();
+		return $team_id;
+	}
+}
 
-// ------------------------------------------------------------------------
+/**----------------------------------------------------------
+/
+/	GET PITCHERS STARTS
+/	Returns an array of starters for an OOTP team if the passed
+/	player id is present in that teams starters list.
+/
+/	@param	$player_id 		(int)	The OOTP Player_id
+/	@return					(Array)	Array of player ids
+/
+/	@since	1.0.3 PROD
+/
+/-----------------------------------------------------------*/
+if ( ! function_exists('getPitcherStarts')) {
+	function getPitcherStarts($player_id) {
 
+		if (!isset($ci)) $ci =& get_instance();
+		/**
+		 * GET PROJECTED PITCHING  STARTS
+		 */
+		$startsArr = array();
+		$ci->db->flush_cache();
+		$ci->db->select();
+		$where =  '(starter_0 = '.$player_id.' OR starter_1 = '.$player_id;
+		$where .= ' OR starter_2 = '.$player_id.' OR starter_3 = '.$player_id;
+		$where .= ' OR starter_4 = '.$player_id.' OR starter_5 = '.$player_id;
+		$where .= ' OR starter_6 = '.$player_id.' OR starter_7 = '.$player_id.')';
+		$ci->db->where($where);
+		$query = $ci->db->get('projected_starting_pitchers');
+		//echo($ci->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			$startsArr = $query->result_array();
+		}
+		$query->free_result();
+		return $startsArr;
+	}
+}
+/**----------------------------------------------------------
+/
+/	GET PITCHERS SCHEDULE
+/	Returns an array of upcomiong games for the passed 
+/	player based ont he teams schedule. If the player 
+/	is a pitcher, the function calls getPitcherStarts() and
+/	will set 'start' to 1 if the pitcher is prohjected to start
+/	for a given game.
+/
+/	@param	$players 		(Array)			Array of layer information
+/	@param	$start_date		(Date String)	Starting date for scheudle
+/	@param	$simLen			(int)			Number of days of games to return
+/	@return					(Array)			Array of schedule for Team->Lineup page
+/
+/	@since	0.1 BETA
+/	@changelog				1.0.3 PROD - Added call to getPitcherStarts()
+/
+/-----------------------------------------------------------*/
 if ( ! function_exists('getPlayerSchedules')) {
 	function getPlayerSchedules($players,$start_date,$simLen) {
 
@@ -419,13 +502,11 @@ if ( ! function_exists('getPlayerSchedules')) {
 				if ($arr_id == 0) { $list = 'players_active'; } else if ($arr_id == 1) { $list = 'players_reserve'; } else { $list = 'players_injured'; }
 				if (is_array($players_arr) && sizeof($players_arr) > 0) {
 					foreach ($players_arr as $id => $data) {
+						// GET START PROJECTIONS for pitchers
 						$projStarts = array();
-						/**
-						 * TODO  GET PITCHING PROJECTED STARTS
-						 */
-						//if ($data['position'] == 1 && $data['role'] == 11) {
-							// GET START PROJECTIONS
-						//}
+						if ($data['position'] == 1 && ($data['role'] == 11 || $data['role'] == 12)) {
+							$projStarts = getPitcherStarts($id);
+						}
 						$ci->db->flush_cache();
 						$ci->db->select('game_id,home_team,away_team,games.date AS game_date,time AS game_time');
 						$ci->db->where("DATEDIFF('".$start_date."',games.date)<=",0);
@@ -439,6 +520,7 @@ if ( ! function_exists('getPlayerSchedules')) {
 							$dateCount = 0;
 							$prevDate = -1;
 							foreach ($query->result() as $row) {
+								$start = -1;
 								$game_date = strtotime($row->game_date);
 								// UPDATE 1.0.3 - JF
 								// HANDLE MULTIPLE GAMES FOR A SINGLE DAY
@@ -454,9 +536,11 @@ if ( ! function_exists('getPlayerSchedules')) {
 															   'away_team'=>-1));
 									$dateCount++;
 								}
+								if ($data['position'] == 1 && ($data['role'] == 11 || $data['role'] == 12)) 
+									if ($projStarts[0]['starter_'.$dateCount] == $id) $start = 1;
 								$player_schedule = $player_schedule + array($row->game_id=>array('home_team'=>$row->home_team,
 															   'away_team'=>$row->away_team,'game_date'=>$row->game_date,
-															   'game_time'=>$row->game_time));
+															   'game_time'=>$row->game_time,'start'=>$start));
 								// UPDATE 1.0.3 - JF
 								// SAVE LAST DATE USED TO CORRETLY HANDLE MUTLTIPLE GAMES ON A SINGLE DAY
 								$prevDate = $game_date;
