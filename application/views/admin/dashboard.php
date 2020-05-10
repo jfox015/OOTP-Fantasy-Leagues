@@ -86,7 +86,7 @@
         });
 		$('a[rel=resetSim]').click(function (event) {
 			refreshAfterUpdate = true;
-			if (confirm("Are you sure you want to perform this operation? This will reset the entire season to it's starting point and wipe out ALL season stats, transactions and fantasy data.")) {
+			if (confirm("Are you sure you want to perform this operation? This will undo the last Sim, remove all data associated with it and set the scoring period back by one. This action CANNOT be undone.")) {
 				runAjax("<?php echo($config['fantasy_web_root']); ?>admin/resetSim"+cacheBuster());
 			}
 			event.preventDefault();

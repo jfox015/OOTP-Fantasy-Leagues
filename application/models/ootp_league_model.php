@@ -57,8 +57,8 @@ class ootp_league_model extends base_model {
         $this->requiredTables = array('cities','nations','games','league_events','leagues','players_awards','players',
             'players_batting','players_pitching','players_fielding','players_game_batting',
             'players_career_batting_stats','players_game_pitching_stats',
-            'players_career_fielding_stats','players_career_pitching_stats','players_roster_status','teams',
-            'team_history');
+			'players_career_fielding_stats','players_career_pitching_stats','players_roster_status',
+			'projected_starting_pitchers','teams','team_history');
         if (intval($this->ootp_version) >= 12) {
             array_push($this->requiredTables,'states');
         }

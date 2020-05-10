@@ -1514,12 +1514,15 @@ class admin extends MY_Controller {
 	}
 	/**
 	 *	RESET RECENT SIM DATA.
-	 *  CAUTION: THIS WILL WIPE OUT ALL SEASON WIDE DATA AND REST THE MOD BACK TO
-	 *	PRE_SEASON STATUS.
+	 *  CAUTION: THIS WILL ERASE ALL THE DATA FROM THE PREVIOUS SIM AND RESET BACK ONE
+	 *  SCORING PERIOD.
 	 */
 	function resetSim() {
 		$result = '';
 		$status = '';
+		if (!function_exists('reset_sim')) {
+			$this->load->helper('admin');
+		}
 		$mess = reset_sim($this->params['config']['current_period']);
 		update_config('current_period',$this->params['config']['current_period'] - 1);
 		update_config('last_process_time','1970-1-1 00:00:00');

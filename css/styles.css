@@ -1,0 +1,149 @@
+/*
+Attention: you can customize this style set file, but it will be overwritten whenever you load the league.
+To change the CSS data of the reports, edit the original files /templates/styles_<skin-name>.css or add a <style> section
+to the template /templates/head_bits.tpl. You could also add an additional styles CSS file and link to it in the head_bits.tpl.
+
+The file contains dummy classes. OOTP needs them to identify headers of sortable columns:
+hsn = sort numeric
+hsc = sort character
+hsd
+hsu = sort currency
+hsf
+hsp = sort position
+hsx = sorting ends here
+hsi = ignore this line when sorting
+*/
+
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400);
+
+body			{ font-family:"Open Sans", Calibri, Helvetica, Verdana, Geneva, Arial, sans-serif; font-size:13px; color:#1B1B1B; }
+body.ext_bg		{ background-color:#FFFFFF; color:#1b1b1b; }
+
+td			{ font-family:"Open Sans", Calibri, Helvetica, Verdana, Geneva, Arial, sans-serif; font-size:13px; color:#1B1B1B; vertical-align:top; text-align: left; }
+th			{ font-family:"Open Sans", Calibri, Helvetica, Verdana, Geneva, Arial, sans-serif; font-size:13px; color:#1B1B1B; vertical-align:top; text-align: left; }
+
+.linebg   		{ background-color:#00FF00; }
+
+table.stats 		{ background-color:#FFFFFF; }
+.statsbg 		{ background-color:#FFFFFF; }
+.stats th 		{ background-color:#9A9A9A; border-bottom:1px solid #A0A09E; color:#FFFFFF; font-weight:normal; padding:1px 4px 2px 4px; white-space: nowrap;}
+.stats td 		{ border-bottom:1px solid #EBE9E9; color:#1B1B1B; padding:1px 4px 2px 4px; white-space: nowrap;}
+
+table.data   		{ background-color:#FFFFFF; }
+.databg   		{ background-color:#FFFFFF; }
+.data th 		{ background-color:#9A9A9A; border-bottom:1px solid #A0A09E; color:#FFFFFF; font-weight:normal; padding:1px 4px 2px 4px; white-space: nowrap;}
+.datath			{ background-color:#9A9A9A; border-bottom:1px solid #A0A09E; color:#FFFFFF; font-weight:normal; padding:1px 4px 2px 4px; white-space: nowrap;}
+.datathbg		{ background-color:#9A9A9A; }
+.datacolor		{ color:#1b1b1b; }
+.data td 		{ background-color:#FFFFFF; border-bottom:1px solid #EBE9E9; color:#1b1b1b; padding:1px 4px 2px 4px; white-space: nowrap;}
+td.data_footer 		{ background-color:#9A9A9A; border-top:1px solid #A0A09E; color:#FFFFFF; font-weight:normal; padding:1px 4px 2px 4px; white-space: nowrap;}
+
+td.data_capt    	{ color:#1b1b1b; font-weight:bold; padding:1px 4px 2px 4px; white-space: normal;}
+td.wrap			{ white-space: normal; }
+
+th.datath		{ background-color:#9A9A9A; border-bottom:1px solid #A0A09E; color:#FFFFFF; font-weight:normal; padding:1px 4px 2px 4px; white-space: nowrap;}
+
+.dl			{ text-align:left; }
+.dr			{ text-align:right; }
+.dc			{ text-align:center; }
+.highlight		{ font-weight:bold; color:#333333; }
+.bold			{ font-weight:bold; }
+.grey			{ background-color:#D3D3D3; }
+.head_bg		{ background-color:#969696; }
+
+td.light		{ color:#6666DD; }
+td.footer		{ color:#1b1b1b; font-size:11px; padding-left:4px; }
+td.datac0		{ font-weight:bold; color:#555555; }
+td.datac1		{ font-weight:bold; color:#DD5533; }
+td.datac2		{ font-weight:bold; color:#FA7000; }
+td.datac3		{ font-weight:bold; color:#D6BF00; }
+td.datac4		{ font-weight:bold; color:#117722; }
+td.datac5		{ font-weight:bold; color:#44BBDD; }
+
+th.hsn			{}
+th.hsc			{}
+th.hsd			{}
+th.hsu			{}
+th.hsf			{}
+th.hsp			{}
+th.hsx			{}
+th.hsi			{}
+sortable		{}
+
+a:link 			{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a:visited 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a:hover 		{ text-decoration:none; font-weight:normal; color:#0095F2; }
+a:active 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a:focus 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+
+a.m:link 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a.m:visited 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a.m:hover 		{ text-decoration:none; font-weight:normal; color:#0095F2; }
+a.m:active 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a.m:focus 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+
+a.a1:link		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a.a1:visited 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a.a1:hover 		{ text-decoration:none; font-weight:normal; color:#0095F2; }
+a.a1:active 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+a.a1:focus 		{ text-decoration:none; font-weight:normal; color:#0077C1; }
+
+a.bold:link 		{ text-decoration:none; font-weight:bold; color:#0077C1; }
+a.bold:visited 		{ text-decoration:none; font-weight:bold; color:#0077C1; }
+a.bold:hover 		{ text-decoration:none; font-weight:bold; color:#0095F2; }
+a.bold:active 		{ text-decoration:none; font-weight:bold; color:#0077C1; }
+a.bold:focus 		{ text-decoration:none; font-weight:bold; color:#0077C1; }
+
+.menu 			{ font-weight:normal; color:#FFFFFF; text-align:center; }
+a.menu:link 		{ text-decoration:none; font-weight:bold; color:#FFFFFF; }
+a.menu:visited 		{ text-decoration:none; font-weight:bold; color:#FFFFFF; }
+a.menu:hover 		{ text-decoration:none; font-weight:bold; color:#0095F2; }
+a.menu:active 		{ text-decoration:none; font-weight:bold; color:#FFFFFF; }
+a.menu:focus 		{ text-decoration:none; font-weight:bold; color:#FFFFFF; }
+
+a.btmlink:link		{ text-decoration:none; font-size:11px; color:#0077C1; }
+a.btmlink:visited	{ text-decoration:none; font-size:11px; color:#0077C1; }
+a.btmlink:hover		{ text-decoration:none; font-size:11px; color:#0095F2; }
+a.btmlink:active	{ text-decoration:none; font-size:11px; color:#0077C1; }
+a.btmlink:focus		{ text-decoration:none; font-size:11px; color:#0077C1; }
+
+a.boxlink:link		{ text-decoration:none; font-size:13px; font-weight:bold; color:#0077C1; }
+a.boxlink:visited	{ text-decoration:none; font-size:13px; font-weight:bold; color:#0077C1; }
+a.boxlink:hover		{ text-decoration:none; font-size:13px; font-weight:bold; color:#0095F2; }
+a.boxlink:active	{ text-decoration:none; font-size:13px; font-weight:bold; color:#0077C1; }
+a.boxlink:focus		{ text-decoration:none; font-size:13px; font-weight:bold; color:#0077C1; }
+
+.boxcurrent   		{ font-weight:bold; color:#333333; font-size: 13px; }
+th.boxtitle		{ font-size:18px; font-weight:lighter; padding:3px 4px 2px 4px; color:#333333; background-color:#FFFFFF; }
+td.boxtitle		{ font-size:18px; font-weight:lighter; padding:3px 4px 2px 4px; color:#333333; background-color:#FFFFFF; }
+.boxnotes		{ font-size:11px; color:#1b1b1b; background-color:#FFFFFF; }
+.boxtitlecolors		{ color:333333; background-color:#FFFFFF; }
+.boxsubtitle		{ font-size:13px; font-weight:bold; color:#333333; background-color:#FFFFFF; }
+.reptitle		{ font-size:28px; font-weight:bold; color:#FFFFFF; text-align:center; }
+.repsubtitle		{ font-size:20px; font-weight:bold; color:#FFFFFF; text-align:center; }
+
+ul			{ list-style-image:url(images/dot1.gif); }
+select			{ font-family:"Open Sans", Calibri, Helvetica, Verdana, Geneva, Arial, sans-serif; font-size:13px; font-weight:normal; text-align:left; color:#1b1b1b; background-color:#FFFFFF; }
+
+.sdl_off             	{ background-color:#FFFFFF; }
+.sdl_empty             	{ background-color:#FFFFFF; }
+.sdl_asg		{ background-color:#FFFFFF; }
+.sdl_asg_played		{ background-color:#FFFFFF; }
+.sdl_home		{ background-color:#FAFAFA; }
+.sdl_away		{ background-color:#DDDDDD; }
+.sdl_today		{ background-color:#DDEDFF; }
+
+a.sdl_lost:link 	{ text-decoration:none; font-weight:normal; color:#FF0000; }
+a.sdl_lost:visited 	{ text-decoration:none; font-weight:normal; color:#FF0000; }
+a.sdl_lost:hover 	{ text-decoration:none; font-weight:normal; color:#FF6A00; }
+a.sdl_lost:active 	{ text-decoration:none; font-weight:normal; color:#FF0000; }
+a.sdl_lost:focus 	{ text-decoration:none; font-weight:normal; color:#FF0000; }
+
+a.sdl_won:link 		{ text-decoration:none; font-weight:normal; color:#00C000; }
+a.sdl_won:visited 	{ text-decoration:none; font-weight:normal; color:#00C000; }
+a.sdl_won:hover 	{ text-decoration:none; font-weight:normal; color:#5FBF16; }
+a.sdl_won:active 	{ text-decoration:none; font-weight:normal; color:#00C000; }
+a.sdl_won:focus 	{ text-decoration:none; font-weight:normal; color:#00C000; }
+
+.sdl_border_left	{ border-left:1px solid #A0A09E; border-bottom:1px solid #A0A09E; border-right:1px solid #A0A09E; }
+.sdl_border_other	{ border-bottom:1px solid #A0A09E; border-right:1px solid #A0A09E; }

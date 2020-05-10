@@ -197,6 +197,7 @@
 				/-----------------------------------*/
 				// ONLY SHOW BUTTONS IF THE USER IS THE OWNER OR RECIPIENT. COMMISIOENRS AND ADMINS
 				// CAN MANAGE TRADES VIA THE LEAGUE->ADMIN->Trade tools
+				// OTHER OWNERS CAN LOG A PROTEST IF THEY HAVEN'T ALREADY DONE SO
 				if (isset($trans_type)) {
 				?>
                     <div style="display:block;width:58%;position:relative; text-align:center; float:left;">

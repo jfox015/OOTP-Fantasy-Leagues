@@ -46,11 +46,11 @@
                         $avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
                     }
                     ?>
-                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" /> &nbsp;
-                    <?php echo(anchor('/team/info/'.$teamId,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
-                    <td class='hsc2_l'><?php echo($teamData['w']); ?></td>
-                    <td class='hsc2_l'><?php echo($teamData['l']); ?></td>
-                    <td class='hsc2_l'><?php echo(sprintf("%.3f",$teamData['pct'])); ?></td>
+                    <td class='hsc2_l' style="vertical-align:middle;"><img src="<?php echo($avatar); ?>" width="24" height="24" /> &nbsp;
+                    <?php echo(anchor('/team/info/'.$teamId,$teamData['teamname']." ".$teamData['teamnick'],['class'=>'teamLargeLink'])); ?></td>
+                    <td class='hsc2_c'><?php echo($teamData['w']); ?></td>
+                    <td class='hsc2_c'><?php echo($teamData['l']); ?></td>
+                    <td class='hsc2_c'><?php echo(sprintf("%.3f",$teamData['pct'])); ?></td>
                     <?php 
 					if ($rowcount == 0) { 
 						$leadG = $teamData['g']; $leadW = $teamData['w']; $gb = "--"; 
@@ -59,7 +59,7 @@
 						if ((($leadG-$teamData['g'])%2) != 0) { $gb .= "<sup>1/2</sup>"; }
 					}
 					?>
-                    <td class='hsc2_l'><?php echo($gb); ?></td>
+                    <td class='hsc2_c'><?php echo($gb); ?></td>
                 </tr>
                     <?php
                     $rowcount++;

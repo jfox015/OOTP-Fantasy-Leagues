@@ -2711,6 +2711,7 @@ class league_model extends base_model {
 						$this->db->select('team_id');
 						$this->db->where("value_".$i." <> -1");
 						$this->db->where("league_id",$league_id);
+						$this->db->where("scoring_period_id",$scoring_period['id']);
 						$this->db->order_by("value_".$i, $order);
 						$query = $this->db->get($this->tables['TEAMS_SCORING']);
 						//print($this->db->last_query()."<br />");

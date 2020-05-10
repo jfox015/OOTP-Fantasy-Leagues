@@ -414,7 +414,7 @@ figure.logo-lg, figure.logo-exlg {
 .flexContent {
 	padding-left: 8px!important;
 }
-.teamLinks a.teamLink  {
+.teamLinks a.teamLink {
 	display: inline;
     color: #151617;
     font-weight: 600;
@@ -427,6 +427,15 @@ figure.logo-lg, figure.logo-exlg {
     font-weight: 600;
     line-height: 28px;
     font-size: 24px;
+}
+
+a.teamLargeLink {
+	display: inline;
+    color: #151617;
+    font-weight: 800;
+	font-size: 14px;
+	padding:0;
+	margin:0;
 }
 
 /*---------------------------

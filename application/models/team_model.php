@@ -414,7 +414,39 @@ class team_model extends base_model {
         }
         $query->free_result();
         return false;
-    }
+	}
+	/**
+	 * CHECK TRADES IN APPROVAL STATE
+	 * Runs a check on trades that are waiting for League Approval. If the offer review period is at or past the current
+	 * number of days available for LEAGUE protest, the trade is marked as appproved and updated.
+	 * @param $scoring_period_id			The Scorign Period for trades
+	 * @param $protestPeriodDays			An override for the default days
+	 * @return								[Boolean] TRUE On success
+	 * 
+	 * @since 1.0.3 PROD
+	 * 
+	 */
+	public function checkTradesInApprovalState($scoring_period_id = false, $protestPeriodDays = TRADE_MAX_EXPIRATION_DAYS) {
+		
+		if ($scoring_period_id === false) {
+			$curr_period = $this->getScoringPeriod();
+			$scoring_period_id = $curr_period['id'];
+		}
+		
+		$day = 60*60*28;
+        $this->db->select("id, league_id, offer_date, expiration_days");
+        $this->db->where('in_period',$scoring_period_id);
+		$this->db->where('status',TRADE_PENDING_LEAGUE_APPROVAL);
+		$this->db->where("DATEDIFF ('".date('Y-m-d H:m:s',(time()))."',offer_date)>=",intval($protestPeriodDays));
+		$query = $this->db->get($this->tables['TRADES']);
+		if ($query->num_rows() > 0) {
+            foreach($query->result() as $row) {
+				$this->processTrade($row->id, TRADE_COMPLETED, "Passed League Protest Deadline", $row->league_id);
+			}
+		}
+		$query->free_result();
+        return true;
+	}
     /**
 	 * UPDATE TRADE
 	 * Updates the record for a trade after it has been processed.

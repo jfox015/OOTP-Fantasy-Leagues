@@ -84,7 +84,7 @@ class league extends BaseEditor {
 
 		$this->lang->load('league');
 
-		// EDIT 1.0.6
+		// EDIT 0.6 BETA
 		// TRADE PSUEDO CRON TASKS
 		// TEST FOR EXPIRING TRADES, EXPIRING LEAGUE PROTESTS AND ALERT COMMISSIONER TO TRADES REQUIRING
 		// COMMISSIONER APPROVAL
@@ -94,12 +94,14 @@ class league extends BaseEditor {
 			} // END if
 			$curr_period = $this->getScoringPeriod();
 			// COMMISH APPROVAL ALERT
+			$this->load->model('team_model');
 			if ($this->params['loggedIn'] && $this->params['config']['approvalType'] == 1 && $this->params['currUser'] == $this->dataModel->getCommissionerId()) {
-				$this->load->model('team_model');
 				$this->tradeLists['forAppproval'] = $this->team_model->getTradesForScoringPeriod($this->uriVars['id'], $curr_period['id'], false, false, false, false, TRADE_PENDING_COMMISH_APPROVAL);
 			} // END if
 			// LEAGUE APPROVAL
 			if ($this->params['config']['approvalType'] == 2 && $this->params['config']['protestPeriodDays'] > 0) {
+				// 1.0.3 PROD, added an actual CRON like function to approve trades past review period
+				$this->team_model->checkTradesInApprovalState($curr_period['id'], $this->params['config']['protestPeriodDays']);
 				$this->tradeLists['inLeagueReview'] = $this->dataModel->getTradesInLeagueReview($curr_period['id'],$this->uriVars['id'],$this->params['config']['protestPeriodDays']);
 			} // END if
 			$this->data['tradeLists'] = $this->tradeLists;

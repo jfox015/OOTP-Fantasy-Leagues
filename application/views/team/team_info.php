@@ -357,7 +357,7 @@
 					</td>
 					<td class='hsc2_l' colspan="<?php print($col_size_b_3); ?>">
 					<?php 
-					print anchor('/team/tradeReview/trade_id/'.$tradeOffer['trade_id'].'/league_id/'.$league_id.'/team_id/'.$data['id'].'/trans_type/4','Review Trade');
+					print anchor('/team/tradeReview/trade_id/'.$tradeOffer['trade_id'].'/league_id/'.$league_id.'/team_id/'.$thisItem['team_id'].'/trans_type/4','Review Trade');
 					?>
 					</td>
 				</tr>
@@ -666,3 +666,4 @@
 			<?php
 			}
 			?>
+		</div>

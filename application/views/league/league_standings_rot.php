@@ -23,7 +23,7 @@
             </div>
             <?php } ?>
             <div class='textbox'>
-                <table style="margin:6px" class="sortable-table" cellpadding="8" cellspacing="2" border="0">
+                <table style="margin:6px" class="sortable-table" cellpadding="8" cellspacing="2">
                 <?php 
                 if (isset($thisItem['teams']) && sizeof($thisItem['teams']) > 0 && 
 					isset($thisItem['rules']) && sizeof($thisItem['rules']) > 0) { 
@@ -38,9 +38,9 @@
                 <tr class='headline'>
                     <td class='hsc2_c'>Team</td>
                     <td width="1">&nbsp;</td>
-                    <td class='hsc2_c' colspan="<?php print($catCount); ?>" align="center">Batting</td>
+                    <td class='hsc2_c' colspan="<?php print($catCount); ?>">Batting</td>
                     <td width="1">&nbsp;</td>
-                    <td class='hsc2_c' colspan="<?php print($catCount); ?>" align="center">Pitching</td>
+                    <td class='hsc2_c' colspan="<?php print($catCount); ?>">Pitching</td>
                     <td width="1">&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
@@ -51,12 +51,12 @@
 					$types = array('batting','pitching');
 					foreach($types as $type) {
 						foreach ($thisItem['rules'][$type] as $cat => $val) {
-							print('<td class="hsc2_r" align="right">'.get_ll_cat($cat).'</td>');
+							print('<td class="hsc2_r">'.get_ll_cat($cat).'</td>');
 						} // END foreach
 						print('<td>&nbsp;</td>');
 					} // END foreach
 					?>
-                    <td class="hsc2_r" align="right">Total</td>
+                    <td class="hsc2_r">Total</td>
                 </tr>
                 
                 <?php 
@@ -73,7 +73,7 @@
                     }
                     ?>
                     <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" /> &nbsp;
-					<?php echo(anchor('/team/info/'.$id,$teamData['teamname']." ".$teamData['teamnick'])); ?></td>
+					<?php echo(anchor('/team/info/'.$id,$teamData['teamname']." ".$teamData['teamnick'],['class'=>'teamLargeLink'])); ?></td>
                     <td>&nbsp;</td>
                     <?php 
 						$i = 0;
@@ -113,13 +113,13 @@
 							print('<td>&nbsp;</td>'); 
 						} // END foreach
 					?>
-                    <td class="hsc2_r" align="right"><?php 
+                    <td class="hsc2_r"><strong><?php 
 					if (isset($teamData['total'])) {
 						print($teamData['total']); 
 					} else {
 						print("0");
 					} 
-					?></td>
+					?></strong></td>
                 </tr>
                     <?php
                     $rowcount++;

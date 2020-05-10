@@ -488,6 +488,7 @@ if ( ! function_exists('getPitcherStarts')) {
 /
 /	@since	0.1 BETA
 /	@changelog				1.0.3 PROD - Added call to getPitcherStarts()
+/							Also fixed handling of off days and doubleheaders in schedule
 /
 /-----------------------------------------------------------*/
 if ( ! function_exists('getPlayerSchedules')) {
@@ -514,36 +515,36 @@ if ( ! function_exists('getPlayerSchedules')) {
 						$ci->db->where('(home_team = '.$data['team_id'].' OR away_team = '.$data['team_id'].')');
 						$ci->db->order_by('games.date','asc');
 						$query = $ci->db->get('games');
+						//echo($ci->db->last_query()."<br />");
 						$player_schedule = array();
 						$offDay = 0;
 						if ($query->num_rows() > 0) {
 							$dateCount = 0;
 							$prevDate = -1;
-							foreach ($query->result() as $row) {
+							$results = $query->result_array();
+							while ($dateCount < 7) {
+							//foreach ($query->result() as $row) {
 								$start = -1;
-								$game_date = strtotime($row->game_date);
-								// UPDATE 1.0.3 - JF
-								// HANDLE MULTIPLE GAMES FOR A SINGLE DAY
-								if (($prevDate != -1 && $prevDate == $game_date)) {
-									$dateCount -= 1;
-								}
 								$calendar_date = strtotime($daysInPeriod[$dateCount]);
-								$date_diff = $game_date - $calendar_date;
-								$diffDays = floor($date_diff/(60*60*24));
-								// IF AN OFF DAY IS FOUND, ADD AN EMPTY FIELD
-								if ($diffDays != 0) {
-									$player_schedule = $player_schedule + array(($offDay-=1)=>array('home_team'=>-1,
-															   'away_team'=>-1));
-									$dateCount++;
+								$games = array();
+								foreach($results as $game_data) {
+									$game_date = strtotime($game_data['game_date']);
+									if ($game_date == $calendar_date) {
+										array_push($games, $game_data);
+									}
 								}
-								if ($data['position'] == 1 && ($data['role'] == 11 || $data['role'] == 12)) 
-									if ($projStarts[0]['starter_'.$dateCount] == $id) $start = 1;
-								$player_schedule = $player_schedule + array($row->game_id=>array('home_team'=>$row->home_team,
-															   'away_team'=>$row->away_team,'game_date'=>$row->game_date,
-															   'game_time'=>$row->game_time,'start'=>$start));
-								// UPDATE 1.0.3 - JF
-								// SAVE LAST DATE USED TO CORRETLY HANDLE MUTLTIPLE GAMES ON A SINGLE DAY
-								$prevDate = $game_date;
+								if (sizeof($games) > 0) {
+									if ($data['position'] == 1 && ($data['role'] == 11 || $data['role'] == 12)) 
+										if ($projStarts[0]['starter_'.$dateCount] == $id) $start = 1;
+									foreach($games as $game_data) {
+										$player_schedule = $player_schedule + array($game_data['game_id']=>array('home_team'=>$game_data['home_team'],
+															   'away_team'=>$game_data['away_team'],'game_date'=>$game_data['game_date'],
+															   'game_time'=>$game_data['game_time'],'start'=>$start));
+									}
+								} else {
+									$player_schedule = $player_schedule + array(($offDay-=1)=>array('game_date'=>$daysInPeriod[$dateCount],'home_team'=>-1,
+															   'away_team'=>-1));
+								}
 								$dateCount++;
 							} // END foreach
 							if (sizeof($player_schedule) < intval($simLen)) {
