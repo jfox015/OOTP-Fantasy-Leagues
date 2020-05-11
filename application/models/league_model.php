@@ -36,12 +36,12 @@ class league_model extends base_model {
 	 */
 	var $league_type  = -1;
 	/**
-	 *	# OF GANES PLAYED PER TEAM PER WEEK (Head-to-Head Scoring).
+	 *	# OF GAMES PLAYED PER TEAM PER WEEK (Head-to-Head Scoring).
 	 *	@var $games_per_team:Int
 	 */
 	var $games_per_team = 0;
 	/**
-	 *	# OF GANES PLAYED PER TEAM PER WEEK (Head-to-Head Scoring).
+	 *	LEAGUE ACCESS TYPE
 	 *	@var $access_type:Int
 	 */
 	var $access_type = -1;
@@ -80,6 +80,16 @@ class league_model extends base_model {
 	 *	@var $accept_requests:Int
 	 */
 	var $accept_requests = 0;
+	/**
+	 *	ALLOW PLAYOFF TRANSACTIONS.
+	 *	@var $allow_playoff_trans:Int
+	 */
+	var $allow_playoff_trans = -1;
+	/**
+	 *	ALLOW PLAYOFF TRADES.
+	 *	@var $allow_playoff_trades:Int
+	 */
+	var $allow_playoff_trades = -1;
 	/**
 	 *	COMPILED STATS.
 	 *	@var $compiledStats:Array
@@ -124,12 +134,12 @@ class league_model extends base_model {
 		$this->tables['TRADES_STATUS'] = 'fantasy_teams_trades_status';
 		$this->tables['PLAYERS'] = 'fantasy_players';
 
-		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests');
+		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests','allow_playoff_trans','allow_playoff_trades');
 		$this->conditionList = array('avatarFile','new_commisioner');
 		$this->readOnlyList = array('avatar','commissioner_id');
 		$this->textList = array('description');
 
-		$this->columns_select = array('id','league_type','description','league_name','max_teams','access_type','avatar','commissioner_id','league_status','regular_scoring_periods');
+		$this->columns_select = array('id','league_type','description','league_name','max_teams','access_type','avatar','commissioner_id','league_status','regular_scoring_periods','allow_playoff_trans','allow_playoff_trades');
 
 		$this->addSearchFilter('league_type','Scoring Type','leagueType','leagueType');
 		$this->addSearchFilter('access_type','Public/Private','accessType','accessType');
@@ -921,7 +931,7 @@ class league_model extends base_model {
 	 */
 	public function getLeagues($type=1, $status = false) {
 		$leagues = array();
-		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id, league_status, access_type, league_type, leagueType, max_teams, regular_scoring_periods, games_per_team');
+		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id, league_status, access_type, league_type, leagueType, max_teams, regular_scoring_periods, games_per_team, playoff_rounds');
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		if ($type != -1) $this->db->where('access_type',1);
 		if ($status !== false) $this->db->where('league_status', $status);
@@ -934,7 +944,8 @@ class league_model extends base_model {
 															'league_status'=>$row->league_status,'commissioner_id'=>$row->commissioner_id,'commissioner'=>$commish,
 															'league_type_desc'=>$row->shortDesc,'league_type_lbl'=>$row->leagueType,'league_type'=>$row->league_type,
 															'description'=>$row->description,'access_type'=>$row->access_type,
-															'regular_scoring_periods'=>$row->regular_scoring_periods,'games_per_team'=>$row->games_per_team));
+															'regular_scoring_periods'=>$row->regular_scoring_periods,'games_per_team'=>$row->games_per_team,
+															'playoff_rounds'=>$row->playoff_rounds));
 			}
 		}
 		$query->free_result();

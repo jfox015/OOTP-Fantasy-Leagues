@@ -1210,7 +1210,7 @@ class league extends BaseEditor {
 		$this->data['isCommish'] = $this->dataModel->userIsCommish($this->params['currUser']);
 		$this->data['isAdmin'] = $this->params['loggedIn'] && $this->params['accessLevel'] == ACCESS_ADMINISTRATE;
 
-		// EDIT - 1.0.3 - SCHEUDLE EITING CAPABILITIES
+		// EDIT - 0.3 BETA  - SCHEUDLE EDITING CAPABILITIES
 		if ($this->data['isCommish'] || $this->data['isAdmin']) {
 			if (!function_exists('getCurrentScoringPeriod')) {
 				$this->load->helper('admin');
@@ -1218,12 +1218,13 @@ class league extends BaseEditor {
 			if (isset($this->uriVars['period_id'])) {
 				$curr_period_id = 	$this->uriVars['period_id'];
 			} else {
-				$curr_period_id = $this->params['config']['current_period'];
+				$curr_period_id = intval($this->params['config']['current_period']);
 			}
 			$this->data['curr_period'] = $curr_period_id;
 			$this->data['avail_periods'] = $this->dataModel->getAvailableScoringPeriods();
-			$this->data['max_reg_period'] = $this->dataModel->regular_scoring_periods;
-
+			$this->data['max_reg_period'] = intval($this->dataModel->regular_scoring_periods);
+			// EDIT 1.0.3 PROD - ACCOUNT FOR PLAYOFFS ENDING BEFORE FINAL SIM IS PROCESSED
+			$this->data['total_periods'] = intval($this->dataModel->regular_scoring_periods) + intval($this->dataModel->playoff_rounds);
 			$reverse = false;
 			$baseTime = strtotime(EMPTY_DATE_STR);
 			$timeStart = strtotime($this->ootp_league_model->start_date." 00:00:00");
@@ -1232,7 +1233,7 @@ class league extends BaseEditor {
 			if ($timeStart < $baseTime) { $reverse = true;}
 
 			$this->data['schedleEdit'] = (($reverse) ? ($timeStart <= $timeCurr) : ($timeStart >= $timeCurr));
-			$this->data['playoffEdit'] = (($reverse) ? (($timeStart > $timeCurr) && ($curr_period_id > $this->data['max_reg_period'])) : (($timeStart <= $timeCurr) && ($curr_period_id > $this->data['max_reg_period'])));
+			$this->data['playoffEdit'] = (($reverse) ? (($timeStart > $timeCurr) && ($curr_period_id > $this->data['max_reg_period'] && $curr_period_id <= $this->data['total_periods'])) : (($timeStart <= $timeCurr) && ($curr_period_id > $this->data['max_reg_period'] && $curr_period_id <= $this->data['total_periods'])));
 		}
 
 		$this->data['league_id'] = $this->uriVars['id'];
@@ -1253,7 +1254,7 @@ class league extends BaseEditor {
 	 *	@param	$league_id	The league ID
 	 *	@param	#period_id	The scoring period id to be edited.
 	 *
-	 *	@since	1.0.3
+	 *	@since	0.3 BETA
 	 */
 	public function scheduleEdit() {
 		if ($this->params['loggedIn']) {
@@ -1987,7 +1988,7 @@ class league extends BaseEditor {
 
 			$form->open('/'.$this->_NAME.'/submit/','detailsForm|detailsForm');
 
-			$form->fieldset('League Details');
+			$form->fieldset('<h3>League Details</h3>');
 
 			$form->text('league_name','League Name','required|trim',($this->input->post('league_name')) ? $this->input->post('league_name') : $this->dataModel->league_name,array("class"=>"longtext"));
 			$form->br();
@@ -2012,7 +2013,7 @@ class league extends BaseEditor {
 					$form->br();
 				}
 				$form->space();
-				$form->fieldset('Head To Head Options',array('id'=>'optHeadToHead'));
+				$form->fieldset('<h3>Head To Head Options</h3>',array('id'=>'optHeadToHead'));
 				$form->select('games_per_team|games_per_team',array(1=>1,2=>2,3=>3),'Games per team',($this->input->post('games_per_team')) ? $this->input->post('games_per_team') : $this->dataModel->games_per_team);
 				$form->nobr();
 				$form->html('<div style-"display:inline-block;margin-top:4px;">Per Scoring Period</div>');
@@ -2020,7 +2021,15 @@ class league extends BaseEditor {
 				if (!function_exists('getScoringPeriods')) {
 					$this->load->helper('admin');
 				}
-				$periodCount = sizeof(getScoringPeriods());
+				$periods = getScoringPeriods();
+				$periodCount = sizeof($periods);
+				for ($i = (sizeof($periods) - 1); $i > 0; $i--) {
+					if ($periods[$i]['date_start'] == $periods[$i]['date_end']) {
+						$periodCount--;
+					} else {
+						break;
+					}
+				}
 				$periods_choices = array();
 				$counter = $periodCount -2;
 				while ($counter > $periodCount - 7) {
@@ -2033,15 +2042,20 @@ class league extends BaseEditor {
 				$form->html('<script> var scoring_periods_available = '.$periodCount.';</script>');
 				$form->br();
 				$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
+				$form->fieldset('',array('class'=>'radioGroup','id'=>'optPlayoffTrans'));
+				$form->radiogroup ('allow_playoff_trans',$responses,'Allow Add/Drops during Playoffs',($this->input->post('allow_playoff_trans') ? $this->input->post('allow_playoff_trans') : $this->dataModel->allow_playoff_trans));
+				$form->fieldset('',array('class'=>'radioGroup','id'=>'optPlayoffTrades'));
+				$form->radiogroup ('allow_playoff_trades',$responses,'Allow Trades during Playoffs',($this->input->post('allow_playoff_trades') ? $this->input->post('allow_playoff_trades') : $this->dataModel->allow_playoff_trades));
+				$form->br();
 			}
 			$form->fieldset('',array('class'=>'button_bar'));
-			$form->button('Delete','delete','button',array('class'=>'button'));
+			$form->button('Delete','delete','button',array('class'=>'sitebtn register'));
 			$form->nobr();
 			$form->span(' ','style="margin-right:8px;display:inline;"');
-			$form->button('Cancel','cancel','button',array('class'=>'button'));
+			$form->button('Cancel','cancel','button',array('class'=>'sitebtn lineup'));
 			$form->nobr();
 			$form->span(' ','style="margin-right:8px;display:inline;"');
-			$form->submit('Submit');
+			$form->submit('Submit','submit',array('class'=>'sitebtn create_league'));
 			$form->hidden('submitted',1);
 			if ($this->recordId != -1) {
 				$form->hidden('mode','edit');

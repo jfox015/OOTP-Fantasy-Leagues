@@ -28,6 +28,8 @@
 			type = "block";
 		}
 		$('#optHeadToHead').css('display',type);
+		$('#optPlayoffTrans').css('display',type);
+		$('#optPlayoffTrades').css('display',type);
 	}
 	function checkPlayoffs() {
 		var scoringPeriods = parseInt($('#regular_scoring_periods').val()), 

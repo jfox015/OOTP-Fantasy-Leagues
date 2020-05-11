@@ -201,36 +201,46 @@ if ( ! function_exists('createScoringSchedule')) {
 		$start_date = '';
 		$league_games = 162;
 
-		$ci->db->select("start_date, rules_schedule_games_per_team");
-		$ci->db->where("league_id",$league_id);
-		$query = $ci->db->get("leagues");
-		if ($query->num_rows() > 0) {
-			$row = $query->row();
-			$league_start = $row->start_date;
-			$league_games = $row->rules_schedule_games_per_team;
-		}
 		$ci->db->flush_cache();
-		$ci->db->select("start_date, rules_schedule_games_per_team");
+		$ci->db->select("start_date, name");
+		$ci->db->where("league_id",$league_id);
+		$ci->db->where("name",'OPENING DAY');
+		$ci->db->where("name",'Regular Season Ends');
+		$query = $ci->db->get("league_events");
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				if ($row->name == 'OPENING DAY')
+					$league_start = strtotime($row->start_date." 00:00:00");
+				else
+					$league_end = strtotime($row->start_date." 00:00:00");
+			}
+		}
+		$query->free_result();
+
+		$ci->db->flush_cache();
+		$ci->db->select("rules_schedule_games_per_team");
 		$ci->db->where("league_id",$league_id);
 		$query = $ci->db->get("leagues");
 		if ($query->num_rows() > 0) {
 			$row = $query->row();
-			$league_start = $row->start_date;
 			$league_games = $row->rules_schedule_games_per_team;
 		}
 		$query->free_result();
+
 		$periodCount = intval($league_games / ($sim_length-1));
 
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_scoring_periods');
 
 		$periods = array();
-		$date_start = strtotime($league_start);
 		for ($i = 0; $i < $periodCount; $i++) {
-			$date_end = $date_start + (60*60*24*($sim_length-1));
-
-			$ci->db->insert('fantasy_scoring_periods',array('id'=>($i+1),'date_start'=>date('Y-m-d',$date_start),'date_end'=>date('Y-m-d',$date_end)));
-			$date_start = $date_end + (60*60*24);
+			if ($date_start < $league_end) {
+				$date_end = $date_start + (60*60*24*($sim_length-1));
+				$ci->db->insert('fantasy_scoring_periods',array('id'=>($i+1),'date_start'=>date('Y-m-d',$date_start),'date_end'=>date('Y-m-d',$date_end)));
+				$date_start = $date_end + (60*60*24);
+			} else {
+				$ci->db->insert('fantasy_scoring_periods',array('id'=>($i+1),'date_start'=>date('Y-m-d',$date_start),'date_end'=>date('Y-m-d',$date_start)));
+			}
 		}
 		if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 		return $errors;

@@ -29,7 +29,7 @@
             <?php
 			echo(form_fieldset_close());
 			echo(form_fieldset('',array('class'=>"button_bar")));
-			echo(form_submit('submit',"Submit"));
+			echo(form_submit('submit',"Submit","class='sitebtn create_league'"));
 			echo(form_hidden('id',$league_id));
 			echo(form_hidden('submitted',"1"));
 			echo(form_fieldset_close());

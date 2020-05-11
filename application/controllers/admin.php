@@ -1684,11 +1684,18 @@ class admin extends MY_Controller {
 		/-----------------------------*/
 		$typeRot = 0;
 		foreach($this->data['leagues'] as $id => $details) {
-			$summary .= $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
-			if ($this->league_model->errorCode != -1) {
-				$mess =  $this->league_model->statusMess;
-				$summary .= $this->lang->line('sim_include_errors');
-				$summary .= "<ul>".$mess."</ul>";
+			// EDIT 1.0.3 PROD, check if were in the legal scoring window. H2H Leagues that end before the final periods should
+			// not be run.
+			$totalPeriods = 0;
+			if ($details['league_type'] == LEAGUE_SCORING_HEADTOHEAD && $details['regular_scoring_periods'] > 0) 
+				$totalPeriods = intval($details['regular_scoring_periods']) + intval($details['playoff_rounds']);
+			if ($details['league_type'] != LEAGUE_SCORING_HEADTOHEAD || ($totalPeriods > 0 && intval($score_period['id']) <= $totalPeriods)) {
+				$summary .= $this->league_model->updateLeagueScoring($score_period, $id, $this->params['config']['ootp_league_id']);
+				if ($this->league_model->errorCode != -1) {
+					$mess =  $this->league_model->statusMess;
+					$summary .= $this->lang->line('sim_include_errors');
+					$summary .= "<ul>".$mess."</ul>";
+				}
 			}
 			if ($details['league_type'] != LEAGUE_SCORING_HEADTOHEAD) {
 				$typeRot++;

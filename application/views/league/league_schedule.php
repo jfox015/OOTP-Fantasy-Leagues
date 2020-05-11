@@ -28,7 +28,7 @@
 						$divWidth = '65%';
 					}
 					?>
-                    <td class='hsc2_c' colspan="2">
+                    <td class='hsc2_l' colspan="2">
 					<div style="position:relative;">
 					<div style="width:<?php echo($divWidth); ?>; float:left;">
 					Week <?php echo($id); ?></div>
@@ -69,7 +69,7 @@
                 <?php } // END foreach
 				//echo("curr_period = ".$curr_period."<br />");
 				//echo("max_reg_period = ".$max_reg_period."<br />");
-				if (isset($curr_period) && $curr_period > $max_reg_period && $lastId < $curr_period) { ?>
+				if (isset($curr_period) && $curr_period > $max_reg_period && $curr_period <= $total_periods) { ?>
 				 <tr class='headline'>
 					<?php
 					$divWidth = '100%';
@@ -77,7 +77,7 @@
 						$divWidth = '65%';
 					}
 					?>
-                    <td class='hsc2_c' colspan="2">
+                    <td class='hsc2_l' colspan="2">
 					<div style="position:relative;">
 					<div style="width:65%; float:left;">Week <?php echo($curr_period); ?></div>
 					<div style="width:35%; float:left; text-align:right;margin:0px; padding:0px;">

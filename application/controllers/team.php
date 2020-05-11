@@ -369,6 +369,9 @@ class team extends BaseEditor {
 		} else if ($this->draft_model->completed != 1) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		} else if ($this->inPlayoffPeriod() && $this->league_model->allow_playoff_trades == -1) {
+			$this->data['theContent'] = "<h3>TRADES ARE DISABLED</h3><br />Your league is currently in the playoffs. Trades are no longer allowed.";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
 			
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
@@ -1541,6 +1544,9 @@ class team extends BaseEditor {
 		} else if ($this->draft_model->completed != 1) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		} else if ($this->inPlayoffPeriod() && $this->league_model->allow_playoff_trans == -1) {
+			$this->data['theContent'] = "<h3>ROSTER TRANSACTIONS ARE DISABLED</h3><br />Your league is currently in the playoffs. Roster Add/Drops are no longer allowed.";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
 
 			if (!function_exists('getCurrentScoringPeriod')) {
@@ -2092,6 +2098,35 @@ class team extends BaseEditor {
 	/-------------------------------------------*/
 	/**
 	 *	
+	 *	IN PLAYOFF PERIOD
+	 *	This function determines if the league is currently in the playoffs (HEAD TO HEAD
+	 * 	Leagues only qualify for this)
+	 *
+	 *  @return						{Boolean}	TRUE if in Playoffs, FALSE if not
+	 *	
+	 *	@since	1.0.3 PROD
+	 */
+	
+	protected function inPlayoffPeriod() {
+		
+		if (!isset($this->league_model)) {
+			$this->load->model('league');
+		} else if ($this->league_model->league_id == -1) {
+			$this->league_model->load($this->dataModel->league_id);
+		}
+		// 1.0.3 PROD, DISABLE TRADES DUIRNG H2H PLAYOFFS
+		$curr_period_id = $this->params['config']['current_period'];
+		$this->data['max_reg_period'] = $this->league_model->regular_scoring_periods;
+		$reverse = false;
+		$baseTime = strtotime(EMPTY_DATE_STR);
+		$timeStart = strtotime($this->ootp_league_model->start_date." 00:00:00");
+		$timeCurr = strtotime($this->ootp_league_model->current_date." 00:00:00");
+		if ($timeStart < $baseTime) { $reverse = true;}
+		return (($reverse) ? (($timeStart > $timeCurr) && ($curr_period_id > $this->data['max_reg_period'])) : (($timeStart <= $timeCurr) && ($curr_period_id > $this->data['max_reg_period'])));
+		
+	}
+	/**
+	 *	
 	 *	GET STARTING PITCHERS
 	 *	This function looks up upcoming startrs and arranges them in array of days
 	 *
@@ -2405,10 +2440,10 @@ class team extends BaseEditor {
 		$form->space();
 		$form->fieldset('',array('class'=>'button_bar'));
 		$form->span(' ','style="margin-right:8px;display:inline;"');
-		$form->button('Cancel','cancel','button',array('class'=>'button'));
+		$form->button('Cancel','cancel','button',array('class'=>'sitebtn lineup'));
 		$form->nobr();
 		$form->span(' ','style="margin-right:8px;display:inline;"');
-		$form->submit('Submit');
+		$form->submit('Submit','submit',array('class'=>'sitebtn create_league'));
 		$form->hidden('submitted',1);
 		if ($this->recordId != -1) {
 			$form->hidden('mode','edit');
