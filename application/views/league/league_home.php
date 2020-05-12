@@ -1,3 +1,9 @@
+    <?php
+    if (isset($playoffs) && sizeof($playoffs) > 0) { ?>
+        <div id="single-column"><div class="playoff_banner show"><h2><?php echo($playoffs['league_year']." ".$playoffs['league_name']); ?> Playoffs</h2></div></div>
+    <?php
+    }
+    ?>
     <div id="center-column" class="league-home">
         <div class="top-bar">
             <?php
@@ -37,7 +43,7 @@
 			}
 		}
 		?>
-        <img src="<?php echo(PATH_NEWS_IMAGES.$newsImage); ?>" class="league_news_<?php echo($class); ?>" />
+        <img src="<?php echo(PATH_NEWS_IMAGES.$newsImage); ?>" class="league_news_<?php echo($class); ?>" style="float: left" />
         <?php 
         } // END if (isset($newsImage) && !empty($newsImage))
 

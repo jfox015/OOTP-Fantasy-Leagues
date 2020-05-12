@@ -177,11 +177,25 @@
 			$last_sql_load_time = new DateTime($config['last_sql_load_time']);
 		}
 
-		if ($in_season && isset($league_info) && $currDate > $startDate && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
+		if ($currDate > $startDate && $completed) { ?>
+		<h3>Post Season Functions</h3>
+		<b class="success_txt">Season Completed!</b> Your Fantasy Season has completed. To begin a new Fantasy season, click the button below. <b>NOTE:</b> This will reset 
+		all season specififc infromation including draft history, rosters, transactions, scoring, standings, etc. back to Pre-Season status. Only perform this operation when you're ready to 
+		begin a new Fantasy Season. This function <b>DOES NOT</b> affect League structure or settting, team ownership or settings or news.
+		<br clear="all" /><br />
+		<ul class="iconmenu">
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'reset')); ?><br />
+            Reset game to Pre-season</li>
+		</ul>
+        <br clear="all" />
+		<?php 
+		}
+
+		if ($in_season < 3 && isset($league_info) && $currDate > $startDate && ((isset($configCurrPeriodStart) && $currDate>=$configCurrPeriodStart) && (isset($configCurrPeriodStart) && $currDate<=$configCurrPeriodEnd))) { ?>
 		<h3>Regular Season Functions</h3>
 		<b class="error_txt"><i>NOTE:</i></b> Depending on the size of your league, some of the following functions may consume a good deal of time and server resources as all players in the OOTP game will be processed. Please be
 		patient when running these operations and refer to the Sim Summary log for explanation of and help with any errors.
-		<br clear="all" /><br />
+		<br clear="all" />
 		<ul class="iconmenu">
 			<?php if ($last_process_time < $last_sql_load_time && (isset($leagues) && sizeof($leagues) > 0) && $currDate>=strtotime($currPeriodConfig['date_end'])) { ?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/process.png" width="48" height="48" />',array('rel'=>'sim')); ?><br />
@@ -237,7 +251,7 @@
 			}
 			?>
 		</ul>
-        <br clear="all" /><br />
+        <br clear="all" />
 		<?php }
 
 
@@ -303,7 +317,7 @@
 			<?php } // END if
 			?>
         </ul>
-        <br clear="all" /><br />
+        <br clear="all" />
         <?php
 		}  // END if
 
@@ -326,7 +340,7 @@
 
         </ul>
         <?php } ?>
-        <br clear="all" /><br />
+        <br clear="all" />
         <h3>Site/Fantasy Management</h3>
         <?php if (isset($settingsError) && !empty($settingsError)) { ?>
         <span class="error"><?php echo($settingsError); ?></span><br />
@@ -367,7 +381,7 @@
 			Manage News</li>
 			
         </ul>
-        <br clear="all" /><br />
+        <br clear="all" />
         <h3>Tools and Utilities</h3>
         <ul class="iconmenu">
         	<li><?php echo anchor('member','<img src="'.$config['fantasy_web_root'].'images/icons/user.png" width="48" height="48" />'); ?><br />
@@ -390,7 +404,7 @@
             <li></li>
         </ul>
 
-        <br clear="all" /><br />
+        <br clear="all" />
         <?php
         if (isset($config['bug_db'])) { ?>
         <br clear="all" /><br />
@@ -459,7 +473,15 @@
 	<div class='textbox statusBox'>
     <table cellpadding="0" cellspacing="0">
     <tr class='title'>
-    	<td><?php if ($currDate <= $startDate) { echo("Pre-Season"); } ?> Leagues Status</td>
+		<td>
+		<?php 
+		$strOut = 'Leagues Status';
+		if ($currDate <= $startDate) { 
+			$strOut = "Pre-Season".$strOut;
+		}
+		echo($strOut);
+		?> 
+		</td>
     </tr>
 	<tr>
     	<td>
@@ -580,69 +602,73 @@
 					} 
 					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 				}
-			} else { 
-				
 			}
-			// ROSTERS CHECK
-			if (isset($draftsCompleted) && $draftsCompleted > 0 && $draftsCompleted == $activeleagueCount) { 
-				if (isset($invalidRosters) && count($invalidRosters) > 0) {
-					$class = "error";
-					$message = count($invalidRosters)." Leagues have Invalid Rosters";
-					foreach ($invalidRosters as $id => $leagueName) {
-						$message .= '<br />'.anchor('/league/rosters/'.$id, $leagueName);
+			if ($playerCount > 0 && $in_season < 3) {
+				// PLAYER UPDATE CHECK
+				if (isset($player_update_run)) {
+					if ($player_update_run == -1) { 
+						$class = "error";
+						$message = "Players info outdated";
+					} else {
+						$class = "success";
+						$message = "Players are up to date";
 					}
-				} else {
-					$class = "success";
-					$message = "All League Rosters are Valid!";
+					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 				}
-				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				// PLAYER ELIDGIBILITY CHECK
+				if (isset($update_eligible_run)) {
+					if ($update_eligible_run == -1) { 
+						$class = "error";
+						$message = "Position Eligibility outdated";
+					} else {
+						$class = "success";
+						$message = "Eligibility up to date";
+					}
+					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				}
+				// RATINGS CHECK
+				if (isset($rotisserieCount) && $rotisserieCount > 0 || isset($ratings_run)) { 
+					if (isset($ratingsCount) && $ratingsCount == 0) {
+						$class = "error";
+						$message = "Player ratings missing";
+					} else if ($ratings_run == -1) {
+						$class = "error";
+						$message = "Player ratings outdated";
+					} else {
+						$class = "success";
+						$message = "Player Ratings up to date";
+					}
+					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+				}
 			}
-			// PLAYER UPDATE CHECK
-			if (isset($player_update_run)) {
-				if ($player_update_run == -1) { 
-					$class = "error";
-					$message = "Players info outdated";
-				} else {
-					$class = "success";
-					$message = "Players are up to date";
+			if ($currDate > $startDate && $in_season < 3) {
+				// ROSTERS CHECK
+				if (isset($draftsCompleted) && $draftsCompleted > 0 && $draftsCompleted == $activeleagueCount) { 
+					if (isset($invalidRosters) && count($invalidRosters) > 0) {
+						$class = "error";
+						$message = count($invalidRosters)." Leagues have Invalid Rosters";
+						foreach ($invalidRosters as $id => $leagueName) {
+							$message .= '<br />'.anchor('/league/rosters/'.$id, $leagueName);
+						}
+					} else {
+						$class = "success";
+						$message = "All League Rosters are Valid!";
+					}
+					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 				}
-				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-			}
-			// PLAYER ELIDGIBILITY CHECK
-			if (isset($update_eligible_run)) {
-				if ($update_eligible_run == -1) { 
-					$class = "error";
-					$message = "Position Eligibility outdated";
-				} else {
-					$class = "success";
-					$message = "Eligibility up to date";
+				// AUTO WAIVERS CHECK
+				if (isset($useWaivers) && isset($waivers_processed)) { 
+					if ($waivers_processed == -1) {
+						$class = "error";
+						$message = "Waivers not run";
+					} else {
+						$class = "success";
+						$message = "Waivers up to date";
+					}
+					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 				}
-				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-			}
-			// RATINGS CHECK
-			if (isset($rotisserieCount) && $rotisserieCount > 0 || isset($ratings_run)) { 
-				if (isset($ratingsCount) && $ratingsCount == 0) {
-					$class = "error";
-					$message = "Player ratings missing";
-				} else if ($ratings_run == -1) {
-					$class = "error";
-					$message = "Player ratings outdated";
-				} else {
-					$class = "success";
-					$message = "Player Ratings up to date";
-				}
-				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
-			}
-			// AUTO WAIVERS CHECK
-			if (isset($useWaivers) && isset($waivers_processed)) { 
-				if ($waivers_processed == -1) {
-					$class = "error";
-					$message = "Waivers not run";
-				} else {
-					$class = "success";
-					$message = "Waivers up to date";
-				}
-				echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+			} else if ($currDate > $startDate && $in_season >= 4) {
+				echo('<span class="success">'.$icons['success'].' The Fantasy Season is Complete.</span>');
 			}
 			?>
 		</td>

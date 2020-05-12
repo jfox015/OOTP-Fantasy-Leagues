@@ -284,6 +284,13 @@ class league extends BaseEditor {
 			$this->data['waiverOrder'] = $this->team_model->getWaiverOrder($this->dataModel->id);
 		}
 		$this->data['current_period'] = $this->params['config']['current_period'];
+
+		// EDIT 1.0.3 PROD - PLAYOFFS BANNER
+		$this->data['playoffs'] = array();
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && inPlayoffPeriod($this->params['config']['current_period'], $this->dataModel->id)) {
+			$this->data['playoffs']['league_year'] = date('Y', strtotime($curr_period['date_start']));
+			$this->data['playoffs']['league_name'] = $this->dataModel->league_name;
+		}
 		$this->params['content'] = $this->load->view($this->views['HOME'], $this->data, true);
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;
@@ -1740,6 +1747,37 @@ class league extends BaseEditor {
 	        $this->session->set_flashdata('loginRedirect',current_url());
 			redirect('user/login');
 	    }
+	}
+	/**---------------------------------------------------------
+	 * 	REMOVE FROM WAIVERS
+	 * 	Removes a selected player from the wai8ver wire. This 
+	 *  would be due to a roster error in which the player has 
+	 *  been reinstated to a team by the commissioner.
+	 * 
+	 */
+	public function removeFromWaivers() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
+				if (isset($this->uriVars['league_id']) && isset($this->uriVars['player_id'])) {
+					$this->dataModel->removeFromWaivers($this->uriVars['player_id'], $this->uriVars['league_id']);
+					$error = false;
+					$message = '<span class="success">Waiver status entry and waiver claims for this player have been removed.</span>';
+				} else {
+					$error = true;
+					$message = '<span class="error">A required player identifier was not found. Please go back and try the operation again or contact the site adminitrator to report the problem.</span>';
+				}
+			} else {
+				$error = true;
+				$message = '<span class="error">You do not have sufficient privlidges to access the requested information.</span>';
+			}
+			$this->session->set_flashdata('message', $message);
+			redirect('league/waiverClaims/'.$this->uriVars['league_id']);
+		} else {
+	        $this->session->set_flashdata('loginRedirect',current_url());
+			redirect('user/login');
+	    }
+
 	}
 	public function removeClaim() {
 		if ($this->params['loggedIn']) {

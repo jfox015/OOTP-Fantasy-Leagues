@@ -36,7 +36,22 @@ class home extends MY_Controller {
 	public function index() {
 		// GET Fantasy Details
 		$status = getFantasyStatus();
-		$this->data['fantasyStatus'] = ($status == 1)? "Pre-Season" : "Active OOTP Season";
+		switch($status) {
+			case 1:
+				$this->data['fantasyStatus'] = "Pre-Season";
+				break;
+			case 2:
+				$this->data['fantasyStatus'] = "Active OOTP Season";
+				break;
+			case 3:
+				$this->data['fantasyStatus'] = "Season Completed!";
+				break;
+			case -1:
+			default:
+				$this->data['fantasyStatus'] = "Status Unknown";
+				break;
+			
+		}
 		$this->data['fantasyStatusID'] = $status;
 		$this->data['fantasyStartDate'] = date('m/d/Y',(strtotime($this->params['config']['season_start'])));
 		
@@ -45,12 +60,18 @@ class home extends MY_Controller {
 		$this->data['leagueAbbr'] = "";
 		$this->data['events'] = array();
 		$this->data['current_date'] = "Unknown";
+		$this->data['eventErrorType'] = -1;
+		$this->data['eventstatusMess'] = "";
 		// GET OOTP League status
 		if ($this->ootp_league_model->league_id != -1) {
 			$this->data['leagueStatus'] = $this->ootp_league_model->get_state();
 			$this->data['leagueName'] =  $this->ootp_league_model->name;
 			$this->data['leagueAbbr'] =  $this->ootp_league_model->abbr;
 			$this->data['events'] =  $this->ootp_league_model->getNextEvents();
+			if (sizeof($this->data['events']) == 0) {
+				$this->data['eventErrorType'] = $this->ootp_league_model->errorCode;
+				$this->data['eventstatusMess'] = $this->ootp_league_model->statusMess;
+			}
 			$this->data['current_date'] =  date('m/d/Y',(strtotime($this->ootp_league_model->current_date)));
 		}
 		$seasonStartTime =strtotime($this->params['config']['season_start']);

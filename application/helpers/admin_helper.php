@@ -203,10 +203,10 @@ if ( ! function_exists('createScoringSchedule')) {
 
 		$ci->db->flush_cache();
 		$ci->db->select("start_date, name");
-		$ci->db->where("league_id",$league_id);
-		$ci->db->where("name",'OPENING DAY');
-		$ci->db->where("name",'Regular Season Ends');
+		$ci->db->where("league_id",intval($league_id));
+		$ci->db->where("(name = 'OPENING DAY' OR  name = 'Regular Season Ends')");
 		$query = $ci->db->get("league_events");
+		//echo($ci->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				if ($row->name == 'OPENING DAY')
@@ -231,6 +231,7 @@ if ( ! function_exists('createScoringSchedule')) {
 
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_scoring_periods');
+		$date_start = $league_start;
 
 		$periods = array();
 		for ($i = 0; $i < $periodCount; $i++) {
@@ -292,6 +293,18 @@ if ( ! function_exists('reset_scoring')) {
 		return true;
 	}
 }
+
+// ------------------------------------------------------------------------
+
+if ( ! function_exists('reset_scoring_periods')) {
+	function reset_scoring_periods() {
+		$ci =& get_instance();
+		$ci->db->flush_cache();
+		$ci->db->query('TRUNCATE TABLE fantasy_scoring_periods');
+		return true;
+	}
+}
+
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('reset_draft')) {

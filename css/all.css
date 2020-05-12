@@ -261,6 +261,34 @@ a.register:hover {
 .league-home h2 {
 	margin-bottom:5px;
 }
+.playoff_banner {
+	width: 100%;
+	background: url('../images/playoff_bunting.png') repeat-x left;
+	height:45px;
+	clear:left;
+	margin: 0 0 18px 0;
+	padding: 0;
+	display:none;
+	position: relative;
+	text-align: center;
+}
+.playoff_banner h2 {
+	padding: 6px;
+	margin: 3px 0 0 0;
+	font: bold 18px/24px Tahoma, Geneva, sans-serif;
+	color:#ddd;
+	background: rgba(6, 6, 128, 0.6);
+	z-index: 999;
+	width: auto;
+	position: absolute;               /* 2 */
+	left: 32%;                         /* 3 */
+	/*top: 50%;
+  	transform: translate(0, -50%)     4 */
+}
+.playoff_banner.show {
+	display:block;
+}
+
 .news_title > h3 {
 	position: relative;
 	margin: 0px;
@@ -661,12 +689,14 @@ a.teamLargeLink {
 	padding:0px;
 }
 .dashboard ul.iconmenu li {
-	float:left;
-	margin:0px 4px 6px 0px;
-	font-size:12px; color:#333;	
-	text-align:center;
-	width:24%;
-	position: relative;
+	margin: 0px 0px 15px 0px;
+    font-size: 14px;
+    color: #333;
+    text-align: center;
+    width: 24%;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
 }
 .dashboard ul.iconmenu li span.badge {
 	position: absolute;

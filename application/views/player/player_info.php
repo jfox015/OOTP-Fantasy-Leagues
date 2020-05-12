@@ -10,13 +10,15 @@
 			var params = this.id.split("|");
 			var currTeam = params[0];
 			var playerId = params[1];
+			var position = params[2];
+			var role = typeof(params[3] !== 'undefined') ? params[3] : -1;
 			var teamId = $('select#rosterTeamList').val();
 			if (teamId == -1) {
 				$('div#activeStatus').addClass('error');
 				$('div#activeStatus').html("You must select a new team assignment from the list top continue.");
 				$('div#activeStatusBox').fadeIn("slow",function() { setTimeout('fadeStatus("active")',15000); });
 			} else if (teamId != currTeam) {
-				var url = "<?php echo($config['fantasy_web_root']); ?>team/administrativeAdd/league_id/"+league_id+"/player_id/"+playerId+"/team_id/"+teamId+"/curr_team/"+currTeam;
+				var url = "<?php echo($config['fantasy_web_root']); ?>team/administrativeAdd/league_id/"+league_id+"/player_id/"+playerId+"/team_id/"+teamId+"/curr_team/"+currTeam+"/pos/"+position+'/role/'+role;
 				$('div#activeStatus').removeClass('error');
 				$('div#activeStatus').removeClass('success');
 				$('div#activeStatus').empty();
@@ -186,7 +188,7 @@
             </div>
 
             </td>
-            <td width="705" height="100" valign="top">
+            <td width="705" height="150" style="vertical-align:top">
 
                 <div class="player"><?php echo($name." ");
 				if ($thisItem['position'] != 1) {
@@ -194,9 +196,15 @@
 				} else {
 					echo(get_pos($thisItem['role']));
 				}
-				 ?></div>
+         ?></div>
                 <div class="playerbio" height="105">
-                    <strong>Team:</strong> <a href="<?php echo($htmlpath); ?>teams/team_<?php echo($thisItem['team_id']); ?>.html" target="_blank"><?php echo(" ".$thisItem['team_name']." ".$thisItem['teamNickname']); ?></a>
+                    <strong>Team:</strong> <?php if (!empty($thisItem['team_id'])) { ?> 
+                      <a href="<?php echo($htmlpath); ?>teams/team_<?php echo($thisItem['team_id']); ?>.html" target="_blank"><?php echo(" ".$thisItem['team_name']." ".$thisItem['teamNickname']); ?></a>
+                    <?php 
+                    } else {
+                      echo("No Team");
+                    }
+                    ?>
                     | <strong>Nickname:</strong> <?php echo($thisItem['playerNickname']); ?>
                     <!--| <strong>MLB Experience:</strong>
                     | <strong>Salary:</strong> -->
@@ -246,8 +254,11 @@
                     <a href="<?php echo($config['ootp_html_report_path']); ?>players/player_<?php echo($thisItem['player_id']); ?>.html">OOTP Player Page</a>
                         </div>
 					</td>
-					<td width="160" height="120" style="text-align: center;" valign="middle">
-					<?php echo anchor('/team/info/'.$thisItem['team_id'],'<img src="'.$htmlpath.'images/team_logos/'.$thisItem['logo_file_name'].'">'); ?>
+          <td width="160" height="150" style="text-align: center; vertical-align:center;">
+          <?php if (!empty($thisItem['team_id'])) { 
+             echo anchor('/team/info/'.$thisItem['team_id'],'<img src="'.$htmlpath.'images/team_logos/'.$thisItem['logo_file_name'].'">'); 
+          } 
+          ?>
 					</td>
 					</tr>
 					</table>
@@ -292,7 +303,7 @@
 								echo('>'.$data['teamname'].' '.$data['teamnick'].'</option>');
 							}
 							echo('</select>');
-							echo('<input type="button" class="button" id="'.((isset($current_team['id']))?$current_team['id']:"-1").'|'.$thisItem['id'].'" rel="changeTeam" name="rosterButton" value="Change" />');
+							echo('<input type="button" class="button" id="'.((isset($current_team['id']))?$current_team['id']:"-1").'|'.$thisItem['id'].'|'.$thisItem['position'].'|'.$thisItem['role'].'" rel="changeTeam" name="rosterButton" value="Change" />');
 							echo('</form>');
 							echo('</div><br />');
 						}
@@ -405,7 +416,7 @@
 						if (isset($thisItem['injury_dtd_injury']) && $thisItem['injury_dtd_injury'] == 1) {
 							$injStatus .= "Questionable - ";
 						} else if (isset($thisItem['injury_career_ending']) && $thisItem['injury_career_ending'] == 1) {
-							$injStatus .= "Career Ending Injury! ";
+							$injStatus .= 'Career Ending Injury! ';
 						} else {
 							$injStatus .= "Injured - ";
 						}
@@ -419,7 +430,10 @@
 							$injStatus .= ", on DL - ".$thisItem['injury_dl_left']." Days Left";
 						}
 						if (isset($thisItem['injury_left']) && $thisItem['injury_left'] > 0 && $thisItem['injury_left'] > $thisItem['injury_dl_left']) {
-							$injStatus .= ", ".$thisItem['injury_left']." Total Days Left";
+							if (intval($thisItem['injury_left']) < 1000)
+                $injStatus .= ", ".$thisItem['injury_left']." Total Days Left";
+              else
+                $injStatus .= ", Unknown Length Left";
 						}
 						?>
 						<img src="<?php echo($config['fantasy_web_root']); ?>images/icons/red_cross.gif" width="7" height="7" align="absmiddle"

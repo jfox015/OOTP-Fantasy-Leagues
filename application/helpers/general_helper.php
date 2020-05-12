@@ -19,9 +19,37 @@ function getFantasyStatus() {
 	if ($now < $fantasyStart) {
 		$status = 1; // PRE-SEASON
 	} else if ($now >= $fantasyStart) {
-		$status = 2; // ACTIVE SEASON
-	} else {
+		$current_date = strtotime(EMPTY_DATE_TIME_STR);
+		
+		$ci->db->select("current_date");
+		$ci->db->where("league_id",$ci->params['config']['ootp_league_id']);
+		$query = $ci->db->get("leagues");
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$current_date = strtotime($row->current_date);
+		}
+		$query->free_result();
 
+		$ci->db->flush_cache();
+		$ci->db->select("start_date, name");
+		$ci->db->where("league_id",$ci->params['config']['ootp_league_id']);
+		$ci->db->where("(name = 'OPENING DAY' OR  name = 'Regular Season Ends')");
+		$query = $ci->db->get("league_events");
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				if ($row->name == 'OPENING DAY')
+					$league_start = strtotime($row->start_date." 00:00:00");
+				else
+					$league_end = strtotime($row->start_date." 00:00:00");
+			}
+		}
+		$query->free_result();
+		if ($current_date >= $league_start && $current_date < $league_end)
+			$status = 2; // ACTIVE SEASON
+		else if ($current_date > $league_start && $current_date >= $league_end) 
+			$status = 3; // SEASON COMPLETED
+	} else {
+		$status = -1; // UNKNOWN
 	}
 	return $status;
 }
@@ -169,10 +197,10 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 		// PITCHERS
 		switch ($query_type) {
 			case QUERY_COMPACT:
-				$sql .= 'if(w=0,0,'.$sqlOperator.'(w)) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(k) as pk,'.$sqlOperator.'(s) as s, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip';
+				$sql .= ''.$sqlOperator.'(w) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(k) as pk,'.$sqlOperator.'(s) as s, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip';
 				break;
 			case QUERY_BASIC:
-				$sql .= 'if(w=0,0,'.$sqlOperator.'(w)) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip,'.$sqlOperator.'(s) as s';
+				$sql .= ''.$sqlOperator.'(w) as w,'.$sqlOperator.'(l) as l,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip,'.$sqlOperator.'(s) as s';
 				break;
 			case QUERY_EXTENDED:
 				$sql .= ''.$sqlOperator.'(w) as w,'.$sqlOperator.'(l) as l,'.$sqlOperator.'(s) as s,'.$sqlOperator.'(cg) as cg,'.$sqlOperator.'(sho) as sho,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,9*'.$sqlOperator.'(er)/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as era,'.$sqlOperator.'(g) as pg,'.$sqlOperator.'(gs) as gs,('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3)) as ip,'.$sqlOperator.'(ha) as ha,'.$sqlOperator.'(r) as pr,'.$sqlOperator.'(er) as er,'.$sqlOperator.'(hra) as hra,'.$sqlOperator.'(bb) as pbb,'.$sqlOperator.'(k) as pk, if (('.$sqlOperator.'(k)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(k)*9)/'.$sqlOperator.'(ip)) as k9, if (('.$sqlOperator.'(bb)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(bb)*9)/'.$sqlOperator.'(ip)) as bb9, if (('.$sqlOperator.'(hra)*9)/'.$sqlOperator.'(ip)=0,0,('.$sqlOperator.'(hra)*9)/'.$sqlOperator.'(ip)) as hr9,if(('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))=0,0,('.$sqlOperator.'(ha)+'.$sqlOperator.'(bb))/('.$sqlOperator.'(ip)+('.$sqlOperator.'(ipf)/3))) as whip,if('.$sqlOperator.'(ab)=0,0,'.$sqlOperator.'(ha)/'.$sqlOperator.'(ab)) as oavg,if(('.$sqlOperator.'(ab)-'.$sqlOperator.'(k)-'.$sqlOperator.'(hra)+'.$sqlOperator.'(sf))=0,0,('.$sqlOperator.'(ha)-'.$sqlOperator.'(hra))/('.$sqlOperator.'(ab)-'.$sqlOperator.'(k)-'.$sqlOperator.'(hra)+'.$sqlOperator.'(sf))) as babip';
@@ -541,7 +569,7 @@ function makeInjuryStatusString($row) {
 	if (isset($row['injury_dtd_injury']) && $row['injury_dtd_injury'] == 1) {
 		$injStatus .= "Questionable - ";
 	} else if (isset($row['injury_career_ending']) && $row['injury_career_ending'] == 1) {
-		$injStatus .= "Career Ending Injury! ";
+		$injStatus .= 'Career Ending Injury! ';
 	} else {
 		$injStatus .= "Injured - ";
 	}
@@ -555,7 +583,10 @@ function makeInjuryStatusString($row) {
 		$injStatus .= ", on DL - ".$row['injury_dl_left']." Days Left";
 	}
 	if (isset($row['injury_left']) && ($row['injury_left'] > 0 || (isset($row['injury_dl_left']) && $row['injury_left'] > $row['injury_dl_left']))) {
-		$injStatus .= ", ".$row['injury_left']." Total Days Left";
+		if (intval($row['injury_left']) < 1000)
+			$injStatus .= ", ".$row['injury_left']." Total Days Left";
+		else
+			$injStatus .= ", Unknown Length Left";
 	}
 	return $injStatus;
 }
@@ -579,6 +610,46 @@ function makeElidgibilityString($positions) {
 		}
 	}
 	return $gmPos;
+}
+/**
+ *	
+ *	IN PLAYOFF PERIOD
+ *	This function determines if the league is currently in the playoffs (HEAD TO HEAD
+ * 	Leagues only qualify for this)
+ *
+ *  @param		$curr_period_id		{int}		Current Scoring Period ID
+ *  @param		$league_id			{int}		League ID
+ *  @return							{Boolean}	TRUE if in playoffs, FALSE if not
+ *	
+ *	@since	1.0.3 PROD
+ */
+function inPlayoffPeriod($curr_period_id = false, $league_id = false) {
+	
+	$ci =& get_instance();
+	$inPlayoffs = false;
+	if (!function_exists('load_config')) {
+		$ci->load->helper('config');
+	}
+	$config = load_config();
+	if ($curr_period_id === false) { 
+		$curr_period_id = intval($config['current_period']);
+	}
+
+	$ci->load->model('league_model');
+	$ci->league_model->load($league_id);
+
+	if ($ci->league_model->league_type == LEAGUE_SCORING_HEADTOHEAD) {
+		$max_reg_period = intval($ci->league_model->regular_scoring_periods);
+		$reverse = false;
+		$baseTime = strtotime(EMPTY_DATE_STR);
+		$ci->load->model('ootp_league_model');
+		$ci->ootp_league_model->load($config['ootp_league_id'],'league_id');
+		$timeStart = strtotime($ci->ootp_league_model->start_date." 00:00:00");
+		$timeCurr = strtotime($ci->ootp_league_model->current_date." 00:00:00");
+		if ($timeStart < $baseTime) { $reverse = true;}
+		$inPlayoffs = (($reverse) ? (($timeStart > $timeCurr) && ($curr_period_id > $max_reg_period)) : (($timeStart <= $timeCurr) && ($curr_period_id > $max_reg_period)));
+	}
+	return $inPlayoffs;
 }
 
 function calc_rating($rating,$ratOrTal=0,$max="")

@@ -93,7 +93,7 @@ class admin extends MY_Controller {
 
 			$this->data['leagues'] = $this->league_model->getLeagues(-1);
 
-			$this->data['in_season'] = $this->ootp_league_model->in_season();
+			$this->data['in_season'] = intval($this->ootp_league_model->in_season());
 
 			$this->data['currPeriod'] = getCurrentScoringPeriod($this->ootp_league_model->current_date);
 
@@ -258,6 +258,8 @@ class admin extends MY_Controller {
 			$this->data['update_eligible_run'] = $this->params['config']['update_eligible_run'];
 			$this->data['useWaivers'] = $this->params['config']['useWaivers'];
 			$this->data['waivers_processed'] = $this->params['config']['waivers_processed'];
+			$this->data['completed'] = $completed = getFantasyStatus() >= 3;
+
 			//  END 1.0.3 PROD MODS
 
 			$this->params['content'] = $this->load->view($this->views['DASHBOARD'], $this->data, true);
@@ -1498,9 +1500,13 @@ class admin extends MY_Controller {
 		$mess = reset_league_data();
 		$mess = reset_draft();
 		$mess = reset_scoring();
+		$mess = reset_scoring_periods();
 		update_config('current_period',1);
 		update_config('last_sql_load_time',date('Y-m-d',(strtotime(date('Y-m-d'))-(60*60*24))));
 		update_config('last_process_time','1970-01-01 00:00:00');
+		update_config('player_update_run','-1');
+		update_config('update_eligible_run','-1');
+		update_config('ratings_run','-1');
 		reset_ootp_league($this->params['config']['ootp_league_id']);
 		if (!$mess) {
 			$status = "error:".$mess;

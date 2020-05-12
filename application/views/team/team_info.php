@@ -1,4 +1,9 @@
-   
+	<?php
+    if (isset($playoffs) && sizeof($playoffs) > 0) { ?>
+        <div id="single-column"><div class="playoff_banner show"><h2><?php echo($playoffs['league_year']." ".$playoffs['league_name']); ?> Playoffs</h2></div></div>
+    <?php
+    }
+    ?>
    		<div id="center-column-med">
             <div class="top-bar"><h1><?php 
 		if (isset($thisItem['avatar']) && !empty($thisItem['avatar'])) { 
@@ -7,7 +12,7 @@
 			$avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 		} ?>
 		<img src="<?php echo($avatar); ?>" 
-        border="0" width="75" height="75" alt="<?php echo($thisItem['teamname']); ?>" 
+        width="75" height="75" alt="<?php echo($thisItem['teamname']); ?>" 
         title="<?php echo($thisItem['teamname']); ?>" align="absmiddle" /> 
 		<?php echo($thisItem['teamname']); ?></h1></div>
             <div id="content">
@@ -480,6 +485,7 @@
 				</thead>
 				<tbody>
 					<?php
+					$gameDrawn = false;
 					foreach($recentGames as $game) {	
 				?>
 				<tr>
@@ -519,6 +525,7 @@
 							break;
 					} // END switch
 					echo($outStr);
+					if (!$gameDrawn) $gameDrawn = true;
 					?>					
 				</tr>
 				<?php
@@ -552,8 +559,17 @@
 					</td>
 				</tr>
 				<?php
+					if (!$gameDrawn) $gameDrawn = true;
 					} // END foreach
 				} // END if
+
+				if (!$gameDrawn) {
+				?>
+				<tr>
+					<td colspan="3" style="padding:3px;">No games are available at this time.</td>
+				</tr>
+				<?php
+				}
 				?>
 				</tbody>
 				</table>
@@ -630,40 +646,47 @@
 									<?php
 									if ($game_id > 0) {
 									?>
-									<td><strong>
+										<td><strong>
+										<?php
+										if ($playerData['team_id'] == $game_data['home_team']) {
+											if (isset($thisItem['team_list'][$game_data['away_team']])) {
+												echo(strtoupper($thisItem['team_list'][$game_data['away_team']]['abbr']));
+											}
+										} else {
+											if (isset($thisItem['team_list'][$game_data['home_team']])) {
+												echo("@".strtoupper($thisItem['team_list'][$game_data['home_team']]['abbr']));
+											}
+										} // END if ($playerData['team_id']
+										?>
+										</strong></td>
 									<?php
-									if ($playerData['team_id'] == $game_data['home_team']) {
-										if (isset($thisItem['team_list'][$game_data['away_team']])) {
-											echo(strtoupper($thisItem['team_list'][$game_data['away_team']]['abbr']));
-										}
-									} else {
-										if (isset($thisItem['team_list'][$game_data['home_team']])) {
-											echo("@".strtoupper($thisItem['team_list'][$game_data['home_team']]['abbr']));
-										}
-									}
-									?></strong>
-									</td>
-									<?php
-									}
+									} // END if ($game_id > 0)
 								?>
 								</tr>
 							<?php
-								}
-							}
+								} // END if ($game_data['start'] == 1)
+							} // END foreach ($playerSched as $game_id => $game_data)
 							?>
 							</table>
 							</td>
 						</tr>
 						<?php
 							$rowcount++;
-						} // END if has Starts
-					}
-				}
+						} // END if ($hasStarts)
+					} // END if (isset($playerSched)
+				} // END foreach($thisItem['pitchers']
+				if ($rowcount == 0) { 
+				?>
+				<tr>
+					<td colspan="4" style="padding:3px;">No Pitchers with upcoming starts were found.</td>
+				</tr>
+				<?php
+				} // END if ($rowcount == 0)
 				?>
 				</tbody>
 				</table>
 			</div>
 			<?php
-			}
+			} // END if ((isset($thisItem['pitchers'])
 			?>
 		</div>

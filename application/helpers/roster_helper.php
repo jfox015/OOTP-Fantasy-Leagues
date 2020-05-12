@@ -377,16 +377,15 @@ function update_player_availability($league_id = false) {
 			$teamList = getOOTPTeams($league_id,false);
 			foreach($query->result() as $row) {
 				$ci->db->flush_cache();
-				$ci->db->select("injury_is_injured, injury_dl_left, team_id, retired");
+				$ci->db->select("is_active, is_on_dl, is_on_dl60, injury_is_injured, injury_dl_left, injury_career_ending, injury_left, players.team_id, retired");
 				$ci->db->from("players");
-				$ci->db->where("player_id",$row->player_id);
+				$ci->db->join("players_roster_status",'players_roster_status.player_id','players.player_id');
+				$ci->db->where("players.player_id",$row->player_id);
 				$query = $ci->db->get();
+				//echo($ci->db->last_query()."<br />");
 				if ($query->num_rows() > 0) {
 					$player_row = $query->row();
-					$status = 1;
-					if ($player_row->injury_is_injured == 1 && $player_row->injury_dl_left > 0) {
-						$status = 3;
-					}
+					$status = $player_row->is_active == 1 ? 1 : -1;
 					$teamFound = false;
 					foreach($teamList as $id => $data) {
 						if ($player_row->team_id == $id) {
@@ -396,6 +395,9 @@ function update_player_availability($league_id = false) {
 					}
 					if (!$teamFound)
 						$status = 2;
+					if ($player_row->injury_is_injured == 1 && ($player_row->is_on_dl == 1 || $player_row->is_on_dl60 == 1 || $player_row->injury_dl_left > 0 || $player_row->injury_career_ending == 1)) {
+						$status = 3;
+					}
 					if ($player_row->retired == 1) {
 						$status = 4;
 					}

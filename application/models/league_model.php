@@ -427,7 +427,7 @@ class league_model extends base_model {
 	* 	@since	1.0
 	*  	@access	public
 	*/
-	protected function ownerCanBeCommish($userId = false, $league_id = false) {
+	public function ownerCanBeCommish($userId = false, $league_id = false) {
 
 		if ($userId === false) { return false; }
 		if ($league_id === false) { $league_id = $this->id; }
@@ -1692,11 +1692,11 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 
 		$claims = array();
-		$this->db->select($this->tables['WAIVER_CLAIMS'].".id, ".$this->tables['WAIVER_CLAIMS'].".team_id, teamname, teamnick, ".$this->tables['WAIVER_CLAIMS'].".player_id, first_name, last_name, waiver_period");
+		$this->db->select($this->tables['WAIVER_CLAIMS'].".id, ".$this->tables['WAIVER_CLAIMS'].".team_id, teamname, teamnick, ".$this->tables['WAIVER_CLAIMS'].".player_id, first_name, last_name");
 		$this->db->join("fantasy_teams","fantasy_teams.id = ".$this->tables['WAIVER_CLAIMS'].".team_id", "left");
 		$this->db->join("fantasy_players","fantasy_players.id = ".$this->tables['WAIVER_CLAIMS'].".player_id", "left");
-		$this->db->join("fantasy_players_waivers","fantasy_players_waivers.player_id = fantasy_players.id", "right outer");
-		$this->db->join("players","fantasy_players.player_id = players.player_id", "right outer");
+		//$this->db->join("fantasy_players_waivers","fantasy_players_waivers.player_id = fantasy_players.id", "left");
+		$this->db->join("players","fantasy_players.player_id = players.player_id", "left");
 		$this->db->where($this->tables['WAIVER_CLAIMS'].".league_id",$league_id);
 		if ($team_id !== false) {
 			$this->db->where($this->tables['WAIVER_CLAIMS'].'.team_id',$team_id);
@@ -1706,14 +1706,13 @@ class league_model extends base_model {
 		} else if ($limit != -1 && $startIndex > 0) {
 			$this->db->limit($startIndex,$limit);
 		}
-		$this->db->order_by('waiver_period, teamname, last_name','asc');
+		$this->db->order_by('teamname, last_name','asc');
 		$query = $this->db->get($this->tables['WAIVER_CLAIMS']);
 		//echo($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				array_push($claims,array('id'=>$row->id,'team_id'=>$row->team_id, 'teamname'=>$row->teamname." ".$row->teamnick,
-										 'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name,
-										 'waiver_period'=>$row->waiver_period));
+										 'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name));
 			}
 		}
 		$query->free_result();
@@ -3246,8 +3245,37 @@ class league_model extends base_model {
 		$query->free_result();
 		unset($query);
 		return $claim;
-	}
+	}/**
+	 *	REMOVE FROM WAIVERS.
+	 *	Called when a league commissioner removes a waiver claim entirerly,
+	 *	incluing removing the player fromt he Waiver Wire.
+	 *
+	 *	@param		$player_id	(Integer)	The PLayer ID (REQUIRED)
+	 *	@param		$league_Id	(Integer)	The League ID (OPTIONAL)
+	 *	@return					{Boolean}	TRUE on success, FALSE on failure
+	 *
+	 *	@since	1.0.5
+	 *	@access	public
+	 */
+	public function removeFromWaivers($player_id = false, $league_Id = false) {
+		
+		if ($player_id === false) { return false; }
+		if ($league_Id === false) { $league_Id = $this->id; }
+		
+		$complete = false;
 
+		$this->db->flush_cache();
+		$this->db->where("league_Id",$league_Id);
+		$this->db->where("player_id",$player_id);
+		$this->db->delete($this->tables['WAIVER_CLAIMS']);
+
+		$this->db->flush_cache();
+		$this->db->where("league_Id",$league_Id);
+		$this->db->where("player_id",$player_id);
+		$this->db->delete($this->tables['WAIVERS']);
+
+		return $complete;
+	}
 	/*------------------------------------------------------------------
 	/
 	/	PRIVATE/PROTECTED FUNCTIONS

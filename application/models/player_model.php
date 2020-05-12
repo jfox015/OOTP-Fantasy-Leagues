@@ -164,7 +164,7 @@ class player_model extends base_model {
 		$this->db->select('fantasy_players.id,fantasy_players.player_id,players.first_name,players.last_name,players.nick_name as playerNickname,teams.team_id, teams.name AS team_name, teams.nickName as teamNickname, positions, position,role, date_of_birth,weight,height,bats,throws,draft_year,draft_round,draft_pick,draft_team_id,retired,
 						  injury_is_injured, injury_dtd_injury, injury_career_ending, injury_dl_left, injury_left, injury_id, logo_file_name, players.city_of_birth_id, age, own, own_last, start, start_last');
 		$this->db->join('players','players.player_id = fantasy_players.player_id','left');
-		$this->db->join('teams','teams.team_id = players.team_id','right outer');
+		$this->db->join('teams','teams.team_id = players.team_id','left');
 		$this->db->where('fantasy_players.id',$player_id);
 		$query = $this->db->get('fantasy_players');
 

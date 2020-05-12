@@ -1839,7 +1839,7 @@ class team_model extends base_model {
 		$this->db->select('fantasy_players.id, fantasy_players.player_id, first_name, last_name, position, players.team_id,players.role,teams.abbr, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, player_position, player_role, fantasy_players.positions, fantasy_players.player_status, own, own_last, start, start_last');
 		$this->db->join('fantasy_players','fantasy_players.id = fantasy_rosters.player_id','left');
 		$this->db->join('players','players.player_id = fantasy_players.player_id','right outer');
-		$this->db->join('teams','teams.team_id = players.team_id','right outer');
+		$this->db->join('teams','teams.team_id = players.team_id','left');
 		$this->db->where('fantasy_rosters.team_id',$team_id);
 		$this->db->where('fantasy_rosters.player_position', 1);
 		if ($status != -999) {

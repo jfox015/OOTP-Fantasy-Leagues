@@ -518,6 +518,7 @@ if ( ! function_exists('getPlayerSchedules')) {
 						//echo($ci->db->last_query()."<br />");
 						$player_schedule = array();
 						$offDay = 0;
+						$startDay = 0;
 						if ($query->num_rows() > 0) {
 							$dateCount = 0;
 							$prevDate = -1;
@@ -535,12 +536,13 @@ if ( ! function_exists('getPlayerSchedules')) {
 								}
 								if (sizeof($games) > 0) {
 									if ($data['position'] == 1 && ($data['role'] == 11 || $data['role'] == 12)) 
-										if ($projStarts[0]['starter_'.$dateCount] == $id) $start = 1;
+										if ($projStarts[0]['starter_'.$startDay] == $id) $start = 1;
 									foreach($games as $game_data) {
 										$player_schedule = $player_schedule + array($game_data['game_id']=>array('home_team'=>$game_data['home_team'],
 															   'away_team'=>$game_data['away_team'],'game_date'=>$game_data['game_date'],
 															   'game_time'=>$game_data['game_time'],'start'=>$start));
 									}
+									$startDay++;
 								} else {
 									$player_schedule = $player_schedule + array(($offDay-=1)=>array('game_date'=>$daysInPeriod[$dateCount],'home_team'=>-1,
 															   'away_team'=>-1));

@@ -369,7 +369,7 @@ class team extends BaseEditor {
 		} else if ($this->draft_model->completed != 1) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-		} else if ($this->inPlayoffPeriod() && $this->league_model->allow_playoff_trades == -1) {
+		} else if (inPlayoffPeriod($this->params['config']['current_period'], $this->dataModel->league_id) && $this->league_model->allow_playoff_trades == -1) {
 			$this->data['theContent'] = "<h3>TRADES ARE DISABLED</h3><br />Your league is currently in the playoffs. Trades are no longer allowed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
@@ -1544,7 +1544,7 @@ class team extends BaseEditor {
 		} else if ($this->draft_model->completed != 1) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-		} else if ($this->inPlayoffPeriod() && $this->league_model->allow_playoff_trans == -1) {
+		} else if (inPlayoffPeriod($this->params['config']['current_period'], $this->dataModel->league_id) && $this->league_model->allow_playoff_trans == -1) {
 			$this->data['theContent'] = "<h3>ROSTER TRANSACTIONS ARE DISABLED</h3><br />Your league is currently in the playoffs. Roster Add/Drops are no longer allowed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
@@ -1628,6 +1628,8 @@ class team extends BaseEditor {
 			
 			$this->db->flush_cache();
 			$this->db->set('team_id',$this->uriVars['team_id']);
+			$this->db->set('player_position',$this->uriVars['pos']);
+			$this->db->set('player_role',$this->uriVars['role']);
 			if ($update) {
 				$this->db->where('league_id',$this->uriVars['league_id']);
 				$this->db->where('player_id',$this->uriVars['player_id']);
@@ -1651,7 +1653,7 @@ class team extends BaseEditor {
 			} // END if
 			$status = "OK";
 			$code = 200;
-			$result .= '"result":"OK","code":"'.$code.'","status":"'.$status.'"}';
+			$result .= '{"result":"OK","code":"'.$code.'","status":"'.$status.'"}';
 		}
 		$this->output->set_header('Content-type: application/json'); 
 		$this->output->set_output($result);
@@ -2096,35 +2098,6 @@ class team extends BaseEditor {
 	/	PROTECTED/PRIVATE FUNCTIONS
 	/
 	/-------------------------------------------*/
-	/**
-	 *	
-	 *	IN PLAYOFF PERIOD
-	 *	This function determines if the league is currently in the playoffs (HEAD TO HEAD
-	 * 	Leagues only qualify for this)
-	 *
-	 *  @return						{Boolean}	TRUE if in Playoffs, FALSE if not
-	 *	
-	 *	@since	1.0.3 PROD
-	 */
-	
-	protected function inPlayoffPeriod() {
-		
-		if (!isset($this->league_model)) {
-			$this->load->model('league');
-		} else if ($this->league_model->league_id == -1) {
-			$this->league_model->load($this->dataModel->league_id);
-		}
-		// 1.0.3 PROD, DISABLE TRADES DUIRNG H2H PLAYOFFS
-		$curr_period_id = $this->params['config']['current_period'];
-		$this->data['max_reg_period'] = $this->league_model->regular_scoring_periods;
-		$reverse = false;
-		$baseTime = strtotime(EMPTY_DATE_STR);
-		$timeStart = strtotime($this->ootp_league_model->start_date." 00:00:00");
-		$timeCurr = strtotime($this->ootp_league_model->current_date." 00:00:00");
-		if ($timeStart < $baseTime) { $reverse = true;}
-		return (($reverse) ? (($timeStart > $timeCurr) && ($curr_period_id > $this->data['max_reg_period'])) : (($timeStart <= $timeCurr) && ($curr_period_id > $this->data['max_reg_period'])));
-		
-	}
 	/**
 	 *	
 	 *	GET STARTING PITCHERS
@@ -2620,6 +2593,13 @@ class team extends BaseEditor {
 		// INJURED PLAYERS
 		$this->data['injured_list'] = $this->player_model->getInjuredPlayers($curr_period, $this->dataModel->id);
 		$this->makeNav();
+
+		// EDIT 1.0.3 PROD - PLAYOFFS BANNER
+		$this->data['playoffs'] = array();
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && inPlayoffPeriod($this->params['config']['current_period'], $this->dataModel->id)) {
+			$this->data['playoffs']['league_year'] = date('Y', strtotime($curr_period['date_start']));
+			$this->data['playoffs']['league_name'] = $this->league_model->league_name;
+		}
 
 		// UPCOMING STARTERS
 		$this->data['thisItem']['pitchers'] = $this->dataModel->getPitchers($curr_period['id'], $this->dataModel->id, -999);

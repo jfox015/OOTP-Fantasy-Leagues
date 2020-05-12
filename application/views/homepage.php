@@ -177,15 +177,26 @@
             <td style='padding:3px'>Fantasy Site Status</td>
         </tr>
         <tr>
-            <td style='padding:6px'>
+			<td style='padding:6px'>
+			<?php 
+			if ($fantasyStatusID <= 2) { ?>
 			The game is currently in the:<br />
+			<?php
+			}
+			?>
 			<span style="margin-left: 12px;"><b><?php echo($fantasyStatus); ?></b></span><br />&nbsp;<br />
 			<?php if ($fantasyStatusID == 1) { ?>
 			The fantasy season begins:<br />
 			<span style="margin-left: 12px;"><b><?php echo($fantasyStartDate); ?></b></span><br />&nbsp;<br />
-			<?php } ?>
+			<?php
+			}
+			if ($fantasyStatusID <= 2) {
+			?>
 			The next Sim will be processed on:<br />
 			<span style="margin-left: 12px;"><b><?php echo($nextSimDate); ?></b></span>
+			<?php
+			}
+			?>
 			</td>
 		</tr>
 		</table>
@@ -221,20 +232,34 @@
         </tr>
         <tr>
             <td style='padding:6px' >
-		<?php if (isset($events) && sizeof($events) > 0) { 
+		<?php 
+		if (isset($events) && sizeof($events) > 0) { 
 			foreach($events as $event) { 
-		?>
-        <b><?php echo(date('F d, Y',strtotime($event['start_date']))); ?></b><br />
-        <span style="margin-left: 12px;"><?php echo($event['name']); ?></span><br />&nbsp;<br />
-        <?php 	} // END for
-		} else {
 			?>
-        <span class="error" style="margin:0px; width:90%;"><strong>League Files not loaded</strong>
-        <br /><br />
-		The OOTP database files have not been uploaded yet for this league. No events are available.</span>
-		<?php
-        } // END if 
+			<b><?php echo(date('F d, Y',strtotime($event['start_date']))); ?></b>
+			<br />
+			<span style="margin-left: 12px;"><?php echo($event['name']); ?></span>
+			<br />&nbsp;<br />
+			<?php 	
+			} // END for
+		} else {
+			if ($eventErrorType == -1) {
+				$class="";
+				$title = "";
+				$mess = "No League events are available at this time.";
+			} else if ($eventErrorType == 2) {
+				$class="error";
+				$title = "League Files not loaded<br /><br />";
+				$mess = $eventstatusMess;
+			} else if ($eventErrorType == 1) {
+				$class="error";
+				$title = "Tables Missing<br /><br />";
+				$mess = $eventstatusMess;
+			}
+		}
 		?>
+        <span class="<?php echo($class); ?>" style="margin:0px; width:90%;"><strong><?php echo($title); ?></strong>
+		<?php echo($mess); ?></span>
 		</td>
 		</tr>
 		</table>

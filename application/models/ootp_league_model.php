@@ -192,6 +192,7 @@ class ootp_league_model extends base_model {
 				$this->db->not_like('name','Announcement');
 				$this->db->order_by('start_date','asc');
 				$query = $this->db->get();
+				//echo($this->db->last_query()."<br />");
 				if ($query->num_rows() > 0) {
 					$pushCount = 0;
 					foreach($query->result() as $row) {
