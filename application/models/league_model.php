@@ -659,6 +659,30 @@ class league_model extends base_model {
 		$query->free_result();
 		return $count;
 	}
+	/**
+	 * 	GET PLAYOFF SETTINGS
+	 * 	Function that gets Playoff settings for the passed league
+	 *  @param	$league_id	{int}	League ID var, if FALSE, defaults to models ID
+	 *  @return				{Array}	Array of settings value
+	 * 
+	 * 	@since	1.0.3 PROD
+	 */
+	public function getPlayoffSettings($league_id = false) {
+
+		$length = array();
+		if ($league_id === false) { $league_id = $this->id; }
+		$this->db->select('regular_scoring_periods, playoff_rounds, allow_playoff_trans,allow_playoff_trades');
+		$this->db->from($this->tblName);
+		$this->db->where("id",$league_id);
+		$query = $this->db->get();
+		$row = $query->row();
+		$length = array('regular_scoring_periods'=>$row->regular_scoring_periods, 'playoff_rounds'=>$row->playoff_rounds, 
+						'allow_playoff_trans'=>$row->allow_playoff_trans, 'allow_playoff_trades'=>$row->allow_playoff_trades, 
+						'total_periods'=>intval($row->regular_scoring_periods) + intval($row->playoff_rounds));
+		$query->free_result();
+		return $length;
+	}
+
 	/*----------------------------------------------------------------------
 	/
 	/	INVITES AND REQUESTS
@@ -2036,7 +2060,7 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($excludeList === false) { $excludeList = array(); }
 		if ($scoring_period === false) { array('id'=>1, 'date_start'=>EMPTY_DATE_STR, 'date_end'=>EMPTY_DATE_STR,'manual_waivers'=>-1); }
-		
+
 		$validation = array();
 		if ($league_id === false) { $league_id = $this->id; }
 		$message = "";
@@ -2048,8 +2072,14 @@ class league_model extends base_model {
 		if (sizeof($teams) > 0) {
 			foreach($teams as $team_id => $details) {
 				if (!in_array($team_id, $excludeList, false)) {
-					$roster = getBasicRoster($team_id, $scoring_period);
-					$valid = $this->validateRoster($roster, $league_id);
+					$playoffSettings = $this->getPlayoffSettings($league_id);
+					$total_periods = intval($playoffSettings['regular_scoring_periods']) + intval($playoffSettings['playoff_rounds']);
+					if ($scoring_period['id'] <= $total_periods) {
+						$roster = getBasicRoster($team_id, $scoring_period);
+						$valid = $this->validateRoster($roster, $league_id);
+					} else {
+						$valid = true;
+					}					
 					array_push($validation, array('team_id'=>$team_id, 'details'=>$details, 'rosterValid'=>(($valid)?1:-1), 'issueCount'=>$this->errorCount, 'validationDetails'=>$this->statusMess));
 					if (!$valid) $allValid = false;
 				} else {

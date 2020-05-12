@@ -314,8 +314,17 @@ class team extends BaseEditor {
 			if (isset($players[2])) {
 				$this->data['thisItem']['players_injured'] = $players[2];
 			}
+			// PLAYOFF ROSTER ALERT MESSAGE
+			if ($this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD && ($this->params['config']['current_period']== $this->league_model->regular_scoring_periods && intval($this->league_model->playoff_rounds) > 0)) {
+				$this->data['thisItem']['playoffsNext'] = 1;
+				$this->data['thisItem']['playoffsTrans'] = $this->league_model->allow_playoff_trans;
+				$this->data['thisItem']['playoffsTrades'] = $this->league_model->allow_playoff_trades;
+			}
 			
 			$this->data['showAdmin'] = (($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $this->params['config']['current_period']) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
+			$total_periods = intval($this->league_model->regular_scoring_periods) + intval($this->league_model->playoff_rounds);
+			if (($curr_period['id']) >= $total_periods) $this->data['showAdmin'] = false;
+			
 			$this->params['content'] = $this->load->view($this->views['LINEUP'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
 		} else {
@@ -363,21 +372,28 @@ class team extends BaseEditor {
 		$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 		$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
 				
+		$scoring_type = $this->league_model->getScoringType($this->dataModel->league_id);
+		$playoffSettings = $this->league_model->getPlayoffSettings($this->dataModel->league_id);
+		$this->data['scoring_period'] = $this->getScoringPeriod();
 		if (!$this->params['loggedIn'] || ($this->dataModel->owner_id != $this->params['currUser'] && (!$isAdmin && !$isCommish))) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />This page is accessible only by the owner of this team.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else if ($this->draft_model->completed != 1) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-		} else if (inPlayoffPeriod($this->params['config']['current_period'], $this->dataModel->league_id) && $this->league_model->allow_playoff_trades == -1) {
-			$this->data['theContent'] = "<h3>TRADES ARE DISABLED</h3><br />Your league is currently in the playoffs. Trades are no longer allowed.";
+		} else if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && intval($this->data['scoring_period']['id']) > $playoffSettings['regular_scoring_periods'] && $this->league_model->allow_playoff_trades == -1) {
+			$this->data['theContent'] = "<h3>TRADES ARE DISABLED</h3><br />";
+			if(intval($this->data['scoring_period']['id']) <= $playoffSettings['total_periods']) {
+				$this->data['theContent'] .= "Your league is currently in the playoffs. ";
+			}
+			$this->data['theContent'] .= "Trades are no longer allowed.";
+			
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
 			
 			$this->data['players'] = $this->dataModel->getBasicRoster($this->params['config']['current_period']);
 			$this->data['team_name'] = $this->dataModel->teamname." ".$this->dataModel->teamnick;
 			
-			$this->data['scoring_period'] = $this->getScoringPeriod();
 			$this->data['scoring_periods'] = getAvailableScoringPeriods($this->data['league_id']);
 			
 			if (isset($this->data['league_id']) && $this->data['league_id'] != -1) {
@@ -1538,14 +1554,21 @@ class team extends BaseEditor {
 		$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 		$isCommish = ($this->league_model->userIsCommish($this->params['currUser'])) ? true: false;
 		
+		$scoring_type = $this->league_model->getScoringType($this->dataModel->league_id);
+		$playoffSettings = $this->league_model->getPlayoffSettings($this->dataModel->league_id);
+		$this->data['scoring_period'] = $this->getScoringPeriod();
 		if (!$this->params['loggedIn'] || ($this->dataModel->owner_id != $this->params['currUser'] && (!$isAdmin && !$isCommish))) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />This page is accessible only by the owner of this team.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else if ($this->draft_model->completed != 1) {
 			$this->data['theContent'] = "<b>ERROR</b><br /><br />Your league has not yet completed it's draft. This page will become available once the draft has been completed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-		} else if (inPlayoffPeriod($this->params['config']['current_period'], $this->dataModel->league_id) && $this->league_model->allow_playoff_trans == -1) {
-			$this->data['theContent'] = "<h3>ROSTER TRANSACTIONS ARE DISABLED</h3><br />Your league is currently in the playoffs. Roster Add/Drops are no longer allowed.";
+		} else if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && intval($this->data['scoring_period']['id']) > $playoffSettings['regular_scoring_periods'] && $this->league_model->allow_playoff_trades == -1) {
+			$this->data['theContent'] = "<h3>ROSTER TRANSACTIONS ARE DISABLED</h3><br />";
+			if(intval($this->data['scoring_period']['id']) <= $playoffSettings['total_periods']) {
+				$this->data['theContent'] .= "Your league is currently in the playoffs. ";
+			}
+			$this->data['theContent'] .= "Roster Add/Drops are no longer allowed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
 
@@ -2596,9 +2619,15 @@ class team extends BaseEditor {
 
 		// EDIT 1.0.3 PROD - PLAYOFFS BANNER
 		$this->data['playoffs'] = array();
-		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && inPlayoffPeriod($this->params['config']['current_period'], $this->dataModel->id)) {
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && inPlayoffPeriod($this->params['config']['current_period'], $this->data['league_id'])) {
 			$this->data['playoffs']['league_year'] = date('Y', strtotime($curr_period['date_start']));
 			$this->data['playoffs']['league_name'] = $this->league_model->league_name;
+		}
+		// PLAYOFF ROSTER ALERT MESSAGE
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && ($this->params['config']['current_period']== $this->league_model->regular_scoring_periods && intval($this->league_model->playoff_rounds) > 0)) {
+			$this->data['thisItem']['playoffsNext'] = 1;
+			$this->data['thisItem']['playoffsTrans'] = $this->league_model->allow_playoff_trans;
+			$this->data['thisItem']['playoffsTrades'] = $this->league_model->allow_playoff_trades;
 		}
 
 		// UPCOMING STARTERS

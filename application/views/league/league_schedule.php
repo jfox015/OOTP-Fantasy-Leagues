@@ -8,7 +8,15 @@
 		});
 		</script>
    		<div id="subPage">
-            <div class="top-bar"><h1><?php echo($thisItem['league_name']); ?> Schedule</h1></div>
+            <div class="top-bar"><h1><?php echo($thisItem['league_name']); ?> Schedule</h1><br />
+			<?php
+			if (($isCommish || $isAdmin) && $playoffEdit)  { ?>
+			<span class="notice"><strong class="success_txt">Your League is in the Playoffs!</strong> Scroll down to the bottom of the schedule to add or edit 
+			Playoff Matchups.</span>
+			<?php
+			}
+			?>
+			</div>
             
             <div class='textbox'>
                 <table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" border="0" width="560px">
@@ -69,7 +77,9 @@
                 <?php } // END foreach
 				//echo("curr_period = ".$curr_period."<br />");
 				//echo("max_reg_period = ".$max_reg_period."<br />");
-				if (isset($curr_period) && $curr_period > $max_reg_period && $curr_period <= $total_periods) { ?>
+				//echo("sizeof(thisItem['schedule'])) = ".sizeof($thisItem['schedule'])."<br />");
+
+				if (isset($curr_period) && $curr_period > $max_reg_period && $curr_period <= $total_periods && sizeof($thisItem['schedule']) < $curr_period) { ?>
 				 <tr class='headline'>
 					<?php
 					$divWidth = '100%';

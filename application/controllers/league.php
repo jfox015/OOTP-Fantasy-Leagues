@@ -291,6 +291,12 @@ class league extends BaseEditor {
 			$this->data['playoffs']['league_year'] = date('Y', strtotime($curr_period['date_start']));
 			$this->data['playoffs']['league_name'] = $this->dataModel->league_name;
 		}
+		// PLAYOFF ROSTER ALERT MESSAGE
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && ($this->params['config']['current_period']== $this->dataModel->regular_scoring_periods && intval($this->dataModel->playoff_rounds) > 0)) {
+			$this->data['thisItem']['playoffsNext'] = 1;
+			$this->data['thisItem']['playoffsTrans'] = $this->dataModel->allow_playoff_trans;
+			$this->data['thisItem']['playoffsTrades'] = $this->dataModel->allow_playoff_trades;
+		}
 		$this->params['content'] = $this->load->view($this->views['HOME'], $this->data, true);
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;

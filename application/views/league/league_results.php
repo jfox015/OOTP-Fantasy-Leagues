@@ -185,7 +185,7 @@
                 <tr style="background-color:<?php echo($color); ?>">
                     <td class='hsc2_l'><?php echo(get_pos($playerData['position'])); ?></td>
                     <td class='hsc2_l'><?php
-                    echo anchor('/players/info/'.$player_id,$playerData['name']); 
+                    echo anchor('/players/info/league_id/'.$league_id.'/player_id/'.$player_id,$playerData['name']); 
 					if (isset($playerData['is_injured']) && $playerData['is_injured']) {?>
                     <img src="<?php echo($config['fantasy_web_root']); ?>images/icons/red_cross.gif" width="7" height="7" align="absmiddle" 
                     alt="<?php echo($playerData['dl_left']); ?> Days Left" title="<?php echo($playerData['dl_left']); ?> Days Left" />

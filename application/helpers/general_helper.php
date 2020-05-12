@@ -640,6 +640,7 @@ function inPlayoffPeriod($curr_period_id = false, $league_id = false) {
 
 	if ($ci->league_model->league_type == LEAGUE_SCORING_HEADTOHEAD) {
 		$max_reg_period = intval($ci->league_model->regular_scoring_periods);
+		$total_periods = $max_reg_period + intval($ci->league_model->playoff_rounds);
 		$reverse = false;
 		$baseTime = strtotime(EMPTY_DATE_STR);
 		$ci->load->model('ootp_league_model');
@@ -647,7 +648,7 @@ function inPlayoffPeriod($curr_period_id = false, $league_id = false) {
 		$timeStart = strtotime($ci->ootp_league_model->start_date." 00:00:00");
 		$timeCurr = strtotime($ci->ootp_league_model->current_date." 00:00:00");
 		if ($timeStart < $baseTime) { $reverse = true;}
-		$inPlayoffs = (($reverse) ? (($timeStart > $timeCurr) && ($curr_period_id > $max_reg_period)) : (($timeStart <= $timeCurr) && ($curr_period_id > $max_reg_period)));
+		$inPlayoffs = (($reverse) ? (($timeStart > $timeCurr) && ($curr_period_id > $max_reg_period && $curr_period_id <= $total_periods)) : (($timeStart <= $timeCurr) && ($curr_period_id > $max_reg_period && $curr_period_id <= $total_periods)));
 	}
 	return $inPlayoffs;
 }

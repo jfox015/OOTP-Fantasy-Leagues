@@ -79,8 +79,41 @@
 							</div>
 							<?php } ?>
 						</div>
-
-						<?php if (isset($message) && !empty($message)) { ?>
+						<?php 
+						/*------------------------------------------------
+						/	LEAGUE PLAYOFF ALERT BOX FOR H2H
+						/-----------------------------------------------*/
+						if (isset($thisItem['playoffsNext']) && $thisItem['playoffsNext'] == 1) { ?>
+                        <div style="display:block;width:98%;position:relative; clear:right; float:left;">
+							<span class="notice"><h3>Get Ready for the Playoffs</h3>
+							<?php
+							if ($thisItem['playoffsTrans'] == -1 || $thisItem['playoffsTrades'] == -1) { ?>
+							<b>NOTE:</b> The following transactions are disabled in your League during the Playoffs:
+							<ul>
+							<?php if ($thisItem['playoffsTrans'] == -1 ) { ?>
+								<li>Add/Drops</li>
+							<?php
+							}
+							if ($thisItem['playoffsTrades'] == -1 ) { ?>
+								<li>Trades</li>
+							<?php
+							}
+							?>
+							</ul>
+							<?php
+							} // END  if ($thisItem['playoffsTrans'] == -1
+							echo("Be sure to make all approriate roster transactions before the next scoring period.");
+							?>
+							</span>
+                        </div>
+                        <?php
+                        } // END if (isset($thisItem['playoffsNext']) 
+                        ?>
+						<?php 
+						/*------------------------------------------------
+						/	MESSAGE ALERT BOX
+						/-----------------------------------------------*/
+						if (isset($message) && !empty($message)) { ?>
                         <div style="display:block;width:98%;position:relative; clear:right; float:left;">
                         <?php
                             $messageType = isset($messageType) ? $messageType : "";

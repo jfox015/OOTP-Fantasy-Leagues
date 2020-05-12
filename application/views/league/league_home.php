@@ -138,6 +138,49 @@
         </div>
         <?php
         }
+        /*------------------------------------------------
+		/	LEAGUE PLAYOFF ALERT BOX FOR H2H
+        /-----------------------------------------------*/
+        if (isset($thisItem['playoffsNext']) && $thisItem['playoffsNext'] == 1) {
+        ?>
+        <div class='textbox right-column'>
+                <table cellpadding="0" cellspacing="0">
+                <thead>	
+                <tr class="title">
+                    <td><span style="color:#FCB97C;font-weight:bold;">Playoffs start next period!</span></td>
+                </tr>
+                <tr class="headline">
+                    <td>Get Ready for the Playoffs</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="padding:6px;"><?php
+                    if ($thisItem['playoffsTrans'] == -1 || $thisItem['playoffsTrades'] == -1) { ?>
+                    <span class="notice"><b>NOTE:</b> The following transactions are disabled in your League during the Playoffs:
+                    <ul>
+                    <?php if ($thisItem['playoffsTrans'] == -1 ) { ?>
+                        <li>Add/Drops</li>
+                    <?php
+                    }
+                    if ($thisItem['playoffsTrades'] == -1 ) { ?>
+                        <li>Trades</li>
+                    <?php
+                    }
+                    ?>
+                    </ul>
+                    </span>
+                    <?php
+                    }// END  if ($thisItem['playoffsTrans'] == -1
+                    echo("Be sure to make all approriate roster transactions to be ready before the next scoring period.");
+                    ?></td>
+                </tr>
+            </tbody>
+            </table>
+        </div>
+        
+        <?php
+        } // END if (isset($thisItem['playoffsNext'])
 		/*------------------------------------------------
 		/	DRAFT MODULE
 		/-----------------------------------------------*/

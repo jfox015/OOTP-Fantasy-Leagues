@@ -362,9 +362,55 @@
 				<?php
 					} // END foreach
 					$rowcount++;
-				} // if (isset($userTrades)
-				
-
+				} // if (isset($tradesForReview)
+					/*---------------------------------------------------------------
+					/	PLAYOFFS ALERT
+					/--------------------------------------------------------------*/
+					if ($type != 'rot') { 
+						if (isset($playoffs) && sizeof($playoffs) > 0) {
+							foreach($playoffs as $playoff_league_id => $playoffData) {
+								if ($playoff_league_id == $data['league_id']) { 
+									if (isset($playoffData['playoffsNext']) && $playoffData['playoffsNext'] == 1) { ?>
+									<tr>
+										<td colspan="<?php print($col_size_a_1); ?>" style="background-color:#FFF6BF;" class='hsc2_l'>
+										<span style="color:#FFD324;font-weight:bold;">
+										<h4 style="color:#514721;">Playoffs start next period! Get Ready.</h4></span>
+										<?php
+										if ($playoffData['playoffsTrans'] == -1 || $playoffData['playoffsTrades'] == -1) { ?>
+										<b>NOTE:</b> The following transactions are disabled in your League during the Playoffs:
+										<ul>
+											<?php if ($playoffData['playoffsTrans'] == -1 ) { ?>
+												<li>Add/Drops</li>
+											<?php
+											}
+											if ($playoffData['playoffsTrades'] == -1 ) { ?>
+												<li>Trades</li>
+											<?php
+											}
+											?>
+											</ul>
+										<?php
+										}
+										?>
+										Be sure to make all approriate roster transactions to be ready before the next scoring period.
+										</td>
+									</tr>
+									<?php
+									} else if (isset($playoffData['inPlayoffs']) && $playoffData['inPlayoffs'] == 1) { ?>
+									<tr>
+										<td colspan="<?php print($col_size_a_1); ?>" class='hsc2_l' style="background-color:#E6EFC2;color:#264409;font-weight:bold;">
+										<?php echo($playoffData['league_year']." ".$playoffData['league_name']); ?> Playoffs in Progress!
+										</td>
+									</tr>
+									<?php
+									}
+								}
+							}
+						}
+					} // END if ($type == 'rot')
+					/*---------------------------------------------------------------
+					/	END PLAYOFFS ALERT
+					/--------------------------------------------------------------*/
 				} // ENd foreach
 				?>
 				</table>
