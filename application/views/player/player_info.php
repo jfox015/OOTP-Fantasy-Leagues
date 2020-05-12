@@ -483,32 +483,32 @@
 				<tr class='headline'>
                     <table width=100% cellpadding=2 cellspacing=1>
                 	<?php  if ($thisItem['position'] != 1) { ?>
-					<tr align=center class=bg4>
-                        <td><strong></strong></td>
-                        <td><strong>OPP</strong></td>
-                        <td><strong>AB</strong></td>
-                        <td><strong>R</strong></td>
-                        <td><strong>H</strong></td>
-                        <td><strong>HR</strong></td>
-                        <td><strong>RBI</strong></td>
-                        <td><strong>BB</strong></td>
-                        <td><strong>SB</strong></td>
+					<tr class="bg4">
+                        <td class="hsc2_c"><strong></strong></td>
+                        <td class="hsc2_c"><strong>OPP</strong></td>
+                        <td class="hsc2_c"><strong>AB</strong></td>
+                        <td class="hsc2_c"><strong>R</strong></td>
+                        <td class="hsc2_c"><strong>H</strong></td>
+                        <td class="hsc2_c"><strong>HR</strong></td>
+                        <td class="hsc2_c"><strong>RBI</strong></td>
+                        <td class="hsc2_c"><strong>BB</strong></td>
+                        <td class="hsc2_c"><strong>SB</strong></td>
                     </tr>
                     <?php
 						if (isset($recentGames) && sizeof($recentGames) > 0) {
 							$rowCount = 0;
 							foreach($recentGames as $game) { ?>
-                       <tr height="17" class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" style="text-align: center;" valign="middle">
+                       <tr height="17" class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>">
 
-                        <td><?php echo(date('m/d',strtotime($game['date']))); ?></td>
-                        <td><?php echo(strtoupper($game['opp'])); ?></td>
-                        <td><?php echo($game['ab']); ?></td>
-                        <td><?php echo($game['r']); ?></td>
-                        <td><?php echo($game['h']); ?></td>
-                        <td><?php echo($game['hr']); ?></td>
-                        <td><?php echo($game['rbi']); ?></td>
-                        <td><?php echo($game['bb']); ?></td>
-                        <td><?php echo($game['sb']); ?></td>
+                        <td class="hsc2_c"><?php echo(date('m/d',strtotime($game['date']))); ?></td>
+                        <td class="hsc2_c"><?php echo(strtoupper($game['opp'])); ?></td>
+                        <td class="hsc2_c"><?php echo($game['ab']); ?></td>
+                        <td class="hsc2_c"><?php echo($game['r']); ?></td>
+                        <td class="hsc2_c"><?php echo($game['h']); ?></td>
+                        <td class="hsc2_c"><?php echo($game['hr']); ?></td>
+                        <td class="hsc2_c"><?php echo($game['rbi']); ?></td>
+                        <td class="hsc2_c"><?php echo($game['bb']); ?></td>
+                        <td class="hsc2_c"><?php echo($game['sb']); ?></td>
 
                     </tr>
 					<?php 		$rowCount++;
@@ -517,17 +517,17 @@
                     <?php
 					} else {
 					?>
-                    <tr align=center class=bg4>
-                        <td><strong></strong></td>
-                        <td><strong>OPP</strong></td>
-                        <td><strong>W</strong></td>
-                        <td><strong>L</strong></td>
-                        <td><strong>S</strong></td>
-                        <td><strong>IP</strong></td>
-                        <td><strong>H</strong></td>
-                        <td><strong>ERA</strong></td>
-                        <td><strong>BB</strong></td>
-                        <td><strong>K</strong></td>
+                    <tr class="bg4">
+                        <td class="hsc2_c"><strong></strong></td>
+                        <td class="hsc2_c"><strong>OPP</strong></td>
+                        <td class="hsc2_c"><strong>W</strong></td>
+                        <td class="hsc2_c"><strong>L</strong></td>
+                        <td class="hsc2_c"><strong>S</strong></td>
+                        <td class="hsc2_c"><strong>IP</strong></td>
+                        <td class="hsc2_c"><strong>H</strong></td>
+                        <td class="hsc2_c"><strong>ERA</strong></td>
+                        <td class="hsc2_c"><strong>BB</strong></td>
+                        <td class="hsc2_c"><strong>K</strong></td>
                     </tr>
                     <?php
 						if (isset($recentGames) && sizeof($recentGames) > 0) {
@@ -572,59 +572,65 @@
                     <td>Upcoming Schedule</td>
                 </tr>
                 <tr class='headline'>
-                    <table width=100% cellpadding=2 cellspacing=1>
-					<tr align=center class=bg4>
-                        <td><strong>Date</strong></td>
-                        <td><strong>Time</strong></td>
-                        <td><strong>OPP</strong></td>
+                    <table width="100%" cellpadding="2" cellspacing="1">
+					          <tr class="bg4">
+                        <td class="hsc2_c"><strong>Date</strong></td>
+                        <td class="hsc2_c"><strong>Time</strong></td>
+                        <td class="hsc2_c"><strong>OPP</strong></td>
                     </tr>
                     <?php
 					$games = $upcomingGames['players_active'][$thisItem['player_id']];
-					if (isset($games) && sizeof($games) > 0) {
+          if (isset($games) && sizeof($games) > 0) {
 						$drawn = 0;
-						$limit = $config['sim_length'];
-						$lastDate = "";
+						//$limit = $config['sim_length'];
+						//$lastDate = "";
 						$rowCount = 0;
-						foreach ($games as $game_id => $game_data) { ?>
-							<tr  height=17  class="<?php echo(($rowCount % 2) == 0 ? "s1_l" : "s2_l"); ?>" style="text-align: center;" valign="middle">
-                            <td>
-							<?php if (isset($game_data['game_date'])) {
-								$lastDate = $game_data['game_date'];
-								$thisDate = strtotime($game_data['game_date']);
-							} else {
-								if (!empty($lastDate)) {
-									$thisDate = $lastDate + strtotime($lastDate) + (60*60*24);
-								} else {
-									$thisDate = strtotime($league_info->current_date);
-								}
-							}
-							echo(date('m/d',$thisDate)); ?> </td>
-                            <td><?php if (isset($game_data['game_time'])) { echo(date('h:m A',strtotime($game_data['game_time']))); } else { echo(" - - "); } ?> </td>
-                            <td><?php
-							if ($game_id > 0) {
-								$iconStr = $config['ootp_html_report_path'].'images/dot1.gif';
-								if ($thisItem['team_id'] == $game_data['home_team']) {
-									if (isset($teamList[$game_data['away_team']])) {
-										echo(strtoupper($teamList[$game_data['away_team']]['abbr']));
-									}
-								} else {
-									if (isset($teamList[$game_data['home_team']])) {
-										echo("@".strtoupper($teamList[$game_data['home_team']]['abbr']));
-									}
-                }
-                if ($game_data['start'] != -1)
-											echo('&nbsp;<img src="'.$iconStr.'" />');
-							}
-							$drawn++;
-							$rowCount++;
-							if ($drawn == $limit) break;
-						} ?></td>
-						<?php
+						$dateStr = '';
+            $startStr = '';
+            $gameDate = EMPTY_DATE_STR;
+            $iconStr = $config['ootp_html_report_path'].'images/dot1.gif';
+            foreach ($games as $game_id => $game_data) {
+                if ($gameDate != strtotime($game_data['game_date']." 00:00:00")) {
+                  if ($gameDate != EMPTY_DATE_STR) {
+                    echo($dateStr.$startStr."</td>\n</tr>\n");
+                    $drawn++;
+                    $rowCount++;
+                  } // END if
+                  $dateStr = '<tr height="17" class="'.(($rowCount % 2) == 0 ? "s1_l" : "s2_l").'"><td class="hsc2_c">';
+                  $startStr = '';
+                  $gameDate = strtotime($game_data['game_date']." 00:00:00");
+                  $dateStr .= date('m/d',$gameDate).'</td>';
+                  $dateStr .= '<td class="hsc2_c">';
+                  if (isset($game_data['game_time'])) { 
+                    $dateStr .= date('h:m A',strtotime($game_data['game_time'])); 
+                  } else { 
+                    $dateStr .= ' - - '; 
+                  } // END if
+                  $dateStr .= '</td><td class="hsc2_l">';
+                  if ($game_id > 0) {
+                    if ($thisItem['team_id'] == $game_data['home_team']) {
+                      if (isset($teamList[$game_data['away_team']])) {
+                        $dateStr .= strtoupper($teamList[$game_data['away_team']]['abbr']);
+                      } // END if 
+                    } else {
+                      if (isset($teamList[$game_data['home_team']])) {
+                        $dateStr .= "@".strtoupper($teamList[$game_data['home_team']]['abbr']);
+                      } // END if 
+                    } // END if ($playerData['team_id'] == $game_data['home_team']) 
+                    if ($game_data['start'] != -1)
+                      $startStr = '&nbsp;<img src="'.$iconStr.'" />';  // END if
+                  } // END if ($game_id > 0)
+                } else {
+                  $dateStr .= "(2)";
+                }  // END if ($gameDate != strtotime($game_data['game_date']." 00:00:00"))
+            } // END foreach ($games as $game_id => $game_data)
+            echo($dateStr.$startStr."</td>\n</tr>\n");
 					} else {
 						for ($i = 0; $i < $config['sim_length']; $i++) {
-							echo("<tr  height=17  class=bg2 align=center valign=middle><td class='hsc2_l'></td></tr>\n");
-						}
-					} ?>
+              echo('<tr height="17" class="bg2"><td class="hsc2_c"></td></tr>\n');
+            }
+          }  // END if (isset($games) && sizeof($games) > 0)
+          ?>
                 </table>
                 	</td>
                 </tr>

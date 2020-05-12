@@ -242,30 +242,40 @@
 							
 							$playerSched = $schedules['players_'.$type][$id];
 							if (isset($playerSched) && sizeof($playerSched) > 0) {
-								$drawn = 0;
-								$limit = $config['sim_length'];
+								//$drawn = 0;
+								//$limit = $config['sim_length'];
 								$iconStr = $config['ootp_html_report_path'].'images/dot1.gif';
-								foreach ($playerSched as $game_id => $game_data) { ?>
-									<td class='hsc2_l sched field_hide'><?php
-									if ($game_id > 0) {//if($game_data['game_date'] > $thisItem['visible_week'][$drawn]) {
-										//	echo("</td><td class='hsc2_l'>");
-										//	$drawn++;
-										//}
-										if ($playerData['team_id'] == $game_data['home_team']) {
-											if (isset($thisItem['team_list'][$game_data['away_team']])) {
-												echo(strtoupper($thisItem['team_list'][$game_data['away_team']]['abbr']));
-											}
-										} else {
-											if (isset($thisItem['team_list'][$game_data['home_team']])) {
-												echo("@".strtoupper($thisItem['team_list'][$game_data['home_team']]['abbr']));
-											}
+								$dateStr = '';
+								$startStr = '';
+								$gameDate = EMPTY_DATE_STR;
+								foreach ($playerSched as $game_id => $game_data) { 
+									if ($gameDate != strtotime($game_data['game_date']." 00:00:00")) {
+										if ($gameDate != EMPTY_DATE_STR) {
+											echo($dateStr.$startStr."</td>\n");
+											$drawn++;
 										}
-										if ($game_data['start'] != -1)
-											echo('&nbsp;<img src="'.$iconStr.'" />');
+										$dateStr = "<td class='hsc2_l sched field_hide'>";
+										$startStr = '';
+										$gameDate = strtotime($game_data['game_date']." 00:00:00");
+										if ($game_id > 0) {
+											if ($playerData['team_id'] == $game_data['home_team']) {
+												if (isset($thisItem['team_list'][$game_data['away_team']])) {
+													$dateStr .= strtoupper($thisItem['team_list'][$game_data['away_team']]['abbr']);
+												}
+											} else {
+												if (isset($thisItem['team_list'][$game_data['home_team']])) {
+													$dateStr .= "@".strtoupper($thisItem['team_list'][$game_data['home_team']]['abbr']);
+												}
+											}
+											if ($game_data['start'] != -1)
+												$startStr = '&nbsp;<img src="'.$iconStr.'" />';
+										}
+									} else {
+										$dateStr .= "(2)";
 									}
-									$drawn++;
-									if ($drawn == $limit) break;
-								} ?></td>
+								}
+								echo($dateStr.$startStr."</td>\n");
+								?>
 								<?php 
 							} else {
 								for ($i = 0; $i < $config['sim_length']; $i++) {
