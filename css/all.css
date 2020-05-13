@@ -388,6 +388,14 @@ div.rule {
 .layout-column:last-child {
 	width: 48%;
 }
+.layout.leagues .layout-column:first-child {
+	margin-right: 20px;
+	width: 65%;
+}
+.layout.leagues .layout-column:last-child {
+	width: 33%;
+}
+
 .layout-column {
 	padding-right: 6px;
 	flex-basis: auto;

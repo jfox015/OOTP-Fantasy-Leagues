@@ -224,8 +224,10 @@
         </div>
 		<?php } // END if ($draftInfo['draftStatus'] > 0 
 		} // if (isset($userDrafts) 
-					   
-		// STANDINGS MODULE
+        
+        /*------------------------------------------------
+		/	STANDINGS MODULE
+		/-----------------------------------------------*/
         ?>
         <div class='textbox right-column'>
             <table cellpadding="5" cellspacing="0">

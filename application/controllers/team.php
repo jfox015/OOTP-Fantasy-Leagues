@@ -226,7 +226,7 @@ class team extends BaseEditor {
 
 			if (isset($this->uriVars['period_id'])) {
 				$curr_period_id = $this->uriVars['period_id'];
-				$curr_period = getScoringPeriod($curr_period_id);
+				
 			} else {
 				if ($configPeriodId == 1) {
 					$curr_period_id = 1;
@@ -236,6 +236,7 @@ class team extends BaseEditor {
 					$curr_period_id = $total_periods;
 				}
 			}
+			$curr_period = getScoringPeriod($curr_period_id);
 			$this->data['curr_period'] = $curr_period_id;
 			$this->data['avail_periods'] = $this->league_model->getAvailableRosterPeriods($this->dataModel->league_id, $total_periods);
 			
@@ -2031,8 +2032,33 @@ class team extends BaseEditor {
 			}
 		}
 		$this->data['roster_rules'] = $rules;
-		$this->data['scoring_period'] = $this->getScoringPeriod();
-		$this->data['player_eligibility'] = $this->dataModel->getGamesPlayedByRoster($this->data['team_id'],$this->data['scoring_period']['id'],$this->ootp_league_model->league_id,$this->data['lgyear']);
+		if (!isset($this->league_model)) {
+			$this->load->model('league_model');
+		}
+		$this->league_model->load($this->dataModel->league_id);
+		if (!function_exists('getScoringPeriod')) {
+			$this->load->helper('admin');
+		}
+		$scoring_type = $this->league_model->getScoringType();
+		$total_periods = 0;
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			$total_periods = intval($this->league_model->regular_scoring_periods)+ intval($this->league_model->playoff_rounds);
+		} else {
+			$total_periods = getScoringPeriodCount();
+		}
+		$configPeriodId = intval($this->params['config']['current_period']);	
+
+		if ($configPeriodId == 1) {
+			$curr_period_id = 1;
+		} else if ($configPeriodId > 1 && $configPeriodId <= $total_periods) {
+			$curr_period_id = $configPeriodId;
+		} else {
+			$curr_period_id = $total_periods;
+		}
+		$curr_period = getScoringPeriod($curr_period_id);
+		$this->data['curr_period'] = $curr_period_id;
+
+		$this->data['player_eligibility'] = $this->dataModel->getGamesPlayedByRoster($this->data['team_id'],$curr_period_id,$this->ootp_league_model->league_id,$this->data['lgyear']);
 		$this->data['thisItem']['fantasy_teams'] = getFantasyTeams($this->data['league_id']);
 		
 		$this->makeNav();

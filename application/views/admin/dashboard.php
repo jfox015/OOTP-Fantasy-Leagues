@@ -179,9 +179,10 @@
 
 		if ($currDate > $startDate && $completed) { ?>
 		<h3>Post Season Functions</h3>
-		<b class="success_txt">Season Completed!</b> Your Fantasy Season has completed. To begin a new Fantasy season, click the button below. <b>NOTE:</b> This will reset 
-		all season specififc infromation including draft history, rosters, transactions, scoring, standings, etc. back to Pre-Season status. Only perform this operation when you're ready to 
-		begin a new Fantasy Season. This function <b>DOES NOT</b> affect League structure or settting, team ownership or settings or news.
+		<h4 class="success_txt">Season Completed!</h4> Your Fantasy Season has completed. To begin a new Fantasy season, click the button below.<br />
+		<b>NOTE:</b> This will reset <b class="error_txt"><i>ALL SEASON SPECIFIC INFORMATION</i></b> including draft history, rosters, transactions, team and player fantasy 
+		scoring, standings, etc. back to Pre-Season status. Only perform this operation when you're ready to begin a new Fantasy Season.<br />
+		This function <b class="success_txt">DOES NOT</b> affect Site membership, League structure or setttings, team ownership or settings or News.
 		<br clear="all" /><br />
 		<ul class="iconmenu">
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'reset')); ?><br />
@@ -489,9 +490,9 @@
 			if (isset($requiring_activation) && $requiring_activation > 0) { 
 				echo('<span class="warn">'.$icons['warn'].' '.anchor('admin/userActivations',$requiring_activation.' users require activation').'</span>');
 			}
-			?>
-			<?php 
+			/*----------------------------------------------------------------- 
 			// PRE_SEASON CHECKS
+			/----------------------------------------------------------------*/
 			if ($currDate <= $startDate) { ?>
 				<!-- TABLES FILES-->
 				<?php 

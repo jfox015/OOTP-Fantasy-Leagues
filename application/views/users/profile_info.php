@@ -12,8 +12,36 @@
 	</script>
     <div id="subPage">
        	<div id="content">
+			<!-- BEGIN MAIN COLUMN -->
+			<div id="center-column-med">
+				<h1><?php 
+				if (isset($profile->avatar) && !empty($profile->avatar)) { 
+					$avatar = $profile->avatar;
+				} else {
+					$avatar = DEFAULT_AVATAR;
+				} 
+				?>
+				<img src="<?php echo(PATH_USERS_AVATARS.$avatar) ?>" width="50" height="50" alt="avatar" title="avatar" align="absmiddle" />
+				<?php if (isset($profile->firstName) && isset($profile->lastName)) {
+					echo($profile->firstName." ".$profile->lastName); 
+				} else {
+					echo("No Name Provided"); 
+				}?></h1>
+				<b>Nickname:</b> <?php if (isset($profile->nickName)) { echo($profile->nickName); } ?><br />
+				<br />
+				<strong>Title:</strong>
+				<?php echo((!empty($profile->title) ? $profile->title : "No Title provided.")); ?><br />
+				<br />
+				<strong>Bio:</strong>
+				<?php echo((!empty($profile->bio) ? $profile->bio : "No Bio provided. ".anchor('/user/profile/edit','Add a bio').".")); ?>
+				<br /><br />  
+				<b>Joined:</b> <?php print(date('m/d/Y',strtotime($dateCreated))); ?><br />    
+				<br />     
+				<b>Last Updated:</b> <?php print(date('m/d/Y',strtotime($dateModified))); ?><br />    
+			</div>
+
            	<!-- BEGIN RIGHT COLUMN -->
-           	<div id="metaColumn">
+           	<div id="right-column-wide">
 			<?php 
 			if ($loggedIn && $currUser == $profile->userId) { 
 				/*------------------------------------------------------
@@ -125,33 +153,7 @@
 				</div>
 				<?php } ?>
            	</div>
-			<!-- BEGIN MAIN COLUMN -->
-			<div id="detailColumn">
-				<h1><?php 
-				if (isset($profile->avatar) && !empty($profile->avatar)) { 
-					$avatar = $profile->avatar;
-				} else {
-					$avatar = DEFAULT_AVATAR;
-				} 
-				?>
-				<img src="<?php echo(PATH_USERS_AVATARS.$avatar) ?>" width="50" height="50" alt="avatar" title="avatar" align="absmiddle" />
-				<?php if (isset($profile->firstName) && isset($profile->lastName)) {
-					echo($profile->firstName." ".$profile->lastName); 
-				} else {
-					echo("No Name Provided"); 
-				}?></h1>
-				<b>Nickname:</b> <?php if (isset($profile->nickName)) { echo($profile->nickName); } ?><br />
-				<br />
-				<label><strong>Title:</strong></label>
-				<?php echo((!empty($profile->title) ? $profile->title : "No Title provided.")); ?>
-				<p>&nbsp;&nbsp;
-				<label><strong>Bio:</strong></label>
-				<?php echo((!empty($profile->bio) ? $profile->bio : "No Bio provided. ".anchor('/user/profile/edit','Add a bio').".")); ?>
-				<br /><br />  
-				<b>Joined:</b> <?php print(date('m/d/Y',strtotime($dateCreated))); ?><br />    
-				<br />     
-				<b>Last Updated:</b> <?php print(date('m/d/Y',strtotime($dateModified))); ?><br />    
-			</div>
+			
 			<div id="single-column">
 				<h3>Fantasy Teams</h3>
 				<?php
