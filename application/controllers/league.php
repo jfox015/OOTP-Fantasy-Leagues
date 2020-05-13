@@ -157,13 +157,29 @@ class league extends BaseEditor {
 		$this->params['subTitle'] = $this->dataModel->league_name;
 		
 		$scoring_type = $this->dataModel->getScoringType();
-		$curr_period = $this->getScoringPeriod();
-		$this->data['curr_period_id'] = $curr_period['id'];
-		if ($this->data['curr_period_id'] > 1) {
-			$curr_period_id = $this->data['curr_period_id']-1;
-		} else {
-			$curr_period_id = 1;
+		if (!function_exists('getScoringPeriod')) {
+			$this->load->helper('admin');
 		}
+		$scoring_type = $this->dataModel->getScoringType();
+		$total_periods = 0;
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			$total_periods = intval($this->dataModel->regular_scoring_periods)+ intval($this->dataModel->playoff_rounds);
+		} else {
+			$total_periods = getScoringPeriodCount();
+		}
+		$configPeriodId = intval($this->params['config']['current_period']);	
+
+		if ($configPeriodId == 1) {
+			$curr_period_id = 1;
+		} else if ($configPeriodId > 1 && $configPeriodId <= $total_periods) {
+			$curr_period_id = $configPeriodId-1;
+		} else {
+			$curr_period_id = $total_periods;
+		}
+		$curr_period = getScoringPeriod($curr_period_id);
+		$this->data['configPeriodId'] = $configPeriodId;
+		$this->data['curr_period_id'] = $curr_period_id;
+		$this->data['total_periods'] = $total_periods;
 		$leagueStandings = $this->dataModel->getLeagueStandings($curr_period_id);
 
 		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
@@ -284,19 +300,23 @@ class league extends BaseEditor {
 			$this->data['waiverOrder'] = $this->team_model->getWaiverOrder($this->dataModel->id);
 		}
 		$this->data['current_period'] = $this->params['config']['current_period'];
-
+		
 		// EDIT 1.0.3 PROD - PLAYOFFS BANNER
-		$this->data['playoffs'] = array();
-		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && inPlayoffPeriod($this->params['config']['current_period'], $this->dataModel->id)) {
-			$this->data['playoffs']['league_year'] = date('Y', strtotime($curr_period['date_start']));
-			$this->data['playoffs']['league_name'] = $this->dataModel->league_name;
+		$playoffArr = array();
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			if (inPlayoffPeriod($configPeriodId, $this->dataModel->id)) {
+				$playoffArr['inPlayoffs']= 1;
+				$playoffArr['league_year'] = date('Y', strtotime($curr_period['date_start']));
+				$playoffArr['league_name'] = $this->dataModel->league_name;
+			}
+			if ($configPeriodId == $this->dataModel->regular_scoring_periods && intval($this->dataModel->playoff_rounds) > 0) {
+				$playoffArr['playoffsNext'] = 1;
+				$playoffArr['playoffsTrades'] = $this->dataModel->allow_playoff_trades;
+			}
+			$playoffArr['playoffsTrans'] = $this->dataModel->allow_playoff_trans;
 		}
-		// PLAYOFF ROSTER ALERT MESSAGE
-		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && ($this->params['config']['current_period']== $this->dataModel->regular_scoring_periods && intval($this->dataModel->playoff_rounds) > 0)) {
-			$this->data['thisItem']['playoffsNext'] = 1;
-			$this->data['thisItem']['playoffsTrans'] = $this->dataModel->allow_playoff_trans;
-			$this->data['thisItem']['playoffsTrades'] = $this->dataModel->allow_playoff_trades;
-		}
+		$this->data['playoffs'] = $playoffArr;
+
 		$this->params['content'] = $this->load->view($this->views['HOME'], $this->data, true);
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;
@@ -1097,18 +1117,27 @@ class league extends BaseEditor {
 		$this->dataModel->load($this->uriVars['id']);
 		$this->data['league_id'] = $this->uriVars['id'];
 
-		$scoring_type = $this->dataModel->getScoringType();
-
 		if (!function_exists('getScoringPeriod')) {
 			$this->load->helper('admin');
 		}
+		$scoring_type = $this->dataModel->getScoringType();
+		$total_periods = 0;
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			$total_periods = intval($this->dataModel->regular_scoring_periods)+ intval($this->dataModel->playoff_rounds);
+		} else {
+			$total_periods = getScoringPeriodCount();
+		}
+		$configPeriodId = intval($this->params['config']['current_period']);	
+
 		if (isset($this->uriVars['period_id'])) {
 			$curr_period_id = $this->uriVars['period_id'];
 		} else {
-			if ($this->params['config']['current_period'] > 1) {
-                $curr_period_id = $this->params['config']['current_period']-1;
+			if ($configPeriodId == 1) {
+				$curr_period_id = 1;
+			} else if ($configPeriodId > 1 && $configPeriodId <= $total_periods) {
+                $curr_period_id = $configPeriodId-1;
             } else {
-                $curr_period_id = 1;
+                $curr_period_id = $total_periods;
             }
 		}
 		$curr_period = getScoringPeriod($curr_period_id);
@@ -1147,27 +1176,33 @@ class league extends BaseEditor {
 
 		$this->load->model('team_model');
 
-		if (!function_exists('getCurrentScoringPeriod')) {
+		$scoring_type = $this->dataModel->getScoringType();
+		if (!function_exists('getScoringPeriod')) {
 			$this->load->helper('admin');
 		}
-		//if (isset($this->uriVars['period_id'])) {
-		//	$curr_period_id = 	$this->uriVars['period_id'];
-		//} else {
-		//	$curr_period_id = $this->params['config']['current_period'];
-		//}
-		//$curr_period_id = $this->getScoringPeriod();
-		//$curr_period = getScoringPeriod($curr_period_id);
+		$scoring_type = $this->dataModel->getScoringType();
+		$total_periods = 0;
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			$total_periods = intval($this->dataModel->regular_scoring_periods)+ intval($this->dataModel->playoff_rounds);
+		} else {
+			$total_periods = getScoringPeriodCount();
+		}
+		$configPeriodId = intval($this->params['config']['current_period']);	
 
 		if (isset($this->uriVars['period_id'])) {
 			$curr_period_id = $this->uriVars['period_id'];
 		} else {
-			if ($this->params['config']['current_period'] > 1) {
-                $curr_period_id = $this->params['config']['current_period']-1;
+			if ($configPeriodId == 1) {
+				$curr_period_id = 1;
+			} else if ($configPeriodId > 1 && $configPeriodId <= $total_periods) {
+                $curr_period_id = $configPeriodId-1;
             } else {
-                $curr_period_id = 1;
+                $curr_period_id = $total_periods;
             }
 		}
 		$curr_period = getScoringPeriod($curr_period_id);
+		$this->data['configPeriodId'] = $configPeriodId;
+
 		$this->data['curr_period'] = $curr_period_id;
 
 		$teams = $this->dataModel->getTeamIdList();

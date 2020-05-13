@@ -208,28 +208,38 @@ class team extends BaseEditor {
 		
 		if (isset($this->data['team_id'])) { 
 		
+			if (!isset($this->league_model)) {
+				$this->load->model('league_model');
+			}
+			$this->league_model->load($this->dataModel->league_id);
 			if (!function_exists('getScoringPeriod')) {
 				$this->load->helper('admin');
 			}
+			$scoring_type = $this->league_model->getScoringType();
+			$total_periods = 0;
+			if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+				$total_periods = intval($this->league_model->regular_scoring_periods)+ intval($this->league_model->playoff_rounds);
+			} else {
+				$total_periods = getScoringPeriodCount();
+			}
+			$configPeriodId = intval($this->params['config']['current_period']);	
 
 			if (isset($this->uriVars['period_id'])) {
 				$curr_period_id = $this->uriVars['period_id'];
 				$curr_period = getScoringPeriod($curr_period_id);
 			} else {
-				$curr_period = $this->getScoringPeriod();
-				$curr_period_id = $curr_period['id'];
+				if ($configPeriodId == 1) {
+					$curr_period_id = 1;
+				} else if ($configPeriodId > 1 && $configPeriodId <= $total_periods) {
+					$curr_period_id = $configPeriodId;
+				} else {
+					$curr_period_id = $total_periods;
+				}
 			}
-			
 			$this->data['curr_period'] = $curr_period_id;
+			$this->data['avail_periods'] = $this->league_model->getAvailableRosterPeriods($this->dataModel->league_id, $total_periods);
 			
 			$players = $this->dataModel->getCompleteRoster($curr_period_id);
-			
-			if (!isset($this->league_model)) {
-				$this->load->model('league_model');
-				$this->league_model->load($this->dataModel->league_id);
-			}
-			$this->league_model->load($this->dataModel->league_id);
-			$this->data['avail_periods'] = $this->league_model->getAvailableRosterPeriods();
 			
 			// Setup header Data
 			$this->data['thisItem']['league_id'] = $this->dataModel->league_id;
@@ -315,14 +325,13 @@ class team extends BaseEditor {
 				$this->data['thisItem']['players_injured'] = $players[2];
 			}
 			// PLAYOFF ROSTER ALERT MESSAGE
-			if ($this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD && ($this->params['config']['current_period']== $this->league_model->regular_scoring_periods && intval($this->league_model->playoff_rounds) > 0)) {
+			if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && ($configPeriodId== $this->league_model->regular_scoring_periods && intval($this->league_model->playoff_rounds) > 0)) {
 				$this->data['thisItem']['playoffsNext'] = 1;
 				$this->data['thisItem']['playoffsTrans'] = $this->league_model->allow_playoff_trans;
 				$this->data['thisItem']['playoffsTrades'] = $this->league_model->allow_playoff_trades;
 			}
 			
-			$this->data['showAdmin'] = (($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $this->params['config']['current_period']) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
-			$total_periods = intval($this->league_model->regular_scoring_periods) + intval($this->league_model->playoff_rounds);
+			$this->data['showAdmin'] = (($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $configPeriodId) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
 			if (($curr_period['id']) >= $total_periods) $this->data['showAdmin'] = false;
 			
 			$this->params['content'] = $this->load->view($this->views['LINEUP'], $this->data, true);
@@ -2500,26 +2509,33 @@ class team extends BaseEditor {
 			} // END foreach
 		}
 
-		if (!function_exists('getScoringPeriod')) {
-			$this->load->helper('admin');
-		}
-
-		$curr_period_id = 1;
-		if (isset($this->uriVars['period_id'])) {
-			$curr_period_id = $this->uriVars['period_id'];
-			$curr_period = getScoringPeriod($curr_period_id);
-		} else {
-			$curr_period = $this->getScoringPeriod();
-			$curr_period_id = $curr_period['id'];
-		}
-		$this->data['curr_period'] = $curr_period_id;
-
-		$this->data['league_id']  = $this->dataModel->league_id;
 		if (!isset($this->league_model)) {
 			$this->load->model('league_model');
 		}
 		$this->league_model->load($this->data['league_id']);
-		
+		$this->data['league_id']  = $this->dataModel->league_id;
+		if (!function_exists('getScoringPeriod')) {
+			$this->load->helper('admin');
+		}
+		$scoring_type = $this->league_model->getScoringType();
+		$total_periods = 0;
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			$total_periods = intval($this->league_model->regular_scoring_periods)+ intval($this->league_model->playoff_rounds);
+		} else {
+			$total_periods = getScoringPeriodCount();
+		}
+		$configPeriodId = intval($this->params['config']['current_period']);	
+
+		if ($configPeriodId == 1) {
+			$curr_period_id = 1;
+		} else if ($configPeriodId > 1 && $configPeriodId <= $total_periods) {
+			$curr_period_id = $configPeriodId-1;
+		} else {
+			$curr_period_id = $total_periods;
+		}
+		$curr_period = getScoringPeriod($curr_period_id);
+		$this->data['curr_period'] = $curr_period_id;
+
 		$this->data['thisItem']['teamList'] = $this->league_model->getTeamDetails();
 		$this->data['thisItem']['transactions'] = $this->league_model->getLeagueTransactions(5,0,$this->data['thisItem']['team_id'],$this->data['league_id']);
 		$this->data['showEffective']  = -1;
@@ -2554,16 +2570,16 @@ class team extends BaseEditor {
 
 		$this->prepForQuery();
 		
-		$this->data['batters'] = $this->dataModel->getBatters(-1, false, -999);
-		$this->data['pitchers'] = $this->dataModel->getPitchers(-1, false, -999);
+		$this->data['batters'] = $this->dataModel->getBatters($curr_period_id, false, -999);
+		$this->data['pitchers'] = $this->dataModel->getPitchers($curr_period_id, false, -999);
 		
 		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
 			$sort = ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) ? 'fpts' : 'rating';
-			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules, $this->data['batters'], null,
-			'all', false, QUERY_BASIC, -1, 3, 0, $sort);
-			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules, $this->data['pitchers'], null,
-			'all', false, QUERY_BASIC, -1, 3, 0,false, $sort);
-
+			$stats['batters'] = $this->dataModel->getTeamStats(false,$this->dataModel->id, 1, NULL,NULL,1,$curr_period_id,0,3,0, $this->ootp_league_model->league_id,
+																$this->ootp_league_model->current_date,$this->rules,$this->data['batters'],NULL,NULL,$sort);
+			$stats['pitchers'] = $this->dataModel->getTeamStats(false,$this->dataModel->id, 2, NULL,NULL,1,$curr_period_id,0,3,0, $this->ootp_league_model->league_id,
+																$this->ootp_league_model->current_date,$this->rules,$this->data['pitchers'],NULL,NULL,$sort);
+			
 			$this->data['limit'] = 3;
 			$this->data['startIndex'] = 0;
 			
@@ -2578,13 +2594,13 @@ class team extends BaseEditor {
 		}
 		$this->data['scoring_type'] = $scoring_type;
 		// GET UPCOMING GAMES
-		$this->data['upcomingOpponent'] = $this->dataModel->getUpcomingGames($curr_period_id);
+		$this->data['upcomingOpponent'] = $this->dataModel->getUpcomingGames($configPeriodId);
 		// GET MOST RECENT GAMES
-		if ($curr_period_id > 1) {
+		/*if ($curr_period_id > 1) {
 			$curr_period_id = $curr_period_id-1;
 		} else {
 			$curr_period_id = 1;
-		}
+		}*/
 		$this->data['standings'] = $this->league_model->getLeagueStandings($curr_period_id);
 		
 		$this->data['gamePeriod'] = $curr_period_id;
@@ -2618,21 +2634,25 @@ class team extends BaseEditor {
 		$this->makeNav();
 
 		// EDIT 1.0.3 PROD - PLAYOFFS BANNER
-		$this->data['playoffs'] = array();
-		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && inPlayoffPeriod($this->params['config']['current_period'], $this->data['league_id'])) {
-			$this->data['playoffs']['league_year'] = date('Y', strtotime($curr_period['date_start']));
-			$this->data['playoffs']['league_name'] = $this->league_model->league_name;
+		$playoffArr = array();
+		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+			if (inPlayoffPeriod($configPeriodId, $this->data['league_id'])) {
+				$playoffArr['inPlayoffs']= 1;
+				$playoffArr['league_year'] = date('Y', strtotime($curr_period['date_start']));
+				$playoffArr['league_name'] = $this->league_model->getLeagueName($this->data['league_id']);
+			}
+			$playoffSettings = $this->league_model->getPlayoffSettings($this->data['league_id']);
+			if ($configPeriodId == $playoffSettings['regular_scoring_periods'] && $playoffSettings['playoff_rounds'] > 0) {
+				$playoffArr['playoffsNext'] = 1;
+				$playoffArr['playoffsTrades'] = $playoffSettings['allow_playoff_trades'];
+			}
+			$playoffArr['playoffsTrans'] = $playoffSettings['allow_playoff_trans'];
 		}
-		// PLAYOFF ROSTER ALERT MESSAGE
-		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD && ($this->params['config']['current_period']== $this->league_model->regular_scoring_periods && intval($this->league_model->playoff_rounds) > 0)) {
-			$this->data['thisItem']['playoffsNext'] = 1;
-			$this->data['thisItem']['playoffsTrans'] = $this->league_model->allow_playoff_trans;
-			$this->data['thisItem']['playoffsTrades'] = $this->league_model->allow_playoff_trades;
-		}
+		$this->data['playoffs'] = $playoffArr;
 
 		// UPCOMING STARTERS
-		$this->data['thisItem']['pitchers'] = $this->dataModel->getPitchers($curr_period['id'], $this->dataModel->id, -999);
-		$this->data['thisItem']['schedules'] = getPlayerSchedules($this->dataModel->getCompleteRoster($curr_period['id']),$curr_period['date_start'],$this->params['config']['sim_length']);
+		$this->data['thisItem']['pitchers'] = $this->dataModel->getPitchers($configPeriodId, $this->dataModel->id, -999);
+		$this->data['thisItem']['schedules'] = getPlayerSchedules($this->dataModel->getCompleteRoster($configPeriodId),$curr_period['date_start'],$this->params['config']['sim_length']);
 		$this->data['thisItem']['team_list'] = getOOTPTeams($this->params['config']['ootp_league_id'],false);
 		
 		parent::showInfo();

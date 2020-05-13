@@ -2170,7 +2170,7 @@ class league_model extends base_model {
 		asort($periods);
 		return $periods;
 	}
-	public function getAvailableRosterPeriods($league_id = false) {
+	public function getAvailableRosterPeriods($league_id = false, $total_periods = false) {
 		if ($league_id === false) { $league_id = $this->id; }
 		$periods = array();
 
@@ -2188,9 +2188,14 @@ class league_model extends base_model {
 		$this->db->where('league_id',$league_id);
 		$this->db->group_by('scoring_period_id');
 		$query = $this->db->get('fantasy_rosters');
+		$count = 0;
 		if ($query->num_rows() > 0) {
+			if ($total_periods === false) $maxcount = $query->num_rows(); else $maxcount = $total_periods;
 			foreach ($query->result() as $row) {
-				array_push($periods,$row->scoring_period_id);
+				if ($count < $maxcount) {
+					array_push($periods,$row->scoring_period_id);
+					$count++;
+				}
 			}
 		}
 		$query->free_result();

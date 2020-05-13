@@ -1,5 +1,5 @@
     <?php
-    if (isset($playoffs) && sizeof($playoffs) > 0) { ?>
+    if (isset($playoffs) && $playoffs['inPlayoffs'] == 1) { ?>
         <div id="single-column"><div class="playoff_banner show"><h2><?php echo($playoffs['league_year']." ".$playoffs['league_name']); ?> Playoffs</h2></div></div>
     <?php
     }
@@ -141,7 +141,7 @@
         /*------------------------------------------------
 		/	LEAGUE PLAYOFF ALERT BOX FOR H2H
         /-----------------------------------------------*/
-        if (isset($thisItem['playoffsNext']) && $thisItem['playoffsNext'] == 1) {
+        if (isset($playoffs) && $playoffs['playoffsNext'] == 1) {
         ?>
         <div class='textbox right-column'>
                 <table cellpadding="0" cellspacing="0">
@@ -156,14 +156,14 @@
             <tbody>
                 <tr>
                     <td style="padding:6px;"><?php
-                    if ($thisItem['playoffsTrans'] == -1 || $thisItem['playoffsTrades'] == -1) { ?>
+                    if ($playoffs['playoffsTrans'] == -1 || $playoffs['playoffsTrades'] == -1) { ?>
                     <span class="notice"><b>NOTE:</b> The following transactions are disabled in your League during the Playoffs:
                     <ul>
-                    <?php if ($thisItem['playoffsTrans'] == -1 ) { ?>
+                    <?php if ($playoffs['playoffsTrans'] == -1 ) { ?>
                         <li>Add/Drops</li>
                     <?php
                     }
-                    if ($thisItem['playoffsTrades'] == -1 ) { ?>
+                    if ($playoffs['playoffsTrades'] == -1 ) { ?>
                         <li>Trades</li>
                     <?php
                     }
@@ -171,7 +171,7 @@
                     </ul>
                     </span>
                     <?php
-                    }// END  if ($thisItem['playoffsTrans'] == -1
+                    }// END  if ($playoffs['playoffsTrans'] == -1
                     echo("Be sure to make all approriate roster transactions to be ready before the next scoring period.");
                     ?></td>
                 </tr>
@@ -180,7 +180,7 @@
         </div>
         
         <?php
-        } // END if (isset($thisItem['playoffsNext'])
+        } // END if (isset($playoffs['playoffsNext'])
 		/*------------------------------------------------
 		/	DRAFT MODULE
 		/-----------------------------------------------*/
@@ -230,7 +230,7 @@
         <div class='textbox right-column'>
             <table cellpadding="5" cellspacing="0">
             <tr class='title'>
-                <td colspan='5'>Standings</td>
+                <td colspan='5'><?php if (isset($total_periods) && $configPeriodId > $total_periods) { echo("Final "); } ?>Standings</td>
             </tr>
             <?php
         if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
@@ -367,7 +367,8 @@
 		/	WAIVER ORDER BOX
 		/	Displays if Waivers are enabled
 		/---------------------------------------------------*/
-		if ((isset($useWaivers) && $useWaivers == 1)) {
+        if ((isset($useWaivers) && $useWaivers == 1) && $configPeriodId <= $total_periods && 
+            (isset($playoffs['inPlayoffs']) && $playoffs['inPlayoffs'] == 1 && $playoffs['playoffsTrans'] == 1)) {
         ?>
         <div class='textbox right-column'>
         <table cellpadding="3" cellspacing="0">

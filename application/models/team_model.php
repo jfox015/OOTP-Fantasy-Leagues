@@ -898,7 +898,7 @@ class team_model extends base_model {
 	/----------------------------------------------*/
 	public function getTeamStats($countOnly = false, $team_id = false, $player_type=1, $position_type = -1,
 								 $role_type = -1, $stats_range = 1, $scoring_period_id = -1, $min_var = 0, $limit = -1, $startIndex = 0, $ootp_league_id = false, $ootp_league_date = false, $rules = array(),
-								 $includeList = array(), $searchType = 'all', $searchParam = -1) {
+								 $includeList = array(), $searchType = 'all', $searchParam = -1, $sortOrder = false) {
 		$stats = array();
 		$players = array();
 		if ($team_id === false) $team_id = $this->team_id;
@@ -931,7 +931,7 @@ class team_model extends base_model {
 					$where.="AND players.position = ".$position_type." ";
 				}
 			}
-			$order = 'ab';
+			$order = ($sortOrder !== false) ? $sortOrder : 'ab';
 			if ($min_var != 0) {
 				$where .= 'AND '.$tblName.'.ab >= '.$min_var." ";
 			}
@@ -946,7 +946,7 @@ class team_model extends base_model {
 			if (!empty($role_type) && $role_type != -1) {
 				$where.="AND players.role = ".$role_type." ";
 			}
-			$order = 'ip';
+			$order = ($sortOrder !== false) ? $sortOrder : 'ip';
 			if ($min_var != 0) {
 				$where .= 'AND '.$tblName.'.ip >= '.$min_var." ";
 			}
