@@ -130,32 +130,69 @@ class user_meta_model extends base_model {
 		return $this->db->count_all_results();
 	}
 
-	public function getUserTeams($league_id = false, $userId = false, $scoring_period_id = false) {
+	public function getUserTeams($league_id = false, $userId = false, $curr_period_id = false) {
 
 		if ($userId === false) $userId = $this->userId;
 
-		$teamList = array();
-		$select = $this->tables['TEAMS'].'.id, teamname, teamnick, fantasy_teams.avatar, fantasy_teams.league_id, league_name, league_type, commissioner_id';
-		$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = fantasy_teams.league_id', 'left');
+		if (!function_exists('getScoringPeriodCount')) {
+			$this->load->helper('admin');
+		}
+		$leagueList = array();
+		$this->db->flush_cache();
+		$this->db->select('id, regular_scoring_periods, playoff_rounds, league_type');
 		if ($league_id !== false) {
-			$this->db->where($this->tables['TEAMS'].'.league_id', $league_id);
+			$this->db->where('id', $league_id);
 		}
-        if ($scoring_period_id !== false) {
-			$select .= ',w,l,pct,gb,fantasy_teams_scoring.total';
-			$this->db->join('fantasy_teams_record','fantasy_teams_record.team_id = fantasy_teams.id', 'left');
-			$this->db->join('fantasy_teams_scoring','fantasy_teams_scoring.team_id = fantasy_teams.id', 'left');
-			$this->db->where('(fantasy_teams_scoring.scoring_period_id = '.$scoring_period_id.' OR fantasy_teams_record.scoring_period_id = '.$scoring_period_id.")");
-		}
-		$this->db->select($select);
-		$this->db->where('owner_id', $userId);
-		$query = $this->db->get($this->tables['TEAMS']);
+		$query = $this->db->get($this->tables['LEAGUES']);
 		//echo($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				array_push($teamList,array('id'=>$row->id, 'teamname'=>$row->teamname,'teamnick'=>$row->teamnick,'avatar'=>$row->avatar,
-										   'league_id'=>$row->league_id,'league_name'=>$row->league_name,'league_type'=>$row->league_type,
-										   'commissioner_id'=>$row->commissioner_id,'w'=>$row->w,'l'=>$row->l,'pct'=>$row->pct,'gb'=>$row->gb,
-										   'total'=>$row->total));
+			foreach ($query->result() as $row) {
+				$league = array('id'=>$row->id);
+				if ($row->league_type == LEAGUE_SCORING_HEADTOHEAD) {
+					$league['total_periods'] = intval($row->regular_scoring_periods)+ intval($row->playoff_rounds);
+				} else {
+					$league['total_periods'] = getScoringPeriodCount();
+				}
+				array_push($leagueList, $league);
+			}
+		}
+
+		$teamList = array();
+		if (sizeof($leagueList) > 0) {
+			foreach($leagueList as $league) {
+				$scoring_period_id = $curr_period_id;
+				if ($curr_period_id !== false && $curr_period_id > $league['total_periods']) {
+					$scoring_period_id = $league['total_periods'];
+				}
+				$select = $this->tables['TEAMS'].'.id, teamname, teamnick, fantasy_teams.avatar, fantasy_teams.league_id, league_name, league_type, commissioner_id';
+				$this->db->join($this->tables['LEAGUES'],$this->tables['LEAGUES'].'.id = fantasy_teams.league_id', 'left');
+				$this->db->where($this->tables['TEAMS'].'.league_id', $league['id']);
+				if ($scoring_period_id !== false) {
+					$select .= ',w,l,pct,gb,fantasy_teams_scoring.total';
+					$this->db->join('fantasy_teams_record','fantasy_teams_record.team_id = fantasy_teams.id', 'left');
+					$this->db->join('fantasy_teams_scoring','fantasy_teams_scoring.team_id = fantasy_teams.id', 'left');
+					$this->db->where('(fantasy_teams_scoring.scoring_period_id = '.$scoring_period_id.' OR fantasy_teams_record.scoring_period_id = '.$scoring_period_id.")");
+				}
+				$this->db->select($select);
+				$this->db->where('owner_id', $userId);
+				$query = $this->db->get($this->tables['TEAMS']);
+				//echo($this->db->last_query()."<br />");
+				if ($query->num_rows() > 0) {
+					foreach($query->result() as $row) {
+						$team = array('id'=>$row->id, 'teamname'=>$row->teamname,'teamnick'=>$row->teamnick,'avatar'=>$row->avatar,
+						'league_id'=>$row->league_id,'league_name'=>$row->league_name,'league_type'=>$row->league_type,
+						'commissioner_id'=>$row->commissioner_id);
+						if ($scoring_period_id !== false) {
+							$team['w']=$row->w;
+							$team['l']=$row->l;
+							$team['pct']=$row->pct;
+							$team['gb']=$row->gb;
+							$team['total']=$row->total;
+						}
+						array_push($teamList,$team);
+					}
+				}
+				$query->free_result();
 			}
 		}
 		return $teamList;
