@@ -50,6 +50,7 @@ function display_setup_form( $error = null ) {
 			    <?php
 			    $timezone_identifiers = DateTimeZone::listIdentifiers();
 				$continent = "";
+				$city = "";
 				foreach( $timezone_identifiers as $value ){
 					if ( preg_match( '/^(Africa|America|Antartica|Arctic|Asia|Atlantic|Europe|Indian|Pacific)\//', $value ) ){
 			            $ex=explode("/",$value);//obtain continent,city
@@ -62,7 +63,8 @@ function display_setup_form( $error = null ) {
 							echo '<optgroup label="'.$ex[0].'">';
 							$continent=$ex[0];
 						}
-						$city=$ex[1];
+						if ($city == "" || ($city != "" && $city != trim($ex[1])))
+							$city=trim($ex[1]);
 			            echo '<option value="'.$value.'">'.$city.'</option>';
 			        }
 			    }

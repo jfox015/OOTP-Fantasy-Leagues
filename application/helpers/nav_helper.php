@@ -52,7 +52,7 @@ function about_nav($bug_link = "") {
 	} else {
 		$bug_url = '/about/bug_report';
 	}
-	array_push($nav,array('url'=>$bug_url,'label'=>'Report a Bug'));
+	array_push($nav,array('url'=>$bug_url,'label'=>'Report a Bug', 'target'=>'_new'));
 	return $nav;
 }
 

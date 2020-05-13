@@ -2047,11 +2047,11 @@ class league extends BaseEditor {
 		if ((!isset($this->mode) || (isset($this->mode) && $this->mode != 'edit')) && $this->data['accessLevel'] < ACCESS_ADMINISTRATE) {
 			if (getFantasyStatus() != 1) {
 				$this->outMess = '<span class="warn">Leagues cannot be created anymore once a Fantasy Season has begun play. Please wait until the current Fantasy Season has concluded to try and create a new League.</span>';	
-				$this->status= 1;
+				$this->status = 1;
 			} else {
 				if ($this->params['config']['users_create_leagues'] != 1) {
 					$this->outMess = '<span class="error">We\'re sorry. Members of this site are not allowed to create their own Leagues. Only an Administrator can create new Leagues.</span>';	
-					$this->status =1;
+					$this->status = 1;
 				} else {
 					$leagueCount = $this->dataModel->userLeagueCount($this->params['currUser']);
 					if ($leagueCount > 0 && $leagueCount >= $this->params['config']['max_user_leagues']) {
@@ -2060,6 +2060,13 @@ class league extends BaseEditor {
 					} // END if
 				} // END if
 			} // END if
+		} // END if
+		if (!function_exists('getScoringPeriodCount')) {
+			$this->load->helper('admin');
+		}
+		if (sizeof($this->ootp_league_model->getMissingTables()) > 0 || getScoringPeriodCount() == 0) {
+			$this->outMess = '<span class="error">Leagues cannot be created until the Site Adminstrator has completed the intial setup of the site. Please try again soon.</span>';	
+			$this->status = 1;
 		} // END if
 		if ($this->status == -1) {
 

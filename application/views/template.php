@@ -112,6 +112,9 @@
 						if (isset($menuItem['id'])) {
 							$attr = $attr + array('id'=>$menuItem['id']);
 						}
+						if (isset($menuItem['target'])) {
+							$attr = $attr + array('target'=>$menuItem['target']);
+						}
 						echo '<li>'.anchor($menuItem['url'],$menuItem['label'],$attr);
 					} else {
 						echo('<li class="label'.$xtraClass.'"'.$id.'>'.$menuItem['label']);

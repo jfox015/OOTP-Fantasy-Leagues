@@ -435,7 +435,6 @@
 				}
 				?>
 				<br clear="all" class="clear" />
-				</div>
 
 			</div> 	
         </div>
