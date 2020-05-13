@@ -301,13 +301,13 @@ class team extends BaseEditor {
 			} // END if
 			
 			$formattedStats = array();
-			$stats['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules);
+			$stats['pitchers'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 2, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules, NULL, NULL, NULL, NULL, QUERY_COMPACT);
 			$this->data['colnames']['pitchers']=player_stat_column_headers(2, QUERY_COMPACT, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, true, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['fields'] = player_stat_fields_list(2, QUERY_COMPACT, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, true, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD, false, true);
 			$this->data['formattedStats']['pitchers'] = formatStatsForDisplay($stats['pitchers'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
 			
 			// BATTERS
-			$stats['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules);
+			$stats['batters'] = $this->dataModel->getTeamStats(false,$this->data['team_id'], 1, NULL,NULL,$this->data['stats_range'],$periodForQuery,0,-1,0,$this->ootp_league_model->league_id,$this->ootp_league_model->current_date,$this->rules, NULL, NULL, NULL, NULL, QUERY_COMPACT);
 			$this->data['colnames']['batters']=player_stat_column_headers(1, QUERY_COMPACT, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, true, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD);
 			$this->data['fields'] = player_stat_fields_list(1, QUERY_COMPACT, $this->rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD, true, false, false, false, $this->rules['scoring_type'] != LEAGUE_SCORING_HEADTOHEAD, false, true);
 			$this->data['formattedStats']['batters'] = formatStatsForDisplay($stats['batters'], $this->data['fields'], $this->params['config'],$this->data['league_id'], NULL, NULL, false, true);
@@ -2568,17 +2568,24 @@ class team extends BaseEditor {
 		$this->data['year'] = $this->data['lgyear'];
 		$this->data['league_id']  = $this->dataModel->league_id;
 
-		$this->prepForQuery();
+		$date1 = new DateTime($this->ootp_league_model->current_date);
+		$date2 = new DateTime($this->ootp_league_model->start_date);
+		$stats_range = -1;
+		// IF PRE-SEASON, USE LAST YEARS STATS
+		if ($date1 <= $date2 || $curr_period_id <= 1) {
+			$stats_range = 1;
+			$periodForQuery = -1;
+		} // END if
 		
 		$this->data['batters'] = $this->dataModel->getBatters($curr_period_id, false, -999);
 		$this->data['pitchers'] = $this->dataModel->getPitchers($curr_period_id, false, -999);
 		
 		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
 			$sort = ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) ? 'fpts' : 'rating';
-			$stats['batters'] = $this->dataModel->getTeamStats(false,$this->dataModel->id, 1, NULL,NULL,1,$curr_period_id,0,3,0, $this->ootp_league_model->league_id,
-																$this->ootp_league_model->current_date,$this->rules,$this->data['batters'],NULL,NULL,$sort);
-			$stats['pitchers'] = $this->dataModel->getTeamStats(false,$this->dataModel->id, 2, NULL,NULL,1,$curr_period_id,0,3,0, $this->ootp_league_model->league_id,
-																$this->ootp_league_model->current_date,$this->rules,$this->data['pitchers'],NULL,NULL,$sort);
+			$stats['batters'] = $this->dataModel->getTeamStats(false,$this->dataModel->id, 1, NULL,NULL,$stats_range,$periodForQuery,0,3,0, $this->ootp_league_model->league_id,
+																$this->ootp_league_model->current_date,$this->rules,$this->data['batters'],NULL,NULL,$sort, QUERY_BASIC);
+			$stats['pitchers'] = $this->dataModel->getTeamStats(false,$this->dataModel->id, 2, NULL,NULL,$stats_range,$periodForQuery,0,3,0, $this->ootp_league_model->league_id,
+																$this->ootp_league_model->current_date,$this->rules,$this->data['pitchers'],NULL,NULL,$sort, QUERY_BASIC);
 			
 			$this->data['limit'] = 3;
 			$this->data['startIndex'] = 0;

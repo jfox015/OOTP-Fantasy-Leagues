@@ -897,8 +897,9 @@ class team_model extends base_model {
 	/	STATS
 	/----------------------------------------------*/
 	public function getTeamStats($countOnly = false, $team_id = false, $player_type=1, $position_type = -1,
-								 $role_type = -1, $stats_range = 1, $scoring_period_id = -1, $min_var = 0, $limit = -1, $startIndex = 0, $ootp_league_id = false, $ootp_league_date = false, $rules = array(),
-								 $includeList = array(), $searchType = 'all', $searchParam = -1, $sortOrder = false) {
+								 $role_type = -1, $stats_range = 1, $scoring_period_id = -1, $min_var = 0, $limit = -1, $startIndex = 0, 
+								 $ootp_league_id = false, $ootp_league_date = false, $rules = array(),
+								 $includeList = array(), $searchType = 'all', $searchParam = -1, $sortOrder = false, $queryType = QUERY_STANDARD) {
 		$stats = array();
 		$players = array();
 		if ($team_id === false) $team_id = $this->team_id;
@@ -918,9 +919,9 @@ class team_model extends base_model {
 		$where = '';
 		if ($player_type == 1) {
 			if ($stats_range == 4) {
-				$sql .= player_stat_query_builder(1, QUERY_STANDARD, $rules, false)." ";
+				$sql .= player_stat_query_builder(1, $queryType, $rules, false)." ";
 			} else {
-				$sql .= player_stat_query_builder(1, QUERY_STANDARD, $rules)." ";
+				$sql .= player_stat_query_builder(1, $queryType, $rules)." ";
 			}
 			$tblName = "players_career_batting_stats";
 			$where = "AND players.position <> 1 ";
@@ -937,9 +938,9 @@ class team_model extends base_model {
 			}
 		} else {
 			if ($stats_range == 4) {
-				$sql .= player_stat_query_builder(2, QUERY_STANDARD, $rules, false)." ";
+				$sql .= player_stat_query_builder(2, $queryType, $rules, false)." ";
 			} else {
-				$sql .= player_stat_query_builder(2, QUERY_STANDARD, $rules)." ";
+				$sql .= player_stat_query_builder(2, $queryType, $rules)." ";
 			}
 			$tblName = "players_career_pitching_stats";
 			$where = " ";
