@@ -43,7 +43,7 @@
 			$form->space();
             $form->text('sim_length','Sim length <span class="normal">(In Days)</span>','required|trim|number',($input->post('sim_length') ? $input->post('sim_length') : $config['sim_length']),array('class'=>'shorttext'));
             $form->nobr();
-			$form->span("This is the default sim lanegth for the league the mod uses to build scoring period schedules. You can edit the length of each scoring period from the game dashboard.",array('class'=>'field_caption'));
+			$form->span("This is the default sim length for the league the mod uses to build scoring period schedules. You can edit the length of each scoring period from the game dashboard.",array('class'=>'field_caption'));
 			$form->space();
             $form->select('default_scoring_periods|default_scoring_periods',array(27=>27,26=>26,25=>25,24=>24,23=>23,22=>22,21=>21,20=>20,19=>19,18=>18),'Default No. Scoring Periods',($this->input->post('default_scoring_periods')) ? $this->input->post('default_scoring_periods') : $config['default_scoring_periods'],'required');
 			$form->br();

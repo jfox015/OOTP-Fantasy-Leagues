@@ -2538,7 +2538,7 @@ class team extends BaseEditor {
 		if (!isset($this->league_model)) {
 			$this->load->model('league_model');
 		}
-		$this->league_model->load($this->data['league_id']);
+		$this->league_model->load($this->dataModel->league_id);
 		$this->data['league_id']  = $this->dataModel->league_id;
 		if (!function_exists('getScoringPeriod')) {
 			$this->load->helper('admin');
@@ -2598,7 +2598,7 @@ class team extends BaseEditor {
 		$date2 = new DateTime($this->ootp_league_model->start_date);
 		$stats_range = -1;
 		// IF PRE-SEASON, USE LAST YEARS STATS
-		if ($date1 <= $date2 || $curr_period_id <= 1) {
+		if ($date1 <= $date2 || $configPeriodId <= 1) {
 			$stats_range = 1;
 			$periodForQuery = -1;
 		} // END if
@@ -2663,6 +2663,9 @@ class team extends BaseEditor {
 		}
 
 		// INJURED PLAYERS
+		if (!isset($this->player_model)) {
+			$this->load->model('player_model');
+		}
 		$this->data['injured_list'] = $this->player_model->getInjuredPlayers($curr_period, $this->dataModel->id);
 		$this->makeNav();
 

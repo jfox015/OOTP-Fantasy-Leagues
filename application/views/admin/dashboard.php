@@ -478,7 +478,7 @@
 		<?php 
 		$strOut = 'Leagues Status';
 		if ($currDate <= $startDate) { 
-			$strOut = "Pre-Season".$strOut;
+			$strOut = "Pre-Season ".$strOut;
 		}
 		echo($strOut);
 		?> 

@@ -404,7 +404,7 @@ class player_model extends base_model {
 	 */
 	public function getInjuredPlayers($score_period = false, $team_id = false, $idsOnly = false) {
 
-		if ($scoring_period_id === false) { $scoring_period_id = 1; }
+		if ($score_period === false) { $score_period = array('id'=>1) ; }
 		
 		$playerIds = "";
 		$players = array();

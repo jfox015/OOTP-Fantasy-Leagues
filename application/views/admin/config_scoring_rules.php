@@ -73,10 +73,10 @@
 	    </tr>
 	    <tr>
 	    	<td>  
-				<table cellpadding="0" cellspacing="0" border="0" style="width:560px;">
+				<table cellpadding="0" cellspacing="0" style="width:560px;">
 				<tr>
 					<td width="50%">
-					<table cellpadding="2" cellspacing="0" border="0" style="width:100%;">
+					<table cellpadding="2" cellspacing="0" style="width:100%;">
 				    <tr class='headline'>
 				    	<td width="70%">Batting Category</td>
 						<td width="35%">Points</td>
@@ -102,7 +102,7 @@
 							} ?>
 						</select></td>
                         
-						<td class="hsc2_r" align="center"><input type="text" name="batting_value_<?php echo($statCount); ?>" size="6"<?php print($disabled); ?> 
+						<td class="hsc2_c"><input type="text" name="batting_value_<?php echo($statCount); ?>" size="6"<?php print($disabled); ?> 
                         value="<?php $field_val = $input->post('batting_value_'.$statCount); if (isset($field_val) && !empty($field_val)) { echo($field_val); } else { echo($val); } ?>" class="styledTextBox" />
                         <?php if ($statCount <= $requiredCount) { echo('<span style="color:#C00;font-weight:bold;">*</span>'); } ?>
                         </td>
@@ -118,14 +118,14 @@
 						<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
 	                    
 					    	<td class="hsc2_l"><select name="batting_type_<?php echo($statCount); ?>" id="batting_type_<?php echo($statCount); ?>">
-								<option value="-1" selected="selected" />
+								<option value="-1" selected="selected"></option>
 								<?php if (isset($stats_batting) && sizeof($stats_batting) > 0) { 
 									foreach($stats_batting as $statId => $stat) { 
 										echo('<option value="'.$statId.'">'.$stat.'</option>');
 									}
 								} ?>
 							</select></td></td>
-							<td class="hsc2_r" align="center"><input type="text" name="batting_value_<?php echo($statCount); ?>" size="6"<?php print($disabled); ?>  value="-1" class="styledTextBox" /></td>
+							<td class="hsc2_c"><input type="text" name="batting_value_<?php echo($statCount); ?>" size="6"<?php print($disabled); ?>  value="-1" class="styledTextBox" /></td>
 						</tr>
 						<?php 
 						$rowCount++;
@@ -142,7 +142,7 @@
 					/****************************************/
 					$statCount = 0;
 					?>
-					<table cellpadding="2" cellspacing="0" border="0" style="width:100%;">
+					<table cellpadding="2" cellspacing="0" style="width:100%;">
 					<tr class='headline'>	
 						<td>Pitching Category</td>
 						<td>Points</td>
@@ -153,7 +153,7 @@
 					<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
                     
 				    	<td class="hsc2_l"><select name="pitching_type_<?php echo($statCount); ?>"  id="pitching_type_<?php echo($statCount); ?>">
-							<option value="" />
+							<option value=""></option>
 							<?php 
 							if (isset($stats_pitching) && sizeof($stats_pitching) > 0) { 
 								foreach($stats_pitching as $statId => $stat) { 
@@ -164,7 +164,7 @@
 							} 
 							?>
 						</select></td>
-						<td class="hsc2_r" align="center"><input type="text" name="pitching_value_<?php echo($statCount); ?>" size="6"<?php print($disabled); ?>  
+						<td class="hsc2_c"><input type="text" name="pitching_value_<?php echo($statCount); ?>" size="6"<?php print($disabled); ?>  
                         value="<?php $field_val = $input->post('pitching_value_'.$statCount); if (isset($field_val) && !empty($field_val)) { echo($field_val); } else { echo($val); } ?>" class="styledTextBox" />
                         <?php if ($statCount <= $requiredCount) { echo('<span style="color:#C00;font-weight:bold;">*</span>'); } ?>
                         </td>
@@ -178,14 +178,14 @@
 						<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
 	                    
 					    	<td class="hsc2_l"><select name="pitching_type_<?php echo($statCount); ?>"  id="pitching_type_<?php echo($statCount); ?>">
-								<option value="-1" selected="selected" />
+								<option value="-1" selected="selected"></option>
 								<?php if (isset($stats_pitching) && sizeof($stats_pitching) > 0) { 
 									foreach($stats_pitching as $statId => $stat) { 
 										echo('<option value="'.$statId.'">'.$stat.'</option>');
 									}
 								} ?>
 							</select></td></td>
-							<td class="hsc2_r" align="center"><input type="text" name="pitching_value<?php echo($statCount); ?>" size="6"<?php print($disabled); ?>  value="-1" class="styledTextBox" /></td>
+							<td class="hsc2_c"><input type="text" name="pitching_value<?php echo($statCount); ?>" size="6"<?php print($disabled); ?>  value="-1" class="styledTextBox" /></td>
 						</tr>
 						<?php 
 						$rowCount++;
@@ -196,7 +196,7 @@
 				</td>
         </tr>
 		<tr>
-            <td align="center" colspan="3"><input type="button" id="submitButton" name="submitButton" value="Save Changes" class="button" /></td>
+            <td class="hsc2_c" colspan="3"><input type="button" id="submitButton" name="submitButton" value="Save Changes" class="button" /></td>
         </tr>
         </table>
             </td>
@@ -209,7 +209,7 @@
 	</div>
 	<div id="right-column">
     	<div class='textbox'>
-        <table cellpadding="2" cellspacing="0" border="0" style="width:225px;">
+        <table cellpadding="2" cellspacing="0" style="width:225px;">
         <tr class='title'>
             <td width="100%">Scoring Type</td>
         </tr>
