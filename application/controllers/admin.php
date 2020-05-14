@@ -1413,6 +1413,30 @@ class admin extends MY_Controller {
 		$this->output->set_output($result);
 	}
 
+	public function copyRosters() {
+		$this->getURIData();
+		$result = '';
+		$this->load->model('league_model');
+		if (isset($this->uriVars['osp']))
+			$old_scoring_period = $this->uriVars['osp'];
+		if (isset($this->uriVars['nsp']))
+			$new_scoring_period = $this->uriVars['nsp'];
+		if (isset($this->uriVars['league_id']))
+			$league_id = $this->uriVars['league_id'];
+
+		$status = $this->league_model->copyRosters($old_scoring_period, $new_scoring_period, $league_id);
+		if ($status === false) {
+			$code = 300;
+			$result = "error";
+			$status .= " The roster update could not be completed.";
+		} else {
+			$code = 200;
+			$result = "success";
+		}
+		$result = '{"result":"'.$result.'","code":"'.$code.'","status":"'.$status.'"}';
+		$this->output->set_header('Content-type: application/json');
+		$this->output->set_output($result);
+	}
 	/**
 	 *	CREATE SCORING SCHEDULE.
 	 */

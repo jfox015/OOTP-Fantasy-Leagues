@@ -4,13 +4,13 @@ $lang['about_contact_body'] = 'Use the following form to contact the site owner 
 
 $lang['about_mod_title'] = 'About OOTP Fantasy Leagues';
 $lang['about_mod_body'] = 'OOTP Fantasy Leagues is a custom online mod designed to work
-with <a href="http://www.ootpdevelopments.com/ootp11/" target="_blank">Out of the Park Baseball</a> Version 10 and up.
+with <a href="https://www.ootpdevelopments.com/out-of-the-park-baseball-home/" target="_blank">Out of the Park Baseball</a>.
 <p />
 <h2>Technical Information</h2>
 <p />
 <ul>
-	<li><b>Code Framework:</b> <a href="http://codeigniter.com/" target="_blank">CodeIgniter</a> </li>
-	<li><b>Site Version:</b> [SITE_VERSION]</li>
+	<li><b>Version:</b> [SITE_VERSION]</li>
+	<li><b>Released:</b> [RELEASE_DATE]</li>
 	<li><b>License:</b> <a href="http://www.opensource.org/licenses/mit-license.php" target="_blank">MIT License</a> and <a href="http://www.gnu.org/licenses/gpl.html" target="_blank">GNU GENERAL PUBLIC LICENSE v3</a></li>
 	<li><b>Author(s):</b>
 	<b>Jeff Fox:</b> Creator, Lead Developer</li>
@@ -19,28 +19,31 @@ with <a href="http://www.ootpdevelopments.com/ootp11/" target="_blank">Out of th
 	<ul>
 		<li><b>Frank Esselink:</b> Developer of the <a
 		href="http://www.ootpdevelopments.com/board/ootp-mods-database-tools/185408-statslab-sql-utilities-ootpx.html"
-		target="_blank">StatsLab Online Utilities</a> mod for OOTP. Author of StatsLab SQL Utilities for OOTP and 
-		concurrently Getch&#039;s Online Utilities which inspired him. Frank�s work formed the basis for the 
-		overall HTML template, the stats display engine, draft functionality, MySQL data loading and player profile 
-		features. My thanks to Frank for graciously allowing me to borrow from his work</li>
+		target="_blank">StatsLab Online Utilities</a> mod for OOTP and concurrently Getch’s Online Utilities 
+		which inspired him. My thanks to Frank for graciously allowing me to incorporate portions of his StatsLab work into this mod.</li>
 		<li><b>Dave Williams:</b> OOTP mod artist, OOTP Fantasy league Logo</li>
 		<li><b>1.0.x Beta Testers</b>: (OOTP Forums ID in parens)<br />
-		<ul>
-			<li>William Thomas (Kagnew)</li>
-		</ul>
 		<br />
 		<b style="color:#c00;">Special thanks to the members of the <a href="http://pebabaseball.com/" target="_blank">Planetary Extreme Baseball Alliance</a> who helped test this utility.</b>
 		<ul>
-			<li><b>John Rodriguez (Corsairs)</b> - Commissioner of the <a href="http://pebabaseball.com/" target="_blank">PEBA</a></li>
-			<li>Pete Grassi (peteg9699) - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_79.html" target="_blank">London Underground</a> of the PEBA</li>
-			<li>Kevin Lewis - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_85.html" target="_blank">Florida Featherheads</a> of the PEBA</li>
-			<li>Tyler Babcock - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_87.html" target="_blank">West Virginia Coal Sox</a> of the PEBA</li>
-			<li>Michael Topham - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_85.html" target="_blank">Aurora Borealis</a> of the PEBA</li>
-			<li>Jim Lupin - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_3846.html" target="_blank">Lupin Cliff Hangers</a> of the PEBA</li>
-			<li>Bill McKenzie (tribefaninnc) - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_91.html" target="_blank">Duluth Warriors</a> of the PEBA</li>
-			<li>Paul Tanner - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_84.html" target="_blank">New Orleans Trendsetters</a> of the PEBA</li>
-			<li>Michael Czosnyka - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_81.html" target="_blank">New Jersey Hitmen</a> of the PEBA</li>
-			<li>Daniel DiVincenzo - Owner of the <a href="http://pebabaseball.com/reports/news/html/teams/team_77.html" target="_blank">Arlington Bureaucrats</a> of the PEBA</li>
+			<li><b>John Rodriguez (Corsairs)</b> - Former Commissioner of the <a href="http://pebabaseball.com/" target="_blank">PEBA</a></li>
+			<li>Pete Grassi (peteg9699)</li>
+			<li>Kevin Lewis</li>
+			<li>Tyler Babcock</li>
+			<li>Michael Topham</li>
+			<li>Jim Lupin</li>
+			<li>Bill McKenzie (tribefaninnc)</li>
+			<li>Paul Tanner</li>
+			<li>Michael Czosnyka</li>
+			<li>Daniel DiVincenzo</li>
+		</ul>
+		<b>Additional Beta testers:</b><br />
+		<ul>
+			<li>William Thomas (kagnew) – (RIP Bill)</li>
+			<li>Robbie Warburg (hobbitrjw)</li>
+			<li>Jordan Wilson</li>
+			<li>Chris Herzegovitch</li>
+			<li>John Sawitski</li>
 		</ul>
 	</ul></li>
 </ul>

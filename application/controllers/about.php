@@ -130,7 +130,8 @@ class about extends MY_Controller {
 	function mod() {
 		$this->makeNav();
 		$this->data['subTitle'] = $this->lang->line('about_mod_title');
-		$this->data['theContent'] = str_replace('[SITE_VERSION]',SITE_VERSION,$this->lang->line('about_mod_body'));
+		$copy = str_replace('[SITE_VERSION]',SITE_VERSION,$this->lang->line('about_mod_body'));
+		$this->data['theContent'] = str_replace('[RELEASE_DATE]',RELEASE_DATE,$copy);
 		$this->params['content'] = $this->load->view($this->views['GENERAL'], $this->data, true);
 	    $this->displayView();
 	}

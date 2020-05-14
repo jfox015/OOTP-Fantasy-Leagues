@@ -1,6 +1,6 @@
 # OOTP Fantasy Leagues
 
-OOTP Fantasy Leagues is a web based online mod for Out of the Park Baseball (OOTP for short) versions 15 and up. It is a standalone web site mod that can be used for both online and solo leagues.
+OOTP Fantasy Leagues is a web based online mod for Out of the Park Baseball (OOTP for short) versions 18 and up. It is a standalone web site mod that can be used for both online and solo leagues.
 
 ## Current Features
 
@@ -14,7 +14,7 @@ OOTP Fantasy Leagues is a web based online mod for Out of the Park Baseball (OOT
 
 ## Technical Information
 
-- Version: 1.0.3
+- Version: 1.1
 - License: MIT License and GNU GENERAL PUBLIC LICENSE v3
 
 ## Keep Current on the Mod
