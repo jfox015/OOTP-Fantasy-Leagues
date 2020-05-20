@@ -75,7 +75,7 @@ class about extends MY_Controller {
 		
 		if ($this->form_validation->run() == false) {
 			
-			// EDIT 1.0.6 - SECURITY
+			// EDIT 0.6 - SECURITY
 			if ($this->params['config']['security_enabled'] != -1 && $this->params['config']['security_class'] >= 1) {
 				$this->data = $this->data + getSecurityCode($this->views['RECAPTCHA_JS']);
 			} // END if
@@ -149,7 +149,7 @@ class about extends MY_Controller {
 	    
 	    if ($this->form_validation->run() == false) {
 	       	
-	    	// EDIT 1.0.6 - SECURITY
+	    	// EDIT 0.6 - SECURITY
 	    	if ($this->params['config']['security_enabled'] != -1 && $this->params['config']['security_class'] >= 2) {
 	    		$this->data = $this->data + getSecurityCode($this->views['RECAPTCHA_JS']);
 	    	} // END if

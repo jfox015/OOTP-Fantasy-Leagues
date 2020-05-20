@@ -108,26 +108,38 @@ function getEmail($userId, $access = false) {
  *	@author	Jeff Fox
  */
 function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$filePrefix = 'email_') {
-	$ci =& get_instance();
-	$ci->email->clear();
-	$ci->email->set_newline("\r\n");
-	$ci->email->from($fromEmail,$fromName);
-	$ci->email->to($to,$to_name);
-	$ci->email->subject($subject);
-	$ci->email->message($message);
-	if ((!defined('ENVIRONMENT') || (defined('ENVIRONMENT') && ENVIRONMENT != 'development'))) {
-		if ($ci->email->send()) {
+	$to = htmlspecialchars($to);
+	$from=$fromEmail;
+	$subject=$subject;
+	$message=$message;
+	// To send HTML mail, the Content-type header must be set
+	$headers  = 'MIME-Version: 1.0' . "\r\n";
+	$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+	// Create email headers
+	$headers .= "To: ".$to_name."<".$to.">\r\n".
+		"From: ".$fromName."<admin@".$_SERVER['SERVER_NAME'].">\r\n".
+		"Reply-To: <no-reply@".$_SERVER['SERVER_NAME'].">\r\n".
+		"X-Mailer:: PHP/" . phpversion();
+	// IF WERE TESTING LOCALLY WITHOUT SENDMAIL(), SAVE MESSAGE AS AN HTML LOCALLY
+	if (!defined('ENVIRONMENT') || (strstr($_SERVER['SERVER_NAME'], 'localhost') !== false || strstr($_SERVER['SERVER_NAME'], '127.0.0.1') !== false) || 
+	(defined('LOCAL_DEV_DOMAIN') && $_SERVER['SERVER_NAME'] == LOCAL_DEV_DOMAIN) || 
+	(defined('ENVIRONMENT') && ENVIRONMENT == 'development')) {
+		$ci =& get_instance();
+		if (!function_exists('write_file')) {
+			$ci->load->helper('file');
+		} // END if
+		write_file(PATH_MEDIA_WRITE.'/'.$filePrefix.substr(md5($to.time()),0,8).".html",$headers."<br />".$message);
+		return true;
+	
+	} else if (ENVIRONMENT != 'development') {
+		if (mail($to,$subject,$message,$headers)) {
 			return true;
 		} else {
 			return false;
 		} // END if
 	} else {
-		if (!function_exists('write_file')) {
-			$ci->load->helper('file');
-		} // END if
-		write_file(PATH_MEDIA_WRITE.'/'.$filePrefix.substr(md5($to.time()),0,8).".html",$message);
-		return true;
-	} // END if
+		return false;
+	}// END if
 }
 /**
  * 	GET SECURITY CODE

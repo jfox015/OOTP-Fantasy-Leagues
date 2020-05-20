@@ -712,7 +712,7 @@ class draft extends BaseEditor {
 											} // END if
 										} // END foreach
 									}  // END if
-									//	EDIT 1.0.6 - CLEAR EMAIL VARS AFTER SEND
+									//	EDIT 0.6 - CLEAR EMAIL VARS AFTER SEND
 									unset($roundSummary);
 									unset($nextSummary);
 									unset($message);
@@ -823,7 +823,7 @@ class draft extends BaseEditor {
 									break;
 								} // END if
 							} // END for
-							// EDIT 1.0.6 - FAIL SAFE IN CASE WE GET HERE AND THE NEXT PICK IS OUTSIDE THE
+							// EDIT 0.6 - FAIL SAFE IN CASE WE GET HERE AND THE NEXT PICK IS OUTSIDE THE
 							// DRAFT SIZE RANGE
 							if ($j > $lastPick) { break; }
 							if ($this->debug) {

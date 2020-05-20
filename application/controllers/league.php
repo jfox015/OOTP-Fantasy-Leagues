@@ -456,7 +456,7 @@ class league extends BaseEditor {
 	 *  CONTACT COMMISSIONER FORM
 	 *
 	 * 	@return void
-	 *	@since	1.0.6
+	 *	@since	0.6 beta
 	 **/
 	function leagueContact() {
 		$this->makeNav();
@@ -774,6 +774,9 @@ class league extends BaseEditor {
 				} else {
 					$this->data['thisItem']['teams'] = $this->dataModel->getTeamDetails(false,false,true);
 				}
+				$this->data['invites'] = $this->dataModel->getLeagueInvites(true);
+				$this->data['requests'] = $this->dataModel->getLeagueRequests(true);
+
 				$this->data['league_finder_intro_str'] = $this->lang->line('league_finder_request_inst');
 				$this->params['content'] = $this->load->view($this->views['TEAM_REQUEST'], $this->data, true);
 				$this->params['pageType'] = PAGE_FORM;
@@ -789,12 +792,125 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/**------------------------------------------------------------------------------------------
+	 * 
+	 * 	WITHDRAW REQUEST
+	 *  A function that allows a user to withdraw a team request.
+	 * 
+	 *  @param	request_id		(int)	The Request ID
+	 *  @param	type_id			(int)	The Response Type
+	 *  @param	league_id		(int)	The League ID for messaging purposes
+	 *  @param	reqMessage		(int)	A message from the Commissioner to the user
+	 * 
+	 * 	@since	1.1 PROD
+	 * 
+	 ------------------------------------------------------------------------------------------*/
+	
+	public function withdrawRequest() {
+		if ($this->params['loggedIn']) {
+			$this->init();
+			$request_id = -1;
+			$$league_id = -1;
+			$request_type = false;
+			$request_reponse = '';
+			$this->loadData();
+			if ($this->input->post('submitted')) {
+				$request_id = $this->input->post('request_id') ? $this->input->post('request_id') : -1;
+				$request_type = $this->input->post('type_id') ? $this->input->post('type_id') : false;
+				$request_reponse = $this->input->post('reqMessage') ? $this->input->post('reqMessage') : "";
+				$league_id = $this->input->post('league_id') ? $this->input->post('league_id') : -1;
+			}
+			echo("request_id = ".$request_id."<br />");
+			echo("request_type = ".$request_type."<br />");
+			echo("request_reponse = ".$request_reponse."<br />");
+			echo("league_id= ".$league_id."<br />");
+
+			$this->dataModel->load($league_id);
+			// CONTINUE ONLY IF WE HAVE A VALID REQUEST ID AND RESPONSE TYPE
+			if ($request_id != -1 && $league_id != -1 && $request_type !== false) {
+				/* Get INVITE DETAILS */
+				$requestObj = $this->dataModel->getLeagueRequest($request_id);
+
+				echo("requestObj->id = ".$requestObj->id."<br />");
+				echo("requestObj->status_id = ".$requestObj->status_id."<br />");
+				if ($requestObj->status_id == REQUEST_STATUS_PENDING) {
+
+					$changes = $this->dataModel->updateRequest($request_id, REQUEST_STATUS_WITHDRAWN);
+					if ($changes == 0) {
+						$error = true;
+						$message = 'The invitation was not able to be withdrawn at this time.';
+						if ($this->dataModel->errorCode != -1) {
+							$message .= '<br />'.$this->dataModel->statusMess;
+						} // END if
+					} else {
+						
+						$this->load->model('team_model');
+						$this->team_model->load($requestObj->team_id);
+						$teamName = $this->team_model->teamname." ".$this->team_model->teamnick;
+								
+						$leagueName = $this->dataModel->league_name;
+						$commishId = $this->dataModel->commissioner_id;
+						$username = getUsername($requestObj->user_id);
+
+						$message = 'The invitation has been marked as <b>withdrawn</b>.';
+
+						// SEND EMAIL NOTITICATION TO THE INVITEE
+						$msg = $this->lang->line('email_league_request_withdrawn');
+						$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
+						$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
+						$msg = str_replace('[USERNAME]', $username , $msg);
+						$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
+						$msg = str_replace('[WEB_SITE]', '<a href="'.$this->params['config']['fantasy_web_root'].'">'.$this->params['config']['site_name'].'</a>',$msg);
+						if (!empty($request_reponse)) {
+							$msg = str_replace('[MESSAGE]', "'.$username .' said: '".$request_reponse."'<br />",$msg);
+						} // END if
+						$data['messageBody']= $msg;
+						$data['leagueName'] = $leagueName;
+						$data['title'] = $this->lang->line('email_league_request_withdrawn_title');
+						$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
+						$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+
+						$subject = $data['title'];
+
+						$this->load->model('user_auth_model');
+						
+						$error = !sendEmail($this->user_auth_model->getEmail($commishId), $this->user_auth_model->getEmail($requestObj->user_id),
+											$this->params['config']['site_name']." Adminstrator",
+											$subject, $eMessage, $username,'email_team_request_withdrawl_');
+
+						if ($error) {
+							$class = 'error';
+							$message .= '<br />An e-mail message to the Commissioner failed to send, however. It might be best to send an email to '.$this->user_auth_model->getEmail($commishId).' to let them know.';
+						} else {
+							$class = 'success';
+							$message .= '<br />An e-mail message was sent to the Commissioner informing them the request has been withdrawn.';
+						} // END if
+					} // END if
+				} else {
+					$class = 'error';
+					$message = "The Request to ".getUsername($commishId)." for team ".$teamName." is not an active Request. No action can be taken at this time.<br /><br />";
+				} // END if
+				$this->session->set_flashdata('message', '<span class="'.$class.'">'.$message.'</span>');
+				//echo('<span class="'.$class.'">'.$message.'</span><br/>');
+				redirect('league/leagueList');
+			} else {
+				$this->data['subTitle'] = "An error has occured";
+				$this->data['theContent'] = '<span class="error">Required parameters were missing. The request cannot be completed at this time.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->displayView();
+			}
+		} else {
+			$this->session->set_userdata('loginRedirect',current_url());
+			redirect('user/login');
+		}
+	}
+
 	/**
 	 *	TEAM REQUEST RESPONSE.
 	 *	Handles the commissioners response to the team request. Response types 1 and -1 require the user to
 	 *	be a commisioner or admin.<br />
 	 *	<br />
-	 *	<i>Edit 1.0.6</i> - Added ability to post to this method via GET or POST and commissioner to add a ressponse when
+	 *	<i>Edit 0.6</i> - Added ability to post to this method via GET or POST and commissioner to add a ressponse when
 	 *	denying a reuqest.
 	 *
 	 *	REQUIRED URI VAR PARAMS:
@@ -807,7 +923,7 @@ class league extends BaseEditor {
 	 *	</ul>
 	 *	@param	$request_reponse	Commissioners message to the requerster (Optional)
 	 *
-	 *	@since	1.0.5
+	 *	@since	0.5 beta
 	 *
 	 */
 	public function requestResponse() {
@@ -827,9 +943,10 @@ class league extends BaseEditor {
 				$this->getURIData();
 				$request_id = ((isset($this->uriVars['request_id'])) ? $this->uriVars['request_id'] : -1);
 				$request_type = ((isset($this->uriVars['type'])) ? $this->uriVars['type'] : false);
+				$league_id = ((isset($this->uriVars['league_id'])) ? $this->uriVars['league_id'] : false);
 				$request_reponse = "";
 			}
-			$this->loadData();
+			$this->dataModel->load($league_id);
 			// CONTINUE ONLY IF WE HAVE A VALID REQUEST ID AND RESPONSE TYPE
 			if ($request_id != -1 && $request_type !== false) {
 				if (($request_type == 2) || ($request_type != 2 && $this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
@@ -848,20 +965,20 @@ class league extends BaseEditor {
 							$outMess = "";
 							$to = $this->user_auth_model->getEmail($request['user_id']);
 							switch ($request_type) {
-								case 1:
+								case REQUEST_STATUS_ACCEPTED:
 									$msg = $this->lang->line('email_league_team_request_accepted');
 									$data['title'] = $this->lang->line('email_league_team_request_accepted_title');
-									$outMess .= "The user has been assigned as the owner of this team successfully.";
+									$outMess .= "The user has been assigned as the owner of this team successfully. ";
 									break;
-								case -1:
+								case REQUEST_STATUS_DENIED:
 									$msg = $this->lang->line('email_league_team_request_denied');
 									$data['title'] = $this->lang->line('email_league_team_request_denied_title');
-									$outMess .= "The users request has been denied.";
+									$outMess .= "The users request has been denied. ";
 									break;
-								case 2:
+								case REQUEST_STATUS_WITHDRAWN:
 									$msg = $this->lang->line('email_league_team_request_withdrawn');
 									$data['title'] = $this->lang->line('email_league_team_request_denied_title');
-									$outMess .= "The team request has been successfully withdrawn.";
+									$outMess .= "The team request has been successfully withdrawn. ";
 									$to = $this->user_auth_model->getEmail($this->dataModel->commissioner_id);
 									$targetUri = '/user/profile';
 									break;
@@ -871,10 +988,10 @@ class league extends BaseEditor {
 							$msg = str_replace('[TEAM_HOME_URL]', anchor('/team/info/'.$request['team_id'],'managing your team'),$msg);
 							$msg = str_replace('[USERNAME]', getUsername($request['user_id']), $msg);
 							$msg = str_replace('[TEAM_NAME]', $this->team_model->getTeamName($request['team_id']),$msg);
-							$request_reponse = ((!empty($request_reponse)) ? str_replace('\n', "<br>",$request_reponse):"");
-							$reponseMessage = ((!empty($request_reponse)) ? str_replace('[MESSAGE]', $request_reponse, $this->lang->line('league_team_response_template')) : $this->lang->line('no_message_provided'));
-							$msg = str_replace('[MESSAGE]', $reponseMessage, $msg);
-							$msg = str_replace('[LEAGUE_NAME]', $this->league_model->league_name,$msg);
+							//$request_reponse = ((!empty($request_reponse)) ? str_replace('\n', "<br>",$request_reponse):"");
+							//$reponseMessage = ((!empty($request_reponse)) ? str_replace('[MESSAGE]', $request_reponse, $this->lang->line('league_team_response_template')) : $this->lang->line('no_message_provided'));
+							$msg = str_replace('[MESSAGE]', $request_reponse, $msg);
+							$msg = str_replace('[LEAGUE_NAME]', $this->dataModel->league_name,$msg);
 							$data['messageBody']= $msg;
 							//print("email template path = ".$this->config->item('email_templates')."<br />");
 							$data['leagueName'] = $this->dataModel->league_name;
@@ -933,8 +1050,8 @@ class league extends BaseEditor {
 	 * 	CLEAR TEAM REQUEST QUEUE.
 	 * 	This function clears the team request queue for the given league.
 	 *
-	 * 	@since	1.0.6
-	 * 	@see	models->league_model->deleteTeamRequests()
+	 * 	@since	0.6 beta
+	 * 	@see	models->league_model->removeTeamRequests()
 	 */
 	public function clearRequestQueue() {
 		if ($this->params['loggedIn']) {
@@ -942,7 +1059,7 @@ class league extends BaseEditor {
 			$this->loadData();
 			if ($this->dataModel->id != -1) {
 				if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
-					$this->session->set_flashdata('message', '<p class="success">Team Request operation completed successfully. '.$this->dataModel->deleteTeamRequests().' records were removed.</p>');
+					$this->session->set_flashdata('message', '<p class="success">Team Request operation completed successfully. '.$this->dataModel->removeTeamRequests().' records were removed.</p>');
 					redirect('league/leagueInvites/'.$this->dataModel->id);
 				} else {
 					$this->data['subTitle'] = "Unauthorized Access";
@@ -999,6 +1116,8 @@ class league extends BaseEditor {
 					} else {
 						$this->data['thisItem']['teams'] = $this->dataModel->getTeamDetails();
 					}
+					$this->data['invites'] = $this->dataModel->getLeagueInvites(true);
+					$this->data['requests'] = $this->dataModel->getLeagueRequests(true);
 					$this->params['subTitle'] = "League Admin";
 					$this->data['subTitle'] = "Edit Teams for ".$this->dataModel->league_name;
 					$this->data['league_id'] = $this->dataModel->id;
@@ -1035,6 +1154,9 @@ class league extends BaseEditor {
 						$message .= '</p >';
 						$this->data['message'] = $message;
 						$this->data['thisItem']['divisions'] = $this->dataModel->getFullLeageDetails();
+						$this->data['invites'] = $this->dataModel->getLeagueInvites(true);
+						$this->data['requests'] = $this->dataModel->getLeagueRequests(true);
+
 						$this->params['subTitle'] = "League Admin";
 						$this->data['subTitle'] = "Edit Teams for ".$this->dataModel->league_name;
 						$this->data['league_id'] = $this->dataModel->id;
@@ -1741,11 +1863,21 @@ class league extends BaseEditor {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
 			$this->loadData();
+			if (isset($this->uriVars['league_id']) && $this->uriVars['league_id'] != -1) {
+				$this->dataModel->load($this->uriVars['league_id']);
+			}
 			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
-				$this->data['thisItem']['invites'] = $this->dataModel->getLeagueInvites(true);
-				$this->data['thisItem']['requests'] = $this->dataModel->getLeagueRequests(true);
+
+				$pendingOnly = true;
+				$this->data['show_all'] = -1;
+				if (isset($this->uriVars['show_all']) && $this->uriVars['show_all'] == 1) {
+					$pendingOnly = false;
+					$this->data['show_all'] = $this->uriVars['show_all'] ;
+				}
+				$this->data['thisItem']['invites'] = $this->dataModel->getLeagueInvites($pendingOnly);
+				$this->data['thisItem']['requests'] = $this->dataModel->getLeagueRequests($pendingOnly);
 				$this->data['league_id'] = $this->dataModel->id;
-				$this->data['subTitle'] = 'Pending Invitiations';
+				$this->data['subTitle'] = 'Invites and Requests';
 				$this->params['content'] = $this->load->view($this->views['INVITES'], $this->data, true);
 				$this->params['pageType'] = PAGE_FORM;
 				$this->makeNav();
@@ -1764,6 +1896,113 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/**------------------------------------------------------------------------------------------
+	 * 
+	 * 	WITHDRAW INVITIATION
+	 *  A function that allows a Leage Commissioner to withdraw a team invite.
+	 * 
+	 *  @param	invite_id		(int)	The invite ID
+	 *  @param	league_id		(int)	The League ID for messaging purposes
+	 *  @param	invMessage		(int)	A message from the Commissioner to the user
+	 * 
+	 * 	@since	1.1 PROD
+	 * 
+	 ------------------------------------------------------------------------------------------*/
+	public function withdrawInvitation() {
+		
+		if ($this->params['loggedIn']) {
+			
+			$this->data['invite_id'] = $this->input->post('invite_id') ? $this->input->post('invite_id') : -1;
+			$this->data['league_id'] = $this->input->post('league_id') ? $this->input->post('league_id'): -1;
+
+			if ($this->data['invite_id'] != -1 && $this->data['league_id'] != -1) {
+
+				$this->dataModel->load($this->data['league_id']);
+
+				if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
+					
+					/* Get INVITE DETAILS */
+					$inviteObj = $this->dataModel->getLeagueInvite($this->data['invite_id']);
+
+					if ($inviteObj->status_id == INVITE_STATUS_PENDING) {
+
+						$changes = $this->dataModel->updateInvitation($this->data['invite_id'], INVITE_STATUS_WITHDRAWN);
+						if ($changes == 0) {
+							$error = true;
+							$message = 'The invitation was not able to be withdrawn at this time.';
+							if ($this->dataModel->errorCode != -1) {
+								$message .= '<br />'.$this->dataModel->statusMess;
+							} // END if
+						} else {
+							$respMessage = $this->input->post('invMessage') ? $this->input->post('invMessage') : '';
+					
+							$this->load->model('team_model');
+							$this->team_model->load($inviteObj->team_id);
+							$teamName = $this->team_model->teamname." ".$this->team_model->teamnick;
+									
+							$leagueName = $this->dataModel->league_name;
+							$commishId = $this->dataModel->commissioner_id;
+
+							$message = 'The invitation has been marked as <b>withdrawn</b>.';
+
+							// SEND EMAIL NOTITICATION TO THE INVITEE
+							$msg = $this->lang->line('email_league_invite_withdrawn');
+							$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
+							$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
+							$msg = str_replace('[EMAIL]', $inviteObj->to_email, $msg);
+							$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
+							$msg = str_replace('[WEB_SITE]', '<a href="'.$this->params['config']['fantasy_web_root'].'">'.$this->params['config']['site_name'].'</a>',$msg);
+							if (!empty($respMessage)) {
+								$msg = str_replace('[MESSAGE]', "The Commissioner said: '".$respMessage."'<br />",$msg);
+							} // END if
+							$data['messageBody']= $msg;
+							$data['leagueName'] = $leagueName;
+							$data['title'] = $this->lang->line('email_league_invite_withdrawn_title');
+							$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
+							$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+
+							$subject = $data['title'];
+
+							$this->load->model('user_auth_model');
+							
+							$error = !sendEmail($inviteObj->to_email, $this->user_auth_model->getEmail($commishId),
+											$this->params['config']['site_name']." Adminstrator",
+											$subject, $eMessage, getUsername($commishId),'email_team_invite_withdrawl_');
+
+							if ($error) {
+								$class = 'error';
+								$message .= '<br />An e-mail message to the user failed to send, however. It might be best to send an email to '.$inviteObj->to_email.' to let them know.';
+							} else {
+								$class = 'success';
+								$message .= '<br />An e-mail message was sent to '.$inviteObj->to_email.' informing them the invitation has been withdrawn.';
+							} // END if
+						} // END if
+					} else {
+						$class = 'error';
+						$message = "The invitation to ".$inviteObj->to_email." for team ".$teamName." is not a pending invitation. No action can be taken at this time.<br /><br />";
+					} // END if
+					$this->session->set_flashdata('message', '<span class="'.$class.'">'.$message.'</span>');
+					//echo('<span class="'.$class.'">'.$message.'</span><br/>');
+					redirect('league/leagueInvites/'.$this->data['league_id']);
+				} else {
+					$error = true;
+					$this->params['subTitle'] = $this->data['subTitle'] = "Unauthorized Access";
+					$message = '<span class="error">You do not have sufficient privlidges to access the requested information.</span>';
+					$this->data['theContent'] = $message;
+					$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+					$this->makeNav();
+					$this->displayView();
+				} // END if
+			} else {
+				$message = "A required invitation and/or League ID was not received.<br /><br />";
+				$this->session->set_flashdata('message', '<span class="error">'.$message.'</span>');
+				redirect('league/leagueInvites/'.$this->data['league_id']);
+			} // END if
+		} else {
+			$this->session->set_flashdata('loginRedirect',current_url());
+			redirect('user/login');
+		} // END if
+	} // END function
 
 	public function waiverClaims() {
 		if ($this->params['loggedIn']) {
@@ -1801,7 +2040,7 @@ class league extends BaseEditor {
 			$this->getURIData();
 			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
 				if (isset($this->uriVars['league_id']) && isset($this->uriVars['player_id'])) {
-					$this->dataModel->removeFromWaivers($this->uriVars['player_id'], $this->uriVars['league_id']);
+					$this->dataModel->removeFromWaivers($this>uriVars['player_id'], $this->uriVars['league_id']);
 					$error = false;
 					$message = '<span class="success">Waiver status entry and waiver claims for this player have been removed.</span>';
 				} else {
