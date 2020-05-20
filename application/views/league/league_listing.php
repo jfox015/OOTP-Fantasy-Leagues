@@ -1,17 +1,120 @@
-<script type="text/javascript" charset="UTF-8">
-$(document).ready(function(){	
-    $('a[rel=delete]').live('click',function (e) {
-        e.preventDefault();
-        if (confirm("Are you sure you want to delete this league? It will delete the league entry and ALL supporting data including teams, transactions rosters, etc.\n\n ARE YOU 100% SUREYOU WANT TO DELETE THIS LEAGUE?")) {
-            document.location.href = '<?php echo($config['fantasy_web_root']); ?>league/submit/mode/delete/id/'+this.id;
+    <link media="screen" rel="stylesheet" href="<?php echo($config['fantasy_web_root']); ?>css/colorbox.css" />
+	<script src="<?php echo($config['fantasy_web_root']); ?>js/jquery.colorbox.js"></script>
+	<script type="text/javascript" charset="UTF-8">
+	var charLimit = 1000;
+	$(document).ready(function(){	
+        $('a[rel=delete]').live('click',function (e) {
+            e.preventDefault();
+            if (confirm("Are you sure you want to delete this league? It will delete the league entry and ALL supporting data including teams, transactions rosters, etc.\n\n ARE YOU 100% SUREYOU WANT TO DELETE THIS LEAGUE?")) {
+                document.location.href = '<?php echo($config['fantasy_web_root']); ?>league/submit/mode/delete/id/'+this.id;
+            }
+        });
+        $('button[rel=create]').live('click',function (e) {
+            e.preventDefault();
+            document.location.href = '<?php echo($config['fantasy_web_root']); ?>/user/createLeague';
+        });
+        $('a[rel=withdrawInvite]').click(function (e) {					   
+            e.preventDefault();
+            openDialog(e, 'retractDialog', this.id);
+        });
+		 
+	});
+	function init() {
+		/* Character Counter for inputs and text areas 
+		 */  
+		$('.word_count').each(function(){  
+		    // get current number of characters  
+		    var length = $(this).val().length;  
+		    // get current number of words  
+		    //var length = $(this).val().split(/\b[\s,\.-:;]*/).length;  
+		    // update characters  
+		    $(this).parent().find('.counter').html('<span style="color:#'+getColor(length)+';">' + length + ' characters</span>');  
+		    // bind on key up event  
+		    $(this).keyup(function(){  
+				 // get new length of characters  
+		        var new_length = $(this).val().length;  
+		        // get new length of words  
+		        //var new_length = $(this).val().split(/\b[\s,\.-:;]*/).length;  
+		        // update  
+		        $(this).parent().find('.counter').html('<span style="color:#'+getColor(new_length)+';">' + new_length + ' characters</span>');  
+		    });  
+		}); 
+		$('#btnCancel').click(function (e) {					   
+			e.preventDefault();
+			$.colorbox.close();
+		});
+		 $('#btnSendWithdrawl').click(function (e) {					   
+			e.preventDefault();
+			if ($('#reqMessage').val() != '') {
+				$('#withdrawlForm').submit();
+			 } else {
+				alert("A message to the user is required to withdraw the request.");
+				$('#reqMessage').focus();
+			 }
+		});
+	}
+	function getColor(new_length) {
+		var color = "060";
+	    var critLen = (charLimit - parseInt(charLimit * .05)),
+        warnLen = (charLimit - parseInt(charLimit * .15));
+        if (new_length >= warnLen && new_length < critLen) {
+			color = "f60";
+        } else if (new_length >= critLen) {
+	        color = "c00";
         }
-    });
-    $('button[rel=create]').live('click',function (e) {
-        e.preventDefault();
-        document.location.href = '<?php echo($config['fantasy_web_root']); ?>/user/createLeague';
-    });
-});
+        return color;
+	}
+	function openDialog(e,id, params) {
+        var paramList = params.split("|");
+        $('#'+id + ' input#request_id').val(paramList[0]);
+        $('#'+id + ' input#league_id').val(paramList[1]);
+		
+		$.colorbox({html:$('div#'+id).html()});
+		init();
+	}
 </script>
+
+<div id="retractDialog" class="dialog" style="position:absolute;visibility:hidden;top:-5000px;left:-5000px">
+    <form method='post' action="<?php echo($config['fantasy_web_root']); ?>league/withdrawRequest" name='withdrawlForm' id="withdrawlForm">
+    <input type='hidden' id="submitted" name='submitted' value='1'></input>
+    <input type='hidden' id="request_id" name='request_id' value='-1'></input>
+    <input type='hidden' id="type_id" name='type_id' value='2'></input>
+    <input type='hidden' id="league_id" name='league_id' value='-1'></input>
+    <div class='textbox'>
+        <table cellpadding="2" cellspacing="0" cellborder="0">
+        <tr class='title'><td>Message to Commissioner</td></tr>
+        <tr>
+        <tr class='highlight'>
+        <td>Provide a message to the Commissioner why you're withdrawing your request.
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <?php 
+        $data = array(
+            'name'        => 'reqMessage',
+            'id'          => 'reqMessage',
+            'value'       => '',
+            'maxlength'   => '1000',
+            'class'		=> 'word_count',
+            'rows'        => '5',
+            'cols'		=> '45'
+        );
+        echo(form_textarea($data));
+        ?><br clear="all" />
+        <span class="counter"></span>, Limit 1000.
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <input type='button' id="btnCancel" class="button" value='Cancel' />
+        <input type='button' class="button" id="btnSendWithdrawl" value='Withdraw Request' /></td>
+        </tr>
+        </table>
+    </div>
+    </form>
+</div>
+
 <div id="single-column">
     <h1><?php echo($subTitle); ?></h1>
     <?php print($league_list_intro_str); ?>
@@ -105,7 +208,8 @@ $(document).ready(function(){
                                 } else {
                                     if (sizeof($leagueData['pendingRequests'][0]) > 0) {
                                         $requests = $leagueData['pendingRequests'][0];
-                                        echo("You requested to own the <b>".$requests['team']."</b> on ".$requests['date_requested'].". Your request is Pending approval."); 
+                                        echo("You requested to own the <b>".$requests['team']."</b> on ".$requests['date_requested'].". Your request is Pending approval.<br />");
+                                        print(anchor('#','Withdraw Request',array('id'=>$requests['id']."|".$leagueData['league_id'],'rel'=>'withdrawInvite')));  
                                     } else {
                                         if ($leagueData['openCount'] > 0) {
                                             echo("This League currently has <b>".$leagueData['openCount']."</b> unowned teams!"); 

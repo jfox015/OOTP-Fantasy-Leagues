@@ -6,7 +6,7 @@
 		});
 		$('input[rel=requestRespond]').click(function(){
 			var params = this.id.split("|");
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>league/requestResponse/request_id/'+params[0]+'/type/'+params[1]+'/id/'+params[2];
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>league/requestResponse/request_id/'+params[0]+'/type/'+params[1]+'/league_id/'+params[2];
 		});
 	});
 	</script>
@@ -69,8 +69,8 @@
 						<b><?php echo(anchor('/league/info/'.$invite['league_id'],'<b>'.$invite['league_name'].'</b>')); ?></b><br />
 						Invite from: <?php echo($invite['username']); ?><br />
 						Sent On: <?php echo(date('m/d/Y h:m A',strtotime($invite['send_date ']))); ?><br />
-						<input type='button' rel="inviteRespond" id="<?php echo($invite['id']); ?>|1|<?php echo($invite['ck']); ?>" class="button" value='Accept' style="float:left;margin-right:8px;" />
-						<input type='button' rel="inviteRespond" id="<?php echo($invite['id']); ?>|-1|<?php echo($invite['ck']); ?>" class="button" value='Decline' style="float:left;margin-right:8px;" />
+						<input type='button' rel="inviteRespond" id="<?php echo($invite['id']); ?>|<?php echo(INVITE_STATUS_ACCEPTED); ?>|<?php echo($invite['ck']); ?>" class="button" value='Accept' style="float:left;margin-right:8px;" />
+						<input type='button' rel="inviteRespond" id="<?php echo($invite['id']); ?>|<?php echo(INVITE_STATUS_DECLINED); ?>|<?php echo($invite['ck']); ?>" class="button" value='Decline' style="float:left;margin-right:8px;" />
 					<div class="rule"></div>
 					<?php
 					} // END if

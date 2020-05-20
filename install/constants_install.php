@@ -72,6 +72,13 @@ define('NEWS_LEAGUE',2);
 define('NEWS_PLAYER',3);
 define('NEWS_TEAM',4);
 
+define('INVITE_STATUS_UNKNOWN',-1);
+define('INVITE_STATUS_PENDING',1);
+define('INVITE_STATUS_ACCEPTED',2);
+define('INVITE_STATUS_DECLINED',3);
+define('INVITE_STATUS_WITHDRAWN',4);
+define('INVITE_STATUS_REMOVED',5);
+
 define('REQUEST_STATUS_UNKNOWN',-1);
 define('REQUEST_STATUS_PENDING',1);
 define('REQUEST_STATUS_ACCEPTED',2);
@@ -234,6 +241,8 @@ define("FANTASY_CONFIG","fantasy_config");
 define("FANTASY_LEAGUE_CONFIG","fantasy_leagues_config");
 
 define("DEFAULT_RESULTS_COUNT",20);
+
+define("LOCAL_DEV_DOMAIN",'localhost');
 
 /* End of file constants.php */
 /* Location: ./system/application/config/constants.php */

@@ -87,11 +87,37 @@
 								$avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 							} // END if
 							?>
-							<td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" border="0" /></td>
+							<td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" /></td>
 							<td class='hsc2_l'><?php echo($teamData['teamname']); ?></td>
 							<td class='hsc2_l'><?php echo($teamData['teamnick']); ?></td>
-							<td class='hsc2_l' align='center'>
-							<input type="radio" name="team_id" value="<?php echo($teamId); ?>" />
+							<td class='hsc2_l'>
+							<?php 
+							$inviteFound = false;
+							$requestFound = false;
+							if (isset($invites) && sizeof($invites) > 0 ){
+								foreach($invites as $invite) {
+									if ($invite['team_id'] == $teamId) {
+										$inviteFound = true;
+										break;
+									}
+								}
+							}
+							if (isset($requests) && sizeof($requests) > 0 ){
+								foreach($requests as $request) {
+									if ($request['team_id'] == $teamId) {
+										$requestFound = true;
+										break;
+									}
+								}
+							}
+							if ($requestFound) {
+								echo("Request pending");
+							} else if ($inviteFound) {
+								echo("Owner Invite pending");
+							} else {
+								echo('<input type="radio" name="team_id" value="'.$teamId.'" />');
+							}
+							?>
 							</td>
 						</tr>
 						<?php
@@ -130,11 +156,37 @@
                         $avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
                     } // END if
                     ?>
-                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" border="0" /></td>
+                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" /></td>
                     <td class='hsc2_l'><?php echo($teamData['teamname']); ?></td>
                     <td class='hsc2_l'><?php echo($teamData['teamnick']); ?></td>
-                    <td class='hsc2_l' align='center'>
-                    <input type="radio" name="team_id" value="<?php echo($teamId); ?>" />
+                    <td class='hsc2_l'>
+                    <?php 
+					$inviteFound = false;
+					$requestFound = false;
+					if (isset($invites) && sizeof($invites) > 0 ){
+						foreach($invites as $invite) {
+							if ($invite['team_id'] == $teamId) {
+								$inviteFound = true;
+								break;
+							}
+						}
+					}
+					if (isset($requests) && sizeof($requests) > 0 ){
+						foreach($requests as $request) {
+							if ($request['team_id'] == $teamId) {
+								$requestFound = true;
+								break;
+							}
+						}
+					}
+					if ($requestFound) {
+						echo("Request pending");
+					} else if ($inviteFound) {
+						echo("Owner Invite pending");
+					} else {
+						echo('<input type="radio" name="team_id" value="'.$teamId.'" />');
+					}
+					?>
                     </td>
                 </tr>
                     <?php

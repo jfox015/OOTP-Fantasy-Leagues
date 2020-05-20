@@ -56,12 +56,12 @@
                         $avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
                     } // END if
                     ?>
-                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" border="0" /></td>
+                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24"\ /></td>
                     <td class='hsc2_l'><?php echo(form_input(array('name'=>$teamId."_teamname",'id'=>"team".$teamId."_teamname",'value'=>($input->post($teamId."_teamname")) ? $input->post($teamId."_teamname") : $teamData['teamname']))); ?></td>
                     <td class='hsc2_l'><?php echo(form_input(array('name'=>$teamId."_teamnick",'id'=>"team".$teamId."_teamnick",'value'=>($input->post($teamId."_teamnick")) ? $input->post($teamId."_teamnick") : $teamData['teamnick']))); ?></td>
                     <td class='hsc2_l'><?php echo form_dropdown($teamId."_division_id", $division_options, ($input->post($teamId."_division_id")) ? $input->post($teamId."_division_id") : $id); ?></td>
                     <td class='hsc2_l'><?php echo(anchor('/user/profile/mode/view/id/'.$teamData['owner_id'],$teamData['owner_name'])); ?></td>
-                    <td class='hsc2_l' nowrap="nowrap">
+                    <td class='hsc2_c' nowrap="nowrap">
                     <?php
 					//echo("Owner id = ".$teamData['owner_id']."<br />");
 					if (isset($teamData['owner_id']) && $teamData['owner_id'] > 0) {
@@ -73,8 +73,30 @@
 							} // END if
 						} // END if
 					} else { 
-						echo(anchor($config['fantasy_web_root'].'league/inviteOwner/id/'.$league_id.'/team_id/'.$teamId,'<img src="'.$config['fantasy_web_root'].'images/icons/stock_mail.png" align="absmiddle" width="16" height="16" alt="Invite Owner" title="Invite Owner" /> Invite Owner'));
-					}  // END if
+                        if (isset($invites) && sizeof($invites) > 0 ){
+                            foreach($invites as $invite) {
+                                if ($invite['team_id'] == $teamId) {
+                                    $inviteFound = true;
+                                    break;
+                                } // END if
+                            } // END foreach
+                        } // END if
+                        if (isset($requests) && sizeof($requests) > 0 ){
+                            foreach($requests as $request) {
+                                if ($request['team_id'] == $teamId) {
+                                    $requestFound = true;
+                                    break;
+                                } // END if
+                            } // END foreach
+                        } // END if
+                        if ($requestFound) {
+                            echo(anchor('/league/leagueInvites/'.$league_id,'Request Pending'));
+                        } else if ($inviteFound) {
+                            echo(anchor('/league/leagueInvites/'.$league_id,'Invite Pending'));
+                        } else {
+                            echo(anchor('league/inviteOwner/id/'.$league_id.'/team_id/'.$teamId,'<img src="'.$config['fantasy_web_root'].'images/icons/stock_mail.png" align="absmiddle" width="16" height="16" alt="Invite Owner" title="Invite Owner" /> Invite Owner'));
+                        } // END if
+					} // END if
 					?>
                     </td>
                 </tr>
@@ -114,11 +136,11 @@
                         $avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
                     } // END if
                     ?>
-                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" border="0" /></td>
+                    <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" /></td>
                     <td class='hsc2_l'><?php echo(form_input(array('name'=>$teamId."_teamname",'id'=>"team".$teamId."_teamname",'value'=>($input->post($teamId."_teamname")) ? $input->post($teamId."_teamname") : $teamData['teamname']))); ?></td>
                     <td class='hsc2_l'><?php echo(form_input(array('name'=>$teamId."_teamnick",'id'=>"team".$teamId."_teamnick",'value'=>($input->post($teamId."_teamnick")) ? $input->post($teamId."_teamnick") : $teamData['teamnick']))); ?></td>
                     <td class='hsc2_l'><?php echo(anchor('/user/profile/mode/view/id/'.$teamData['owner_id'],$teamData['owner_name'])); ?></td>
-                    <td class='hsc2_l' nowrap="nowrap">
+                    <td class='hsc2_c' nowrap="nowrap">
                     <?php
 					//ho("Owner id = ".$teamData['owner_id']."<br />");
 					if (isset($teamData['owner_id']) && $teamData['owner_id'] > 0) {
@@ -130,8 +152,32 @@
 							} // END if
 						} // END if
 					} else { 
-						echo(anchor($config['fantasy_web_root'].'league/inviteOwner/id/'.$league_id.'/team_id/'.$teamId,'<img src="'.$config['fantasy_web_root'].'images/icons/stock_mail.png" align="absmiddle" width="16" height="16" alt="Invite Owner" title="Invite Owner" /> Invite Owner'));
-					}  // END if
+					    $inviteFound = false;
+                        $requestFound = false;
+                        if (isset($invites) && sizeof($invites) > 0 ){
+                            foreach($invites as $invite) {
+                                if ($invite['team_id'] == $teamId) {
+                                    $inviteFound = true;
+                                    break;
+                                } // END if
+                            } // END foreach
+                        } // END if
+                        if (isset($requests) && sizeof($requests) > 0 ){
+                            foreach($requests as $request) {
+                                if ($request['team_id'] == $teamId) {
+                                    $requestFound = true;
+                                    break;
+                                } // END if
+                            } // END foreach
+                        } // END if
+                        if ($requestFound) {
+                            echo(anchor('/league/leagueInvites/'.$league_id,'Request Pending'));
+                        } else if ($inviteFound) {
+                            echo(anchor('/league/leagueInvites/'.$league_id,'Invite Pending'));
+                        } else {
+                            echo(anchor('league/inviteOwner/id/'.$league_id.'/team_id/'.$teamId,'<img src="'.$config['fantasy_web_root'].'images/icons/stock_mail.png" align="absmiddle" width="16" height="16" alt="Invite Owner" title="Invite Owner" /> Invite Owner'));
+                        } // END if
+					} // END if
 					?>
                     </td>
                 </tr>

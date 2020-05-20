@@ -470,6 +470,23 @@ class user_auth_model extends base_model {
 			return false;
 		}
 	}
+	public function getUserIdByEmail($email = false) {
+		
+		if ($email === false) { return false; }
+		
+		$this->db->select('id')
+			 ->where('email',$email)
+			 ->limit(1);
+		$query = $this->db->get($this->tblName);
+		$result = $query->row();
+        if ($query->num_rows() > 0) {
+			return $result->id;
+		} else {
+			$this->errorCode = 1;
+			$this->statusMess = "No user matching the email passed was found in the system.";
+			return false;
+		}
+	}
 	
 	public function getUsername($userId = false) {
 		

@@ -84,6 +84,8 @@ $lang['league_finder_request_inst'] = 'Select a team from the list below and cli
 $lang['league_finder_request_no_id'] = 'The request could not be completed because a required league identifier was not recieved.';
 $lang['league_finder_request_success'] = 'Your request to join the [LEAGUE_NAME] league has been sent.';
 
+$lang['league_invite_response_not_logged_in'] = 'You must be logged into the site complete this action. If you are not yet a member, please <b>Register</b> first. Once your account is activated, you can then respond to this invitation.';
+
 $lang['email_league_team_request'] = 'To [COMMISH],
 <p>[USERNAME] has submitted a request to own the [REQUESTED_TEAM_NAME].</P>[MESSAGE]<p>You can accept or reject this request on the [REQUEST_ADMIN_URL].</p>
 <p>';
@@ -100,6 +102,20 @@ $lang['email_league_team_request_title'] = 'Team Request';
 $lang['email_league_team_request_accepted_title'] = 'Team Request Accepted';
 $lang['email_league_team_request_denied_title'] = 'Team Request Denied';
 $lang['email_league_team_request_withdrawn_title'] = 'Team Request Withdrawn';
+
+$lang['email_league_invite_accept'] = 'To [COMMISH],
+<p><b>[EMAIL]</b> has chosen to accept your invitation to run the <i>[TEAM_NAME]</i> and has been assigned as the owner of the team.</P>';
+$lang['email_league_invite_accept_title'] = '[TEAM_NAME] Team Invitation Accepted';
+
+$lang['email_league_invite_decline'] = 'To [COMMISH],
+<p><b>[EMAIL]</b> has chosen to decline your invitation to run the <i>[TEAM_NAME]</i>.</P><p>The invitation has been deleted from the list of pending invitations.</p>';
+$lang['email_league_invite_decline_title'] = '[TEAM_NAME] Team Invitation Declined';
+
+$lang['email_league_invite_duplicate'] = 'To [COMMISH],
+<p><b>[EMAIL]</b> tried to respond to an invite for the <i>[TEAM_NAME]</i>.</P><p>The user already owns a team in your League so this invitations status has been changed to REMOVED. The user HAS NOT been assigned to this team as an owner.</p>';
+$lang['email_league_invite_duplicate_title'] = 'Response to [TEAM_NAME] Invitation Already Responded To';
+
+
 
 $lang['league_waiver_claim_denied_response'] = 'The waiver claim for <b>[PLAYER_NAME]</b> by <b>[USERNAME]</b> has been successfully denied. An e-mail has been sent to the user to inform them of this denial.';
 $lang['league_waiver_claim_denied_title'] = 'A Waiver claim has been denied.';

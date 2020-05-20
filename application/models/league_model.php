@@ -688,6 +688,21 @@ class league_model extends base_model {
 	/	INVITES AND REQUESTS
 	/
 	/----------------------------------------------------------------------*/
+	public function getLeagueInvite($invite_id = false) {
+
+		$inviteObj = array();
+		if ($invite_id === false) { return false; $statusMess = "No Invite ID provided."; }
+
+		$this->db->select('*');
+		$this->db->where('id',$invite_id);
+		$query = $this->db->get('fantasy_invites');
+		if ($query->num_rows() > 0) {
+			$inviteObj  = $query->row();
+		}
+		$query->free_result();
+		return $inviteObj;
+	}
+	
 	/**
 	 * 	GET LEAGUE INVITES
 	 * 	Function that returns of list of league team invites. Can be all invites only those
@@ -703,23 +718,89 @@ class league_model extends base_model {
 		$invites = array();
 		if ($league_id === false) { $league_id = $this->id; }
 
-		$this->db->select('to_email, send_date, team_id, teamname, teamnick, requestStatus');
+		$this->db->select($this->tables['TEAM_INVITES'].'.id, to_email, send_date, team_id, teamname, teamnick, inviteStatus, status_id, '.$this->tables['TEAM_INVITES'].'.league_id');
 		$this->db->from($this->tables['TEAM_INVITES']);
-		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_invites.team_id','right outer');
-		$this->db->join('fantasy_leagues_requests_status','fantasy_leagues_requests_status.id = fantasy_invites.status_id','right outer');
+		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_invites.team_id','left');
+		$this->db->join('fantasy_invites_status','fantasy_invites_status.id = fantasy_invites.status_id','left');
 		$this->db->where("fantasy_invites.league_id",$league_id);
 		if ($onlyPending !== false) {
-			$this->db->where('status_id', REQUEST_STATUS_PENDING);
+			$this->db->where('status_id', INVITE_STATUS_PENDING);
 		}
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				array_push($invites,array('to_email'=>$row->to_email, 'send_date'=>$row->send_date,
-										  'team_id'=>$row->team_id,'team'=>$row->teamname." ".$row->teamnick));
+										  'team_id'=>$row->team_id,'team'=>$row->teamname." ".$row->teamnick,
+										  'inviteStatus'=>$row->inviteStatus, 'status_id'=>$row->status_id,
+										  'id'=>$row->id, 'league_id'=>$row->league_id,
+										));
 			}
 		}
 		$query->free_result();
 		return $invites;
+	}
+	/**
+	 * 	UPDATE INVITE
+	 * 	Changes the status and details of an open team invitation.
+	 *  @param	$invite_id		{int}		The REQUEST ID
+	 *  @param	$response		{int}		The new REQUEST STATUS TYPE
+	 *  @return					{Boolean}	TRUE on success, FALSE on failure
+	 * 
+	 */
+	public function updateInvitation($invite_id = false, $response = false) {
+
+		if ($invite_id === false || $response === false) {
+		return false;
+		}
+
+		$this->db->select('*');
+		$this->db->where('id',$invite_id);
+		$query = $this->db->get($this->tables['TEAM_INVITES']);
+
+		if ($query->num_rows() == 0) {
+			$this->errorCode = 1;
+			$this->statusMess = 'No invite matching the passed ID was found in the system.';
+			return false;
+		} else {
+			$row = $query->row();
+			$newStatus = 0;;
+			switch($response) {
+				case INVITE_STATUS_ACCEPTED:
+					$this->load->model('user_auth_model');
+					$data = array('owner_id'=>$this->user_auth_model->getUserIdByEmail($row->to_email));
+					$this->db->where('id',$row->team_id);
+					$this->db->update($this->tables['TEAMS'],$data);
+					if ($this->db->affected_rows() == 0) {
+						$this->errorCode = 2;
+						$this->statusMess = 'The team owner update could not be saved to the database.';
+						return false;
+					}
+					$newStatus = INVITE_STATUS_ACCEPTED;
+					break;
+				case INVITE_STATUS_WITHDRAWN:
+					$newStatus = INVITE_STATUS_WITHDRAWN;
+					break;
+				case INVITE_STATUS_DECLINED:
+					$newStatus = INVITE_STATUS_DECLINED;
+					break;
+				case INVITE_STATUS_REMOVED:
+					$newStatus = INVITE_STATUS_REMOVED;
+					break;
+				default:
+					$newStatus = INVITE_STATUS_UNKNOWN;
+				break;
+			} // END switch
+			$this->db->flush_cache();
+			$this->db->where('id',$invite_id);
+			$this->db->update($this->tables['TEAM_INVITES'],array('status_id'=>$newStatus));
+			$rows_changed = $this->db->affected_rows();
+			if ($rows_changed == 0) {
+				$this->errorCode = 3;
+				$this->statusMess = 'The update could not be saved at this time.';
+				return false;
+			} // END if
+		} // END if
+		return $rows_changed;
 	}
 	/**
 	 * 	GET LEAGUE REQUESTS
@@ -739,11 +820,11 @@ class league_model extends base_model {
 		$requests = array();
 		if ($league_id === false) { $league_id = $this->id; }
 
-		$this->db->select($this->tables['TEAM_REQUESTS'].'.id, user_id, username, date_requested, team_id, teamname, teamnick, requestStatus');
+		$this->db->select($this->tables['TEAM_REQUESTS'].'.id, user_id, username, date_requested, team_id, teamname, teamnick, requestStatus, status_id');
 		$this->db->from($this->tables['TEAM_REQUESTS']);
-		$this->db->join('users_core','users_core.id = fantasy_leagues_requests.user_id','right outer');
-		$this->db->join('fantasy_teams','fantasy_teams.id = fantasy_leagues_requests.team_id','right outer');
-		$this->db->join('fantasy_leagues_requests_status','fantasy_leagues_requests_status.id = fantasy_leagues_requests.status_id','right outer');
+		$this->db->join('users_core','users_core.id = '.$this->tables['TEAM_REQUESTS'].'.user_id','left');
+		$this->db->join('fantasy_teams','fantasy_teams.id = '.$this->tables['TEAM_REQUESTS'].'.team_id','left');
+		$this->db->join('fantasy_leagues_requests_status','fantasy_leagues_requests_status.id = '.$this->tables['TEAM_REQUESTS'].'.status_id','left');
 		$this->db->where($this->tables['TEAM_REQUESTS'].'.league_id',$league_id);
 		if ($request_id !== false) {
 			$this->db->where($this->tables['TEAM_REQUESTS'].'.id',$request_id);
@@ -755,14 +836,37 @@ class league_model extends base_model {
 			$this->db->where('user_id', $user_id);
 		}
 		$query = $this->db->get();
+		//echo($this->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach($query->result() as $row) {
 				array_push($requests,array('id'=>$row->id,'user_id'=>$row->user_id, 'username'=>$row->username,'date_requested'=>date_format(date_create($row->date_requested),"m/d/Y"),
-										  'team_id'=>$row->team_id,'team'=>$row->teamname." ".$row->teamnick));
+										  'requestStatus'=>$row->requestStatus,'status_id'=>$row->status_id,'team_id'=>$row->team_id,'team'=>$row->teamname." ".$row->teamnick));
 			}
 		}
 		$query->free_result();
 		return $requests;
+	}
+	/**
+	 * 	GET TEAM REQUEST
+	 * 	Looks up and returns a single request details
+	 *  @param	$request_id		{int}	The request ID
+	 *  @return					{Obj}	Request Object
+	 *  @since	1.1 PROD
+	 * 
+	 */
+	public function getLeagueRequest($request_id = false) {
+
+		$requestObj = false;
+		if ($request_id === false) { return false; $statusMess = "No Request ID provided."; }
+
+		$this->db->select('*');
+		$this->db->where('id',$request_id);
+		$query = $this->db->get($this->tables['TEAM_REQUESTS']);
+		if ($query->num_rows() > 0) {
+			$requestObj = $query->row();
+		}
+		$query->free_result();
+		return $requestObj;
 	}
 	/**
 	 * 	TEAM REQUEST
@@ -772,7 +876,7 @@ class league_model extends base_model {
 	 *  @param	$user_id		{int}	The Requesters USER ID
 	 *  @param	$league_id		{int}	League ID var, if FALSE, defaults to models ID
 	 *  @return					{int}	Count value, 0 if no teams open
-	 *  @since	1.0.6 Beta
+	 *  @since	0.6 Beta
 	 * 
 	 */
 	public function teamRequest($team_id = false, $user_id = false, $league_id = false) {
@@ -800,15 +904,15 @@ class league_model extends base_model {
 				case REQUEST_STATUS_ACCEPTED:
 					$mess = $this->lang->line('league_request_status_accepted');
 					break;
-				case REQUEST_STATUS_DENIED:
-					$mess = $this->lang->line('league_request_status_denied');
-					break;
+				//case REQUEST_STATUS_DENIED:
+				//	$mess = $this->lang->line('league_request_status_denied');
+				//	break;
 			}
 			$this->statusMess = $mess;
 			return false;
 		}
 		$requestData = array('team_id'=>$team_id,'user_id'=>$user_id,'league_id'=>$league_id);
-		$this->db->insert('fantasy_leagues_requests',$requestData);
+		$this->db->insert($this->tables['TEAM_REQUESTS'],$requestData);
 		if ($this->db->affected_rows() == 0) {
 			$this->errorCode = 1;
 			$this->statusMess = 'The request data was not saved to the database.';
@@ -831,7 +935,7 @@ class league_model extends base_model {
 			$league_id = $this->id;
 		}
 		if ($request_id === false || $response === false) {
-		return false;
+			return false;
 		}
 
 		$this->db->select('*');
@@ -847,7 +951,7 @@ class league_model extends base_model {
 			$cleanDb = true;
 			$newStatus = 0;;
 			switch($response) {
-				case 1:
+				case REQUEST_STATUS_ACCEPTED:
 					$data = array('owner_id'=>$row->user_id);
 					$this->db->where('id',$row->team_id);
 					$this->db->update($this->tables['TEAMS'],$data);
@@ -858,13 +962,13 @@ class league_model extends base_model {
 					}
 					$newStatus = REQUEST_STATUS_ACCEPTED;
 					break;
-				case 2:
+				case REQUEST_STATUS_WITHDRAWN:
 					$newStatus = REQUEST_STATUS_WITHDRAWN;
 					break;
-				case -1:
+				case REQUEST_STATUS_DENIED:
 					$newStatus = REQUEST_STATUS_DENIED;
 					break;
-				case 3:
+				case REQUEST_STATUS_REMOVED:
 					$newStatus = REQUEST_STATUS_REMOVED;
 					break;
 				default:
@@ -873,7 +977,7 @@ class league_model extends base_model {
 			} // END switch
 			$this->db->flush_cache();
 			$this->db->where('id',$request_id);
-			$this->db->update('fantasy_leagues_requests',array('status_id'=>$newStatus));
+			$this->db->update($this->tables['TEAM_REQUESTS'],array('status_id'=>$newStatus));
 			if ($this->db->affected_rows() == 0) {
 				$this->errorCode = 3;
 				$this->statusMess = 'The update could not be saved at this time.';
@@ -909,6 +1013,34 @@ class league_model extends base_model {
 		return $this->db->affected_rows();
 	}
 	/**
+	 * 	REMOVE TEAM REQUESTS.
+	 * 	This function changes Team Request to REMOVED to take them out of an active state but DOES NOT
+	 *  delete them.
+	 *
+	 * 	@param	$league_id		(int)	The league identifier
+	 * 	@param	$user_id		(int)	OPTIONAL user identifier
+	 * 	@param	$team_id		(int)	OPTIONAL Team identifier
+	 * 	@return					(int)	Affected Row count
+	 *
+	 * 	@since	1.1 PROD
+	 * 
+	 */
+	public function removeTeamRequests($league_id = false, $user_id = false, $team_id = false) {
+		if ($league_id === false) { $league_id = $this->id; }
+
+		$this->db->where("league_id",$league_id);
+		if ($user_id !== false) {
+			$this->db->where("user_id",$user_id);
+		}
+		if ($team_id !== false) {
+			$this->db->where("team_id",$team_id);
+		}
+		$this->db->where("status_id",REQUEST_STATUS_PENDING);
+		$data = array("status_id", REQUEST_STATUS_REMOVED);
+		$this->db->update($this->tables['TEAM_REQUESTS'], $data);
+		return $this->db->affected_rows();
+	}
+	/**
 	* 	DELETE TEAM INVITES.
 	* 	This function clear the team invitiations for a given league. It can be filtered down to an individual team or
 	* 	user as well.
@@ -918,7 +1050,7 @@ class league_model extends base_model {
 	* 	@param	$team_id		(int)	OPTIONAL Team identifier
 	* 	@return					(int)	Affected Row count
 	*
-	* 	@since	1.0.6
+	* 	@since	0.6 Beta
 	* 	@see	controllers->league->clearRequestQueue()
 	*/
 	public function deleteTeamInvites($league_id = false, $user_id = false, $team_id = false) {
@@ -938,6 +1070,38 @@ class league_model extends base_model {
 			$this->db->where("team_id",$team_id);
 		}
 		$this->db->delete($this->tables['TEAM_INVITES']);
+		return true;
+	}
+	/**
+	* 	REMOVE TEAM INVITES.
+	* 	This function changes the status of an invite to REMOVED. It DOES NOT delete the invite.
+	*
+	* 	@param	$league_id		(int)	The league identifier
+	* 	@param	$user_id		(int)	OPTIONAL user identifier
+	* 	@param	$team_id		(int)	OPTIONAL Team identifier
+	* 	@return					(int)	Affected Row count
+	*
+	* 	@since	1.1 PROD
+	*/
+	public function removeTeamInvites($league_id = false, $user_id = false, $team_id = false) {
+		if ($league_id === false) { $league_id = $this->id; }
+		$userMail = '';
+		if ($user_id !== false) {
+			$userMail = getEmail($user_id);
+		}
+
+		$this->db->flush_cache();
+		$this->db->where("league_id",$league_id);
+
+		if (!empty($userMail)) {
+			$this->db->where("to_email",$userMail);
+		}
+		if ($team_id !== false) {
+			$this->db->where("team_id",$team_id);
+		}
+		$this->db->where("status_id",INVITE_STATUS_PENDING);
+		$data = array("status_id", INVITE_STATUS_REMOVED);
+		$this->db->update($this->tables['TEAM_INVITES'], $data);
 		return true;
 	}
 
