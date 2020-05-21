@@ -1394,7 +1394,9 @@ class draft_model extends base_model {
 	 */
 	public function getPlayerRatings($ootp_league_id = 100, $draftInjured = false) {
 
-		echo("<b>Draft Model -> getPlayerRatings</b><br />");
+		if ($this->debug) {
+			echo("<b>Draft Model -> getPlayerRatings</b><br />");
+		}
 								
 		if ($draftInjured === false) $draftInjured = $this->draftInjured;
 	

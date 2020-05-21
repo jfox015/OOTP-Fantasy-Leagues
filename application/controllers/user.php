@@ -214,70 +214,78 @@ class user extends MY_Controller {
 					/------------------------------------------------------*/
 					// THE USER MUST BE A MEMBER OF THE SITE TO ACCEPT THE INVITATION
 					if ($this->params['loggedIn']) {
-						// VALIDITY CHECK, prevent spam bots
-						$confirm = md5($inviteObj->confirm_str.$inviteObj->confirm_key);
-						if ($confirm == $this->uriVars['ck']) {
 
-							$owners = $this->league_model->getOwnerIds($inviteObj->league_id);
-							if (!in_array($this->params['currUser'],$owners)) {
-								/*-------------------------------------------------------
-								/	INVITEE OWNS NO TEAM
-								/------------------------------------------------------*/
-								//echo("Loading team ".$inviteObj->team_id."<br />");
-								//echo("setting owner id ".$this->params['currUser']."<br />");
-								
-								//$this->team_model->owner_id = $this->params['currUser'];
-								//$this->team_model->save();
-								//echo("Team owner id = ".$this->team_model->owner_id."<br />");
-								$message = '<b>Congratulation on accepting your team invitation.</b><br />You have been set as the owner of the '.$this->team_model->teamname.'. You can now visit your '.anchor('/team/info/'.$inviteObj->team_id,'teams page').' and begin managing your team.';
-								$url = 'user/profile/view/';
-								$updateDb = true;
-								$status_id = INVITE_STATUS_ACCEPTED;
-								$accetped = true;
-								
-								// SEND NOTIFCATION EMAIL TO COMMISSIONER
-								$msg = $this->lang->line('email_league_invite_accept');
-								$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
-								$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
-								$msg = str_replace('[EMAIL]', getUsername($this->params['currUser']), $msg);
-								$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
-								$data['messageBody']= $msg;
-								$data['leagueName'] = $leagueName;
-								$data['title'] = $this->lang->line('email_league_invite_accept_title');
-								$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
-								$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-	
-								$subject = $data['title'];
-								$emailType = 'email_team_invite_accepted_';
-								$sendEmail = true;
-	
+						// Assure the user logged in is the one from the invite
+						if ($this->user_auth_model->getEmail($this->params['currUser']) == $inviteObj->to_email) {
+
+							// VALIDITY CHECK, prevent spam bots
+							$confirm = md5($inviteObj->confirm_str.$inviteObj->confirm_key);
+							if ($confirm == $this->uriVars['ck']) {
+
+								$owners = $this->league_model->getOwnerIds($inviteObj->league_id);
+								if (!in_array($this->params['currUser'],$owners)) {
+									/*-------------------------------------------------------
+									/	INVITEE OWNS NO TEAM
+									/------------------------------------------------------*/
+									//echo("Loading team ".$inviteObj->team_id."<br />");
+									//echo("setting owner id ".$this->params['currUser']."<br />");
+									
+									//$this->team_model->owner_id = $this->params['currUser'];
+									//$this->team_model->save();
+									//echo("Team owner id = ".$this->team_model->owner_id."<br />");
+									$message = '<b>Congratulation on accepting your team invitation.</b><br />You have been set as the owner of the '.$this->team_model->teamname.'. You can now visit your '.anchor('/team/info/'.$inviteObj->team_id,'teams page').' and begin managing your team.';
+									$url = 'user/profile/view/';
+									$updateDb = true;
+									$status_id = INVITE_STATUS_ACCEPTED;
+									$accetped = true;
+									
+									// SEND NOTIFCATION EMAIL TO COMMISSIONER
+									$msg = $this->lang->line('email_league_invite_accept');
+									$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
+									$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
+									$msg = str_replace('[EMAIL]', getUsername($this->params['currUser']), $msg);
+									$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
+									$data['messageBody']= $msg;
+									$data['leagueName'] = $leagueName;
+									$data['title'] = $this->lang->line('email_league_invite_accept_title');
+									$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
+									$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+		
+									$subject = $data['title'];
+									$emailType = 'email_team_invite_accepted_';
+									$sendEmail = true;
+		
+								} else {
+									/*-------------------------------------------------------
+									/	INVITEE ALREADY OWNS A TEAM
+									/------------------------------------------------------*/
+									$error = true;
+									$message = "<b>Invite Error</b><br /><br />We see that you already own a team in this league. You are not allowed to own more than one team in a league at a time.";
+									$updateDb = true;
+									$status_id = INVITE_STATUS_REMOVED;
+
+									// SEND NOTIFCATION EMAIL TO COMMISSIONER
+									$msg = $this->lang->line('email_league_invite_duplicate');
+									$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
+									$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
+									$msg = str_replace('[EMAIL]', getUsername($this->params['currUser']), $msg);
+									$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
+									$data['messageBody']= $msg;
+									$data['leagueName'] = $leagueName;
+									$data['title'] = $this->lang->line('email_league_invite_duplicate_title');
+									$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
+									$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+		
+									$subject = $data['title'];
+									$emailType = 'email_team_invite_already_owner_';
+									$sendEmail = true;
+								}
 							} else {
-								/*-------------------------------------------------------
-								/	INVITEE ALREADY OWNS A TEAM
-								/------------------------------------------------------*/
+								$message = 'A required validation key did not match that in our records. Your invitation could not be validated at this time.';
 								$error = true;
-								$message = "<b>Invite Error</b><br /><br />We see that you already own a team in this league. You are not allowed to own more than one team in a league at a time.";
-								$updateDb = true;
-								$status_id = INVITE_STATUS_REMOVED;
-
-								// SEND NOTIFCATION EMAIL TO COMMISSIONER
-								$msg = $this->lang->line('email_league_invite_duplicate');
-								$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
-								$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
-								$msg = str_replace('[EMAIL]', getUsername($this->params['currUser']), $msg);
-								$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
-								$data['messageBody']= $msg;
-								$data['leagueName'] = $leagueName;
-								$data['title'] = $this->lang->line('email_league_invite_duplicate_title');
-								$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
-								$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-	
-								$subject = $data['title'];
-								$emailType = 'email_team_invite_already_owner_';
-								$sendEmail = true;
 							}
 						} else {
-							$message = 'A required validation key did not match that in our records. Your invitation could not be validated at this time.';
+							$message = 'This invitation appears to have been sent to a different site member. Please check the invitiation again. If errors persist, please ask the Commissioner to resend the Invitation.';
 							$error = true;
 						}
 					} else {
