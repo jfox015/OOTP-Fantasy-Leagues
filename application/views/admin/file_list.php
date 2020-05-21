@@ -40,10 +40,10 @@
     <table cellpadding=2 cellspacing=0>
      <thead>
      <tr class='title'>
-     	<td width="25%" class='hsc_l'>Filename</td>
-        <td width="25%" class='hsc'>Timestamp</td>
-        <td width="25%" class='hsc'>Size</td>
-        <td width="25%" class='hsc' colspan=2>Actions</td>
+     	<td width="45%" class='hsc_l'>Filename</td>
+        <td width="20%" class='hsc'>Timestamp</td>
+        <td width="10%" class='hsc'>Size</td>
+        <td width="20%" class='hsc' colspan=2>Actions</td>
       </tr>
       </thead>
    <?php 
