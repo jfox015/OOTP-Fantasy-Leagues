@@ -634,10 +634,21 @@ class draft extends BaseEditor {
 							// ROUND SUMMARY EMAIL
 							//-----------------------------------------------
 							$round = $picks[$i]['round'];
-							//print('round pick = '.$picks[$i]['pick']."<br />");
+							if ($this->debug) {
+								echo("---------------------------------------<br />");
+								echo("---------------------------------------<br />");
+								echo("-         SUMMARY EMAIL		        -<br />");
+								echo("---------------------------------------<br />");
+								echo("---------------------------------------<br />");
+								print('round pick = '.$picks[$i]['pick']."<br />");
+								echo("this->dataModel->emailDraftSummary = '".$this->dataModel->emailDraftSummary."'<br />");
+								echo("picks[".$i."]['pick'] = '".$picks[$i]['pick']."'<br />");
+							} // END if
 							if ($i > 1 && ($picks[$i]['pick'] == 1 || $i == $lastPick)) {
+
 								if ($this->dataModel->emailDraftSummary == 1) {
 									
+									$sentCount = 0;
 									$message = '';
 									$msg = '';
 									$teamInfo = $this->league_model->getTeamDetails($this->dataModel->league_id);
@@ -709,9 +720,19 @@ class draft extends BaseEditor {
 											if (!empty($email)) {
 												$sent = sendEmail($email,$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
 												$this->params['config']['site_name']." Administrator",$subject,$message,$ownerUsername,'email_draft_summary_');
+												if ($sent) {
+													$sentCount++;
+												}
 											} // END if
 										} // END foreach
 									}  // END if
+									if ($this->debug) {
+										echo("- SUMMARY EMAIL WRAP UP-<br />");
+										print('sent Count  = '.$sentCount."<br />");
+										echo("roundSummary = '".$roundSummary."'<br />");
+										echo("---------------------------------------<br />");
+										echo("---------------------------------------<br />");
+									} // END if
 									//	EDIT 0.6 - CLEAR EMAIL VARS AFTER SEND
 									unset($roundSummary);
 									unset($nextSummary);
@@ -720,7 +741,7 @@ class draft extends BaseEditor {
 									unset($data['messageBody']);
 								}  // END if
 								
-								//	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
+								//	EDIT 0.5 - AUTO PICK OPTION EXPANSION
 								// LIMIT TO ROUND CHECK
 								if ($limitToRound && $picksMade > 0) {
 									$breakBeforePick = true;
@@ -735,7 +756,7 @@ class draft extends BaseEditor {
 							// ----------------------------------
 							
 							/*-----------------------------------------------
-							/	EDIT 1.0.5 - AUTO PICK OPTION EXPANSION
+							/	EDIT 0.5 - AUTO PICK OPTION EXPANSION
 							/--------------------------------------------- */
 							// CHECK IF WE'VE REACHED A PICK LIMIT
 							if ($auto_pick_count > 0 && $picksMade> 0 && $picksMade == $auto_pick_count) {
@@ -750,7 +771,7 @@ class draft extends BaseEditor {
 							}
 							
 							if ($breakBeforePick === true) break;
-							// END 1.0.5 EDITS
+							// END 0.5 EDITS
 							
 							if ($this->debug) {
 								echo("---------------------------------------<br />");
@@ -801,8 +822,8 @@ class draft extends BaseEditor {
 							}
 							
 							// STOP LOOPING IF WE HAVE HIT AN ERROR OR THE LAST PICK
-							// EDIT 1.0.5
-							// SOMETIME WE WANT TO BREAK AFTER THE PICK IS MADE (AVOID LOOPING)
+							// EDIT 0.5
+							// SOMETIMES WE WANT TO BREAK AFTER THE PICK IS MADE (AVOID LOOPING)
 							if ($error || $i>$lastPick || $breakAfterPick === true) {
 								break;
 							}
@@ -1155,7 +1176,7 @@ class draft extends BaseEditor {
 				// GET DRAFT STATUS
 				$status = $this->dataModel->getDraftStatus();
 				//-----------------------------------------------------------------------
-				// UPDATE 1.0.3
+				// UPDATE 0.3
 				// TEST TO ASSURE PLAYERS HAVE BEEN IMPORTED BEFORE DISPLAYING THE PAGE
 				//-----------------------------------------------------------------------
 				if (!isset($this->player_model)) {
@@ -1334,7 +1355,7 @@ class draft extends BaseEditor {
 	 * 	@param 		$this->uriVars['player_id_list']	{String} 	List of player ids
 	 *  @param 		$this->uriVars['user_id']			(Integer) 	Optional Fantasy user ID
 	 *  @return											{JSON}		JSON Object response
-	 *  @since		1.0.5
+	 *  @since		0.5
 	 *  @access		public
 	 */
 	public function saveDraftList() {
@@ -1528,7 +1549,7 @@ class draft extends BaseEditor {
 	 *	@access	protected
 	 *	@param	$team_id		(Integer)	Fantasy Team ID
 	 *	@return					(Integer)	Fantasy Owner (user) ID	
-	 *	@since 	1.0.5
+	 *	@since 	0.5
 	 */
 	protected function resolveTeamOwner($team_id) {
 		if (!isset($this->team_model)) {
@@ -1619,7 +1640,7 @@ class draft extends BaseEditor {
 		if ($this->input->post('uid')) {
 			$this->uriVars['uid'] = $this->input->post('uid');
 		} // END if
-		// EDIT 1.0.5 
+		// EDIT 0.5 Beta 
 		// NEW QUERY VARS
 		if ($this->input->post('autoTime')) { // USED BY DRAFT TIME MODULE
 			$this->uriVars['autoTime'] = $this->input->post('autoTime');
@@ -1875,7 +1896,7 @@ class draft extends BaseEditor {
 		$this->data['thisItem']['playersInfo'] = $this->player_model->getPlayersDetails($draftedPlayers);
 		$this->data['thisItem']['draftResults'] = $this->dataModel->getDraftResults();
 		
-		// EDITS 1.0.5
+		// EDITS 0.5 Beta
 		// IF ADMIN OR COMMISH, LOAD AVAILABLE PLAYERS FOR MANUAL/EDIT PICK DIALOG
 		if ($isAdmin || $isCommish) {
 			$this->data['playerList'] = $this->dataModel->getPlayerPool(false,$this->params['config']['ootp_league_id'], NULL, NULL,  NULL, NULL, 0, -1, 0, $this->dataModel->league_id,$this->ootp_league_model->current_date,NULL,'all',-1,true);
@@ -1883,7 +1904,7 @@ class draft extends BaseEditor {
 		if (isset($this->uriVars['autoTime']) && $this->uriVars['autoTime'] != -1) {
 			$this->data['thisItem']['autoTime'] = $this->uriVars['autoTime'];
 		}
-		// END 1.0.5 EDITS
+		// END 0.5 Beta EDITS
 		
 		//echo($this->db->last_query()."<Br />");
 		$this->params['subTitle'] = "League Draft";
