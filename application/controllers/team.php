@@ -332,7 +332,7 @@ class team extends BaseEditor {
 				$this->data['thisItem']['playoffsTrades'] = $this->league_model->allow_playoff_trades;
 			}
 			
-			$this->data['showAdmin'] = (($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $configPeriodId) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
+			$this->data['showAdmin'] = ($this->params['loggedIn'] && ($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $configPeriodId) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
 			if (($curr_period['id']) >= $total_periods) $this->data['showAdmin'] = false;
 			
 			$this->params['content'] = $this->load->view($this->views['LINEUP'], $this->data, true);
@@ -2711,13 +2711,13 @@ class team extends BaseEditor {
 			$league_name = "Unknown League";
 		}
 		$lg_admin = false;
-		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->league_model->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
+		if ($this->params['loggedIn'] && ($this->params['currUser'] == $this->league_model->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 			$lg_admin = true;
 		}
 		array_push($this->params['subNavSection'], league_nav($this->dataModel->league_id, $league_name,$lg_admin,true,$scoring_type));
 		
 		$tm_admin = false;
-		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->dataModel->owner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
+		if ($this->params['loggedIn'] && ($this->params['currUser'] == $this->dataModel->owner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 			$tm_admin = true;
 		}
 		array_push($this->params['subNavSection'],team_nav($this->dataModel->id,$this->dataModel->teamname." ".$this->dataModel->teamnick, $tm_admin, (($this->params['config']['useTrades'] == 1)?true:false)));

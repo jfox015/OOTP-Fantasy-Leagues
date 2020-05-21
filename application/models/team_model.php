@@ -1296,7 +1296,7 @@ class team_model extends base_model {
 	 */
 	public function getTeamByOwnerId($ownerId = false, $league_id = false) {
 
-		if ($ownerId === false) { return false; }
+		if ($ownerId === false || $ownerId == -1) { return false; }
 		if ($league_id === false) { $league_id = $this->league_id; }
 
 		$team_id = false;

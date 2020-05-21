@@ -429,7 +429,7 @@ class league_model extends base_model {
 	*/
 	public function ownerCanBeCommish($userId = false, $league_id = false) {
 
-		if ($userId === false) { return false; }
+		if ($userId === false || $userId == -1) { return false; }
 		if ($league_id === false) { $league_id = $this->id; }
 
 		if ($userId != $this->commissioner_id && !$this->userIsCommish($userId)) {
@@ -450,7 +450,7 @@ class league_model extends base_model {
 	*/
 	public function userIsCommish($userId = false, $league_id = false) {
 
-		if ($userId === false) { return false; }
+		if ($userId === false || $userId == -1) { return false; }
 
 		$this->db->select('id');
 		$this->db->from($this->tblName);
@@ -477,7 +477,7 @@ class league_model extends base_model {
 	*/
 	public function userLeagueCount($userId = false) {
 
-		if ($userId === false) { return false; }
+		if ($userId === false || $userId == -1) { return false; }
 
 		$this->db->select('id');
 		$this->db->from($this->tblName);

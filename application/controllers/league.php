@@ -50,7 +50,7 @@ class league extends BaseEditor {
 				$isAdmin = ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true: false;
 				$isCommish = $this->dataModel->userIsCommish($this->params['currUser']) ? true: false;
 				if (!$isAdmin && !$isCommish) {
-					if ($this->params['currUser'] == -1 || !$this->dataModel->isLeagueMember($this->params['currUser'])) {
+					if (!$this->params['loggedIn'] || ($this->params['loggedIn'] && !$this->dataModel->isLeagueMember($this->params['currUser']))) {
 						redirect('/league/privateLeague/'.$this->uriVars['id']);
 					}
 				}
@@ -2619,7 +2619,7 @@ class league extends BaseEditor {
 	protected function makeNav($private = false) {
 		$admin = false;
 		$scoring_type = $this->dataModel->getScoringType();
-		if (isset($this->params['currUser']) && ($this->params['currUser'] == $this->dataModel->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)){
+		if ($this->params['loggedIn'] && ($this->params['currUser'] == $this->dataModel->commissioner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)){
 			$admin = true;
 		}
 		array_push($this->params['subNavSection'],league_nav($this->dataModel->id, $this->dataModel->league_name,$admin,false,$this->dataModel->getScoringType(),$private));

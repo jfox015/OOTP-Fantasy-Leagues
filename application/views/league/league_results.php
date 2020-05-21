@@ -25,9 +25,9 @@
         <?php 
         $winners = array();
         if (isset($games) && sizeof($games) > 0) { ?>
-        <div align="center" style="width:800px;margin:auto 0;">
+        <div class='hsc2_c' style="width:800px;margin:auto 0;">
             <div class='textbox'>
-            <table cellpadding="0" cellspacing="0" border="0" style="width:800px;">
+            <table cellpadding="0" cellspacing="0" style="width:800px;">
             <tr class='title'>
                 <td style='padding:6px' colspan="8">Games</td>
             </tr>
@@ -43,7 +43,7 @@
                 foreach($games as $game_id => $data) { ?>
                 <td width="16%">
                 <a href="#" rel="game_nav" id="<?php echo($game_id); ?>"> 
-                <table cellpadding="6" cellspacing="0" border="0" style="width:100%; border:1px solid white; background:#000000;">
+                <table cellpadding="6" cellspacing="0" style="width:100%; border:1px solid white; background:#000000;">
                 <?php 
                 $homeColor = "#fff";
                 $awayColor = "#fff";
