@@ -598,10 +598,11 @@ class user_auth_model extends base_model {
 	 */
 	public function getUserList($limit = 5, $status = false){
 		$this->db->select('id,username,email,dateCreated');
-		$this->db->limit($limit);
-		
+		if ($limit != -1) {
+			$this->db->limit($limit);
+		}
 		if ($status !== false) {
-			$this->db->where($status);
+			$this->db->where('active', $status);
 		}
 		$query = $this->db->get($this->tblName);
 		$users = array();

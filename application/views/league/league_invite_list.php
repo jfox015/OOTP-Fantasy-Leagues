@@ -84,8 +84,8 @@
 		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>league/requestResponse" name='responseForm' id="responseForm">
         <input type='hidden' id="submitted" name='submitted' value='1'></input>
         <input type='hidden' id="request_id" name='request_id' value='-1'></input>
-        <input type='hidden' id="type" name='type' value='-1'></input>
-        <input type='hidden' id="id" name='id' value='<?php print($league_id); ?>'></input>
+        <input type='hidden' id="type" name='type' value='<?php echo(REQUEST_STATUS_DENIED); ?>'></input>
+        <input type='hidden' id="league_id" name='league_id' value='<?php print($league_id); ?>'></input>
         <div class='textbox'>
          <table cellpadding="2" cellspacing="0" cellborder="0">
           <tr class='title'><td>Message to User</td></tr>
@@ -228,7 +228,9 @@
 					<td class="hsc2_c <?php echo($class); ?>"><?php print($row['inviteStatus']); ?></td>
 					<td class='hsc2_c'><?php 
 					if ($row['status_id'] == INVITE_STATUS_PENDING) {
-						print(anchor('#','<img src="'.PATH_IMAGES.'/icons/icon_fail_major.png" width="16" height="16" border="0" alt="Retract" align="absmiddle" /> Retract',array('id'=>$row['id']."|".$row['league_id'],'rel'=>'retractInvite'))); 
+						print(anchor('#','<img src="'.PATH_IMAGES.'/icons/icon_fail_major.png" width="16" height="16" border="0" alt="Retract" align="absmiddle" /> Withdraw',array('id'=>$row['id']."|".$row['league_id'],'rel'=>'retractInvite')));
+						echo('&nbsp;&nbsp;');
+						print(anchor('/league/resendInvitation/invite_id/'.$row['id'].'/league_id/'.$row['league_id'],'<img src="'.PATH_IMAGES.'/icons/next.png" width="16" height="16" border="0" alt="Resend" align="absmiddle" /> Resend')); 
 					}
 					?>  
     			</tr>
@@ -291,7 +293,7 @@
 					<td class="hsc2_c <?php echo($class); ?>"><?php print($row['requestStatus']); ?></td>
                     <td class='hsc2_c'><?php 
 					if ($row['status_id'] == REQUEST_STATUS_PENDING) {
-						print(anchor('/league/requestResponse/id/'.$league_id.'/request_id/'.$row['id'].'/type/'.REQUEST_STATUS_WITHDRAWN,'<img src="'.PATH_IMAGES.'/icons/accept.png" width="16" height="16" border="0" alt="Accept" align="absmiddle" /> Accept').' &nbsp;'.
+						print(anchor('/league/requestResponse/request_id/'.$row['id'].'/type/'.REQUEST_STATUS_ACCEPTED.'/league_id/'.$league_id,'<img src="'.PATH_IMAGES.'/icons/accept.png" width="16" height="16" border="0" alt="Accept" align="absmiddle" /> Accept').' &nbsp;'.
 							  anchor('#','<img src="'.PATH_IMAGES.'/icons/icon_fail.png" width="16" height="16" border="0" alt="Reject" align="absmiddle" /> Reject',array('id'=>$row['id'],'rel'=>'denyResponse'))	); 
 					}		  
 					?>  

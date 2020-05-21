@@ -73,6 +73,8 @@
 							} // END if
 						} // END if
 					} else { 
+                        $inviteFound = false;
+                        $requestFound = false;
                         if (isset($invites) && sizeof($invites) > 0 ){
                             foreach($invites as $invite) {
                                 if ($invite['team_id'] == $teamId) {
@@ -203,9 +205,9 @@
 			echo(form_hidden('submitted',"1"));
 			echo(form_fieldset_close());
 			echo(form_close()); ?>
-            <p /><br />          
+            <p><br />          
     </div>
-    <p /><br />
+    <p><br />
     <script type="text/javascript" encoding="UTF-8">
 	function removeOwner(teamId) {
 		if (confirm('Are you sure you wish to remove this owner from this team? This action CANNOT be undone.')) {

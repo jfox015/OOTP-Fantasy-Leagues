@@ -116,8 +116,8 @@ function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$fi
 	$headers  = 'MIME-Version: 1.0' . "\r\n";
 	$headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
 	// Create email headers
-	$headers .= "To: ".$to_name."<".$to.">\r\n".
-		"From: ".$fromName."<admin@".$_SERVER['SERVER_NAME'].">\r\n".
+	$headers .= "To: ".$to_name." <".$to.">\r\n".
+		"From: ".$fromName." <admin@".$_SERVER['SERVER_NAME'].">\r\n".
 		"Reply-To: <no-reply@".$_SERVER['SERVER_NAME'].">\r\n".
 		"X-Mailer:: PHP/" . phpversion();
 	// IF WERE TESTING LOCALLY WITHOUT SENDMAIL(), SAVE MESSAGE AS AN HTML LOCALLY
@@ -128,6 +128,9 @@ function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$fi
 		if (!function_exists('write_file')) {
 			$ci->load->helper('file');
 		} // END if
+		$headers = str_replace('\r\n', '<br />', $headers);
+		$headers = str_replace('<', '&lt;', $headers);
+		$headers = str_replace('>', '&gt;', $headers);
 		write_file(PATH_MEDIA_WRITE.'/'.$filePrefix.substr(md5($to.time()),0,8).".html",$headers."<br />".$message);
 		return true;
 	

@@ -1,6 +1,10 @@
 <?php
-$lang['email_footer'] = "<p>The Commish</p>
+$lang['email_footer_commish'] = "<p>The Commish</p>
 <p>[LEAGUE_NAME] Fantasy League</p>";
+$lang['email_footer_admin'] = "<p>[SITE_NAME] Admin</p>";
+$lang['email_footer_user'] = "<p>[USERNAME]</p>
+<p>[LEAGUE_NAME] Fantasy League</p>";
+
 // ACCESS MESSAGING
 $lang['access_heading_not_authorized'] = "403 Error - Not authorized.";
 $lang['access_not_authorized'] = "We're sorry, but you are not authorized to view this content.";
@@ -93,28 +97,31 @@ $lang['email_league_team_request_accepted'] = 'To [USERNAME],
 <p>Congratulations! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has approved your request to own the [TEAM_NAME]. You can login to the site and begin [TEAM_HOME_URL] anytime.</p>
 <p>';
 $lang['email_league_team_request_denied'] = 'To [USERNAME],
-<p>We&#039;re Sorry! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has denied your request to own the [TEAM_NAME].</p>[MESSAGE]
-<p>';
+<p>We&#039;re Sorry! The commissioner of the [LEAGUE_NAME] leagues, [COMMISH], has denied your request to own the [TEAM_NAME].</p><p>[MESSAGE]</p>';
 $lang['email_league_team_request_withdrawn'] = 'To [COMMISH],
-<p>The user, [USERNAME], has withdrawn the ur request to own the [TEAM_NAME]. This request is no longer active in the system</p>
+<p>The user, [USERNAME], has withdrawn their request to own the [TEAM_NAME] in your League. This request is no longer active in the system</p>
 <p>';
 $lang['email_league_team_request_title'] = 'Team Request';
 $lang['email_league_team_request_accepted_title'] = 'Team Request Accepted';
 $lang['email_league_team_request_denied_title'] = 'Team Request Denied';
 $lang['email_league_team_request_withdrawn_title'] = 'Team Request Withdrawn';
 
+$land['league_webpage_request_response_commish_decision'] = "An email notifying them of this decision has been sent.";
+$land['league_webpage_request_response_user_decision'] = "An email notifying the commissioner of this decision has been sent.";
+
+$land['league_request_response_no_email_notfication'] = "<b>FYI</b>: An email notification could not be sent at this time. Be sure to follow up with an email about this decision.";
+
 $lang['email_league_invite_accept'] = 'To [COMMISH],
 <p><b>[EMAIL]</b> has chosen to accept your invitation to run the <i>[TEAM_NAME]</i> and has been assigned as the owner of the team.</P>';
 $lang['email_league_invite_accept_title'] = '[TEAM_NAME] Team Invitation Accepted';
 
 $lang['email_league_invite_decline'] = 'To [COMMISH],
-<p><b>[EMAIL]</b> has chosen to decline your invitation to run the <i>[TEAM_NAME]</i>.</P><p>The invitation has been deleted from the list of pending invitations.</p>';
+<p><b>[EMAIL]</b> has chosen to decline your invitation to run the <i>[TEAM_NAME]</i>.</P><p>The invitation has been removed from the list of pending invitations.</p>';
 $lang['email_league_invite_decline_title'] = '[TEAM_NAME] Team Invitation Declined';
 
 $lang['email_league_invite_duplicate'] = 'To [COMMISH],
-<p><b>[EMAIL]</b> tried to respond to an invite for the <i>[TEAM_NAME]</i>.</P><p>The user already owns a team in your League so this invitations status has been changed to REMOVED. The user HAS NOT been assigned to this team as an owner.</p>';
-$lang['email_league_invite_duplicate_title'] = 'Response to [TEAM_NAME] Invitation Already Responded To';
-
+<p><b>[EMAIL]</b> tried to respond to an invite for the <i>[TEAM_NAME]</i>.</p><p>The user, however, already owns a team in your League so this invitations status has been changed to REMOVED. The user HAS NOT been assigned to this team.</p>';
+$lang['email_league_invite_duplicate_title'] = 'Response to [TEAM_NAME] Invitation.';
 
 
 $lang['league_waiver_claim_denied_response'] = 'The waiver claim for <b>[PLAYER_NAME]</b> by <b>[USERNAME]</b> has been successfully denied. An e-mail has been sent to the user to inform them of this denial.';

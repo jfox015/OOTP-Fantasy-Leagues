@@ -615,105 +615,18 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
-	/**
-	 *	AVATAR.
-	 *	Draws the avatar editor page
-	 *
-	 */
-	public function avatar() {
-		if ($this->params['loggedIn']) {
-			$this->getURIData();
-			$this->loadData();
-
-			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
-				$this->data['avatar'] = $this->dataModel->avatar;
-				$this->data['league_id'] = $this->dataModel->id;
-				$this->data['leagueName'] = $this->dataModel->league_name;
-				$this->data['subTitle'] = 'Edit League Avatar';
-
-				//echo("Submitted = ".(($this->input->post('submitted')) ? 'true':'false')."<br />");
-				if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name']))) {
-					if ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name'])) {
-						$fv = & _get_validation_object();
-						$fv->setError('avatarFile','The avatar File field is required.');
-					}
-					$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
-					$this->params['pageType'] = PAGE_FORM;
-					$this->displayView();
-				} else {
-					if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || strpos($_FILES['avatarFile']['name'],'.jpeg') || strpos($_FILES['avatarFile']['name'],'.gif') || strpos($_FILES['avatarFile']['name'],'.png'))) {
-						$fv = & _get_validation_object();
-						$fv->setError('avatarFile','The file selected is not a valid image file.');
-						$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
-						$this->params['pageType'] = PAGE_FORM;
-						$this->displayView();
-					} else {
-						if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
-							$change = $this->dataModel->applyData($this->input, $this->params['league_id']);
-							if ($change) {
-								$this->dataModel->save();
-								$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');
-								redirect('league/info/'.$this->dataModel->id);
-							} else {
-								$message = '<p class="error">Avatar Change Failed. '.$this->dataModel->statusMess;
-								$message .= '</p >';
-								$this->data['theContent'] = $message;
-								$this->makeNav();
-								$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-								$this->displayView();
-								//$this->session->set_flashdata('message', $message);
-								//redirect('league/avatar');
-							}
-						} else {
-							throw new UploadException($_FILES['avatarFiles']['error']);
-						}
-					}
-				}
-			} else {
-				$this->data['subTitle'] = "Unauthorized Access";
-				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
-				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
-				$this->displayView();
-			}
-		} else {
-	        $this->session->set_userdata('loginRedirect',current_url());
-			redirect('user/login');
-	    }
-	}
-	/**
-	 *	LEAGUE Listing.
-	 *	Shows a list of leagues that are on the site. Replaces both the League Search and joinleague
-	 *  screens
-	 *
-	 *	@since	1.0.3 PROD
-	 *  
-	 *
-	 */
-	public function leagueList() {
-		$this->init();
-		$this->data['league_list_intro_str'] = $this->lang->line('league_list_intro_str');
-		$this->data['subTitle'] = $this->lang->line('league_list_title');
-		$userVar = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->params['currUser'] : false;
-		$curr_period_id = 1;
-		if ($this->params['config']['current_period'] > 1) {
-			$curr_period_id = $this->params['config']['current_period'];
-		}
-		$this->data['curr_period_id'] = $curr_period_id;
-		$this->data['leagueName'] =  $this->ootp_league_model->name;
-		$this->data['current_year'] =  date('Y',(strtotime($this->ootp_league_model->current_date)));
-		$this->data['league_list'] = $this->dataModel->getLeagueList($userVar, true, true);
-		$this->data['loggedIn'] =$this->params['loggedIn'];
-		$this->makeNav();
-		$this->params['pageType'] = PAGE_FORM;
-		$this->params['content'] = $this->load->view($this->views['LEAGUE_LIST'], $this->data, true);
-		$this->displayView();
-	}
+	/*-----------------------------------------------------------------------------
+	/
+	/	TEAM REQUESTS
+	/
+	/-----------------------------------------------------------------------------*/
 	/**
 	 *	REQUEST A TEAM.
 	 *	Show a list of leagues that are 1) have teams without owners and 2) are open to requests from
 	 *	site members.
 	 *
-	 *	@since	1.0.5
+	 *	@since			0.5 Beta
+	 *  @changelog		1.1 PROD	- Improved Request flow and messaging
 	 *
 	 */
 	public function requestTeam() {
@@ -797,15 +710,9 @@ class league extends BaseEditor {
 	 * 	WITHDRAW REQUEST
 	 *  A function that allows a user to withdraw a team request.
 	 * 
-	 *  @param	request_id		(int)	The Request ID
-	 *  @param	type_id			(int)	The Response Type
-	 *  @param	league_id		(int)	The League ID for messaging purposes
-	 *  @param	reqMessage		(int)	A message from the Commissioner to the user
-	 * 
 	 * 	@since	1.1 PROD
 	 * 
 	 ------------------------------------------------------------------------------------------*/
-	
 	public function withdrawRequest() {
 		if ($this->params['loggedIn']) {
 			$this->init();
@@ -820,10 +727,6 @@ class league extends BaseEditor {
 				$request_reponse = $this->input->post('reqMessage') ? $this->input->post('reqMessage') : "";
 				$league_id = $this->input->post('league_id') ? $this->input->post('league_id') : -1;
 			}
-			echo("request_id = ".$request_id."<br />");
-			echo("request_type = ".$request_type."<br />");
-			echo("request_reponse = ".$request_reponse."<br />");
-			echo("league_id= ".$league_id."<br />");
 
 			$this->dataModel->load($league_id);
 			// CONTINUE ONLY IF WE HAVE A VALID REQUEST ID AND RESPONSE TYPE
@@ -831,8 +734,6 @@ class league extends BaseEditor {
 				/* Get INVITE DETAILS */
 				$requestObj = $this->dataModel->getLeagueRequest($request_id);
 
-				echo("requestObj->id = ".$requestObj->id."<br />");
-				echo("requestObj->status_id = ".$requestObj->status_id."<br />");
 				if ($requestObj->status_id == REQUEST_STATUS_PENDING) {
 
 					$changes = $this->dataModel->updateRequest($request_id, REQUEST_STATUS_WITHDRAWN);
@@ -850,12 +751,16 @@ class league extends BaseEditor {
 								
 						$leagueName = $this->dataModel->league_name;
 						$commishId = $this->dataModel->commissioner_id;
+						if ($commishId == -1) {
+							$commishId = $this->params['config']['primary_contact'];
+						}
 						$username = getUsername($requestObj->user_id);
 
 						$message = 'The invitation has been marked as <b>withdrawn</b>.';
 
 						// SEND EMAIL NOTITICATION TO THE INVITEE
 						$msg = $this->lang->line('email_league_request_withdrawn');
+						$msg .= $this->lang->line('email_footer_admin');
 						$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
 						$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
 						$msg = str_replace('[USERNAME]', $username , $msg);
@@ -864,6 +769,7 @@ class league extends BaseEditor {
 						if (!empty($request_reponse)) {
 							$msg = str_replace('[MESSAGE]', "'.$username .' said: '".$request_reponse."'<br />",$msg);
 						} // END if
+						$msg = str_replace('[SITE_NAME]', $this->params['config']['site_name'],$msg);
 						$data['messageBody']= $msg;
 						$data['leagueName'] = $leagueName;
 						$data['title'] = $this->lang->line('email_league_request_withdrawn_title');
@@ -904,7 +810,6 @@ class league extends BaseEditor {
 			redirect('user/login');
 		}
 	}
-
 	/**
 	 *	TEAM REQUEST RESPONSE.
 	 *	Handles the commissioners response to the team request. Response types 1 and -1 require the user to
@@ -938,7 +843,7 @@ class league extends BaseEditor {
 				$request_id = $this->input->post('request_id') ? $this->input->post('request_id') : -1;
 				$request_type = $this->input->post('type') ? $this->input->post('type') : false;
 				$request_reponse = $this->input->post('message') ? $this->input->post('message') : "";
-				$league_id = $this->uriVars['league_id'] = $this->input->post('id');
+				$league_id = $this->input->post('league_id') ? $this->input->post('league_id') : -1;
 			} else {
 				$this->getURIData();
 				$request_id = ((isset($this->uriVars['request_id'])) ? $this->uriVars['request_id'] : -1);
@@ -949,10 +854,14 @@ class league extends BaseEditor {
 			$this->dataModel->load($league_id);
 			// CONTINUE ONLY IF WE HAVE A VALID REQUEST ID AND RESPONSE TYPE
 			if ($request_id != -1 && $request_type !== false) {
-				if (($request_type == 2) || ($request_type != 2 && $this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
+				if (($request_type == REQUEST_STATUS_WITHDRAWN) || ($request_type != REQUEST_STATUS_WITHDRAWN && $this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 					if ($this->dataModel->id != -1) {
 						$targetUri = 'league/leagueInvites/'.$this->dataModel->id;
 						$requestArr = $this->dataModel->getLeagueRequests(false, false, $request_id);
+						$commish_id = $this->dataModel->commissioner_id;
+						if ($commish_id == -1) {
+							$commish_id = $this->params['config']['primary_contact'];
+						}
 						if (is_array($requestArr) && sizeof($requestArr) > 0) {
 							$request = $requestArr[0];
 						}
@@ -964,36 +873,40 @@ class league extends BaseEditor {
 							}
 							$outMess = "";
 							$to = $this->user_auth_model->getEmail($request['user_id']);
+							$footer = 'email_footer_commish';
+							
 							switch ($request_type) {
 								case REQUEST_STATUS_ACCEPTED:
 									$msg = $this->lang->line('email_league_team_request_accepted');
 									$data['title'] = $this->lang->line('email_league_team_request_accepted_title');
 									$outMess .= "The user has been assigned as the owner of this team successfully. ";
+									$request_reponse = "The Commissioner said: &quot;".$request_reponse."&quot;";
 									break;
 								case REQUEST_STATUS_DENIED:
 									$msg = $this->lang->line('email_league_team_request_denied');
 									$data['title'] = $this->lang->line('email_league_team_request_denied_title');
 									$outMess .= "The users request has been denied. ";
+									$request_reponse = "The Commissioner said: &quot;".$request_reponse."&quot;";
 									break;
 								case REQUEST_STATUS_WITHDRAWN:
 									$msg = $this->lang->line('email_league_team_request_withdrawn');
 									$data['title'] = $this->lang->line('email_league_team_request_denied_title');
 									$outMess .= "The team request has been successfully withdrawn. ";
-									$to = $this->user_auth_model->getEmail($this->dataModel->commissioner_id);
+									$to = $this->user_auth_model->getEmail($commish_id);
 									$targetUri = '/user/profile';
+									$request_reponse = getUsername($request['user_id'])." said: &quot;".$request_reponse."&quot;";
+									$footer = 'email_footer_admin';
 									break;
 							}
-							$msg .= $this->lang->line('email_footer');
-							$msg = str_replace('[COMMISH]', getUsername($this->dataModel->commissioner_id), $msg);
+							$msg .= $this->lang->line($footer);
+							$msg = str_replace('[COMMISH]', getUsername($commish_id), $msg);
 							$msg = str_replace('[TEAM_HOME_URL]', anchor('/team/info/'.$request['team_id'],'managing your team'),$msg);
 							$msg = str_replace('[USERNAME]', getUsername($request['user_id']), $msg);
 							$msg = str_replace('[TEAM_NAME]', $this->team_model->getTeamName($request['team_id']),$msg);
-							//$request_reponse = ((!empty($request_reponse)) ? str_replace('\n', "<br>",$request_reponse):"");
-							//$reponseMessage = ((!empty($request_reponse)) ? str_replace('[MESSAGE]', $request_reponse, $this->lang->line('league_team_response_template')) : $this->lang->line('no_message_provided'));
 							$msg = str_replace('[MESSAGE]', $request_reponse, $msg);
 							$msg = str_replace('[LEAGUE_NAME]', $this->dataModel->league_name,$msg);
+							$msg = str_replace('[SITE_NAME]', $this->params['config']['site_name'],$msg);
 							$data['messageBody']= $msg;
-							//print("email template path = ".$this->config->item('email_templates')."<br />");
 							$data['leagueName'] = $this->dataModel->league_name;
 							$message = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 							$subject 	 = $this->dataModel->league_name. " Team Request Response";
@@ -1003,18 +916,16 @@ class league extends BaseEditor {
 
 							if($emailSent) {
 								switch ($request_type) {
-									case 1:
-										$outMess .= "An email notifying them of their acceptance has been sent.";
+									case REQUEST_STATUS_ACCEPTED:
+									case REQUEST_STATUS_DENIED:
+										$outMess .= $this->lang->line('league_webpage_request_response_commish_decision');
 										break;
-									case -1:
-										$outMess .= "An email notifying them of their denial has been sent.";
-										break;
-									case 2:
-										$outMess .= "An email notifying the commissioner of your decision has been sent.";
+									case REQUEST_STATUS_WITHDRAWN:
+										$outMess .= $this->lang->line('league_webpage_request_response_user_decision');
 										break;
 								}
 							} else {
-								$outMess .= "<b>FYI</b>: An email notifying them of their acceptance could not be sent at this time. Be sure to follow up with this user.";
+								$outMess .= $this->lang->line('league_request_response_no_email_notfication');
 							}
 							$this->session->set_flashdata('message', '<span class="success">'.$outMess.'</span>');
 						} else {
@@ -1078,6 +989,11 @@ class league extends BaseEditor {
 			redirect('user/login');
 		}
 	}
+	/*---------------------------------------------------------------------------
+	/
+	/	LEAGUE ADMIN
+	/
+	/--------------------------------------------------------------------------*/
 	/**
 	 *	TEAM ADMIN.
 	 *	Draws and accepts changes to the team structure from the team admin screen.
@@ -1184,6 +1100,108 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/*---------------------------------------------------------------------------
+	/
+	/	LEAGUE WEB PAGES
+	/
+	/--------------------------------------------------------------------------*/
+	/**
+	 *	AVATAR.
+	 *	Draws the avatar editor page
+	 *
+	 */
+	public function avatar() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->loadData();
+
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+				$this->data['avatar'] = $this->dataModel->avatar;
+				$this->data['league_id'] = $this->dataModel->id;
+				$this->data['leagueName'] = $this->dataModel->league_name;
+				$this->data['subTitle'] = 'Edit League Avatar';
+
+				//echo("Submitted = ".(($this->input->post('submitted')) ? 'true':'false')."<br />");
+				if (!($this->input->post('submitted')) || ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name']))) {
+					if ($this->input->post('submitted') && !isset($_FILES['avatarFile']['name'])) {
+						$fv = & _get_validation_object();
+						$fv->setError('avatarFile','The avatar File field is required.');
+					}
+					$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				} else {
+					if (!(strpos($_FILES['avatarFile']['name'],'.jpg') || strpos($_FILES['avatarFile']['name'],'.jpeg') || strpos($_FILES['avatarFile']['name'],'.gif') || strpos($_FILES['avatarFile']['name'],'.png'))) {
+						$fv = & _get_validation_object();
+						$fv->setError('avatarFile','The file selected is not a valid image file.');
+						$this->params['content'] = $this->load->view($this->views['AVATAR'], $this->data, true);
+						$this->params['pageType'] = PAGE_FORM;
+						$this->displayView();
+					} else {
+						if ($_FILES['avatarFile']['error'] === UPLOAD_ERR_OK) {
+							$change = $this->dataModel->applyData($this->input, $this->params['league_id']);
+							if ($change) {
+								$this->dataModel->save();
+								$this->session->set_flashdata('message', '<p class="success">The image has been successfully updated.</p>');
+								redirect('league/info/'.$this->dataModel->id);
+							} else {
+								$message = '<p class="error">Avatar Change Failed. '.$this->dataModel->statusMess;
+								$message .= '</p >';
+								$this->data['theContent'] = $message;
+								$this->makeNav();
+								$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+								$this->displayView();
+								//$this->session->set_flashdata('message', $message);
+								//redirect('league/avatar');
+							}
+						} else {
+							throw new UploadException($_FILES['avatarFiles']['error']);
+						}
+					}
+				}
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->displayView();
+			}
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());
+			redirect('user/login');
+	    }
+	}
+	/**
+	 *	LEAGUE LISTING.
+	 *	Shows a list of leagues that are on the site. Replaces both the League Search and joinleague
+	 *  screens
+	 *
+	 *	@since	1.0.3 PROD
+	 *  
+	 *
+	 */
+	public function leagueList() {
+		$this->init();
+		$this->data['league_list_intro_str'] = $this->lang->line('league_list_intro_str');
+		$this->data['subTitle'] = $this->lang->line('league_list_title');
+		$userVar = (isset($this->params['currUser']) && $this->params['currUser'] != -1) ? $this->params['currUser'] : false;
+		$curr_period_id = 1;
+		if ($this->params['config']['current_period'] > 1) {
+			$curr_period_id = $this->params['config']['current_period'];
+		}
+		$this->data['curr_period_id'] = $curr_period_id;
+		$this->data['leagueName'] =  $this->ootp_league_model->name;
+		$this->data['current_year'] =  date('Y',(strtotime($this->ootp_league_model->current_date)));
+		$this->data['league_list'] = $this->dataModel->getLeagueList($userVar, true, true);
+		$this->data['loggedIn'] =$this->params['loggedIn'];
+		$this->makeNav();
+		$this->params['pageType'] = PAGE_FORM;
+		$this->params['content'] = $this->load->view($this->views['LEAGUE_LIST'], $this->data, true);
+		$this->displayView();
+	}
+	/**
+	 *	LEAGUE RULES
+	 *	Draws the current rules for the league
+	 */
 	public function rules() {
 		$this->getURIData();
 		$this->data['subTitle'] = "League Rules";
@@ -1539,7 +1557,10 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    } // END if
 	}
-
+	/**
+	 *	LEAGUE TRANSACTIONS
+	 *	Displays the transactions for the League.
+	 */
 	public function transactions() {
 		$this->getURIData();
 		$this->data['subTitle'] = "League Transactions";
@@ -1746,6 +1767,11 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/**
+	 * 	CHANGE COMMISSIONER
+	 * 	Changes the Commissioner ID for a League
+	 *
+	 */
 	public function changeCommissioner() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
@@ -1766,60 +1792,100 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/*--------------------------------------------------------------------------------
+	/
+	/	TEAM INVITATIONS
+	/
+	/-------------------------------------------------------------------------------*/
+	/**
+	 * 	INVITE OWNER
+	 * 	Executes a team invitation from a League Commissioner
+	 * 
+	 * @see	$this->teamAdmin
+	 */
 	public function inviteOwner() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
 			$this->loadData();
 			if (!isset($this->uriVars['sent'])) {
 				$error = false;
+				if (!isset($this->user_auth_model)) {
+					$this->load->model('user_auth_model');
+				}
 				$this->params['subTitle'] = $this->data['subTitle'] = "Invite New Owner";
 				$this->data['owner_id'] = (isset($this->uriVars['owner_id'])) ? $this->uriVars['owner_id'] : '';
 				$this->data['team_id'] = (isset($this->uriVars['team_id'])) ? $this->uriVars['team_id'] : '';
 				$this->data['sent'] = (isset($this->uriVars['sent'])) ? true : false;
 
-				$this->form_validation->set_rules('email', 'Email Address', 'required|valid_email');
+				$this->form_validation->set_rules('email', 'Email Address', 'valid_email');
 				$this->form_validation->set_rules('inviteMessage', 'Invitation message', 'required');
-				if ($this->form_validation->run() == false) {
+				// ASSURE COMMISH PICKED A USER OR ENTERED AN EMAIL
+				$userEmail = '';
+				if ($this->input->post('email')) {
+					$userEmail = $this->input->post('email');
+				} else if ($this->input->post('user_id') && $this->input->post('user_id') != -1) {
+					$userEmail = $this->user_auth_model->getEmail($this->input->post('user_id'));
+				}
+
+				if ($this->form_validation->run() == false || ($this->form_validation->run() == true && $this->input->post('submitted') == 1 && empty($userEmail))) {
+					$this->data['customError'] = '';
+					if ($this->input->post('submitted') == 1 && empty($userEmail)) {
+						$this->data['customError'] = "<br />You must entier enter an e-mail address OR select a site member to complete your invitation.";
+					}
 					$this->data['input'] = $this->input;
 					$this->data['league_id'] = $this->dataModel->id;
+					// GET LIST OF SITE MEMBERS WHO DON"T OWN A TEAM IN THIS LEAGUE
+					
+					$users = $this->user_auth_model->getUserList(-1, true);
+					$owners = $this->dataModel->getOwnerIds($this->data['league_id']);
+					//echo(" = ".$."<br />");
+					$displayableUsers = array('-1'=>'Select Site Member');
+					foreach($users as $user) {
+						$found = false;
+						foreach($owners as $owner) {
+							if ($owner == $user['id']) {
+								$found = true;
+								break;
+							}
+						}
+						if (!$found)
+							$displayableUsers[$user['id']] = $user['username'];
+					}
+					$this->data['availableUsers'] = $displayableUsers;
 					$this->data['defaultMessage'] = str_replace('[LEAGUE_NAME]',$this->dataModel->league_name,$this->lang->line('league_invite_default'));
 					$this->params['content'] = $this->load->view($this->views['INVITE'], $this->data, true);
 					$this->params['pageType'] = PAGE_FORM;
 					$this->makeNav();
 					$this->displayView();
 				} else {
-					$this->db->select('id');
-					$this->db->where('to_email',$this->input->post('email'));
-					$this->db->where('league_id',$this->dataModel->id);
-					$this->db->from('fantasy_invites');
-					$count = $this->db->count_all_results();
+
+					$userInvites = $this->dataModel->getLeagueInvites(true, $this->dataModel->id, $userEmail);
+					$count = sizeof($userInvites);
 					if ($count == 0) {
 
-						$confirmStr  = substr(md5(time().$this->input->post('email')),0,16);
-						$confirmKey  = substr(md5($this->input->post('email').time()),0,8);
-						$email_mesg	 = "To ".$this->input->post('email').",";
+						$confirmStr  = substr(md5(time().$userEmail),0,16);
+						$confirmKey  = substr(md5($userEmail.time()),0,8);
+						$email_mesg	 = "To ".$userEmail.",";
 						$email_mesg	.= $this->input->post('inviteMessage');
-						$link 		 = $this->params['config']['fantasy_web_root'].'user/inviteResponse/email/'.urlencode($this->input->post('email')).'/team_id/'.$this->data['team_id'].'/league_id/'.$this->dataModel->id.'/ck/'.md5($confirmStr.$confirmKey);
-						$email_mesg	.= '<p><a href="'.$link.'/ct/1">Accept the invitation</a> <br /><br />';
-						$email_mesg	.= '<p><a href="'.$link.'/ct/-1">Decline the invitation</a> <br /><br />';
+						$link 		 = $this->params['config']['fantasy_web_root'].'user/inviteResponse/email/'.urlencode($userEmail).'/team_id/'.$this->data['team_id'].'/league_id/'.$this->dataModel->id.'/ck/'.md5($confirmStr.$confirmKey);
+						$email_mesg	.= '<p><a href="'.$link.'/ct/'.INVITE_STATUS_ACCEPTED.'">Accept the invitation</a> <br /><br />';
+						$email_mesg	.= '<p><a href="'.$link.'/ct/'.INVITE_STATUS_DECLINED.'">Decline the invitation</a> <br /><br />';
 						$subject 	 = $this->dataModel->league_name. " Owner Invitation";
-						//$headers  	 = "MIME-Version: 1.0\r\n";
-						//$headers 	.= "Content-type: text/html; charset=iso-8859-1\r\n";
-
-						$success = sendEmail($this->input->post('email'),
+						
+						$success = sendEmail($userEmail,
 										 $this->user_auth_model->getEmail($this->dataModel->commissioner_id),
 										 $this->dataModel->league_name." Commissioner",
 				             			 $subject, $email_mesg,'','email_lg_invite_');
 						if (!$success) {
 							$error = true;
-							$message = 'The mail message failed to send.';
+							$message = 'The email message failed to send.';
 						}
 					} else {
 						$error = true;
-						$message = 'An invitation is already pending for '.$this->input->post('email').'. They must decline the current invitation before another can be sent.<p />View a complete list of '.anchor('league/leagueInvites/'.$this->dataModel->id,'pending invitiations').'.';
+						$message = 'An invitation is already pending for '.$userEmail.'. They must decline the current invitation before another can be sent.<p />View a complete list of '.anchor('league/leagueInvites/'.$this->dataModel->id,'pending invitiations').'.';
 					}
 					if (!$error) {
-						$inviteData = array('to_email'=>$this->input->post('email'),'from_id'=>$this->dataModel->commissioner_id,
+						$inviteData = array('to_email'=>$userEmail,'from_id'=>$this->dataModel->commissioner_id,
 											'league_id'=>$this->dataModel->id, 'team_id'=>$this->input->post('team_id'),
 											'confirm_str'=>$confirmStr,'confirm_key'=>$confirmKey);
 						$this->db->insert('fantasy_invites',$inviteData);
@@ -1859,6 +1925,12 @@ class league extends BaseEditor {
 			redirect('user/login');
 	    }
 	}
+	/**
+	 * 	LEAGUE INVITES
+	 * 	Returns the list of invites
+	 * 
+	 * @see	$this->teamAdmin
+	 */
 	public function leagueInvites() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
@@ -1884,6 +1956,66 @@ class league extends BaseEditor {
 				$this->displayView();
 			} else {
 				$error = true;
+				$this->params['subTitle'] = $this->data['subTitle'] = "Unauthorized Access";
+				$message = '<span class="error">You do not have sufficient privlidges to access the requested information.</span>';
+				$this->data['theContent'] = $message;
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+				$this->makeNav();
+				$this->displayView();
+			}
+		} else {
+	        $this->session->set_flashdata('loginRedirect',current_url());
+			redirect('user/login');
+	    }
+	}
+	public function resendInvitation() {
+		if ($this->params['loggedIn']) {
+			
+			$this->data['invite_id'] = isset($this->uriVars['invite_id']) ? $this->uriVars['invite_id'] : -1;
+			$this->data['league_id'] = isset($this->uriVars['league_id']) ? $this->uriVars['league_id'] : -1;
+
+			if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE || $this->params['currUser'] == $this->dataModel->commissioner_id) {
+				
+				$this->dataModel->load($this->data['league_id']);
+
+				if ($this->data['invite_id'] != -1 && $this->data['league_id'] != -1) {
+	
+					/* Get INVITE DETAILS */
+					$inviteObj = $this->dataModel->getLeagueInvite($this->data['invite_id']);
+
+					if ($inviteObj->id != -1) {
+						$confirmStr  = $inviteObj->confirm_str;
+						$confirmKey  = $inviteObj->confirm_key;
+						$email_mesg	 = "To ".$inviteObj->to_email.",<br />\n\r";
+						$email_mesg	.= str_replace('[LEAGUE_NAME]',$this->dataModel->league_name,$this->lang->line('league_invite_default'));;
+						$link 		 = $this->params['config']['fantasy_web_root'].'user/inviteResponse/email/'.urlencode($inviteObj->to_email).'/team_id/'.$inviteObj->team_id.'/league_id/'.$inviteObj->league_id.'/ck/'.md5($inviteObj->confirm_str.$inviteObj->confirm_key);
+						$email_mesg	.= '<p><a href="'.$link.'/ct/1">Accept the invitation</a> <br /><br />';
+						$email_mesg	.= '<p><a href="'.$link.'/ct/-1">Decline the invitation</a> <br /><br />';
+						$subject 	 = $this->dataModel->league_name. " Owner Invitation";
+						
+						$success = sendEmail($userEmail,
+										 $this->user_auth_model->getEmail($this->dataModel->commissioner_id),
+										 $this->dataModel->league_name." Commissioner",
+				             			 $subject, $email_mesg,'','email_lg_invite_');
+						if (!$success) {
+							$error = true;
+							$message = '<span class="error">The email message failed to resend.</span>';
+						} else {
+							$message = '<span class="success">Your invitation was resent successfully.</span>';
+						}
+						$this->session->set_flashdata('message',$message);
+					} else {
+						$message = "The invitation could not be loaded. Check the link to assure there are no errors.";
+						if ($inviteObj->errorCode != -1) {
+							$message .= "Error: ".$inviteObj->statusMess."<br /><br />";
+						}
+						$this->session->set_flashdata('message', '<span class="error">'.$message.'</span>');
+					}
+				} else {
+					$this->session->set_flashdata('message', '<span class="error">Required data parameters were not recieved. Please check the link and try again.</span>');
+				}
+				redirect('league/leagueInvites/'.$this->dataModel->id);
+			} else {
 				$this->params['subTitle'] = $this->data['subTitle'] = "Unauthorized Access";
 				$message = '<span class="error">You do not have sufficient privlidges to access the requested information.</span>';
 				$this->data['theContent'] = $message;
@@ -2004,6 +2136,17 @@ class league extends BaseEditor {
 		} // END if
 	} // END function
 
+	/*----------------------------------------------------------------------------
+	/
+	/	WAIVER CLAIMS
+	/
+	/---------------------------------------------------------------------------*/
+	/**
+	 * 	WAIVER CLAIMS
+	 * 	Returns the list of invites
+	 * 
+	 * @see	$this->teamAdmin
+	 */
 	public function waiverClaims() {
 		if ($this->params['loggedIn']) {
 			$this->getURIData();
@@ -2147,9 +2290,10 @@ class league extends BaseEditor {
 					$this->team_model->save();
 					$message = '<span class="success">The owner has been successfully removed from the selected team.</span>';
 
-					// EDIT 1.0.6 - REMOVE ANY REQUESTS FROM OR INVITES TO THIS OWNER
-					$this->dataModel->deleteTeamInvites(false, $owner_id);
-					$this->dataModel->deleteTeamRequests(false, $owner_id);
+					// EDIT 0.6 - REMOVE ANY PENDING REQUESTS FROM OR INVITES TO THIS OWNER
+					// EDIT 1.1 PROD - Changes to REMOVE from DELETE to keep request history
+					$this->dataModel->removeTeamInvites(false, $owner_id);
+					$this->dataModel->removeTeamRequests(false, $owner_id);
 
 				} else {
 					$error = true;
@@ -2233,7 +2377,9 @@ class league extends BaseEditor {
 	    }
 	}
 	/*--------------------------------
+	/
 	/	PRIVATE/PROTECTED FUNCTIONS
+	/
 	/-------------------------------*/
 	/**
 	 *	GET URI DATA.

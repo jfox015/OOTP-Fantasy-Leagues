@@ -132,59 +132,92 @@ class user extends MY_Controller {
 		$updateDb = false;
 		$url = '';
 		$message = '';
-		$inviteId = -1;
 		$inviteObj = NULL;
 		$accetped = false;
-		$dbData = array();
 		$commishId = -1;
+		$inviteId = -1;
 		$subject = '';
 		$eMessage = '';
 		$commishName = '';
 		$emailType = '';
-		
+		$status_id = -1;
+		$sendEmail = false;
+
 		$this->getURIData();
+		/*echo("this->uriVars['league_id'] = ".$this->uriVars['league_id']."<br />");
+		echo("this->uriVars['email'] = ".$this->uriVars['email']."<br />");
+		echo("this->uriVars['id'] = ".$this->uriVars['id']."<br />");
+		echo("this->uriVars['ck'] = ".$this->uriVars['ck']."<br />");
+		echo("this->uriVars['ct'] = ".$this->uriVars['ct']."<br />");*/
+
 		if (((isset($this->uriVars['league_id']) && isset($this->uriVars['email'])) || isset($this->uriVars['id'])) && isset($this->uriVars['ck'])) {
-			$this->db->select('*');
+			$this->load->model('league_model');
+			
 			if (isset($this->uriVars['league_id']) && isset($this->uriVars['email'])) {
-				$this->db->where('league_id',$this->uriVars['league_id']);
-				$this->db->where('to_email',$this->uriVars['email']);
+				$inviteObj  = $this->league_model->getLeagueInvite(false, $this->uriVars['league_id'], $this->uriVars['email'], INVITE_STATUS_PENDING);
 			} else if (isset($this->uriVars['id'])) {
-				$this->db->where('id',$this->uriVars['id']);
+				$inviteObj  = $this->league_model->getLeagueInvite($this->uriVars['id']);
 			}
-			$query = $this->db->get('fantasy_invites');
-			if ($query->num_rows() > 0) {
-				$inviteObj  = $query->row();
+			if ($inviteObj->id != -1) {
 				$inviteId = $inviteObj->id;
 			}
-			$query->free_result();
 		}
-		if ($inviteId  == -1) {
-			$error = true;
-			$message = "An error occured when processing your invitation response. The invitation ID code could not be found in our records. Please contact the league commissioner to request a new invitation be sent or for help with this error.";
-		} else {
+		//echo("inviteObj->id = ".$inviteObj->id."<br />");
+		// ASSURE WE RECIEVED THE REQUIRED INFORMATION TO LOAD THE INVITATION
+		if ($inviteObj->id != -1) {
+
+			// ONLY PROCESS THIS INVOTE IF IT IS IN THE PENDING STATE
 			if ($inviteObj->status_id == INVITE_STATUS_PENDING) {
-				if ($this->params['loggedIn']) {
-					// VALIDITY CHECK, prevent spam bots
-					$confirm = md5($inviteObj->confirm_str.$inviteObj->confirm_key);
-					if ($confirm == $this->uriVars['ck']) {
-						$this->load->model('team_model');
-						$this->team_model->load($inviteObj->team_id);
-						$teamName = $this->team_model->teamname." ".$this->team_model->teamnick;
-								
-						if (!isset($this->league_model))
-							$this->load->model('league_model');
-						$leagueName = $this->league_model->getLeagueName($this->uriVars['league_id']);
-						$commishId = $this->league_model->getCommissionerId($this->uriVars['league_id']);
-						// IF NO COMMISSIONER ASSIGNED, SEND TO SITE ADMIN
-						if ($commishId == -1) {
-							$commishId = $this->params['config']['primary_contact'];
-						}
-						$commishName = getUsername($commishId);
-								
-						if (isset($this->uriVars['ct']) && $this->uriVars['ct'] == 1) {
-							/*-------------------------------------------------------
-							/	INVITATION ACCEPTED
-							/------------------------------------------------------*/
+
+				$this->load->model('team_model');
+				$this->team_model->load($inviteObj->team_id);
+				$teamName = $this->team_model->teamname." ".$this->team_model->teamnick;
+						
+				if (!isset($this->league_model))
+					$this->load->model('league_model');
+				$leagueName = $this->league_model->getLeagueName($this->uriVars['league_id']);
+				$commishId = $this->league_model->getCommissionerId($this->uriVars['league_id']);
+				// IF NO COMMISSIONER ASSIGNED, SEND TO SITE ADMIN
+				if ($commishId == -1) {
+					$commishId = $this->params['config']['primary_contact'];
+				}
+				$commishName = getUsername($commishId);
+				// HANDLE THE USERS RESPONSE
+				if (isset($this->uriVars['ct']) && $this->uriVars['ct'] == INVITE_STATUS_DECLINED) {
+					/*-------------------------------------------------------
+					/	INVITATION DECLINED
+					/------------------------------------------------------*/
+					$message = '<b>You have chosen to decline this invitation.</b><br />We\'re sorry you decided not to join the '.$leagueName.'. An email has been sent to the League Commissioner to inform them of your decision.';
+					$updateDb = true;
+					$status_id = INVITE_STATUS_DECLINED;
+
+					// SEND NOTIFCATION EMAIL TO COMMISSIONER
+					$msg = $this->lang->line('email_league_invite_decline');
+					$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
+					$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
+					$msg = str_replace('[EMAIL]', getUsername($this->params['currUser']), $msg);
+					$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
+					$data['messageBody']= $msg;
+					$data['leagueName'] = $leagueName;
+					$data['title'] = $this->lang->line('email_league_invite_decline_title');
+					$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
+					$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
+
+					$subject = $data['title'];
+					$emailType = 'email_team_invite_declined_';
+					$sendEmail = true;
+					$error = true;
+
+				} else if (isset($this->uriVars['ct']) && $this->uriVars['ct'] == INVITE_STATUS_ACCEPTED) {
+					/*-------------------------------------------------------
+					/	INVITATION ACCEPTED
+					/------------------------------------------------------*/
+					// THE USER MUST BE A MEMBER OF THE SITE TO ACCEPT THE INVITATION
+					if ($this->params['loggedIn']) {
+						// VALIDITY CHECK, prevent spam bots
+						$confirm = md5($inviteObj->confirm_str.$inviteObj->confirm_key);
+						if ($confirm == $this->uriVars['ck']) {
+
 							$owners = $this->league_model->getOwnerIds($inviteObj->league_id);
 							if (!in_array($this->params['currUser'],$owners)) {
 								/*-------------------------------------------------------
@@ -192,24 +225,23 @@ class user extends MY_Controller {
 								/------------------------------------------------------*/
 								//echo("Loading team ".$inviteObj->team_id."<br />");
 								//echo("setting owner id ".$this->params['currUser']."<br />");
-								$this->team_model->owner_id = $this->params['currUser'];
-								$this->team_model->save();
+								
+								//$this->team_model->owner_id = $this->params['currUser'];
+								//$this->team_model->save();
 								//echo("Team owner id = ".$this->team_model->owner_id."<br />");
-								$message = 'You have been set as the owner of the '.$this->team_model->teamname.'. You can now visit your '.anchor('/team/info/'.$inviteObj->team_id,'teams page').' and begin managing your team.';
+								$message = '<b>Congratulation on accepting your team invitation.</b><br />You have been set as the owner of the '.$this->team_model->teamname.'. You can now visit your '.anchor('/team/info/'.$inviteObj->team_id,'teams page').' and begin managing your team.';
 								$url = 'user/profile/view/';
 								$updateDb = true;
-								$dbData = array('status_id', INVITE_STATUS_ACCEPTED);
-
+								$status_id = INVITE_STATUS_ACCEPTED;
 								$accetped = true;
 								
 								// SEND NOTIFCATION EMAIL TO COMMISSIONER
 								$msg = $this->lang->line('email_league_invite_accept');
 								$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
 								$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
-								$msg = str_replace('[EMAIL]', $this->uriVars['email'], $msg);
+								$msg = str_replace('[EMAIL]', getUsername($this->params['currUser']), $msg);
 								$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
 								$data['messageBody']= $msg;
-								//print("email template path = ".$this->config->item('email_templates')."<br />");
 								$data['leagueName'] = $leagueName;
 								$data['title'] = $this->lang->line('email_league_invite_accept_title');
 								$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
@@ -217,6 +249,7 @@ class user extends MY_Controller {
 	
 								$subject = $data['title'];
 								$emailType = 'email_team_invite_accepted_';
+								$sendEmail = true;
 	
 							} else {
 								/*-------------------------------------------------------
@@ -225,13 +258,13 @@ class user extends MY_Controller {
 								$error = true;
 								$message = "<b>Invite Error</b><br /><br />We see that you already own a team in this league. You are not allowed to own more than one team in a league at a time.";
 								$updateDb = true;
-								$dbData = array('status_id', INVITE_STATUS_REMOVED);
+								$status_id = INVITE_STATUS_REMOVED;
 
 								// SEND NOTIFCATION EMAIL TO COMMISSIONER
 								$msg = $this->lang->line('email_league_invite_duplicate');
 								$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
 								$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
-								$msg = str_replace('[EMAIL]', $this->uriVars['email'], $msg);
+								$msg = str_replace('[EMAIL]', getUsername($this->params['currUser']), $msg);
 								$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
 								$data['messageBody']= $msg;
 								$data['leagueName'] = $leagueName;
@@ -240,51 +273,50 @@ class user extends MY_Controller {
 								$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
 	
 								$subject = $data['title'];
-								$emailType = 'email_team_invite_accepted_';
+								$emailType = 'email_team_invite_already_owner_';
+								$sendEmail = true;
 							}
-						} else if (isset($this->uriVars['ct']) && $this->uriVars['ct'] == -1) {
-							/*-------------------------------------------------------
-							/	INVITATION DECLINED
-							/------------------------------------------------------*/
-							$message = 'You have chosen to decline this invitation. We\'re sorry you decided not to join. An email has been sent to the league commissioner to inform them of your choice.';
-							$updateDb = true;
-							$dbData = array('status_id', INVITE_STATUS_DECLINED);
-
-							// SEND NOTIFCATION EMAIL TO COMMISSIONER
-							$msg = $this->lang->line('email_league_invite_decline');
-							$msg = str_replace('[TEAM_NAME]', $teamName, $msg);
-							$msg = str_replace('[COMMISH]', getUsername($commishId), $msg);
-							$msg = str_replace('[EMAIL]', $this->uriVars['email'], $msg);
-							$msg = str_replace('[LEAGUE_NAME]', $leagueName,$msg);
-							$data['messageBody']= $msg;
-							//print("email template path = ".$this->config->item('email_templates')."<br />");
-							$data['leagueName'] = $leagueName;
-							$data['title'] = $this->lang->line('email_league_invite_decline_title');
-							$data['title'] = str_replace('[TEAM_NAME]', $teamName, $data['title']);
-							$eMessage = $this->load->view($this->config->item('email_templates').'general_template', $data, true);
-	
-							$subject = $data['title'];
-							$emailType = 'email_team_invite_declined_';
-
 						} else {
+							$message = 'A required validation key did not match that in our records. Your invitation could not be validated at this time.';
 							$error = true;
-							$message = "A required confirmation parameter was not recieved. Please contact the league commissioer to let them know if this issue.";
 						}
 					} else {
-						$message = 'A required validation key did not match that in our records. Your invitation could not be validated at this time.';
-						$error = true;
+						$this->session->set_userdata('inviteId',$inviteObj->id);
+						$this->session->set_userdata('confirmKey',$this->uriVars['ck']);
+						$this->session->set_userdata('confirmType',$this->uriVars['ct']);
+						$this->session->set_userdata('loginRedirect',current_url());	
+						$this->session->set_flashdata('message', '<p class="notice">'.$this->lang->line('league_invite_response_not_logged_in').'</p>');		
+						redirect('user/login');
 					}
 				} else {
-					$this->session->set_userdata('inviteId',$inviteObj->id);
-					$this->session->set_userdata('confirmKey',$this->uriVars['ck']);
-					$this->session->set_userdata('confirmType',$this->uriVars['ct']);
-					$this->session->set_userdata('loginRedirect',current_url());	
-					$this->session->set_flashdata('message', '<p class="notice">'.$this->lang->line('league_invite_response_not_logged_in').'</p>');		
-					redirect('user/login');
+					$error = true;
+					$message = "A required response parameter was not recieved. Please contact the league commissioer to let them know if this issue.";
 				}
 			} else {
 				$message = 'This invitation has already been responded to. No futher action can be taken at this time.';
 				$error = true;
+			}
+		} else {
+			$error = true;
+			$message = "An error occured when processing your invitation response. The required information needed to process this response was not correctly received. Please contact the league commissioner to request a new invitation be sent or for help with this error.";
+		}
+		if ($updateDb) {
+			//echo("Updating the invitaton record.");
+			//echo("inviteObj->id = ".$inviteObj->id.'<br />');
+			//echo("status_id = ".$status_id.'<br />');
+			$updateCount = $this->league_model->updateInvitation($inviteObj->id, $status_id);
+			//echo("updateCount = ".$updateCount.'<br />');
+			if ($updateCount > 0) {
+				$this->session->unset_userdata('inviteId');
+				$this->session->unset_userdata('confirmKey');
+				$this->session->unset_userdata('confirmType');
+			} else {
+				$error = true;
+				$message .= '<br /><br />The Invitation record could not be updated at this time.';
+				if ($this->league_model->errorCode != -1) {
+					$message .= 'Error: '.$this->league_model->statusMess."<br />";
+				}
+				$message .= 'Please let the site Admin know about this error.<br /><br />';
 			}
 		}
 		if ($sendEmail) {
@@ -293,16 +325,12 @@ class user extends MY_Controller {
 								$this->user_auth_model->getEmail($this->params['config']['primary_contact']),
 								$this->params['config']['site_name']." Adminstrator",
 								$subject, $eMessage, $commishName, $emailType);
+			if ($error) {
+				$message .= '<br /><br />An e-mail to the Commissioner could not be sent at this time.<br /><br />';
+			}
+										
 		}
-		if ($updateDb) {
-			$this->db->flush_cache();
-			$this->db->where('id',$inviteObj->id);
-			$this->db->update('fantasy_invites', $dbData);	
-			
-			$this->session->unset_userdata('inviteId');
-			$this->session->unset_userdata('confirmKey');
-			$this->session->unset_userdata('confirmType');
-		}
+		
 		if (!$error) {
 			$message = '<span class="success">'.$message .'</span>';
 			if ($accetped) { 
