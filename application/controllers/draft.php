@@ -91,10 +91,10 @@ class draft extends BaseEditor {
 		$this->restrictAccess = true;
 		$this->minAccessLevel = ACCESS_WRITE;
 		
-		$this->debug = false;
+		$this->debug = true;
 	}
 	/*--------------------------------
-	/	PRIVATE FUNCTIONS
+	/	PUBLIC FUNCTIONS
 	/-------------------------------*/
 	/**
 	 *	DRAFT ADMIN.
@@ -208,6 +208,8 @@ class draft extends BaseEditor {
 	/**
 	 *	TEAM SETTINGS.
 	 *	Allows the League Commissioner to set or override teams settings in regards to auto draft.
+	 *
+	 * 	1.1 PROD EDIT: Fixed issue with settings not drawing for Rotisserie Leagues
 	 */
 	public function teamSettings() {
 		if ($this->params['loggedIn']) {
@@ -217,7 +219,7 @@ class draft extends BaseEditor {
 			$error = false;
 			if ($this->dataModel->id != -1) {
 				$this->league_model->load($this->dataModel->league_id);
-				$this->data['thisItem']['divisions'] = $this->league_model->getFullLeageDetails();
+				$this->data['thisItem']['teamList'] = $this->league_model->getTeamDetails();
 				$this->data['subTitle'] = "Team Draft Settings";
 				$this->data['league_id'] = $this->league_model->id;
 				$this->params['content'] = $this->load->view($this->views['TEAM_SETTINGS'], $this->data, true);
@@ -245,7 +247,7 @@ class draft extends BaseEditor {
 	/**
 	 *	COMPLETE DRAFT.
 	 *	Finalizes the draft by copying the draft selections to the individual team
-	 *	rosters. If waivers areenabled, the team waiver order is also set atthe end of 
+	 *	rosters. If waivers are enabled, the team waiver order is also set at the end of 
 	 * 	this operation.
 	 */
 	public function completeDraft() {
@@ -440,6 +442,7 @@ class draft extends BaseEditor {
 							$dpick = "";
 						} // END if
 
+						$this->dataModel->debug = $this->debug;
 						// GET DRAFT ELIDGIBLE PLAYERS
 						if ($this->dataModel->draftBy == 1) {
 							$values = $this->dataModel->getPlayerValues(); 
@@ -800,10 +803,10 @@ class draft extends BaseEditor {
 							} ## Team trying to draft player already taken
 							
 							##### Check that player is not yet drafted #####
-							if (!isset($values[$dpick])) {
+							/*if (!isset($values[$dpick])) {
 								$error = true;
 								$this->params['outMess'] =  "Player $dpick is not draft eligible.";
-							}
+							}*/
 							if ($this->debug) {
 								echo("ERROR? = ".($error ? 'true' : 'false')."<br />");
 							}
@@ -1305,8 +1308,8 @@ class draft extends BaseEditor {
 					} else {
 						$this->data['title'] = "Pitching";
 					} // END if
-					$this->data['colnames']=player_stat_column_headers($player_type, QUERY_STANDARD, false, false, true, true, true);
-					$this->data['fields']=player_stat_fields_list($player_type, QUERY_STANDARD, false, false, true, true, true);
+					$this->data['colnames']=player_stat_column_headers($player_type, QUERY_STANDARD, false, false, true, true, false);
+					$this->data['fields']=player_stat_fields_list($player_type, QUERY_STANDARD, false, false, true, true, false);
 					$this->data['showTeam'] = -1;
 					$this->data['showTrans'] = 1;
 					$this->data['showDraft'] = 1;
@@ -1722,7 +1725,7 @@ class draft extends BaseEditor {
 		$form->space();        
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('autoOpen',$responses,'Auto Draft for Teams without owners',($this->input->post('autoOpen') ? $this->input->post('autoOpen') : $this->dataModel->autoOpen));
-		$form->span('If disabled, commissioner will need to manually initate picks for all non-owned teams..',array('class'=>'field_caption'));
+		$form->span('If disabled, commissioner will need to manually initiate picks for all non-owned teams.',array('class'=>'field_caption'));
 		$form->space();
 		$form->fieldset('',array('class'=>'radioGroup'));
 		$form->radiogroup ('setAuto',$responses,'Force auto pick for all teams',($this->input->post('setAuto') ? $this->input->post('setAuto') : $this->dataModel->setAuto));

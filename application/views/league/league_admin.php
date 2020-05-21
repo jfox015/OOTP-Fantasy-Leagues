@@ -165,7 +165,7 @@
 		/	WAIVER ORDER BOX
 		/	Displays if Waivers are enabled
 		/---------------------------------------------------*/
-		if ((isset($useWaivers) && $useWaivers == 1)) {
+		if ((isset($useWaivers) && $useWaivers == 1) && ($draftEnabled && $draftStatus >= 5)) {
 		?>
 		<div class='textbox right-column' style="margin-left:10px;">
 		<table cellpadding="3" cellspacing="0">

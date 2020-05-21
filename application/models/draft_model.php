@@ -34,6 +34,7 @@ class draft_model extends base_model {
 	var $emailOwnersForPick = -1;
 	var $completed = -1;
 	var $draftBy = 1;
+	var $draftInjured = -1;
 	var $debug = false;
 	
 	/*---------------------------------------------
@@ -1197,7 +1198,7 @@ class draft_model extends base_model {
 	 * @param 	$league_id		Integrer	Fantasy League ID
 	 * @return					Boolean		TRUE on success, FALSE on error
 	 * @since	1.0
-	 * @access	protected		As of 1.0.5
+	 * @access	protected		As of 0.5 beta
 	 * 
 	 */
 	protected function removePick($player_id = false, $userId = false, $league_id = false) {

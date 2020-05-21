@@ -1355,11 +1355,24 @@ class league_model extends base_model {
 		$query->free_result();
 		return $divisions;
 	}
+	/**
+	 * 
+	 * 	GET TEAM DETAILS
+	 * 
+	 *  @param		$league_id			{int}		League ID
+	 *  @param		$selectBox			{Boolean}	Return data as select box data or full array
+	 *  @param		$noOwner			{Boolean}	Return only teams without owners
+	 * 	@return							{Array}		Array of team arrays objects
+	 * 
+	 *  @since		0.1 Beta
+	 *  @changelog	1.1 PROD			Added team draft settings to full return list
+	 *  
+	 */
 	public function getTeamDetails($league_id = false, $selectBox = false, $noOwner = false) {
 
 		if ($league_id === false) { $league_id = $this->id; }
-
-		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, '.$this->tables['TEAMS'].'.avatar, owner_id, firstName, lastName, email');
+		
+		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, '.$this->tables['TEAMS'].'.avatar, owner_id, firstName, lastName, email, auto_draft, auto_list, auto_round_x');
 		$this->db->join('users_core','users_core.id = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->join('users_meta','users_meta.userId = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->where('league_id',$league_id);
@@ -1381,7 +1394,9 @@ class league_model extends base_model {
 						$ownerName .= " (Commisioner)";
 					}
 					$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,'avatar'=>$trow->avatar,
-													     'owner_id'=>$trow->owner_id,'owner_name'=>$ownerName,'owner_email'=>$trow->email));
+														 	 'owner_id'=>$trow->owner_id,'owner_name'=>$ownerName,'owner_email'=>$trow->email,
+															 'auto_draft'=>$trow->auto_draft,'auto_list'=>$trow->auto_list,'auto_round_x'=>$trow->auto_round_x
+														    ));
 				}
 			}
 		}

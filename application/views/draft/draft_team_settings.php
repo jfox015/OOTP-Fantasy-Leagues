@@ -13,9 +13,9 @@
    	<div class="textual_content">
             <?php include_once('admin_breadcrumb.php'); ?>
     		<div class="top-bar"><h1><?php echo($subTitle); ?></h1></div>
-            <p /><br />
+            <p><br />
 			<div class='textbox'>
-				<table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" border="0" width="565px">
+				<table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="0" width="625px">
 				<tr class='title'>
                 	<td colspan="5" style="padding:3px;">Owner Draft Settings</td>
                 </tr>
@@ -28,14 +28,12 @@
 				</tr>
 				<?php 
 				$teamList = "";
-				if (isset($thisItem['divisions']) && sizeof($thisItem['divisions']) > 0) { 
-				foreach($thisItem['divisions'] as $id=>$divisionData) { ?>
+				if (isset($thisItem['teamList']) && sizeof($thisItem['teamList']) > 0) { 
+					asort($thisItem['teamList']);
+				foreach($thisItem['teamList'] as $teamId => $teamData) { ?>
 				<?php 
 				$rowcount = 0;
-				if (isset($divisionData['teams']) && sizeof($divisionData['teams']) > 0) { 
-					asort($divisionData['teams']);
-					foreach($divisionData['teams'] as $teamId => $teamData) { 
-					if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
+				if (($rowcount %2) == 0) { $color = "#EAEAEA"; } else { $color = "#FFFFFF"; } 
 					?>
 				<tr style="background-color:<?php echo($color); ?>">
 					<?php
@@ -65,8 +63,8 @@
 					if (!empty($teamList)) { $teamList .= " "; }
 					$teamList .= $teamId;
                     ?>
-                    <td class='hsc2_l'><?php echo($auto); ?></td>
-					<td class='hsc2_l'><?php echo($autoList); ?></td>
+                    <td class='hsc2_c'><?php echo($auto); ?></td>
+					<td class='hsc2_c'><?php echo($autoList); ?></td>
 				</tr>
 					<?php
 					$rowcount++;
@@ -75,22 +73,22 @@
 				<tr>
 					<td class="hsc2_l" colspan="5">No Teams were Found</td>
 				</tr>
-				<?php } ?>
+				<?php 
+				} ?>
 
 				
-				<?php } // END foreach($divisions)
-				} 
+				<?php 
 				$teamList = trim($teamList," ");
 				?>
                 <tr class='headline'>
-                	<td class='hsc2' colspan="2">&nbsp;</td>
-                    <td class='hsc2' colspan="2" nowrap="nowrap">(<a href="<?php echo($config['fantasy_web_root']); ?>draft/processDraft/league_id/<?php echo($league_id); ?>/action/auto_on_all">enable all</a>/<a href="<?php echo($config['fantasy_web_root']); ?>draft/processDraft/league_id/<?php echo($league_id); ?>/action/auto_off_all">disable all</a>)</td>
-                    <td class='hsc2' nowrap="nowrap">(<a href="<?php echo($config['fantasy_web_root']); ?>draft/processDraft/league_id/<?php echo($league_id); ?>/action/auto_list_off_all">disable all</a>)</td>
+                	<td class='hsc2' colspan="3">&nbsp;</td>
+                    <td class='hsc2_c' nowrap="nowrap">(<a href="<?php echo($config['fantasy_web_root']); ?>draft/processDraft/league_id/<?php echo($league_id); ?>/action/auto_on_all">enable all</a>/<a href="<?php echo($config['fantasy_web_root']); ?>draft/processDraft/league_id/<?php echo($league_id); ?>/action/auto_off_all">disable all</a>)</td>
+                    <td class='hsc2_c' nowrap="nowrap">(<a href="<?php echo($config['fantasy_web_root']); ?>draft/processDraft/league_id/<?php echo($league_id); ?>/action/auto_list_off_all">disable all</a>)</td>
 				</tr>
 				</table>
 			</div>  <!-- end batting stat div -->
 
 			
-            <p /><br />&nbsp;<br />
+            <p><br />&nbsp;<br />
         </div>
 	</div>
