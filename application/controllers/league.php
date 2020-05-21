@@ -1237,6 +1237,8 @@ class league extends BaseEditor {
 			$this->data['draftRounds'] = 0;
 		}
 		$this->data['draftTimer'] = $this->draft_model->timerEnable;
+		$this->data['allow_playoff_trans'] = $this->dataModel->allow_playoff_trans;
+		$this->data['allow_playoff_trades'] = $this->dataModel->allow_playoff_trades;
 		$this->data['playoffRounds'] = $this->dataModel->playoff_rounds;
 		$this->data['scorePeriods'] = $this->dataModel->regular_scoring_periods;
 		$this->data['scoring_type'] = $this->dataModel->getScoringType();

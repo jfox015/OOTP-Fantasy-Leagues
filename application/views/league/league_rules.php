@@ -10,17 +10,17 @@
             <div id="metaColumn"> 
 				<?php if (isset($rosters) && sizeof($rosters) > 0) { ?>
                 <div class='textbox right-column'>
-                <table cellpadding="5" cellspacing="0" border="0">
+                <table cellpadding="5" cellspacing="0">
 			    <tr class='title'>
 			    	<td style='padding:6px' colspan="2">Roster Restrictions</td>
 			    </tr>
 			    <tr>
 			    	<td>
-					<table cellpadding="2" cellspacing="0" border="0" style="width:100%;">
+					<table cellpadding="2" cellspacing="0" style="width:100%;">
 				    <tr class='headline'>
 				    	<td width="35%">Positon</td>
-						<td width="35%" align="center">Min</td>
-						<td width="35%" align="center">Max</td>
+						<td width="35%" class="hsc2_c">Min</td>
+						<td width="35%" class="hsc2_c">Max</td>
 					</tr>
 					<?php 
 					$rowCount = 0;
@@ -29,8 +29,8 @@
 						if ($pos < 100) { ?>
 					<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
 				    	<td class="hsc2_l"><?php echo(get_pos($pos)); ?></td>
-						<td class="hsc2_c" align="center"><?php echo($data['active_min']); ?></td>
-						<td class="hsc2_c" align="center"><?php echo($data['active_max']); ?></td>
+						<td class="hsc2_c" class="hsc2_c"><?php echo($data['active_min']); ?></td>
+						<td class="hsc2_c" class="hsc2_c"><?php echo($data['active_max']); ?></td>
 					</tr>
 						<?php
 						$rowCount++;
@@ -39,8 +39,8 @@
 					?>
                     <tr class='headline'>
 				    	<td width="35%">Positon</td>
-						<td width="35%" align="center">Min</td>
-						<td width="35%" align="center">Max</td>
+						<td width="35%" class="hsc2_c">Min</td>
+						<td width="35%" class="hsc2_c">Max</td>
 					</tr>
                     <?php
 					$rosterTotals = $rosters;
@@ -63,8 +63,8 @@
 								break;
 						}
 						echo($label); ?></td>
-						<td class="hsc2_r" align="center"><?php echo($data['active_min']); ?></td>
-						<td class="hsc2_r" align="center"><?php echo($data['active_max']); ?></td>
+						<td class="hsc2_r" class="hsc2_c"><?php echo($data['active_min']); ?></td>
+						<td class="hsc2_r" class="hsc2_c"><?php echo($data['active_max']); ?></td>
 					</tr>
 						<?php 
 						$rowCount++;
@@ -80,13 +80,13 @@
               	<?php } ?>
 				
 				<div class='textbox right-column'>
-                <table cellpadding="5" cellspacing="0" border="0">  
+                <table cellpadding="5" cellspacing="0">  
 			    <tr class='title'>
 			    	<td style='padding:6px' colspan="2">Point Scoring Values</td>
 			    </tr>
 			    <tr>
 			    	<td>
-					<table cellpadding="2" cellspacing="0" border="0" style="width:100%;">
+					<table cellpadding="2" cellspacing="0" style="width:100%;">
 				    <tr class='headline'>
 				    	<td width="70%">Batting Category</td>
                         <?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
@@ -100,7 +100,7 @@
                     
 				    	<td class="hsc2_l"><?php echo(get_ll_cat($cat)); ?></td>
 						<?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
-						<td class="hsc2_r" align="center"><?php echo($val); ?></td>
+						<td class="hsc2_r" class="hsc2_c"><?php echo($val); ?></td>
                         <?php }?>
 					</tr>
 						<?php 
@@ -121,7 +121,7 @@
 						
 				    	<td class="hsc2_l"><?php echo(get_ll_cat($cat)); ?></td>
 						<?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
-						<td class="hsc2_r" align="center"><?php echo($val); ?></td>
+						<td class="hsc2_r" class="hsc2_c"><?php echo($val); ?></td>
                         <?php }?>
 					</tr>
 						<?php 
@@ -141,7 +141,7 @@
 			
 		        <br class="clear" />
 				<p>
-				<table cellpadding="5" cellspacing="0" border="0" width="100%">
+				<table cellpadding="5" cellspacing="0" width="100%">
                 <tr valign="top">
                     <td><b>Scoring</b>:</td>
                     <td>&nbsp;</td>
@@ -151,7 +151,7 @@
                 <tr valign="top"><td><b>Draft</b>:</td>
                     <td>&nbsp;</td>
                     <td>
-                    <table border="0" cellpadding="1" cellspacing="0">
+                    <table cellpadding="1" cellspacing="0">
                     <tr valign="top">
                     <td>&#149;</td>
                     <td> Draft, <?php if (isset($draftDate) && $draftDate != -1 && $draftDate != EMPTY_DATE_TIME_STR) { echo(date('m/d/Y', strtotime($draftDate))." at ".date('h:i A T',strtotime($draftDate))); } else { echo("A draft date has not been set"); } ?></td>
@@ -199,7 +199,7 @@
                     <td><b>Transactions</b>:</td>
                     <td>&nbsp;</td>
                     <td>
-                    <table border="0" cellpadding="1" cellspacing="0">
+                    <table cellpadding="1" cellspacing="0">
                     <tr valign="top">
                         <td>&#149;</td>
                         <td>Lineups are set once for the start of each period.<br>Deadline is anytime before the game admin uploads and processes the current sim.</td>
@@ -222,7 +222,7 @@
                 	<td><b>Waivers</b>:</td>
                     <td>&nbsp;</td>
                     <td>
-                    <table border="0" cellpadding="1" cellspacing="0">
+                    <table cellpadding="1" cellspacing="0">
                     <tr valign="top">
                         <td>&#149;</td>
                         <td>Inital waivers order is the reversed order of the draft.</td>
@@ -243,7 +243,7 @@
                 	<td><b>Trading</b>:</td>
                     <td>&nbsp;</td>
                     <td>
-                    <table border="0" cellpadding="1" cellspacing="0">
+                    <table cellpadding="1" cellspacing="0">
                     <tr valign="top">
                         <td>&#149;</td>
                         <td>Teams are allowed to initatate and react to trades.</td>
@@ -266,9 +266,9 @@
                    	<tr valign="top">
                         <td>&nbsp</td>
                         <td>
-                        <table border="0" cellpadding="1" cellspacing="0">
+                        <table cellpadding="1" cellspacing="0">
                         <tr valign="top">
-                            <td width"=25">&nbsp;</td>
+                            <td width="25">&nbsp;</td>
                             <td> &#149;</td>
                             <td>A trade is voided if it recieves <?php print($config['minProtests']); ?> protests from the league.</td>
                         </tr>
@@ -280,9 +280,9 @@
                     <tr valign="top">
                         <td>&nbsp</td>
                         <td>
-                        <table border="0" cellpadding="1" cellspacing="0">
+                        <table cellpadding="1" cellspacing="0">
                         <tr valign="top">
-                            <td width"=25">&nbsp;</td>
+                            <td width="25">&nbsp;</td>
                             <td> &#149;</td>
                             <td>Owners have <?php print($config['protestPeriodDays']); ?> days after a trade is accepted to log a protest.</td>
                         </tr>
@@ -309,9 +309,9 @@
                    	<tr valign="top">
                         <td>&nbsp</td>
                         <td>
-                        <table border="0" cellpadding="1" cellspacing="0">
+                        <table cellpadding="1" cellspacing="0">
                         <tr valign="top">
-                            <td width"=25">&nbsp;</td>
+                            <td width="25">&nbsp;</td>
                             <td> &#149;</td>
                             <td>The default expiration time for trades is <?php print((($config['defaultExpiration']==100)?" the following sim period":$config['defaultExpiration']." Days")); ?>.</td>
                        	</tr>
@@ -327,12 +327,43 @@
                 	<td>&nbsp;</td>
                 	<td>Weekly scoring periods, starting on Sundays.</td>
                 </tr>
-                <?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
+                <?php 
+                if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { 
+                    if (isset($playoffRounds) && intval($playoffRounds) > 0) {
+                ?>
                 <tr valign="top"><td><b>Playoffs</b>:</td>
                 	<td>&nbsp;</td>
-                	<td>Playoffs start in Period <?php echo(($scorePeriods + 1)); ?> and last for <?php echo($playoffRounds); ?> Periods.</td>
+                	<td>Playoffs start in Period <?php echo(($scorePeriods + 1)); ?> and last for <?php echo($playoffRounds); ?> Periods.
+                <?php 
+                    if (isset($allow_playoff_trans) && isset($allow_playoff_trades)) {
+                        echo('<br/><br /><table cellpadding="1" cellspacing="0">');
+                        if (intval($allow_playoff_trans) == 1) {
+                            $func = 'allowed';
+                        } else {
+                             $func = 'disabled';
+                        } // END if
+                        echo('<tr valign="top">
+                        <td width="25">&nbsp;</td>
+                        <td> &#149;</td>
+                        <td>Add/Drops are <i>'.$func.'</i> during the playoffs</td></tr>');
+                        if (intval($allow_playoff_trades) == 1) {
+                            $func = 'allowed';
+                        } else {
+                             $func = 'disabled';
+                        } // END if
+                        echo('<tr valign="top">
+                        <td width="25">&nbsp;</td>
+                        <td> &#149;</td>
+                        <td>Trades are <i>'.$func.'</i> during the playoffs</td></tr>'); 
+                        echo("</table><br/>");
+                    } // END if (isset($allow_playoff_trans)
+                    ?>
+                    </td>
                 </tr>
-				<?php } ?>
+                <?php 
+                    } // END if (isset($playoffRounds)
+                } // END if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD)
+                ?>
                 </table>
                 </td>
                 </tr> 
