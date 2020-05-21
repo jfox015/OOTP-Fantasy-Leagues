@@ -37,6 +37,8 @@
 				$form->select('birthDay|birthDay',getDays(),'Day',($this->input->post('birthDay') ? $this->input->post('birthDay') : $birthArr[2]),'integer');
 				$form->nobr();	
 				$form->select('birthYear|birthYear',getYears(),'Year',($this->input->post('birthYear') ? $this->input->post('birthYear') :$birthArr[0]),'integer');
+				$form->br();
+				$form->span('Your birthday is never publicly displayed on the site. it is displayed as your <b>Age</b> in Public Search Results and on your Profile Page.');
 				$form->fieldset('');
 				$form->text('city','City','trim|max_length[10000]',($input->post('city') ? $input->post('city') : $profile->city));
                 $form->br();
@@ -56,7 +58,12 @@
               	$gender[] = array('m','Male');
 				$gender[] = array('f','Female');
 				$form->radiogroup ('gender',$gender,'Gender',($input->post('gender') ? $input->post('gender') : $profile->gender));
-                $form->space();
+				$form->space();
+				$responses[] = array('1','Yes');
+				$responses[] = array('-1','No');
+				$form->fieldset('',array('class'=>'radioGroup'));
+				$form->radiogroup ('showTeams',$responses,'Show Teams Publicly',($input->post('showTeams') ? $input->post('showTeams') : $profile->showTeams));
+				$form->space();
 				$form->fieldset('',array('class'=>'button_bar'));
 				$form->submit('Update Profile');
 				$form->hidden('mode','edit');

@@ -29,11 +29,24 @@
 				}?></h1>
 				<b>Nickname:</b> <?php if (isset($profile->nickName)) { echo($profile->nickName); } ?><br />
 				<br />
+				<?php
+					if (isset($profile->dateOfBirth) && $profile->dateOfBirth != EMPTY_DATE_STR) {
+					$years = 60*60*24*365;
+					$now = time();
+					$diff = $now - strtotime($profile->dateOfBirth." 00:00:00");
+					$years = $diff / $years;
+					echo('<b>Age:</b> '.intval($years).'<br /><br />');
+				}
+				?>
 				<strong>Title:</strong>
 				<?php echo((!empty($profile->title) ? $profile->title : "No Title provided.")); ?><br />
 				<br />
 				<strong>Bio:</strong>
-				<?php echo((!empty($profile->bio) ? $profile->bio : "No Bio provided. ".anchor('/user/profile/edit','Add a bio').".")); ?>
+				<?php 
+				$noProfile = "No Bio provided.";
+				if (empty($profile->bio) && ($loggedIn && $currUser == $profile->userId)) 
+					$noProfile .= anchor('/user/profile/edit','Add a bio');
+				echo((!empty($profile->bio) ? $profile->bio : $noProfile)); ?>
 				<br /><br />  
 				<b>Joined:</b> <?php print(date('m/d/Y',strtotime($dateCreated))); ?><br />    
 				<br />     
@@ -155,6 +168,8 @@
            	</div>
 			
 			<div id="single-column">
+				<?php 
+				if (($loggedIn && $currUser == $profile->userId) || $profile->showTeams == 1) { ?>
 				<h3>Fantasy Teams</h3>
 				<?php
 				if (isset($thisItem['userTeams']) && sizeof($thisItem['userTeams']) > 0) {
@@ -435,7 +450,7 @@
 				}
 				?>
 				<br clear="all" class="clear" />
-
+			<?php } // END if showTeams ?>
 			</div> 	
         </div>
     </div>

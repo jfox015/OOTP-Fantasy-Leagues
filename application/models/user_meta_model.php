@@ -34,6 +34,7 @@ class user_meta_model extends base_model {
 	var $gender = '';
 	var $avatar = '';
 	var $custom = '';
+	var $showTeams = -1;
 	/**
 	* 	Timezone
 	*
@@ -59,14 +60,14 @@ class user_meta_model extends base_model {
 		$this->tables['TRADES'] = 'fantasy_teams_trades';
 
 
-		$this->fieldList = array('firstName', 'lastName', 'nickName', 'city', 'state', 'country', 'zipCode', 'title', 'bio', 'gender','timezone');
+		$this->fieldList = array('firstName', 'lastName', 'nickName', 'city', 'state', 'country', 'zipCode', 'title', 'bio', 'gender','timezone','showTeams');
 		$this->conditionList = array('birthDay','birthMonth','birthYear','avatarFile');
 		$this->readOnlyList = array('userId','dateOfBirth', 'avatar', 'custom');
 		$this->uniqueField = 'userId';
 		$this->joinCode = "M";
 		$this->textList = array('nickName');
 
-		$this->columns_select = array($this->tblName.'.id','userId','firstName','lastName','nickName','dateOfBirth','gender','country');
+		$this->columns_select = array($this->tblName.'.id','userId','firstName','lastName','nickName','dateOfBirth','gender','country','showTeams','avatar');
 		$this->columns_text_search = array('firstName','lastName','nickName','bio','title');
 		$this->columns_alpha_search = array('lastName');
 
