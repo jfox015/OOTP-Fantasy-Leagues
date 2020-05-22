@@ -1,4 +1,4 @@
-				<table class="sortable-table" cellpadding="3" cellspacing="1" width="96%" style="border:1px solid #606060;">
+				<table class="sortable-table" cellpadding="3" cellspacing="1" width="100%" style="border:1px solid #606060;">
 				<?php if (!isset($showEffective) || (isset($showEffective) && $showEffective != -1)) { $cols = 4; } else { $cols = 3; } ?>
                 <thead>
                 <tr class='title'>
