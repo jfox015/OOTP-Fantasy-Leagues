@@ -1836,7 +1836,7 @@ class league extends BaseEditor {
 					}
 					$this->data['input'] = $this->input;
 					$this->data['league_id'] = $this->dataModel->id;
-					// GET LIST OF SITE MEMBERS WHO DON"T OWN A TEAM IN THIS LEAGUE
+					// GET LIST OF SITE MEMBERS WHO DON'T OWN A TEAM IN THIS LEAGUE
 					
 					$users = $this->user_auth_model->getUserList(-1, true);
 					$owners = $this->dataModel->getOwnerIds($this->data['league_id']);
@@ -1861,30 +1861,49 @@ class league extends BaseEditor {
 					$this->displayView();
 				} else {
 
-					$userInvites = $this->dataModel->getLeagueInvites(true, $this->dataModel->id, $userEmail);
-					$count = sizeof($userInvites);
-					if ($count == 0) {
+					// TEST email is not registered as a team owner already
+					$found = false;
+					$prevTeamId = -1;
+					$prevTeam = '';
+					$owners = $this->dataModel->getDetailedOwnerInfo($this->dataModel->id);
+					foreach($owners as $team_id => $owner_info) {
+						if ($owner_info['email'] == $userEmail) {
+							$found = true;
+							$prevTeam = $owner_info['teamname']." ".$owner_info['teamnick'];
+							$prevTeamId = $team_id;
+							break;
+						}
+					}
+					if (!$found) {
+						// Check that an existing Invitation is not waiting in PENDING status
+						$userInvites = $this->dataModel->getLeagueInvites(true, $this->dataModel->id, $userEmail);
+						$count = sizeof($userInvites);
+						if ($count == 0) {
 
-						$confirmStr  = substr(md5(time().$userEmail),0,16);
-						$confirmKey  = substr(md5($userEmail.time()),0,8);
-						$email_mesg	 = "To ".$userEmail.",";
-						$email_mesg	.= $this->input->post('inviteMessage');
-						$link 		 = $this->params['config']['fantasy_web_root'].'user/inviteResponse/email/'.urlencode($userEmail).'/team_id/'.$this->data['team_id'].'/league_id/'.$this->dataModel->id.'/ck/'.md5($confirmStr.$confirmKey);
-						$email_mesg	.= '<p><a href="'.$link.'/ct/'.INVITE_STATUS_ACCEPTED.'">Accept the invitation</a> <br /><br />';
-						$email_mesg	.= '<p><a href="'.$link.'/ct/'.INVITE_STATUS_DECLINED.'">Decline the invitation</a> <br /><br />';
-						$subject 	 = $this->dataModel->league_name. " Owner Invitation";
-						
-						$success = sendEmail($userEmail,
-										 $this->user_auth_model->getEmail($this->dataModel->commissioner_id),
-										 $this->dataModel->league_name." Commissioner",
-				             			 $subject, $email_mesg,'','email_lg_invite_');
-						if (!$success) {
+							$confirmStr  = substr(md5(time().$userEmail),0,16);
+							$confirmKey  = substr(md5($userEmail.time()),0,8);
+							$email_mesg	 = "To ".$userEmail.",";
+							$email_mesg	.= $this->input->post('inviteMessage');
+							$link 		 = $this->params['config']['fantasy_web_root'].'user/inviteResponse/email/'.urlencode($userEmail).'/team_id/'.$this->data['team_id'].'/league_id/'.$this->dataModel->id.'/ck/'.md5($confirmStr.$confirmKey);
+							$email_mesg	.= '<p><a href="'.$link.'/ct/'.INVITE_STATUS_ACCEPTED.'">Accept the invitation</a> <br /><br />';
+							$email_mesg	.= '<p><a href="'.$link.'/ct/'.INVITE_STATUS_DECLINED.'">Decline the invitation</a> <br /><br />';
+							$subject 	 = $this->dataModel->league_name. " Owner Invitation";
+							
+							$success = sendEmail($userEmail,
+											$this->user_auth_model->getEmail($this->dataModel->commissioner_id),
+											$this->dataModel->league_name." Commissioner",
+											$subject, $email_mesg,'','email_lg_invite_');
+							if (!$success) {
+								$error = true;
+								$message = 'The email message failed to send.';
+							}
+						} else {
 							$error = true;
-							$message = 'The email message failed to send.';
+							$message = 'An invitation is already pending for '.$userEmail.'. They must decline the current invitation before another can be sent.<p />View a complete list of '.anchor('league/leagueInvites/'.$this->dataModel->id,'pending invitiations').'.';
 						}
 					} else {
 						$error = true;
-						$message = 'An invitation is already pending for '.$userEmail.'. They must decline the current invitation before another can be sent.<p />View a complete list of '.anchor('league/leagueInvites/'.$this->dataModel->id,'pending invitiations').'.';
+						$message = 'The e-mail address <b>'.$userEmail.'</b> is already an owner in your League of the <i>'.anchor('/team/info/'.$prevTeamId, $prevTeam).'</i>. Only one team is allowed per owner per League.';
 					}
 					if (!$error) {
 						$inviteData = array('to_email'=>$userEmail,'from_id'=>$this->dataModel->commissioner_id,
