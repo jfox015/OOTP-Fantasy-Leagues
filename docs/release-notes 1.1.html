@@ -52,14 +52,24 @@
  <div id="introduction">
  <h3>Introduction</h3>
 
- <p>This document contains the release notes for OOTP Fantasy Leagues 1.0.3.  The following sections describe the release in detail and
- provide late-breaking or other information that supplements the
- main documentation.</p>
+ <p>This document contains the release notes for OOTP Fantasy Leagues 1.0.3.  The following sections describe the release in detail and provide late-breaking or other information that supplements the  main documentation. Please see below for a list of bug fixes and enhancements found in this release.</p>
 
- <p class="sample3">This is a new production release. Users of previous versions of the mod are encouraged to upgrade to delete prior versions, perform a clean install of the mod and begin using.
+ <p class="sample3">This is a new production release. Users of previous versions of the mod are encouraged to upgrade by deleting prior versions and performing a clean install of the mod before using.
 </p>
 <p>
-Please see below for a list of bug fixes and enhancements found in this release. Your feedback is appreciated either through the <a href="http://ootpfantasyleagues.jfox015.com/forum/viewforum.php?f=13&sid=e042a1f65c4c754b68ff156b201b2359" target="_blank">official online forum</a>, our <a href="http://ootpfantasyleagues.jfox015.com/fantasy/about/contact" target="_blank">online contact form</a> or by filing a bug in the <a href="http://ootpfantasyleagues.jfox015.com/fantasy/about/bug_report" target="_blank">public bug submission tool</a>..</p>
+    <b>User feedback</b> is appreciated by either:
+    <ul> 
+        
+        <li> <a href="http://ootpfantasyleagues.jfox015.com/contact.php">The offical Web Site Contact Page</a></li>
+        <li> <a href="https://forums.ootpdevelopments.com/showthread.php?t=202180" target="_new">The offical OOTP online forum Thread</a></li>
+    </ul>
+</p>
+<p>
+    <b>Bugs</b> should be reported by either:
+    <ul>
+        <li><a href="https://github.com/jfox015/OOTP-Fantasy-Leagues/issues" target="_blank">The Github project issues Tool</a></li>
+        <li>Filing out a bug report in the <a href="http://ootpfantasyleagues.jfox015.com/fantasy/about/bug_report">Fantasy Demo bug submission page</a>.
+    </ul>
 </p>
  </div> <!-- /introduction -->
 
@@ -69,9 +79,9 @@ Please see below for a list of bug fixes and enhancements found in this release.
  <p>
  <b>Enhancements</b>
  </p>
- <ul class="sample1">
-
-  <li>Revamped News System with updated editor, News Digest and Article Display</li>
+<ul class="sample1">
+  <li>Revamped League Listing page</li>
+  <li>Newly improved News System with updated editor, News Digest and Article Display</li>
   <li>Updated Informational Widgets on News Articles Pages</li>
   <li>Player Stats added to Team Linup Screen</li>
   <li>Upcoming Starting Pitcher indicators on Team Lineup Schedule and Player Info page</li>
@@ -79,30 +89,36 @@ Please see below for a list of bug fixes and enhancements found in this release.
   <li>Roster Status Page in League Admin</li>
   <li>League Status Box on Administrator Dashboard</li>
   <li>Added Head to Head playoff support features such as upcoming Playoffs alerts, and Playoff banners on League and Team home pages</li>
-  <li>Revamped head to head game schedule engine based on OOTP schedule LSDL file</li>
-  <li>Added list of League owner protests to Trade Review page</li>
-  <li>Revamped League Listing page</li>
+  <li>Added options to have transactions set as Enabled or Disabled furing Head-to_head Playoffs</li>
+  <li>Rewrote head to head game schedule engine to now base schedules on OOTP schedule LSDL files</li>
+  <li>Added list of League owner protest messages to Trade Review page</li>
   <li>Users requiring activation alerts in Admin Dashboard</li>
-  <li>Add options to Draft to bypass in injured players and use player rating for Rotisseries Leagues when auto-drafting</li>
+  <li>Added options to Draft to bypass in injured players and use player rating for Rotisseries Leagues when auto-drafting</li>
   <li>Added options for Commissioners or Users to withdraw Team Invites and Requests</li>
   <li>Added ability to view Team invite and Request history</li>
   <li>Added a site member drop down to team Invite screen to allow for member choices or external email addresses</li>
+  <li>Small Profile display and privacy updates</li>
 </ul>
 
 <p>
-<b>Bug Fixes</b>
-</p>
 <ul class="sample1">
 
- <li>Fixed major trade data issues</li>
- <li>Fixed Rotisseries standings display issue</li>
- <li>Fixed Stats Display issues on Trade and Trade Review pages</li>
- <li>Stats and schedule display fixes for Team lineup page</li>
- <li>Fixed several 'no default value' errors in Trade process</li>
- <li>Fixed issues with Offering and Accepting trades on the Trade page</li>
- <li>Moved old News and League search pages to the Admin Control panel</li>
- <li>Fixed waiver claim issues on Player Info page</li>
- <li>Fixed missing email messaging in Team Invite and Request Workflows.</li>
+    <li>Fixed broken email system (moved off CodeIgniter)</li>
+    <li>Fixed major trade data issues</li>
+    <li>Fixed Rotisseries standings display issue</li>
+    <li>Fixed Stats Display issues on Trade and Trade Review pages</li>
+    <li>Stats and schedule display fixes for Team lineup page</li>
+    <li>Fixed several 'no default value' errors in Trade process</li>
+    <li>Fixed issues with Offering and Accepting trades on the Trade page</li>
+    <li>Moved old News and League search pages to the Admin Control panel</li>
+    <li>Fixed waiver claim issues on Player Info page</li>
+    <li>Fixed missing email messaging in Team Invite and Request Workflows.</li>
+    <li>Fixed issues with anonymous users seeing pages requiring logged in status.</li>
+    <li>Fixed issue allowing Team owners to recieved further team invites</li>
+    <li>Fixed issues preventing drafting draftable players</li>
+    <li>Fixed numerous typos throughout site copy</li>
+    <li>Removed outdated and non-working social link options (site uses only AddToAny now)</li>
+    <li>Removed outdated and broken Spam Captcha functions</li>
 
 </ul>
 </div> <!-- /whatsnew -->

@@ -2669,7 +2669,7 @@ class team extends BaseEditor {
 		$this->data['injured_list'] = $this->player_model->getInjuredPlayers($curr_period, $this->dataModel->id);
 		$this->makeNav();
 
-		// EDIT 1.0.3 PROD - PLAYOFFS BANNER
+		// EDIT 1.1 PROD - PLAYOFFS BANNER
 		$playoffArr = array();
 		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
 			if (inPlayoffPeriod($configPeriodId, $this->data['league_id'])) {

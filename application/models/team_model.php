@@ -1708,7 +1708,7 @@ class team_model extends base_model {
 		$roster = array();
 		//echo("this team Id = ".$team_id."<br />");
 		$sql = "SELECT player_id FROM fantasy_rosters WHERE team_id = ".$team_id;
-		if ($score_period != -1) {
+		if (!empty($score_period) && $score_period != -1) {
 			$sql .= " AND scoring_period_id = ".$score_period;
 		} // END if
 		$query = $this->db->query($sql);
