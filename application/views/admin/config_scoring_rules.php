@@ -18,7 +18,7 @@
     <?php 
 	$stats_batting = get_stats_for_scoring(1);
 	$stats_pitching = get_stats_for_scoring(2);
-	$instr = "All fields are required.";
+	$instr = "All category drop downs are required to have a category selected.<br /><br />Points fields are set to 0 and disabled for Rotisserie Scoring and can be ignored.";
 	$disabled = ' disabled="disabled"';
 	$cutoff = -1;
 	$requiredCount = 0;
@@ -39,7 +39,7 @@
 			$requiredCount = 0;
 			$cutoff = 12;
 			$disabled = '';
-			$instr = "Leave any unused statistics blank to skip.";
+			$instr = "<br /><br />Leave any unused statistic category drop down <i>blank</i> and value fields set to <b>-1</b> to skip.";
 			break;
 		default:
 			break;
@@ -49,7 +49,8 @@
         <?php include_once('admin_breadcrumb.php'); ?>
         <h1><?php echo($subTitle); ?></h1>
         <br />
-		Select up to <?php print($cutoff); ?> statistcs in both the batting and pitching categories. <?php
+
+		Select up to <b><?php print($cutoff); ?></b> statistcs in both the batting and pitching categories. <?php
 		print($instr); ?>
         <br /><br />
 		<span style="color:#C00;font-weight:bold;">*</span> indicated a required field.
@@ -91,7 +92,9 @@
 						foreach($scoring_batting as $cat => $val) { 
 					?>
 					<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
-				    	<td class="hsc2_l"><select name="batting_type_<?php echo($statCount); ?>"  id="batting_type_<?php echo($statCount); ?>">
+				    	<td class="hsc2_l">
+						<?php if ($statCount <= $requiredCount) { echo('<span style="color:#C00;font-weight:bold;">*</span>'); } ?>
+						<select name="batting_type_<?php echo($statCount); ?>"  id="batting_type_<?php echo($statCount); ?>">
 							<option value=""></option>
 							<?php if (isset($stats_batting) && sizeof($stats_batting) > 0) { 
 								foreach($stats_batting as $statId => $stat) { 
@@ -104,7 +107,6 @@
                         
 						<td class="hsc2_c"><input type="text" name="batting_value_<?php echo($statCount); ?>" size="6"<?php print($disabled); ?> 
                         value="<?php $field_val = $input->post('batting_value_'.$statCount); if (isset($field_val) && !empty($field_val)) { echo($field_val); } else { echo($val); } ?>" class="styledTextBox" />
-                        <?php if ($statCount <= $requiredCount) { echo('<span style="color:#C00;font-weight:bold;">*</span>'); } ?>
                         </td>
 					</tr>
 						<?php 
@@ -152,7 +154,10 @@
 						foreach($scoring_pitching as $cat => $val) { ?>
 					<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
                     
-				    	<td class="hsc2_l"><select name="pitching_type_<?php echo($statCount); ?>"  id="pitching_type_<?php echo($statCount); ?>">
+				    	<td class="hsc2_l">
+						<?php if ($statCount <= $requiredCount) { echo('<span style="color:#C00;font-weight:bold;">*</span>'); } ?>
+							
+						<select name="pitching_type_<?php echo($statCount); ?>"  id="pitching_type_<?php echo($statCount); ?>">
 							<option value=""></option>
 							<?php 
 							if (isset($stats_pitching) && sizeof($stats_pitching) > 0) { 
@@ -166,7 +171,6 @@
 						</select></td>
 						<td class="hsc2_c"><input type="text" name="pitching_value_<?php echo($statCount); ?>" size="6"<?php print($disabled); ?>  
                         value="<?php $field_val = $input->post('pitching_value_'.$statCount); if (isset($field_val) && !empty($field_val)) { echo($field_val); } else { echo($val); } ?>" class="styledTextBox" />
-                        <?php if ($statCount <= $requiredCount) { echo('<span style="color:#C00;font-weight:bold;">*</span>'); } ?>
                         </td>
 					</tr>
 						<?php 
