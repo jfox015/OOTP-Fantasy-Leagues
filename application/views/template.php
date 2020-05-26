@@ -133,7 +133,7 @@
     <?php } // END foreach
 	} // END if
 	// EDIT 1.0.6, IF the site version contains the "beta" tag, show the bug report toolbar
-	if (strpos(SITE_VERSION,"Beta") !== false) {
+	if (strpos(SITE_VERSION,"Alpha") !== false || strpos(SITE_VERSION,"Beta") !== false) {
 	?>
 	<div id="bug_bar">
 		<ul>

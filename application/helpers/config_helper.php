@@ -170,9 +170,7 @@ function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 500
 				$f = fopen($logPath."/sqlloadlog.txt","a");
 				fwrite($f,"LOADING: ".$file." ... ");
 				fclose($f);
-				//echo("LOADING: ".$file);
 				/*$pFile=fopen("./sqlprocess.txt","w");
-
 				fclose($pFile);*/
 				$tableName=$ex[0];
 				/*$query="CREATE TABLE IF NOT EXISTS `$tableName';";
@@ -181,37 +179,31 @@ function loadSQLFiles($sqlLoadPath, $loadTime, $fileList = false, $timeout = 500
 				}*/
 				## Import data
 				$file=$sqlLoadPath.URL_PATH_SEPERATOR.$file;
-				//echo("File to load = ".$file."<br />");
-				$fr = fopen($file,"r");
-				//echo("File resource = ".$fr."<br />");
 				$errCnt=0;
 				if (isset($errors)) {
 					unset($errors);
 					unset($queries);
 				}
+				$fr = fopen($file,"r");
 				while (!feof($fr)) {
 					$query=fgets($fr);
-					if ($query=="") {continue;}
-					$query=str_replace(", , );",",1,1);",$query);
-					//$query=preg_replace("/([\xC2\xC3])([\x80-\xBF])/e","chr(ord('\\1')<<6&0xC0|ord('\\2')&0x3F)",$query);
-					$query=str_replace(", ,",",'',",$query);
-					$query=str_replace("#IND",0,$query);
-					if (($tableName=='players_career_batting_stats')||($tableName=='players_career_pitching_stats')) {
-						$query=str_replace("insert into","insert ignore into",$query);
-					}
+					$query=trim($query);
+					if ($query=="" || $query[0]=="#") { continue; }
+					if (!ctype_alnum($query[0])) {continue;}
+					$query=preg_replace_callback("/([\xC2\xC3])([\x80-\xBF])/",function ($m) { return chr(ord($m[1]) << 6 & 0xC0 | ord($m[2]) & 0x3F); },$query) ;
 					$err = "";
+					//echo("query = ".$query."<br />");
 					if ($conn->query($query) !== TRUE) {
 						$err=$conn->error;
 					}
 					if (($err!="") && ($query!="")) {
-					$errors[$errCnt]=$err;
-					$queries[$errCnt]=$query;
-					$errCnt++;
-					/*if (!isset($_SESSION['sqlloaderr'])) {$_SESSION['sqlloaderr']=1;}}
-					if ((substr_count($query,"CREATE ")>0)&&(($tableName=='players_career_batting_stats')||($tableName=='players_career_pitching_stats'))) {
+						$errors[$errCnt]=$err;
+						$queries[$errCnt]=$query;
+						$errCnt++;
+					}
+					if ((substr_count($query,"CREATE ")>0)&&(($tableName=='players_career_batting_stats')||($tableName=='players_career_pitching_stats'))){
 						$query="ALTER TABLE $tableName ADD PRIMARY KEY (player_id,year,team_id,league_id,split_id);";
 						$conn->query($query);
-					}*/
 					}
 				}
 				fclose($fr);

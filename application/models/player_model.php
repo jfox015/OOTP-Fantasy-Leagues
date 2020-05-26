@@ -156,6 +156,34 @@ class player_model extends base_model {
 		$query->free_result();
 		return $details;
 	}
+	/**
+	 * 	GET PLAYER POSITIONS
+	 * 	A function to return basic details including positions. Acceptrs a single player or sirng of player Ids
+
+	 *  @param	$player_id		{int}		Fantasy Player ID
+	 *  @return					{Array}		Array of Player Details
+	 * 	@since	1.0.3 PROD
+	 */
+	public function getPlayerPositions($player_id = false, $playersStr = false) {
+		if ($player_id === false && $playersStr === false) { return; }
+		$details = array();
+		$this->db->select('fantasy_players.id,fantasy_players.player_id,players.first_name,players.last_name,position,role');
+		$this->db->join('players','players.player_id = fantasy_players.player_id','left');
+		if ($player_id !== false) {
+			$this->db->where('fantasy_players.id',$player_id);
+		} else  if ($playersStr !== false) {
+			$this->db->where("fantasy_players.id IN (".$playersStr.")");
+		}
+		$query = $this->db->get('fantasy_players');	
+		if ($query->num_rows() > 0) {
+			foreach($query->result_array() as $row) {
+				array_push($details, $row);
+			}
+		}
+		$query->free_result();
+		return $details;
+	}
+
 	public function getPlayerDetails($player_id = false, $ootp_ver = OOTP_CURRENT_VERSION) {
 
 		if ($player_id === false) { return; }

@@ -551,6 +551,10 @@ class draft extends BaseEditor {
 						/---------------------------------------------*/
 						if ($this->uriVars['action']=='auto') {
 							
+							// EDIT 1.1 PROD - Update team pick quotas when auto drafting to assure rosters are picked accoring to roster rules
+							if (sizeof($drafted) > 0 && sizeof($picks) > 0) {
+								$teamQuotas = $this->updateQuotas($results, $teamQuotas);
+							}
 							$auto_option = (isset($this->uriVars['auto_option']) && !empty($this->uriVars['auto_option'])) ? $this->uriVars['auto_option'] : 'current';
 							// DETERMINE EXTENT OF AUTO PICK
 							switch($auto_option) {
@@ -1163,6 +1167,62 @@ class draft extends BaseEditor {
 			}
 		}
 		return array($dpick,$teamQuotas);
+	}
+	/**
+	 *	UPDATE QUOTAS.
+	 *
+	 *	Updates the team quotas array with the players picked. This is so that
+	 * if an auto draft is used, previous picks are loaded and assesed against]
+	 *  correct quotas.
+	 */
+	protected function updateQuotas($results = false, $teamQuotas = false) {
+		if ($results === false && $teamQuotas === false) { return false; }
+
+		$teams = array();
+		if (sizeof($results) > 0) {
+			foreach($results as $row) {
+				if (!empty($row['player_id'])) {
+					if (!isset($teams[$row['team_id']])) {
+						$teams[$row['team_id']] = '';
+					}
+					if (!empty($teams[$row['team_id']])) { $teams[$row['team_id']] .= ','; }
+					$teams[$row['team_id']] .= $row['player_id'];
+				}
+			}
+		}
+		if (!isset($this->player_model)) {
+			$this->load->model('player_model');
+		}
+		$teamQuotas = array();
+		foreach($teams as $team_id => $players_str) {
+			if (!isset($teamQuotas[$team_id])) {
+				$teamQuotas[$team_id] = array();
+			}
+			echo("players_str = ".$players_str."<br />");
+			$playersInfo = $this->player_model->getPlayerPositions(false, $players_str);
+			foreach($playersInfo as $details) {
+				$pos = 0;
+				if ($details['position'] == 1) {
+					if ($details['role'] == 13) {
+						$pos = 12;
+					} else {
+						$pos = $details['role'];
+					}
+				} else {
+					if ($details['position']== 7 || $details['position'] == 8 || $details['position'] == 9) {
+						$pos = 20;
+					} else {
+						$pos = $details['position'];
+                    }
+				}
+				if (isset($teamQuotas[$team_id][$pos])) {
+                    $teamQuotas[$team_id][$pos] += 1;
+                } else {
+                    $teamQuotas[$team_id][$pos] = 1;
+                }
+			}
+		}
+		return $teamQuotas;
 	}
 	/**
 	 *	SELECTION.
