@@ -22,12 +22,16 @@
 			<img src="<?php echo(PATH_USERS_AVATARS.$img); ?>" width="35" height="35" />
             </td>
             <td class="hsc2_c"><?php 
-			$name = $row['firstName']." ";
-			if (isset($row['nickName']) && !empty($row['nickName'])) {
-				$name .= '&quot;'.$row['nickName'].'&quot; ';
-			}
-			$name .= $row['lastName'];
-			echo(anchor('/user/profiles/'.$row['userId'],$name)); ?></td>
+            $name = "Unknown";
+            if (!empty($row['firstName']) && !empty($row['lastName'])) {
+                $name = $row['firstName']." ".$row['lastName'];
+            } else {
+                $name = $row['username'];
+            }
+            if (isset($row['nickName']) && !empty($row['nickName'])) {
+                $name .= ' ('.$row['nickName'].')';
+            }
+			echo(anchor('/user/profiles/'.$row['userId'], $name)); ?></td>
             <td class="hsc2_c"><?php if (isset($row['gender']) && !empty($row['gender'])) { echo ($row['gender'] == 'm' ? 'Male' : 'Female');  } ?></td>
             <td class="hsc2_c"><?php 
 

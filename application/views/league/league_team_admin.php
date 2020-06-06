@@ -60,7 +60,13 @@
                     <td class='hsc2_l'><?php echo(form_input(array('name'=>$teamId."_teamname",'id'=>"team".$teamId."_teamname",'value'=>($input->post($teamId."_teamname")) ? $input->post($teamId."_teamname") : $teamData['teamname']))); ?></td>
                     <td class='hsc2_l'><?php echo(form_input(array('name'=>$teamId."_teamnick",'id'=>"team".$teamId."_teamnick",'value'=>($input->post($teamId."_teamnick")) ? $input->post($teamId."_teamnick") : $teamData['teamnick']))); ?></td>
                     <td class='hsc2_l'><?php echo form_dropdown($teamId."_division_id", $division_options, ($input->post($teamId."_division_id")) ? $input->post($teamId."_division_id") : $id); ?></td>
-                    <td class='hsc2_l'><?php echo(anchor('/user/profile/mode/view/id/'.$teamData['owner_id'],$teamData['owner_name'])); ?></td>
+                    <td class='hsc2_l'><?php 
+                    if (isset($teamData['owner_id']) && $teamData['owner_id'] != -1) {
+                        echo(anchor('/user/profiles/'.$teamData['owner_id'], $teamData['owner_name'])); 
+                    } else {
+                        echo($teamData['owner_name']); 
+                    }
+                    ?></td>
                     <td class='hsc2_c' nowrap="nowrap">
                     <?php
 					//echo("Owner id = ".$teamData['owner_id']."<br />");
@@ -141,11 +147,17 @@
                     <td class='hsc2_l'><img src="<?php echo($avatar); ?>" width="24" height="24" /></td>
                     <td class='hsc2_l'><?php echo(form_input(array('name'=>$teamId."_teamname",'id'=>"team".$teamId."_teamname",'value'=>($input->post($teamId."_teamname")) ? $input->post($teamId."_teamname") : $teamData['teamname']))); ?></td>
                     <td class='hsc2_l'><?php echo(form_input(array('name'=>$teamId."_teamnick",'id'=>"team".$teamId."_teamnick",'value'=>($input->post($teamId."_teamnick")) ? $input->post($teamId."_teamnick") : $teamData['teamnick']))); ?></td>
-                    <td class='hsc2_l'><?php echo(anchor('/user/profile/mode/view/id/'.$teamData['owner_id'],$teamData['owner_name'])); ?></td>
+                    <td class='hsc2_l'><?php 
+                    if (isset($teamData['owner_id']) && $teamData['owner_id'] != -1) {
+                        echo(anchor('/user/profiles/'.$teamData['owner_id'], $teamData['owner_name'])); 
+                    } else {
+                        echo($teamData['owner_name']); 
+                    }
+                    ?></td>
                     <td class='hsc2_c' nowrap="nowrap">
                     <?php
 					//ho("Owner id = ".$teamData['owner_id']."<br />");
-					if (isset($teamData['owner_id']) && $teamData['owner_id'] > 0) {
+					if (isset($teamData['owner_id']) && $teamData['owner_id'] != -1) {
 						echo('<a href="javascript:removeOwner('.$teamId.')"><img src="'.$config['fantasy_web_root'].'images/icons/img_icon_garbage.gif" align="absmiddle" width="16" height="16" alt="Remove" title="Remove" /></a>');
 						echo('&nbsp;');
 						if ($accessLevel == ACCESS_ADMINISTRATE || $currUser == $commish_id) {

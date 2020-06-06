@@ -1372,7 +1372,7 @@ class league_model extends base_model {
 
 		if ($league_id === false) { $league_id = $this->id; }
 		
-		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, '.$this->tables['TEAMS'].'.avatar, owner_id, firstName, lastName, email, auto_draft, auto_list, auto_round_x');
+		$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, '.$this->tables['TEAMS'].'.avatar, owner_id, username, firstName, lastName, email, auto_draft, auto_list, auto_round_x');
 		$this->db->join('users_core','users_core.id = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->join('users_meta','users_meta.userId = '.$this->tables['TEAMS'].'.owner_id','left');
 		$this->db->where('league_id',$league_id);
@@ -1389,9 +1389,12 @@ class league_model extends base_model {
 				if ($selectBox != false) {
 					$teams = $teams + array($trow->id=>$trow->teamname." ".$trow->teamnick);
 				} else {
-					$ownerName = $trow->firstName." ".$trow->lastName;
-					if (($trow->owner_id != -1 && $this->commissioner_id != -1) && $trow->owner_id == $this->commissioner_id) {
-						$ownerName .= " (Commisioner)";
+					$ownerName = "No owner";
+					if ($trow->owner_id != -1) {
+						$ownerName = (!empty($trow->firstName) && !empty($trow->lastName)) ? $trow->firstName." ".$trow->lastName : $trow->username;
+						if ($this->commissioner_id != -1 && $trow->owner_id == $this->commissioner_id) {
+							$ownerName .= " (Commisioner)";
+						}
 					}
 					$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,'avatar'=>$trow->avatar,
 														 	 'owner_id'=>$trow->owner_id,'owner_name'=>$ownerName,'owner_email'=>$trow->email,
@@ -1451,7 +1454,7 @@ class league_model extends base_model {
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				$this->db->flush_cache();
-				$this->db->select('fantasy_teams.id, teamname,teamnick,fantasy_teams.owner_id,firstName, lastName, email,fantasy_teams.avatar,auto_draft,auto_list,auto_round_x');
+				$this->db->select('fantasy_teams.id, teamname,teamnick,fantasy_teams.owner_id,firstName, lastName, username, email,fantasy_teams.avatar,auto_draft,auto_list,auto_round_x');
 				$this->db->join('users_core','users_core.id = fantasy_teams.owner_id','left');
 				$this->db->join('users_meta','users_meta.userId = fantasy_teams.owner_id','left');
 				$this->db->where('league_id',$league_id);
@@ -1464,9 +1467,12 @@ class league_model extends base_model {
 				$teams = array();
 				if ($query2->num_rows() > 0) {
 					foreach ($query2->result() as $trow) {
-						$ownerName = $trow->firstName." ".$trow->lastName;
-						if (($trow->owner_id != -1 && $this->commissioner_id != -1) && $trow->owner_id == $this->commissioner_id) {
-							$ownerName .= " (Commisioner)";
+						$ownerName = "No owner";
+						if ($trow->owner_id != -1) {
+							$ownerName = (!empty($trow->firstName) && !empty($trow->lastName)) ? $trow->firstName." ".$trow->lastName : $trow->username;
+							if ($this->commissioner_id != -1 && $trow->owner_id == $this->commissioner_id) {
+								$ownerName .= " (Commisioner)";
+							}
 						}
 						$teams = $teams + array($trow->id=>array('teamname'=>$trow->teamname,'teamnick'=>$trow->teamnick,
 																'owner_id'=>$trow->owner_id,'owner_name'=>$ownerName ,

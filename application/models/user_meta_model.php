@@ -67,7 +67,7 @@ class user_meta_model extends base_model {
 		$this->joinCode = "M";
 		$this->textList = array('nickName');
 
-		$this->columns_select = array($this->tblName.'.id','userId','firstName','lastName','nickName','dateOfBirth','gender','country','showTeams','avatar');
+		$this->columns_select = array($this->tblName.'.id','userId','username','firstName','lastName','nickName','dateOfBirth','gender','country','showTeams','avatar');
 		$this->columns_text_search = array('firstName','lastName','nickName','bio','title');
 		$this->columns_alpha_search = array('lastName');
 
