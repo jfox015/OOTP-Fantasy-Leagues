@@ -51,7 +51,13 @@
 								<div class="flexContent">
 									<?php echo(anchor('/team/info/'.$teamId,$teamData['teamname']." ".$teamData['teamnick'],['class' => 'teamLink'])); ?>
 									<div class="TeamLinks-Links">
-										<?php if(isset($teamData['owner_id']) && isset($teamData['owner_name'])) {echo(anchor('/user/profiles/'.$teamData['owner_id'],$teamData['owner_name'],['class' => 'teamLink-link'])); } ?>
+										<?php 
+										if(isset($teamData['owner_id']) && $teamData['owner_id'] != -1) {
+											echo(anchor('/user/profiles/'.$teamData['owner_id'],$teamData['owner_name'],['class' => 'teamLink-link'])); 
+										} else {
+											echo($teamData['owner_name']);
+										} 
+										?>
 										<?php if ($hasAccess && isset($teamData['owner_email']) && !empty($teamData['owner_email'])) { ?>
 											<?php echo(", Contact: ".$teamData['owner_email']); ?>
 										<?php } ?>
@@ -97,9 +103,15 @@
 							<div class="flexContent">
 								<?php echo(anchor('/team/info/'.$teamId,$teamData['teamname']." ".$teamData['teamnick'],['class' => 'teamLink'])); ?>
 								<div class="TeamLinks-Links">
-									<?php if(isset($teamData['owner_id']) && isset($teamData['owner_name'])) {echo(anchor('/user/profiles/'.$teamData['owner_id'],$teamData['owner_name'],['class' => 'teamLink-link'])); } ?>
+									<?php 
+									if(isset($teamData['owner_id']) && $teamData['owner_id'] != -1) {
+										echo(anchor('/user/profiles/'.$teamData['owner_id'],$teamData['owner_name'],['class' => 'teamLink-link'])); 
+									} else {
+										echo($teamData['owner_name']);
+									} 
+									?>
 									<?php if ($hasAccess && isset($teamData['owner_email']) && !empty($teamData['owner_email'])) { ?>
-										<?php echo(", Contact: ".$teamData['owner_email']); ?>
+									<?php echo(", Contact: ".$teamData['owner_email']); ?>
 									<?php } ?>
 								</div>
 							</div>
