@@ -4,7 +4,7 @@
         <h1><?php echo($subTitle); ?></h1>
         <br />
         <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" style="width:825px;">
+        <table cellpadding="0" cellspacing="0" style="width:825px;">
         <tr class='title'>
             <td style='padding:3px' colspan="2">Current Settings (Read Only)</td>
         </tr>
@@ -23,9 +23,10 @@
 							case 'draftPeriod':
 								print('<span class="formData">'.$draft_start." - ".$draft_end."</span>");
 								break;
-							case 'useWaivers':
-							case 'useTrades':
-							case 'tradesExpire':
+							// TRADES AND WAIVERS DEPRECATED
+							//case 'useWaivers':
+							//case 'useTrades':
+							//case 'tradesExpire':
 							case 'google_analytics_enable':
 							case 'restrict_admin_leagues':
 							case 'users_create_leagues':
@@ -38,18 +39,18 @@
 							case 'primary_contact':
 								print(anchor('/user/profile/'.$config[$field],$this->user_auth_model->getusername($config[$field])));
 								break;
+							/* DEPRECATED
 							case 'approvalType':
 								$types = loadSimpleDataList('tradeApprovalType');
 								print($types[$config[$field]]);
-								break;
+								break;*/
 							
 							default:
 								print('<span class="formData">'.$config[$field]."</span>");
 								break;
 						}
 						echo('<br /><br />');
-					}
-				}
+					}				}
 			}
             ?>
             </td>
@@ -57,4 +58,4 @@
         </table>
         </div>
     </div>
-    <p /><br />
+    <p><br />

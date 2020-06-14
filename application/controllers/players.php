@@ -418,7 +418,8 @@ class players extends MY_Controller {
 				// UPDATE 1.0.16 - JF
 				// WAIVERS
 				// WAIVERS STATUS AND INFO
-				$this->data['useWaivers'] = (isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) ? 1 : -1;
+				$waiversSettings =  $this->league_model->getLeagueWaiversSettings($league_id);
+				$this->data['useWaivers'] = (isset($waiversSettings['useWaivers']) && $waiversSettings['useWaivers'] == 1) ? 1 : -1;
 				if ($this->data['useWaivers'] == 1) {
 					$this->data['waiverStatus'] = $this->dataModel->getWaiverStatus($league_id);
 					$this->data['waiverClaims'] = $this->dataModel->getWaiverClaims($league_id);

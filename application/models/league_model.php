@@ -91,6 +91,61 @@ class league_model extends base_model {
 	 */
 	var $allow_playoff_trades = -1;
 	/**
+	 *	ROSTER TRANSACTION FREQUENCY.
+	 *	@var $transactionFrequency:Int
+	 */
+	var $transactionFrequency = -1;
+	/**
+	 *	MIN GAMES (Current Year).
+	 *	@var $min_game_current:Int
+	 */
+	var $min_game_current = 5;
+	/**
+	 *	MIN GAMES (Last year).
+	 *	@var $min_game_last:Int
+	 */
+	var $min_game_last = 20;
+	/**
+	 *	USE WAIVERS.
+	 *	@var $useWaivers:Int
+	 */
+	var $useWaivers = -1;
+	/**
+	 *	WAIVERS PERIOD.
+	 *	@var $waiverPeriod:Int
+	 */
+	var $waiverPeriod = 1;
+	/**
+	 *	USE TRADES.
+	 *	@var $useTrades:Int
+	 */
+	var $useTrades = -1;
+	/**
+	 *	TRADE APPROVAL TYPE.
+	 *	@var $approvalType:Int
+	 */
+	var $approvalType = -1;
+	/**
+	 * MIN PROTEST COUNT.
+	 *	@var $minProtests:Int
+	 */
+	var $minProtests = 3;
+	/**
+	 *	PROTEST PERIOD (in Days).
+	 *	@var $protestPeriodDays:Int
+	 */
+	var $protestPeriodDays = 3;
+	/**
+	 *	TRADES EXPIRE.
+	 *	@var $tradesExpire:Int
+	 */
+	var $tradesExpire = -1;
+	/**
+	 *	TRADE EXPIRATION (In Days).
+	 *	@var $defaultExpiration:Int
+	 */
+	var $defaultExpiration = 500;
+	/**
 	 *	COMPILED STATS.
 	 *	@var $compiledStats:Array
 	 */
@@ -134,7 +189,8 @@ class league_model extends base_model {
 		$this->tables['TRADES_STATUS'] = 'fantasy_teams_trades_status';
 		$this->tables['PLAYERS'] = 'fantasy_players';
 
-		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests','allow_playoff_trans','allow_playoff_trades');
+		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests','allow_playoff_trans','allow_playoff_trades',
+								'transactionFrequency','min_game_current','min_game_last','useWaivers','useTrades','approvalType','minProtests','protestPeriodDays','tradesExpire','defaultExpiration');
 		$this->conditionList = array('avatarFile','new_commisioner');
 		$this->readOnlyList = array('avatar','commissioner_id');
 		$this->textList = array('description');
@@ -175,9 +231,25 @@ class league_model extends base_model {
 		return $success;
 	}
 	/**
+	* 	DELETE ROSTERS RULES.
+	* 	<p>
+	* 	Deletes all rosters rules for the specified league_id. If no id is passed, the current league id of the loaded object is used.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.2 PROD
+	*  	@access	public
+	*/
+	public function deleteRosterRules($league_id = false) {
+		
+		return $this->deleteLeagueData($this->tables['ROSTER_RULES'],$league_id);
+
+	}
+	/**
 	* 	DELETE ROSTERS.
 	* 	<p>
-	* 	Deletes all rosters for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	* 	Deletes all rosters for the specified league_id. If no id is passed, the current league id of the loaded object is used.
 	*	</p>
 	*	<p><b>NOTE:</b> To delete rosters for a given team, use the team_model->deleteRosters function instead.
 	*	</p>
@@ -203,7 +275,7 @@ class league_model extends base_model {
 	/**
 	* 	DELETE TEAM RECORDS.
 	* 	<p>
-	* 	Deletes all records for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	* 	Deletes all records for the specified league_id. If no id is passed, the current league id of the loaded object is used.
 	*	</p>
 	*	<p><b>NOTE:</b> To records trades for a given team, use the team_model->deleteRecords function instead.
 	*	</p>
@@ -239,9 +311,26 @@ class league_model extends base_model {
 
 	}
 	/**
+	* 	DELETE LEAGUE SCORING RULES.
+	* 	<p>
+	* 	Deletes all scoring rules for the specified league_id. If no id is passed, the current league id of the loaded object is used.
+	*	</p>
+	* 	@param	$league_id		{int}	The League Id
+	* 	@return					{Boolean}	TRUE on success
+	*
+	* 	@since	1.2 PROD
+	*  	@access	public
+	*/
+	public function deleteScoringRules($league_id = false) {
+
+		return $this->deleteLeagueData($this->tables['SCORING_RULES_BATTING'],$league_id);
+		return $this->deleteLeagueData($this->tables['SCORING_RULES_PITCHING'],$league_id);
+
+	}
+	/**
 	* 	DELETE TEAM SCORING.
 	* 	<p>
-	* 	Deletes all scoring for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	* 	Deletes all scoring for the specified league_id. If no id is passed, the current league id of the loaded object is used.
 	*	</p>
 	*	<p><b>NOTE:</b> To delete scoring for a given team, use the team_model->deleteScoring function instead.
 	*	</p>
@@ -261,7 +350,7 @@ class league_model extends base_model {
 	/**
 	* 	DELETE TRADES.
 	* 	<p>
-	* 	Deletes all trades for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	* 	Deletes all trades for the specified league_id. If no id is passed, the current league id of the loaded object is used.
 	*	</p>
 	*	<p><b>NOTE:</b> To delete trades for a given team, use the team_model->deleteTrades function instead.
 	*	</p>
@@ -281,7 +370,7 @@ class league_model extends base_model {
 	/**
 	* 	DELETE TRANSACTIONS.
 	* 	<p>
-	* 	Deletes all transactions for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	* 	Deletes all transactions for the specified league_id. If no id is passed, the current league id of the loaded object is used.
 	*	</p>
 	*	<p><b>NOTE:</b> To delete transactions for a given team, use the team_model->deleteTransactions function instead.
 	*	</p>
@@ -300,7 +389,7 @@ class league_model extends base_model {
 	/**
 	* 	DELETE WAIVER CLAIMS.
 	* 	<p>
-	* 	Deletes all waiver claims for the specified league_id. If no id is passed, the current league id of the loaded bbject is used.
+	* 	Deletes all waiver claims for the specified league_id. If no id is passed, the current league id of the loaded object is used.
 	*	</p>
 	*	<p><b>NOTE:</b> To delete waiver claims for a given team, use the team_model->deleteWaiverClaims function instead.
 	*	</p>
@@ -682,7 +771,53 @@ class league_model extends base_model {
 		$query->free_result();
 		return $length;
 	}
+	/**
+	 * 	GET LEAGUE TRADES
+	 * 	Function that gets Trades settings for the League
+	 *  @param	$league_id	{int}	League ID var, if FALSE, defaults to models ID
+	 *  @return				{Array}	Array of settings value
+	 * 
+	 * 	@since	1.2 PROD
+	 */
+	public function getLeagueTradeSettings($league_id = false) {
 
+		if ($league_id === false) { $league_id = $this->id; }
+		$trades = array();
+		$this->db->select('useTrades,approvalType,minProtests,protestPeriodDays,tradesExpire,defaultExpiration');
+		$this->db->from($this->tblName);
+		$this->db->where("id",$league_id);
+		$query = $this->db->get();
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$trades = array('useTrades'=>$row->useTrades,'approvalType'=>$row->approvalType,'minProtests'=>$row->minProtests,
+						'protestPeriodDays'=>$row->protestPeriodDays,'tradesExpire'=>$row->tradesExpire,'defaultExpiration'=>$row->defaultExpiration);
+		}
+		$query->free_result();
+		return $trades;
+	}
+	/**
+	 * 	GET LEAGUE WAIVER SEETINGS
+	 * 	Function that gets Waivers settings for the League
+	 *  @param	$league_id	{int}	League ID var, if FALSE, defaults to models ID
+	 *  @return				{Array}	Array of settings value
+	 * 
+	 * 	@since	1.2 PROD
+	 */
+	public function getLeagueWaiversSettings($league_id = false) {
+
+		if ($league_id === false) { $league_id = $this->id; }
+		$waivers = array();
+		$this->db->select('useWaivers,waiverPeriod');
+		$this->db->from($this->tblName);
+		$this->db->where("id",$league_id);
+		$query = $this->db->get();
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$waivers = array('useWaivers'=>$row->useWaivers,'waiverPeriod'=>$row->waiverPeriod);
+		}
+		$query->free_result();
+		return $waivers;
+	}
 	/*----------------------------------------------------------------------
 	/
 	/	INVITES AND REQUESTS
@@ -1133,7 +1268,7 @@ class league_model extends base_model {
 	 */
 	public function getLeagues($type=1, $status = false) {
 		$leagues = array();
-		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id, league_status, access_type, league_type, leagueType, max_teams, regular_scoring_periods, games_per_team, playoff_rounds');
+		$this->db->select($this->tblName.'.id, league_name, description, avatar, shortDesc, commissioner_id, league_status, access_type, league_type, leagueType, max_teams, regular_scoring_periods, games_per_team, playoff_rounds, useTrades, useWaivers, min_game_current, min_game_last');
 		$this->db->join('fantasy_leagues_types','fantasy_leagues_types.id = '.$this->tblName.'.league_type','left');
 		if ($type != -1) $this->db->where('access_type',1);
 		if ($status !== false) $this->db->where('league_status', $status);
@@ -1147,7 +1282,8 @@ class league_model extends base_model {
 															'league_type_desc'=>$row->shortDesc,'league_type_lbl'=>$row->leagueType,'league_type'=>$row->league_type,
 															'description'=>$row->description,'access_type'=>$row->access_type,
 															'regular_scoring_periods'=>$row->regular_scoring_periods,'games_per_team'=>$row->games_per_team,
-															'playoff_rounds'=>$row->playoff_rounds));
+															'playoff_rounds'=>$row->playoff_rounds, 'useTrades'=>$row->useTrades, 'useWaivers'=>$row->useWaivers,
+															'min_game_current'=>$row->min_game_current,'min_game_last'=>$row->min_game_last));
 			}
 		}
 		$query->free_result();
@@ -1497,7 +1633,7 @@ class league_model extends base_model {
 			case LEAGUE_SCORING_ROTO:
 			case LEAGUE_SCORING_ROTO_5X5:
 			case LEAGUE_SCORING_ROTO_PLUS:
-				$rules = $this->getScoringRules();
+				$rules = $this->getScoringRules($league_id);
 				$teams = array();
 				$this->db->flush_cache();
 				$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, avatar, value_0 as val_0, value_1 as val_1, value_2 as val_2, value_3 as val_3, value_4 as val_4,
@@ -1953,7 +2089,7 @@ class league_model extends base_model {
 
 		if ($league_id === false) { $league_id = $this->id; } // END if
 		if ($scoring_type === false) { $scoring_type = $this->league_type; } // END if
-
+		//echo("league_id = ".$league_id."<br />");
 		$rules = array('batting'=>array(),'pitching'=>array());
 		$default = false;
 		foreach($rules as $key => $data) {
@@ -1964,7 +2100,7 @@ class league_model extends base_model {
 			$this->db->from('fantasy_leagues_scoring_'.$key);
 			$count = $this->db->count_all_results();
 			if ($count == 0 && $returnDefault === true) {
-				$league_id = 0;
+				$league_id = -1;
 			} // END if
 			$this->db->select('*');
 			$this->db->where('league_id',$league_id);
@@ -1997,12 +2133,12 @@ class league_model extends base_model {
 	 * This function accepts a form input object and applies the passed values to
 	 * the scoring rules tables.
 	 * @param	$input		CodeIgniter form input object
-	 * @param	$league_id 	Optional league ID. Defaults to "0" if no id is passed.
+	 * @param	$league_id 	Optional league ID. Defaults to "-1" if no id is passed.
 	 */
 	public function setScoringRules($input, $league_id = false) {
 
-		if ($league_id === false) { $league_id = 0; }
-
+		if ($league_id === false) { $league_id = -1; }
+		//echo("league_id = ".$league_id."<br />");
 		$this->db->where('league_id', $league_id);
 		$this->db->where('scoring_type', $input->post('scoring_type'));
 		$this->db->delete($this->tables['SCORING_RULES_BATTING']);
@@ -2023,6 +2159,41 @@ class league_model extends base_model {
 			}
 			$this->db->insert($this->tables['SCORING_RULES_'.strtoupper($type)],$data);
 			//echo($this->db->last_query()."<br />");
+		}
+		return true;
+	}
+
+	/**
+	 * SET INITIAL SCORING RULES
+	 * This function accepts a form input object and applies the passed values to
+	 * the scoring rules tables.
+	 * @param	$input			Data Array
+	 * @param	$scoring_type 	League scoring type
+	 * @param	$league_id 		League ID. 
+	 * @return	Boolean			TRUE on all cases
+	 * @since	1.2 PROD		Part of League rules/roster updates
+	 */
+	public function setInitialScoringRules($data = false, $scoring_type = false, $league_id = false) {
+
+		if ($data === false || $scoring_type === false || $league_id === false) { return false; }
+
+		$types = array('batting','pitching');
+		foreach($types as $type) {
+			$catData = $data[$type];
+			$insert = array('league_id'=>$league_id,'scoring_type'=>$scoring_type);
+			$lineCount = 0;
+			while ($lineCount < 11) {
+				if (isset($catData['type_'.$lineCount]) && $catData['type_'.$lineCount] != -1) {
+					$insert['type_'.$lineCount] = $catData['type_'.$lineCount];
+					$insert['value_'.$lineCount] = $catData['value_'.$lineCount];
+				} else {
+					$insert['type_'.$lineCount] = -1;
+					$insert['value_'.$lineCount] = 0;
+				}
+				$lineCount++;
+			}
+			$this->db->insert($this->tables['SCORING_RULES_'.strtoupper($type)],$insert);
+			echo($this->db->last_query()."<br />");
 		}
 		return true;
 	}
@@ -2058,10 +2229,10 @@ class league_model extends base_model {
 		return $scoring_rules;
 	}
 	/**
-	 *	GET Roster RULES.
+	 *	GET ROSTER RULES.
 	 *	Returns the roster rules for a specific league (if they exist) or the
 	 *	global roster rules in they don't
-	 *  @param	$league_id - If not specified, no league filter is applied.
+	 *  @param	$league_id		Defaults to oject ID if not passed. If no results found, default -1 is used
 	 *	@return	Rules array on success, false on failure
 	 */
 	public function getRosterRules($league_id = false) {
@@ -2070,11 +2241,13 @@ class league_model extends base_model {
 		$this->db->select();
 		$this->db->from('fantasy_roster_rules');
 		$this->db->where('league_id',$league_id);
-		if ($this->db->count_all_results() == 0) {
-			$league_id = 0;
+		$count = $this->db->count_all_results();
+		if ($count == 0) {
+			$league_id = -1;
 			$this->db->where('league_id',$league_id);
 		}
 		$this->db->select();
+		$this->db->where('league_id',$league_id);
 		$this->db->order_by('position', 'asc');
 		$query = $this->db->get('fantasy_roster_rules');
 		//echo($this->db->last_query()."<br />");
@@ -2083,7 +2256,6 @@ class league_model extends base_model {
 				//echo($row->position."<br />");
 				$rules = $rules + array($row->position=>array('position'=>$row->position,
 										'active_min'=>$row->active_min,'active_max'=>$row->active_max));
-
 			}
 		}
 		return $rules;
@@ -2093,10 +2265,10 @@ class league_model extends base_model {
 	 * This function accepts a form input object and applies the passed values to
 	 * the roster rules table.
 	 * @param	$input		CodeIgniter form input object
-	 * @param	$league_id 	Optional league ID. Defaults to "0" if no id is passed.
+	 * @param	$league_id 	Optional league ID. Defaults to "-1" if no id is passed.
 	 */
 	public function setRosterRules($input, $league_id = false) {
-		if ($league_id === false) { $league_id = 0; }
+		if ($league_id === false) { $league_id = -1; }
 
 		$this->db->where('league_id', $league_id);
 		$this->db->delete($this->tables['ROSTER_RULES']);
@@ -2120,6 +2292,38 @@ class league_model extends base_model {
 								  'active_min'=>$input->post('total_'.$label.'_min'),
 								  'active_max'=>$input->post('total_'.$label.'_max')));
 		}
+		return true;
+	}
+	/**
+	 * SET INITIIAL ROSTER RULES
+	 * This function accepts a data array and creates entries with the passed values to
+	 * the roster rules table for the league ID.
+	 * @param	$data		Array of roster rules data
+	 * @param	$league_id 	League ID.
+	 */
+	public function setInitialRosterRules($data = false, $league_id = false) {
+		if ($data === false || $league_id === false) { return false; }
+
+		//$lineCount = 0;
+		//while ($lineCount < 10) {
+			//$data = array();
+			//if ($data['pos'.$lineCount] && $data['pos'.$lineCount] != -1) {
+		foreach($data as $pos => $row) {
+				$insert = array('league_id'=>$league_id,
+							  'position'=>$row['position'],
+							  'active_min'=>$row['active_min'],
+							  'active_max'=>$row['active_max']);
+				$this->db->insert($this->tables['ROSTER_RULES'],$insert);
+			//}
+			//$lineCount++;
+		}
+		/*$types = array(100=>'active', 101=>'reserve',102=>'injured');
+		foreach($types as $code => $label) {
+			$this->db->insert($this->tables['ROSTER_RULES'],array('league_id'=>$league_id,
+								  'position'=>$code,
+								  'active_min'=>$data['total_'.$label.'_min'],
+								  'active_max'=>$data['total_'.$label.'_max']));
+		}*/
 		return true;
 	}
 	/**
@@ -2543,8 +2747,9 @@ class league_model extends base_model {
 			/*--------------------------------------
 			/	2.5 TRADES
 			/-------------------------------------*/
+			$tradeSettings = $this->getLeagueTradeSettings($league_id);
 			// IF TRADE EXPIRATIONS ARE ENABLED, PROCESS EXPIRING TRADES
-			if ((isset($this->params['config']['useTrades']) && $this->params['config']['useTrades'] == 1 && $this->params['config']['tradesExpire'] == 1)) {
+			if ((isset($tradeSettings['useTrades']) && $tradeSettings['useTrades'] == 1 && $tradeSettings['tradesExpire'] == 1)) {
 				$summary .= $this->lang->line('sim_process_trades');
 				$summary .= $this->expireOldTrades($league_id, true, $this->debug);
 			} // END if
@@ -2556,7 +2761,8 @@ class league_model extends base_model {
 			/	2.6 WAIVERS
 			/-------------------------------------*/
 			// IF ENABLED, PROCESS WAIVERS
-			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
+			$waiverSettings = $this->getLeagueWaiversSettings($league_id);
+			if ((isset($waiverSettings['useWaivers']) && $waiverSettings['useWaivers'] == 1)) {
 				$summary .= $this->lang->line('sim_process_waivers');
 				$summary .= $this->processWaivers(($scoring_period['id'] + 1), $league_id, 'same', $this->debug);
 			} // END if
@@ -3515,6 +3721,15 @@ class league_model extends base_model {
 	/	PRIVATE/PROTECTED FUNCTIONS
 	/
 	/-----------------------------------------------------------------*/
+	/**
+	 *  DELETE LEAGUE DATA.
+	 *  Performas a removal of data specific to a league from the passed table in the Database.
+	 *
+	 *	@param	$table 			The talbe name
+	 *	@param	$league_id		The fatntasy league ID, defaults to this objects $id property if nothing is passed
+	 *	@return					TRUE on both success or fail
+	 * 	@since 	1.0.6
+	 */
 	protected function deleteLeagueData($table = false, $league_id = false) {
 
 		if ($table === false) { return false; }

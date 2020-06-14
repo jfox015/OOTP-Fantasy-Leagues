@@ -9,6 +9,10 @@ $(function() {
 		var endArr = draftEnd.split("-");
 		$("#dateField").datepicker({ minDate: new Date(startArr[0], startArr[1]-1, startArr[2] ), maxDate: new Date(endArr[0], endArr[1]-1, endArr[2] )});
 		$('#cancel').click(function(){ history.back(-1); });
+    $('a[rel=setToActive]').live('click',function (e) {
+      e.preventDefault();
+      $("#nRounds").val(this.id)
+		});
 	});
     </script>
     <div id="center-column">
@@ -36,4 +40,4 @@ $(function() {
         <p>&nbsp;</p>
       </div>
     </div>
-    <p /><br />
+    <p><br />

@@ -258,10 +258,12 @@ class draft extends BaseEditor {
 			$this->params['subTitle'] = "Draft";
 			$this->data['subTitle'] = "Complete Draft";
 			$error = false;
-			$useWaivers = (isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) ? true : false;
+			
+			$useWaivers = false;
 			$waiverOrder = array();	
 			if ($this->dataModel->id != -1) {
 				$this->league_model->load($this->dataModel->league_id);
+				$useWaivers = ($this->league_model->useWaivers == 1) ? true : false;
 				$this->db->query('DELETE FROM fantasy_rosters WHERE league_id = '.$this->dataModel->league_id); 
 				$this->load->model('player_model');
 				$results = $this->dataModel->getDraftResults();
@@ -1744,6 +1746,17 @@ class draft extends BaseEditor {
 		} else if ($this->dataModel->draftEnable == 1) {
 			$checked = true;
 		}
+		$activeMax = $this->params['config']['draft_rounds_min'];
+		$this->load->model('league_model');
+		$rosters = $this->league_model->getRosterRules($this->dataModel->league_id);
+		if (isset($rosters) && sizeof($rosters) > 0) {
+			foreach($rosters as $pos => $data) {
+				if ($pos == 100) { 
+					$activeMax = $data['active_max'];
+					break;
+				}
+			}
+		}
 		$this->form_validation->set_message('valid_short_date', 'Please enter a date in mm/dd/yyyy format'); 
 		//$form->label('Enable Draft','draftEnable');
 		//$form->checkbox('draftEnable',1,'',$checked,'',array('class','first'));
@@ -1768,8 +1781,9 @@ class draft extends BaseEditor {
 		$form->select('startTimeA|startTimeA',getAMPM(),'&nbsp;',($this->input->post('startTimeAM')) ? $this->input->post('startTimeAM') : $timeStartA);
 		$form->space();
 		$form->fieldset('');
-		$form->text('nRounds','Number of Rounds','required|number',($this->input->post('nRounds')) ? $this->input->post('nRounds') : $this->dataModel->nRounds);
+		$form->text('nRounds|nRounds','Number of Rounds','required|number',($this->input->post('nRounds')) ? $this->input->post('nRounds') : $this->dataModel->nRounds);
 		$form->br();
+		$form->html('<span style="margin-left:260px;"><a href="#" rel="setToActive" id="'.$activeMax.'">Match to Roster Max Active Limit</a></span>');
 		//$form->text('dispLimit','Number of Players to Display','required|number',($this->input->post('dispLimit')) ? $this->input->post('dispLimit') : $this->dataModel->dispLimit);
 		//$form->space();
 		$responses[] = array('1','Yes');

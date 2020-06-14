@@ -81,6 +81,9 @@ class league extends BaseEditor {
 		$this->views['TEAM_REQUEST'] = 'league/league_team_request';
 		$this->views['CONTACT_FORM'] = 'league/league_contact';
 		$this->views['TEAM_ROSTERS'] = 'league/league_team_rosters'; // PROD 1.0.3
+		$this->views['LEAGUE_FANTASY_SETTINGS'] = 'league/league_fantasy_settings'; // PROD 1.2
+		$this->views['LEAGUE_ROSTER_RULES'] = 'league/league_admin_rosters'; // PROD 1.2
+		$this->views['LEAGUE_SCORING_RULES'] = 'league/league_scoring_rules'; // PROD 1.2
 
 		$this->lang->load('league');
 
@@ -88,7 +91,7 @@ class league extends BaseEditor {
 		// TRADE PSUEDO CRON TASKS
 		// TEST FOR EXPIRING TRADES, EXPIRING LEAGUE PROTESTS AND ALERT COMMISSIONER TO TRADES REQUIRING
 		// COMMISSIONER APPROVAL
-		if ($this->params['config']['useTrades'] == 1 && isset($this->uriVars['id'])) {
+		if ($this->dataModel->useTrades == 1 && isset($this->uriVars['id'])) {
 			if (!isset($this->dataModel)) {
 				$this->load->model($this->modelName,'dataModel');
 			} // END if
@@ -295,7 +298,7 @@ class league extends BaseEditor {
 		$this->data['isLeagueMember'] = $this->dataModel->isLeagueMember($this->params['currUser'], $this->dataModel->id);
 
 		// WAIVERS AND WAIVER ORDER
-		$this->data['useWaivers'] = $this->params['config']['useWaivers'];
+		$this->data['useWaivers'] = $this->dataModel->useWaivers;
 		if ($this->data['useWaivers'] == 1) {
 			$this->data['waiverOrder'] = $this->team_model->getWaiverOrder($this->dataModel->id);
 		}
@@ -362,8 +365,12 @@ class league extends BaseEditor {
 					}
 				}
 				$this->data['rosterIssues'] = $rosterIssues;
+
+				// TRADE SETTINGS
+				$this->data['tradeSettings'] = $this->dataModel->getLeagueTradeSettings();
+
 				// WAIVERS AND WAIVER ORDER
-				$this->data['useWaivers'] = $this->params['config']['useWaivers'];
+				$this->data['useWaivers'] = $this->useWaivers;
 				$this->data['waiverOrder'] = $this->team_model->getWaiverOrder($this->dataModel->id);
 				$this->data['current_period'] = $this->params['config']['current_period'];
 
@@ -427,7 +434,251 @@ class league extends BaseEditor {
 	        $this->session->set_userdata('loginRedirect',current_url());
 			redirect('user/login');
 	    }
-		
+	}
+	/**
+	 * LEAGUE FANTASY SETTINGS
+	 * Sets Fantasy Specific settings FOR THE PASSED LEAGUE
+	 *
+	 * 	@return void
+	 *	@since	1.2 PROD
+
+	 */
+	public function fantasySettings() {
+
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+
+				$fields = array(
+				'useWaivers' => 'Waivers Enabled?',
+				'useTrades' => 'Trading Enabled?',
+				'tradesExpire' => 'Trade offers Can Expire',
+				'approvalType' => 'Trade Approval Type'
+				);
+				foreach($fields as $field => $label) {
+					$this->form_validation->set_rules($field, $label, 'required|trim|number');
+				}
+				$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
+
+				if ($this->form_validation->run() == false) {
+					$form = new Form();
+            		if (isset($this->params['config']['simType']) && $this->params['config']['simType'] == 1) {
+						$freqResponses[] = array('1','Daily');
+						$freqResponses[] = array('-1','Weekly');
+						$form->fieldset('Roster Transaction Frequency');
+						$form->fieldset('',array('class'=>'radioGroup'));
+						$form->radiogroup ('transactionFrequency',$freqResponses,'Roster Edits',($this->input->post('transactionFrequency') ? $this->input->post('transactionFrequency') : $this->dataModel->transactionFrequency));
+						$form->br();
+					}
+					$responses[] = array('1','Yes');
+					$responses[] = array('-1','No');
+					$form->open('league/fantasySettings/'.$this->uriVars['id'],'fantasySettings');
+					$form->fieldset('Roster Rules');
+					$form->br();
+					$form->span("Minimum Games Needed for Players to be elidigble for a position:");
+					$form->br();
+					$form->fieldset('',array('class'=>'dateLists'));
+					$form->text('min_game_current','This Season','required|trim|number',($this->input->post('min_game_current') ? $this->input->post('min_game_current') : $this->dataModel->min_game_current),array('class'=>'shorttext'));
+					$form->nobr();
+					$form->text('min_game_last','Last Season','required|trim|number',($this->input->post('min_game_last') ? $this->input->post('min_game_last') : $this->dataModel->min_game_last),array('class'=>'shorttext'));
+					$form->br();
+					$form->fieldset('',array('class'=>'radioGroup'));
+					$form->radiogroup ('useWaivers',$responses,'Waivers Enabled?',($this->input->post('useWaivers') ? $this->input->post('useWaivers') : $this->dataModel->useWaivers),'required');
+					$form->space();
+					if (isset($this->params['config']['simType']) && $this->params['config']['simType'] == 1) {
+						$form->fieldset('');
+						$form->text('waiverPeriod','Waiver Period (in Days)','trim|number',($this->input->post('waiverPeriod') ? $this->input->post('waiverPeriod') : $this->dataModel->waiverPeriod),array('class'=>'shorttext'));
+						$form->br();
+						$form->span("Minimum is 1 Day, Max is Number of Days per Sim, which is currently ".$this->params['config']['sim_length']);
+						$form->br();
+						$form->space();
+					}
+					$expireList = array("X"=>"Select One",-1=>"No Expiration",500 =>"Next Sim Period");
+					for($d = 1; $d < TRADE_MAX_EXPIRATION_DAYS + 1; $d++) {
+						$expireList = $expireList  + array($d =>$d." Days");
+					}
+					$form->fieldset('Trading');
+					$form->fieldset('',array('class'=>'radioGroup'));
+					$form->radiogroup ('useTrades',$responses,'Trading Enabled?',($this->input->post('useTrades') ? $this->input->post('useTrades') : $this->dataModel->useTrades),'required', array('class'=>'tradesRadio'));
+					$form->fieldset('');
+					$form->html('<div class="tradeDetails">');
+					//$form->fieldset('',array('class'=>'radioGroup'));
+					$form->select('approvalType|approvalType',loadSimpleDataList('tradeApprovalType'),'Trade Approval',($this->input->post('approvalType')) ? $this->input->post('approvalType') : $this->dataModel->approvalType,'required');
+					$form->select('minProtests|minProtests',array(1=>1,2=>2,3=>3,4=>4,5=>5,6=>6,7=>7,8=>8),'League Protests to void trade',($this->input->post('minProtests')) ? $this->input->post('minProtests') : $this->dataModel->minProtests);
+					$form->select('protestPeriodDays|protestPeriodDays',$expireList,'Trade Review Period',($this->input->post('protestPeriodDays')) ? $this->input->post('protestPeriodDays') : $this->dataModel->protestPeriodDays);
+					//$form->radiogroup ('commishApproveTrades',$responses,'Commissioner Approval Required?',($this->input->post('commishApproveTrades') ? $this->input->post('commishApproveTrades') : $config['commishApproveTrades']),'required');
+					$form->space();
+					$form->fieldset('',array('class'=>'radioGroup'));
+					$form->html('<div class="tradeDetails">');
+					$form->radiogroup ('tradesExpire',$responses,'Trade offers can expire?',($this->input->post('tradesExpire') ? $this->input->post('tradesExpire') : $this->dataModel->tradesExpire),'required');
+					$form->html('</div>');
+					$form->space();
+					$form->fieldset('');
+					$form->html('<div class="tradeDetails">');
+					$form->select('defaultExpiration|defaultExpiration',$expireList,'Default Expiration (Days)',($this->input->post('defaultExpiration')) ? $this->input->post('defaultExpiration') : $this->dataModel->defaultExpiration);
+					$form->html('</div>');
+					$form->fieldset('',array('class'=>'button_bar'));
+					$form->submit('Submit');
+
+					$this->data['useTrades'] = ($this->input->post('useTrades') ? $this->input->post('useTrades') : $this->dataModel->useTrades);
+
+					$this->makeNav();
+					$this->data['form'] = $form->get();
+					$this->data['subTitle'] = $this->params['subTitle'] = "Fantasy Settings";
+					$this->params['pageType'] = PAGE_FORM;
+					$this->params['content'] = $this->load->view($this->views['LEAGUE_FANTASY_SETTINGS'], $this->data, true);
+				} else {
+					$this->dataModel->applyData($this->input);
+					if ($this->dataModel->save()) {
+						$this->session->set_flashdata('message', '<p class="success">League Fantasy Settings Updated successfully.</p>');
+						redirect('league/admin/'.$this->dataModel->id);
+					} else {
+						$this->data['subTitle'] = "An error Occured";
+						$this->data['theContent'] = '<span class="error">An erro occurred while saving the settings changes. Please go back, review all settings optons and try again.</span>';
+						$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+					}
+				}
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+			}
+			$this->displayView();
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());
+			redirect('user/login');
+	    }
+	}
+	/**
+	 *	ROSTER CONFIG.
+	 *	Sets the roster rules for the league.
+	 *
+	 *  @since 1.2 PROD (Moved from ADMIN->DASHBOARD)
+	 */
+	function configRosters() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+				//echo("Controller, configRosters(), this->uriVars['id'] = ".$this->uriVars['id']."<br />");
+				
+				$this->form_validation->set_rules('pos0', 'First Active Position', 'required');
+				$this->form_validation->set_rules('min0', 'First Active Minimum', 'required');
+				$this->form_validation->set_rules('max0', 'First Active Maximum', 'required');
+				
+				$this->data['rosters'] = $this->dataModel->getRosterRules($this->uriVars['id']);
+
+				if ($this->form_validation->run() == false) {
+					$this->data['outMess'] = '';
+					$this->data['input'] = $this->input;
+					$this->data['thisItem']['id'] = $this->uriVars['id'];
+					$this->data['subTitle'] = "Configure Roster Rules";
+					$this->params['content'] = $this->load->view($this->views['LEAGUE_ROSTER_RULES'], $this->data, true);
+					$this->params['subTitle'] = "League Settings";
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				} else {
+					$change = $this->dataModel->setRosterRules($this->input, $this->uriVars['id']);
+					if ($change) {
+						$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
+						redirect('league/admin/'.$this->uriVars['id']);
+					} else {
+						$message = '<span class="error">Settings update failed.</span>';
+						$this->data['outMess'] = $message;
+						$this->data['outMess'] = '';
+						$this->data['input'] = $this->input;
+						$this->data['subTitle'] = "Configure Roster Rules";
+						$this->params['content'] = $this->load->view($this->views['LEAGUE_ROSTER_RULES'], $this->data, true);
+						$this->params['subTitle'] = "League Settings";
+						$this->params['pageType'] = PAGE_FORM;
+						$this->displayView();
+					} // END if
+				} // END if
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+			}
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());
+			redirect('user/login');
+	    }
+	} // END function
+
+	/**
+	 *	SCORING RULES CONFIG.
+	 *	Sets the games scoring rules for the League.
+	 *
+	 *  @since 1.2 PROD (Moved from ADMIN->DASHBOARD)
+	 */
+	function configScoringRules() {
+		if ($this->params['loggedIn']) {
+			$this->getURIData();
+			$this->load->model($this->modelName,'dataModel');
+			$this->dataModel->load($this->uriVars['id']);
+			if ($this->dataModel->commissioner_id == $this->params['currUser'] || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
+
+				//echo(" = ".$."<br />");
+				$this->form_validation->set_rules('batting_type_0', 'First Batting Category', 'required');
+				$this->form_validation->set_rules('pitching_type_0', 'First Pitching Category', 'required');
+				$this->form_validation->set_rules('scoring_type', 'Scoring Type', 'required');
+
+				$scoring_type = $this->dataModel->league_type;
+				if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
+					$this->form_validation->set_rules('batting_value_0', 'First Batting Value', 'required');
+					$this->form_validation->set_rules('pitching_value_0', 'First Pitching Value', 'required');
+				}
+				if ($this->form_validation->run() == false) {
+					
+					$scoringRules = $this->dataModel->getScoringRules($this->uriVars['id'],$scoring_type);
+					if (isset($scoringRules['batting'])) {
+						$this->data['scoring_batting']=	$scoringRules['batting'];
+					}
+					if (isset($scoringRules['pitching'])) {
+						$this->data['scoring_pitching'] = $scoringRules['pitching'];
+					}
+					$scoring_types = loadSimpleDataList('leagueType','','ASC','Scoring Type');
+
+					$this->data['outMess'] = '';
+					$this->data['input'] = $this->input;
+					$this->data['thisItem']['id'] = $this->uriVars['id'];
+					$this->data['scoring_types'] = $scoring_types;
+					$this->data['scoring_type'] = $scoring_type;
+					$this->data['subTitle'] = "Configure Scoring Rules";
+					$this->params['content'] = $this->load->view($this->views['LEAGUE_SCORING_RULES'], $this->data, true);
+					$this->params['subTitle'] = "League Settings";
+					$this->params['pageType'] = PAGE_FORM;
+					$this->displayView();
+				} else {
+					$change = $this->dataModel->setScoringRules($this->input, $this->uriVars['id']);
+					if ($change) {
+						$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
+						redirect('league/admin/'.$this->uriVars['id']);
+					} else {
+						$message = '<span class="error">Settings update failed.</span>';
+						$this->data['outMess'] = $message;
+						$this->data['scoring_types'] = $scoring_types;
+						$this->data['input'] = $this->input;
+						$this->data['scoring_type'] = $scoring_type;
+						$this->data['subTitle'] = "Configure Scoring Rules";
+						$this->params['content'] = $this->load->view($this->views['LEAGUE_SCORING_RULES'], $this->data, true);
+						$this->params['subTitle'] = "League Settings";
+						$this->params['pageType'] = PAGE_FORM;
+						$this->displayView();
+					}
+				}
+			} else {
+				$this->data['subTitle'] = "Unauthorized Access";
+				$this->data['theContent'] = '<span class="error">You are not authorized to access this page.</span>';
+				$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+			}
+		} else {
+	        $this->session->set_userdata('loginRedirect',current_url());
+			redirect('user/login');
+	    }
 	}
 	/**
 	 *	SELECT.
@@ -1244,6 +1495,18 @@ class league extends BaseEditor {
 		$this->data['scoring_type'] = $this->dataModel->getScoringType();
 
 
+		$this->data['transactionFrequency'] = $this->dataModel->transactionFrequency;
+		$this->data['min_game_current'] = $this->dataModel->min_game_current;
+		$this->data['min_game_last'] = $this->dataModel->min_game_last;
+		$this->data['useWaivers'] = $this->dataModel->useWaivers;
+		$this->data['waiverPeriod'] = $this->dataModel->waiverPeriod;
+		$this->data['useTrades'] = $this->dataModel->useTrades;
+		$this->data['approvalType'] = $this->dataModel->approvalType;
+		$this->data['minProtests'] = $this->dataModel->minProtests;
+		$this->data['protestPeriodDays'] = $this->dataModel->protestPeriodDays;
+		$this->data['tradesExpire'] = $this->dataModel->tradesExpire;
+		$this->data['defaultExpiration'] = $this->dataModel->defaultExpiration;
+
 		$this->makeNav();
 		$this->params['content'] = $this->load->view($this->views['RULES'], $this->data, true);
 	    $this->displayView();
@@ -1682,6 +1945,14 @@ class league extends BaseEditor {
 			$this->load->model('draft_model');
 		}
 		$this->draft_model->setDraftDefaults($this->dataModel->id);
+
+		// EDIT 1.2 PROD, ADD LEAGUE SCORING ASND ROSTER RULES ENTRIES
+		$rosters = $this->dataModel->getRosterRules(-1);
+		$this->dataModel->setInitialRosterRules($rosters, $this->dataModel->id);
+
+		$scoringRules = $this->dataModel->getScoringRules(-1,$this->dataModel->league_type);
+		$this->dataModel->setInitialScoringRules($scoringRules, $this->dataModel->league_type, $this->dataModel->id);
+		// END 1.2 PROD edits
 		return true;
 	}
 	/**
@@ -1701,6 +1972,8 @@ class league extends BaseEditor {
 		if (!isset($this->news_model)) {
 			$this->load->model('news_model');
 		}
+		// DELETE LEAGUE SCORING RULES
+		$this->dataModel->deleteScoringRules($this->dataModel->id);
 		// DELETE ALL TEAM SCORING
 		$this->dataModel->deleteScoring($this->dataModel->id);
 		// DELETE DRAFT SETTINGS
@@ -1711,6 +1984,8 @@ class league extends BaseEditor {
 		$this->draft_model->deleteAllDraftLists($this->dataModel->id);
 		// DELETE TRANSACTIONS
 		$this->dataModel->deleteTransactions($this->dataModel->id);
+		// DELETE ROSTER RULES
+		$this->dataModel->deleteRosterRules($this->dataModel->id);
 		// DELETE ROSTERS
 		$this->dataModel->deleteRosters($this->dataModel->id);
 		// DELETE TRADES

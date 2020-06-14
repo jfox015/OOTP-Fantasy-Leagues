@@ -355,9 +355,9 @@
             <li><?php echo anchor('admin/configFantasy','<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" />'); ?><br />
             Fantasy Settings</li>
             <li><?php echo anchor('admin/configRosters','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" />'); ?><br />
-            Rosters Rules Settings</li>
+            Default Rosters Rules Settings</li>
 			<li><?php echo anchor('admin/configScoringRules','<img src="'.$config['fantasy_web_root'].'images/icons/application_edit.png" width="48" height="48" />'); ?><br />
-            Scoring Rules Settings</li>
+            Default Scoring Rules Settings</li>
             <?php
 			} else {
 			// SETTING REVIEW (REGULAR SEASON)
@@ -643,8 +643,18 @@
 				}
 			}
 			if ($currDate > $startDate && $in_season < 3) {
+				
 				// ROSTERS CHECK
 				if (isset($draftsCompleted) && $draftsCompleted > 0 && $draftsCompleted == $activeleagueCount) { 
+					if (isset($rostersLocked) && $rostersLocked == -1) {
+						$class = "error";
+						$message = "Roster Editing is currently locked";
+					} else {
+						$class = "success";
+						$message = "Roster Editing is currently enabled";
+					}
+					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+
 					if (isset($invalidRosters) && count($invalidRosters) > 0) {
 						$class = "error";
 						$message = count($invalidRosters)." Leagues have Invalid Rosters";

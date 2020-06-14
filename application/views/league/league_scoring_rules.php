@@ -2,13 +2,7 @@
 	$(document).ready(function(){
 		$('#submitButton').click(function() {
 			checkAndSubmit();			
-		});
-		$('#chooseScoring').change(function() {
-			if ($('#chooseScoring').val() != -1) {
-				document.location.href='<?php echo($config['fantasy_web_root']); ?>admin/configScoringRules/scoring_type/'+$('#chooseScoring').val();		
-			}
-		});
-		
+		});		
 	});
 	function checkAndSubmit() {
 		$('#configScoring').submit();
@@ -49,9 +43,6 @@
         <?php include_once('admin_breadcrumb.php'); ?>
         <h1><?php echo($subTitle); ?></h1>
         <br />
-		Use this page to provide default scoring rules that will be applied to Leagues when they are created. League 
-		Commissioners can change these settings in the League admin pages.
-		<br/><br />
 		Select up to <b><?php print($cutoff); ?></b> statistcs in both the batting and pitching categories. <?php
 		print($instr); ?>
         <br /><br />
@@ -66,9 +57,7 @@
 			echo $outMess;
 		}
 		?>
-    </div>
-	<div id="center-column">
-        <form action="<?php echo($config['fantasy_web_root']); ?>admin/configScoringRules" name="configScoring" id="configScoring" method="post" autocomplete="false">
+        <form action="<?php echo($config['fantasy_web_root']); ?>league/configScoringRules/<?php echo($thisItem['id']); ?>" name="configScoring" id="configScoring" method="post" autocomplete="false">
      	<div class='textbox'>
 	    <table cellpadding="0" cellspacing="0">
 	    <tr class='title'>
@@ -202,7 +191,7 @@
 				</td>
         </tr>
 		<tr>
-            <td class="hsc2_c" colspan="3"><input type="button" id="submitButton" name="submitButton" value="Save Changes" class="button" /></td>
+            <td class="hsc2_c" colspan="4"><input type="button" id="submitButton" name="submitButton" value="Save Changes" class="button" /></td>
         </tr>
         </table>
             </td>
@@ -210,36 +199,10 @@
         </table>
         </div>
         <input type="hidden" name="scoring_type" value="<?php print($scoring_type); ?>" />
+        <input type="hidden" name="league_id" value="<?php print($thisItem['id']); ?>" />
          </form>
         <br class="clearfix" />
 	</div>
-	<div id="right-column">
-    	<div class='textbox'>
-        <table cellpadding="2" cellspacing="0" style="width:225px;">
-        <tr class='title'>
-            <td width="100%">Scoring Type</td>
-        </tr>
-        <tr>
-            <td width="100%">
-    	<?php if (isset($scoring_types) && sizeof($scoring_types) > 0) { ?>
-    	<label for="chooseScoring" style="min-width:0px;width:auto;margin:0px;">Scoring Type:</label>
-        <select id="chooseScoring" name="chooseScoring">
-            <?php
-			foreach($scoring_types as $id => $type) {
-				print('<option value="'.$id.'"');
-				if (isset($scoring_type) && $scoring_type == $id) {
-					print(' selected="selected"');
-				}
-				print('>'.$type.'</option>');
-			}
-			?>
-        </select>
-        <?php } ?>
-        </td>
-        </tr>
-        </table>
-        </div>
-	</div> 
-    
+
    
     

@@ -260,6 +260,17 @@ class admin extends MY_Controller {
 			$this->data['waivers_processed'] = $this->params['config']['waivers_processed'];
 			$this->data['completed'] = $completed = getFantasyStatus() >= 3;
 
+			$this->data['rosterAutoLock'] = $this->params['config']['autoLockRosters'];
+			$this->data['rostersLocked'] = $this->params['config']['rostersLocked'];
+			$this->data['autoLockSyncwithSims'] = $this->params['config']['autoLockSyncwithSims'];
+			$this->data['autoLockSyncwithSims'] = $this->params['config']['autoLockSyncwithSims'];
+			$this->data['simUploadTimeStart'] = $this->params['config']['simUploadTimeStart'];
+			$this->data['simUploadTimeEnd'] = $this->params['config']['simUploadTimeEnd'];
+			$this->data['simDays'] = $this->params['config']['simDays'];
+			$this->data['autoLockStart'] = $this->params['config']['autoLockStart'];
+			$this->data['autoLockEnd'] = $this->params['config']['autoLockEnd'];
+			$this->data['autoLockDays'] = $this->params['config']['autoLockDays'];
+
 			//  END 1.0.3 PROD MODS
 
 			$this->params['content'] = $this->load->view($this->views['DASHBOARD'], $this->data, true);
@@ -567,26 +578,38 @@ class admin extends MY_Controller {
 			$this->form_validation->set_rules('season_start', 'Season Start Date', 'required');
 			$this->form_validation->set_rules('draft_start', 'Draft Period Start Date', 'required');
 			$this->form_validation->set_rules('draft_end', 'Draft Period End Date', 'required');
+			$this->form_validation->set_rules('simUploadTimeStart', 'Sim Upload Start Time', 'required');
+			$this->form_validation->set_rules('simUploadTimeEnd', 'Sim Upload End Time', 'required');
+			$this->form_validation->set_rules('draft_end', 'Draft Period End Date', 'required');
+			$this->form_validation->set_rules('simDays', 'Sims occur on Days', 'required');
 			$fields = array('sim_length' => 'Sim length',
 			'default_scoring_periods' => 'Default Scoring Periods',
-			'useWaivers' => 'Waivers Enabled?',
-			'useTrades' => 'Trading Enabled?',
-			'tradesExpire' => 'Trade offers Can Expire',
-			'approvalType' => 'Trade Approval Type',
+			//'useWaivers' => 'Waivers Enabled?',
+			//'useTrades' => 'Trading Enabled?',
+			//'tradesExpire' => 'Trade offers Can Expire',
+			//'approvalType' => 'Trade Approval Type',
+			//'min_game_current' => 'Eligibility: Games This Season',
+			//'min_game_last' => 'Eligibility: Games Last Season',
 			'draft_rounds_min' => 'Minimum Draft Rounds',
 			'draft_rounds_max' => 'Maximum Draft Rounds',
-			'min_game_current' => 'Eligibility: Games This Season',
-			'min_game_last' => 'Eligibility: Games Last Season',
 			'restrict_admin_leagues' => 'Restrict # of Admin Leagues',
 			'users_create_leagues' => 'Users can create leagues',
-			'max_user_leagues' => 'Max # of user leagues');
+			'max_user_leagues' => 'Max # of user leagues',
+			'autoLockRosters' => 'Auto Lock Rosters',
+			'autoLockSyncwithSims' => 'Lock during Sim uploads',
+			'simType' => 'Sim Type',
+			);
 			foreach($fields as $field => $label) {
 				$this->form_validation->set_rules($field, $label, 'required|trim|number');
 			}
 			$this->form_validation->set_error_delimiters('<span class="error">', '</span>');
 
 			if ($this->form_validation->run() == false) {
-
+				/*------------------------------------------------------------------
+				/
+				/	DRAW FORM
+				/
+				/-----------------------------------------------------------------*/
 				$gameStart = $this->params['config']['season_start'];
 				if ($gameStart == EMPTY_DATE_STR) {
 					$gameStart = date('Y-m-d',time()+(60*60*24*7));
@@ -603,6 +626,24 @@ class admin extends MY_Controller {
 				}
 				$this->data['draft_start'] = date('m/d/Y',strtotime($draftStart));
 				$this->data['draft_end'] = date('m/d/Y',strtotime($draftEnd));
+
+				// EDIT 1.2 PROD, ADD SIM DETAIL AND AUTO LOCK SUPPORT
+				$simDayStr = $this->params['config']['simDays'];
+				$simDays = array();
+				if (strpos($simDayStr, ',') != 0) $simDays = explode(",", $simDayStr);
+				else array_push($simDays, $simDayStr);
+				$lockDayStr = $this->params['config']['autoLockDays'];
+				$lockDays = array();
+				if (strpos($lockDayStr, ',') != 0) $lockDays = explode(",", $lockDayStr);
+				else array_push($lockDays, $lockDayStr);
+				$this->data['simDays'] = $simDays;
+				$this->data['lockDays'] = $lockDays;
+
+				$this->data['simUploadTimeStart'] = $this->params['config']['simUploadTimeStart'];
+				$this->data['simUploadTimeEnd'] = $this->params['config']['simUploadTimeEnd'];
+				$this->data['autoLockStart'] = $this->params['config']['autoLockStart'];
+				$this->data['autoLockEnd'] = $this->params['config']['autoLockEnd'];
+
 				$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
 				$this->data['subTitle'] = "Fantasy Details";
@@ -610,10 +651,39 @@ class admin extends MY_Controller {
 				$this->params['subTitle'] = "Fantasy Settings";
 				$this->params['pageType'] = PAGE_FORM;
 				$this->displayView();
+
 			} else {
+				/*------------------------------------------------------------------
+				/
+				/	FORM SUBMISSION
+				/
+				/-----------------------------------------------------------------*/
 				$change = false;
 				$change = update_config('season_start',date('Y-m-d',strtotime($this->input->post('season_start'))));
 				$change = update_config('draft_period',date('Y-m-d',strtotime($this->input->post('draft_start'))).":".date('Y-m-d',strtotime($this->input->post('draft_end'))));
+				$change = update_config('simUploadTimeStart',$this->input->post('simUploadTimeStart'));
+				$change = update_config('simUploadTimeEnd',$this->input->post('simUploadTimeEnd'));
+				$simDayStr = '';
+				$simDays = $this->input->post('simDays');
+				if (sizeof($simDays) > 1) {
+					foreach($simDays as $day) {
+						if (!empty($simDayStr)) $simDayStr .= ',';
+						$simDayStr .= $day;
+					}
+				}
+				$change = update_config('simDays',$simDayStr);
+				$change = update_config('autoLockStart',$this->input->post('autoLockStart'));
+				$change = update_config('autoLockEnd',$this->input->post('autoLockEnd'));
+				$lockDayStr = '';
+				$lockDays = $this->input->post('autoLockDays');
+				if (sizeof($lockDays) > 1) {
+					foreach($lockDays as $day) {
+						if (!empty($lockDayStr)) $lockDayStr .= ',';
+						$lockDayStr .= $day;
+					}
+				}
+				$change = update_config('autoLockDays',$lockDayStr);
+				
 				$configArr = array();
 				foreach($fields as $field => $label) {
 					$value= ($this->input->post($field)) ? intval($this->input->post($field)) : 0;
@@ -639,7 +709,7 @@ class admin extends MY_Controller {
 	}
 	/**
 	 *	ROSTER CONFIG.
-	 *	Sets the game start date and drafting period dates.
+	 *	Sets the default set of Roster Rules used as a template for new leagues.
 	 */
 	function configRosters() {
 		if (!$this->params['loggedIn'] || $this->params['accessLevel'] < ACCESS_ADMINISTRATE) {
@@ -652,12 +722,12 @@ class admin extends MY_Controller {
 			if (!isset($this->league_model)) {
 			$this->load->model('league_model');
 			} // END if
-			$this->data['rosters'] = $this->league_model->getRosterRules();
+			$this->data['rosters'] = $this->league_model->getRosterRules(-1);
 
 			if ($this->form_validation->run() == false) {
 				$this->data['outMess'] = '';
 				$this->data['input'] = $this->input;
-				$this->data['subTitle'] = "Configure Roster Rules";
+				$this->data['subTitle'] = "Configure Default Roster Rules";
 				$this->params['content'] = $this->load->view($this->views['CONFIG_ROSTERS'], $this->data, true);
 				$this->params['subTitle'] = "Fantasy Settings";
 				$this->params['pageType'] = PAGE_FORM;
@@ -666,7 +736,7 @@ class admin extends MY_Controller {
 				if (!isset($this->league_model)) {
 					$this->load->model('league_model');
 				} // END if
-				$change = $this->league_model->setRosterRules($this->input);
+				$change = $this->league_model->setRosterRules($this->input, -1);
 				if ($change) {
 					$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
 					redirect('admin/dashboard');
@@ -675,7 +745,7 @@ class admin extends MY_Controller {
 					$this->data['outMess'] = $message;
 					$this->data['outMess'] = '';
 					$this->data['input'] = $this->input;
-					$this->data['subTitle'] = "Configure Roster Rules";
+					$this->data['subTitle'] = "Configure Default Roster Rules";
 					$this->params['content'] = $this->load->view($this->views['CONFIG_ROSTERS'], $this->data, true);
 					$this->params['subTitle'] = "Fantasy Settings";
 					$this->params['pageType'] = PAGE_FORM;
@@ -712,7 +782,7 @@ class admin extends MY_Controller {
 				$this->form_validation->set_rules('batting_value_0', 'First Batting Value', 'required');
 				$this->form_validation->set_rules('pitching_value_0', 'First Pitching Value', 'required');
 			}
-			$scoringRules = $this->league_model->getScoringRules(0,$scoring_type);
+			$scoringRules = $this->league_model->getScoringRules(-1,$scoring_type);
 			if (isset($scoringRules['batting'])) {
 				$this->data['scoring_batting']=	$scoringRules['batting'];
 			}
@@ -726,7 +796,7 @@ class admin extends MY_Controller {
 				$this->data['input'] = $this->input;
 				$this->data['scoring_types'] = $scoring_types;
 				$this->data['scoring_type'] = $scoring_type;
-				$this->data['subTitle'] = "Configure Scoring Rules";
+				$this->data['subTitle'] = "Configure Default Scoring Rules";
 				$this->params['content'] = $this->load->view($this->views['CONFIG_SCORING_RULES'], $this->data, true);
 				$this->params['subTitle'] = "Fantasy Settings";
 				$this->params['pageType'] = PAGE_FORM;
@@ -735,7 +805,7 @@ class admin extends MY_Controller {
 				if (!isset($this->league_model)) {
 					$this->load->model('league_model');
 				} // END if
-				$change = $this->league_model->setScoringRules($this->input);
+				$change = $this->league_model->setScoringRules($this->input, -1);
 				if ($change) {
 					$this->session->set_flashdata('message', '<span class="success">All settings were successfully updated.</span>');
 					redirect('admin/configScoringRules');
@@ -745,7 +815,7 @@ class admin extends MY_Controller {
 					$this->data['scoring_types'] = $scoring_types;
 					$this->data['input'] = $this->input;
 					$this->data['scoring_type'] = $scoring_type;
-					$this->data['subTitle'] = "Configure Scoring Rules";
+					$this->data['subTitle'] = "Configure Default Scoring Rules";
 					$this->params['content'] = $this->load->view($this->views['CONFIG_SCORING_RULES'], $this->data, true);
 					$this->params['subTitle'] = "Fantasy Settings";
 					$this->params['pageType'] = PAGE_FORM;
@@ -1351,14 +1421,27 @@ class admin extends MY_Controller {
 	function elidgibility() {
 		$result = '';
 		$status = '';
+		$error = false;
 		// CHECK FOR DUPLICATE
 		if (!function_exists('position_elidgibility')) {
 			$this->load->helper('roster');
 		}
-		$mess = position_elidgibility($this->params['config']['ootp_league_id']);
-		if ($mess != "OK") {
-			$status = "error:".$mess;
+		$this->load->model('league_model');
+		$leagues = $this->league_model->getLeagues();
+		if (sizeof($leagues) > 0) {
+			foreach($leagues as $id =>$details) {
+				$mess = position_elidgibility($this->params['config']['ootp_league_id'], $details['min_game_current'], $details['min_game_last']);
+				if ($mess != "OK") {
+					$error = true;
+					$status .= "Elidibility Check Error. League <b>".$details['league_name']."</b>".$mess."<br />";
+					break;
+				}
+			}
 		} else {
+			$error = true;
+			$status = "No Leagues Found!";
+		}
+		if (!$error) {
 			$status = "OK";
 			update_config('update_eligible_run',1);
 		}
@@ -1713,6 +1796,8 @@ class admin extends MY_Controller {
 		/	UPDATE LEAGUE SCORING
 		/-----------------------------*/
 		$typeRot = 0;
+		$waiversRun = false;
+		$waiversCount = 0;
 		foreach($this->data['leagues'] as $id => $details) {
 			// EDIT 1.0.3 PROD, check if were in the legal scoring window. H2H Leagues that end before the final periods should
 			// not be run.
@@ -1729,6 +1814,11 @@ class admin extends MY_Controller {
 			}
 			if ($details['league_type'] != LEAGUE_SCORING_HEADTOHEAD) {
 				$typeRot++;
+			}
+			$waiversSettings =  $this->league_model->getLeagueWaiversSettings($id);
+			if ((isset($waiversSettings['useWaivers']) && $waiversSettings['useWaivers'] == 1)) {
+				$waiversCount++;
+				$waiversRun = true;
 			}
 		}
 		$simResult = 1;
@@ -1748,7 +1838,7 @@ class admin extends MY_Controller {
 			$mess = $this->lang->line('sim_ajax_success');
 			update_config('last_process_time',date('Y-m-d h:m:s'));
 			update_config('current_period',($score_period['id']+1));
-			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
+			if ($waiversCount > 0 && $waiversRun) {
 				update_config('waivers_processed','1');
 			}
 			update_config('player_update_run','-1');

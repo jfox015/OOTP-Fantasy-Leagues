@@ -136,3 +136,42 @@ UPDATE `fantasy_config` SET `cfg_value`= '500' WHERE `cfg_key` = 'defaultExpirat
 #	Version 0.6 and 1.0 to 1.0.1
 #	REMOVE ALL COMMENTS FOR DIST
 INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('ootp_version', 12);
+
+#	UPDATE SQL QUERY
+#	Version 1.0.1 and 1.1
+#	REMOVE ALL COMMENTS FOR DIST
+UPDATE `fantasy_config` SET `cfg_value`= '21' WHERE `cfg_key` = 'ootp_version';
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('ratings_run', '-1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('player_update_run', '-1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('update_eligible_run', '-1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('waivers_processed', '-1');
+
+#	UPDATE SQL QUERY
+#	Version 1.1 to 1.2
+#	REMOVE ALL COMMENTS FOR DIST
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'min_game_current';
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'min_game_last';
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'useWaivers';
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'useTrades';
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'approvalType';
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'tradesExpire';
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'defaultExpiration';
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'minProtests';
+DELETE FROM `fantasy_config` WHERE `cfg_key` = 'protestPeriodDays';
+
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('autoLockRosters', '-1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('autoLockSyncwithSims', '-1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('autoLockStart', '0');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('autoLockEnd', '0');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('autoLockDays', '');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('rostersLocked', '-1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('simType', '-1');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('simDays', '');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('simUploadTimeStart', '0');
+INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('simUploadTimeEnd', '0');
+
+ALTER TABLE `fantasy_leagues` ADD  `transactionFrequency` tinyint(1) NOT NULL DEFAULT '-1', ADD `min_game_current` Int(11) NOT NULL DEFAULT 5, ADD `min_game_last` Int(11) NOT NULL DEFAULT 20, ADD `useWaivers` tinyint(1) NOT NULL DEFAULT '1', ADD `waiverPeriod` tinyint(4) NOT NULL DEFAULT '1', ADD `useTrades` tinyint(1) NOT NULL DEFAULT '1', ADD `approvalType` tinyint(1) NOT NULL DEFAULT '-1', ADD `tradesExpire` tinyint(1) NOT NULL DEFAULT '1', ADD `defaultExpiration` int(11) NOT NULL DEFAULT 500, ADD `minProtests` tinyint(4) NOT NULL DEFAULT 3, ADD `protestPeriodDays` tinyint(4) NOT NULL DEFAULT 3;
+
+UPDATE `fantasy_leagues_scoring_batting` SET `league_id` = -1 WHERE `league_id` = 0
+UPDATE `fantasy_leagues_scoring_pitching` SET `league_id` = -1 WHERE `league_id` = 0
+UPDATE `fantasy_roster_rules` SET `league_id` = -1 WHERE `league_id` = 0

@@ -868,7 +868,6 @@ class user extends MY_Controller {
 				
 				// EDIT 1.0.3 PROD - PLAYOFFS BANNER
 				$this->data['playoffs'] = array();
-				
 					
 				$league_list = $this->user_meta_model->getUserLeagueIds(false,$currPeriod);
 				if (sizeof($league_list) > 0) {
@@ -877,25 +876,28 @@ class user extends MY_Controller {
 						// TEST FOR TRADES UNDER LEAGUE REVIEW STATUS
 						// THIS BLOCK NOT ONLY RETRIEVES THE LIST OF TRADES IN REVIEW, BUT ALSO PSUEDO CRONS
 						// THEM AND APPROVES TRADES WHERE THE PROTEST PERIOD HAS EXPRIRED
-						if ($this->params['config']['useTrades'] == 1) {
-							if ($this->params['config']['approvalType'] == 2) {
-								$this->league_model->getTradesInLeagueReview($currPeriod,$league_id,$this->params['config']['protestPeriodDays'], true);
+						// EDIT 1.2 PROD
+						// TRADE INDICATOR MOVED TO LEAGUE MODEL
+						$tradeSettings = $this->league_model->getLeagueTradeSettings($league_id);
+						if ($tradeSettings['useTrades'] == 1) {
+							if ($tradeSettings['approvalType'] == 2) {
+								$this->league_model->getTradesInLeagueReview($currPeriod,$league_id,$tradeSettings['protestPeriodDays'], true);
 							} // END if	
 							// TRADES EXPIRATION
-							if ($this->params['config']['tradesExpire'] == 1) {
+							if ($tradeSettings['tradesExpire'] == 1) {
 								$this->league_model->expireOldTrades($league_id, false, $this->debug);
 							} // END if	
 						}
 						if ($this->league_model->getScoringType($league_id) == LEAGUE_SCORING_HEADTOHEAD) {
 							$playoffArr = array();
-							if (inPlayoffPeriod($this->params['config']['current_period'], $league_id)) {
+							if (inPlayoffPeriod($tradeSettings['current_period'], $league_id)) {
 								$curr_period = $this->getScoringPeriod();
 								$playoffArr['inPlayoffs']= 1;
 								$playoffArr['league_year']=date('Y', strtotime($curr_period['date_start']));
 								$playoffArr['league_name'] = $this->league_model->getLeagueName($league_id);
 							}
 							$playoffSettings = $this->league_model->getPlayoffSettings($league_id);
-							if ($this->params['config']['current_period']== $playoffSettings['regular_scoring_periods'] && $playoffSettings['playoff_rounds'] > 0) {
+							if ($tradeSettings['current_period']== $playoffSettings['regular_scoring_periods'] && $playoffSettings['playoff_rounds'] > 0) {
 								$playoffArr['playoffsNext'] = 1;
 								$playoffArr['playoffsTrans'] = $playoffSettings['allow_playoff_trans'];
 								$playoffArr['playoffsTrades'] = $playoffSettings['allow_playoff_trades'];
@@ -906,9 +908,9 @@ class user extends MY_Controller {
 					} // END foreach		
 				} // END if
 				$this->data['userTrades'] = $this->user_meta_model->getTradeOffers(false,$currPeriod);
-				if ($this->params['config']['approvalType'] == 2) {
-					$this->data['tradesForReview'] = $this->user_meta_model->getTradesForReview(false,$currPeriod);
-				}
+				//if ($tradeSettings['approvalType'] == 2) {
+				$this->data['tradesForReview'] = $this->user_meta_model->getTradesForReview(false,$currPeriod);
+				//}
 			} // END if	
 			$this->params['content'] = $this->load->view($view, $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;

@@ -106,16 +106,13 @@
         <?php include_once('admin_breadcrumb.php'); ?>
         <h1><?php echo($subTitle); ?></h1>
         <br />
-		Use this page to provide default roster rules that will be applied to Leagues when they are created. League 
-		Commissioners can change these settings in the League admin pages.
-		<br/><br />
 		Select up to ten positions and the active minimum and maximum player counts. Leave any unused positons
 		blank to skip.
 		<br />
         <div id="activeStatusBox"><div id="activeStatus"></div></div>
-        <form action="<?php echo($config['fantasy_web_root']); ?>admin/configRosters" name="configRosters" id="configRosters" method="post" autocomplete="false">
+        <form action="<?php echo($config['fantasy_web_root']); ?>league/configRosters/<?php echo($thisItem['id']); ?>" name="configRosters" id="configRosters" method="post" autocomplete="false">
         <div class='textbox'>
-        <table cellpadding="0" cellspacing="0" border="0" style="width:475px;">
+        <table cellpadding="0" cellspacing="0" style="width:475px;">
         <tr class='title'>
             <td style='padding:3px' colspan="3">Enter settings information below</td>
         </tr>
@@ -144,7 +141,7 @@
 					if ($pos < 100) { ?>
 					<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
 				    	<td width="35%"><select name="pos<?php echo($posCount); ?>"  id="pos<?php echo($posCount); ?>">
-							<option value="" />
+                        <option value=""></option>
 							<?php if (isset($posList) && sizeof($posList) > 0) {
 							foreach($posList as $posId => $position) {
 								echo('<option value="'.$posId.'"');
@@ -153,8 +150,8 @@
 							}
 							} ?>
 						</select></td>
-						<td width="35%" align="right"><input type="text" rel="min" name="min<?php echo($posCount); ?>" id="min<?php echo($posCount); ?>" size="4" value="<?php echo($data['active_min']); ?>" class="styledTextBox" /></td>
-						<td width="35%" align="right"><input type="text" rel="max" name="max<?php echo($posCount); ?>" id="max<?php echo($posCount); ?>" size="4" value="<?php echo($data['active_max']); ?>" class="styledTextBox" /></td>
+						<td width="35%" class="hsc2_r"><input type="text" rel="min" name="min<?php echo($posCount); ?>" id="min<?php echo($posCount); ?>" size="4" value="<?php echo($data['active_min']); ?>" class="styledTextBox" /></td>
+						<td width="35%" class="hsc2_r"><input type="text" rel="max" name="max<?php echo($posCount); ?>" id="max<?php echo($posCount); ?>" size="4" value="<?php echo($data['active_max']); ?>" class="styledTextBox" /></td>
 					</tr>
 					<?php
 						$posCount++;
@@ -165,15 +162,15 @@
 			while ($posCount < 10) { ?>
 					<tr class='s<?php if (($rowCount%2)!=0) { echo("1"); } else { echo("2"); } ?>'>
 				    	<td width="35%"><select name="pos<?php echo($posCount); ?>"  id="pos<?php echo($posCount); ?>">
-							<option value="" />
+							<option value=""></option>
 							<?php if (isset($posList) && sizeof($posList) > 0) {
 								foreach($posList as $posId => $position) {
 									echo('<option value="'.$posId.'">'.$position.'</option>');
 								}
 							} ?>
 						</select></td>
-						<td width="35%" align="right"><input type="text" rel="min" name="min<?php echo($posCount); ?>" id="min<?php echo($posCount); ?>" size="4" value="0" class="styledTextBox" /></td>
-						<td width="35%" align="right"><input type="text" rel="max" name="max<?php echo($posCount); ?>" id="max<?php echo($posCount); ?>" size="4" value="0" class="styledTextBox" /></td>
+						<td width="35%" class="hsc2_r"><input type="text" rel="min" name="min<?php echo($posCount); ?>" id="min<?php echo($posCount); ?>" size="4" value="0" class="styledTextBox" /></td>
+						<td width="35%" class="hsc2_r"><input type="text" rel="max" name="max<?php echo($posCount); ?>" id="max<?php echo($posCount); ?>" size="4" value="0" class="styledTextBox" /></td>
 					</tr>
 				<?php
 				$rowCount++;
@@ -227,12 +224,13 @@
 					}
 					?>
 					<tr>
-						<td align="center" colspan="3"><input type="button" id="submitButton" name="submitButton" value="Save Changes" class="button" /></td>
+						<td class="hsc2_c" colspan="3"><input type="button" id="submitButton" name="submitButton" value="Save Changes" class="button" /></td>
 					</tr>
 					</table>
             </td>
         </tr>
         </table>
         </div>
+        <input type="hidden" name="league_id" value="<?php print($thisItem['id']); ?>" />
         </form>
     </div>

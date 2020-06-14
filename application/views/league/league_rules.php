@@ -192,7 +192,7 @@
                     <td><b>Eligibility</b>:</td>
                     <td>&nbsp;</td>
                     <td>Players are eligible at their primary position, plus positions they've 
-                    played <?php echo($config['min_game_last']); ?> games last year or <?php echo($config['min_game_current']); ?> games this year.</td>
+                    played <b><?php echo($min_game_last); ?></b> games last year or <b><?php echo($min_game_current); ?></b> games this year.</td>
                 </tr>
                 
                 <tr valign="top">
@@ -208,7 +208,7 @@
                         <td>&#149;</td>
                         <td>Owners may set lineups and change players' positions from a list of their eligible positions.</td>
                     </tr>
-                    <?php if ($config['useWaivers'] != -1) { ?>
+                    <?php if ($useWaivers != -1) { ?>
                     <tr valign="top">
                     	<td>&#149;</td>
                     	<td>Add/drops are handled by a waivers process.</td>
@@ -217,44 +217,52 @@
                     </table>
                     </td>
                 </tr>
-                <?php if ($config['useWaivers'] != -1) { ?>
+                
                 <tr valign="top">
                 	<td><b>Waivers</b>:</td>
                     <td>&nbsp;</td>
                     <td>
-                    <table cellpadding="1" cellspacing="0">
-                    <tr valign="top">
-                        <td>&#149;</td>
-                        <td>Inital waivers order is the reversed order of the draft.</td>
-                    </tr>
-                    <tr valign="top">
-                        <td>&#149;</td>
-                        <td>Each time a team makes a waivers pick, it is moved to the bottom of the waivers list.</td>
-                    </tr>
-                    <tr valign="top">
-                        <td>&#149;</td>
-                        <td>The order of execution of waiver picks is random generated for each period.</td>
-                    </tr>
-                    </table>
+                    <?php if ($useWaivers != -1) { ?>
+                        <table cellpadding="1" cellspacing="0">
+                        <tr valign="top">
+                            <td>&#149;</td>
+                            <td>Inital waivers order is the reversed order of the draft.</td>
+                        </tr>
+                        <tr valign="top">
+                            <td>&#149;</td>
+                            <td>Each time a team makes a waivers pick, it is moved to the bottom of the waivers list.</td>
+                        </tr>
+                        <tr valign="top">
+                            <td>&#149;</td>
+                            <td>The order of execution of waiver picks is random generated for each period.</td>
+                        </tr>
+                        </table>
+                     <?php } else { ?>
+                        <table cellpadding="1" cellspacing="0">
+                        <tr valign="top">
+                            <td>Waiver Pickups are DISABLED for this league.</td>
+                        </tr>
+                        </table>
+                    <?php } ?>
                 </tr>
-                <?php } 
-				if ($config['useTrades'] != -1) { ?>
                 <tr valign="top">
                 	<td><b>Trading</b>:</td>
                     <td>&nbsp;</td>
                     <td>
+                    <?php 
+                    if ($useTrades != -1) { ?>
                     <table cellpadding="1" cellspacing="0">
                     <tr valign="top">
                         <td>&#149;</td>
                         <td>Teams are allowed to initatate and react to trades.</td>
                     </tr>
-                    <?php  if ($config['approvalType'] != -1) { 
-					 if ($config['approvalType'] == 1) { ?>
+                    <?php  if ($approvalType != -1) { 
+					 if ($approvalType == 1) { ?>
                     <tr valign="top">
                         <td>&#149;</td>
                         <td>The league commissioer must approve all trades before they become final.</td>
                     </tr>
-                    <?php } else if ($config['approvalType'] == 2) { ?>
+                    <?php } else if ($approvalType == 2) { ?>
                      <tr valign="top">
                         <td colspan="2">&nbsp;</td>
                     </tr>
@@ -262,7 +270,7 @@
                         <td>&#149;</td>
                         <td>Trades may be reviewed by other team owners.</td>
                     </tr>
-                    <?php  if ($config['minProtests'] != 0) { ?>
+                    <?php  if ($minProtests != 0) { ?>
                    	<tr valign="top">
                         <td>&nbsp</td>
                         <td>
@@ -270,13 +278,13 @@
                         <tr valign="top">
                             <td width="25">&nbsp;</td>
                             <td> &#149;</td>
-                            <td>A trade is voided if it recieves <?php print($config['minProtests']); ?> protests from the league.</td>
+                            <td>A trade is voided if it recieves <?php print($minProtests); ?> protests from the league.</td>
                         </tr>
                         </table>
                         </td>
                     </tr>
                     <?php } ?>
-                    <?php  if ($config['protestPeriodDays'] != -1) { ?>
+                    <?php  if ($protestPeriodDays != -1) { ?>
                     <tr valign="top">
                         <td>&nbsp</td>
                         <td>
@@ -284,7 +292,7 @@
                         <tr valign="top">
                             <td width="25">&nbsp;</td>
                             <td> &#149;</td>
-                            <td>Owners have <?php print($config['protestPeriodDays']); ?> days after a trade is accepted to log a protest.</td>
+                            <td>Owners have <?php print($protestPeriodDays); ?> days after a trade is accepted to log a protest.</td>
                         </tr>
                         </table>
                         </td>
@@ -297,7 +305,7 @@
                         <td>Trades do not require approvals and are not subject to league review.</td>
                     </tr>
                     <?php }
-					if ($config['tradesExpire'] != -1) { ?>
+					if ($tradesExpire != -1) { ?>
                     <tr valign="top">
                         <td colspan="2">&nbsp;</td>
                     </tr>
@@ -305,7 +313,7 @@
                         <td>&#149;</td>
                         <td>Owners may set a trade expiration date on all offers.</td>
                     </tr>
-                    <?php  if ($config['defaultExpiration'] != -1) { ?>
+                    <?php  if ($defaultExpiration != -1) { ?>
                    	<tr valign="top">
                         <td>&nbsp</td>
                         <td>
@@ -313,7 +321,7 @@
                         <tr valign="top">
                             <td width="25">&nbsp;</td>
                             <td> &#149;</td>
-                            <td>The default expiration time for trades is <?php print((($config['defaultExpiration']==100)?" the following sim period":$config['defaultExpiration']." Days")); ?>.</td>
+                            <td>The default expiration time for trades is <?php print((($defaultExpiration==100)?" the following sim period":$config['defaultExpiration']." Days")); ?>.</td>
                        	</tr>
                         </table>
                         </td>
@@ -321,8 +329,16 @@
                     <?php } 
 					} ?>
                     </table>
+                    <?php } else { ?>
+                        <table cellpadding="1" cellspacing="0">
+                        <tr valign="top">
+                            <td>Trading is DISABLED for this league.</td>
+                        </tr>
+                        </table>
+                    <?php } ?>
+                    </td>
                 </tr>
-                <?php } ?>
+                
                 <tr valign="top"><td><b>Schedule</b>:</td>
                 	<td>&nbsp;</td>
                 	<td>Weekly scoring periods, starting on Sundays.</td>

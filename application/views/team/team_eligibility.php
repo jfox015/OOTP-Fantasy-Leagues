@@ -17,7 +17,7 @@
 				$avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 			}
 			?>
-			<img src="<?php echo($avatar); ?>" width="48" height="48" border="0" align="absmiddle" />
+			<img src="<?php echo($avatar); ?>" width="48" height="48" align="absmiddle" />
 			&nbsp;&nbsp;<?php echo($teamname." ".$teamnick); ?></h2></div>
 
 				<!-- TEAM NAVIGATOR -->
@@ -41,13 +41,13 @@
 			
 				<!-- TEAM ELIGIBILITY BOX -->
             <div class='textbox'>
-                <table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="1" border="0" width="915px">
+                <table style="margin:6px" class="sortable-table" cellpadding="5" cellspacing="1" width="915px">
                 <tr class="title">
 				<td colspan="<?php print(((isset($roster_rules)) ? sizeof($roster_rules)+1: 1)); ?>">Games Played By Position for the <?php print($lgyear); ?> season</td>
                 </tr>
 				<?php
 					if (isset($roster_rules) && sizeof($roster_rules) > 0) { ?>
-				<tr class="headline" align="center" valign="top">
+				<tr class="headline" class='hsc2_c' valign="top">
 					<th>Player</th>
 					<?php
 					foreach($roster_rules as $ruleId => $ruleData) { ?>
@@ -61,8 +61,8 @@
 					$rowNum = 0;
 					foreach($player_eligibility as $player_data) { ?>
 					
-				<tr align="center" valign="top" bgcolor="<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
-					<td align="left"><?php print(anchor('/players/info/player_id/'.$player_data['player_id'].'/league_id/'.$league_id,$player_data['player_name'])); 
+				<tr class='hsc2_c' valign="top" style="background-color:<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
+					<td class='hsc2_l'><?php print(anchor('/players/info/player_id/'.$player_data['player_id'].'/league_id/'.$league_id,$player_data['player_name'])); 
 					if ($player_data['position'] == 1) { print(" ".get_pos($player_data['role'])); } else { print(" ".get_pos($player_data['position'])); } 
 					?></td>
 					<?php
@@ -74,7 +74,7 @@
 					if (isset($player_data[$ruleId])) {
 						$posGames = $player_data[$ruleId];
 					} // END if
-					if ($posGames > $config['min_game_current']) {
+					if ($posGames > $min_game_current) {
 						$style = 'style="font-weight:bold;"';
 					} // END if
 					print ('<span '.$style.'>'.$posGames.'</span>');
@@ -88,13 +88,13 @@
 					$rowNum++;
 					} // END foreach
 				} else { ?>
-				<tr align="left" valign="top">
+				<tr>
 					<td>No player were found for this team.</td>
 				</tr>
 				<?php
 					}
 				} else { ?>
-				<tr align="left" valign="top">
+				<tr>
 					<td>Position information could not be found for this league.</td>
 				</tr>
 				<?php
@@ -102,7 +102,4 @@
 				?>
                 </table>
             </div>  <!-- end batting stat div -->
-			
-			
-			
         </div>

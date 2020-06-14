@@ -28,6 +28,12 @@
             	Edit League Details</li>
                 <li><?php echo anchor('/league/configInfo/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/window_lock.png" width="48" height="48" border="0" />'); ?><br />
 				Review League Settings</li>
+				<li><?php echo anchor('league/fantasySettings/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/window_edit.png" width="48" height="48" />'); ?><br />
+				Fantasy Settings</li>
+				<li><?php echo anchor('league/configRosters/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" />'); ?><br />
+				Rosters Rules Settings</li>
+				<li><?php echo anchor('league/configScoringRules/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/application_edit.png" width="48" height="48" />'); ?><br />
+				Scoring Rules Settings</li>
                 <li><?php echo anchor('/league/avatar/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/image_edit.png" width="48" height="48" border="0" />'); ?><br />
             	League Avatar</li>
                 <?php 
@@ -55,7 +61,7 @@
 					<span class="badge"><?php echo($invites_requets); ?></span>
 				<?php }	?>
 				</li>
-                <?php if ($this->params['config']['useWaivers'] == 1) { ?>
+                <?php if ($useWaivers == 1) { ?>
                 <li><?php echo anchor('/league/waiverClaims/'.$league_id,'<img src="'.$config['fantasy_web_root'].'images/icons/user_accept.png" width="48" height="48" border="0" />'); ?><br />
             	Pending Waiver Claims
 				<?php if (isset($waiver_claims) && $waiver_claims > 0) { ?>
@@ -63,7 +69,7 @@
 				<?php }	?>
 				</li>
                 <?php } 
-                if ($this->params['config']['useTrades'] == 1) { ?>
+                if ($tradeSettings['useTrades'] == 1) { ?>
                 <li><?php echo anchor('/league/tradeReview/id/'.$league_id.'/type/1','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" border="0" />'); ?><br />
             	Pending Trades
 				<?php if (isset($trades) && $trades > 0) { ?>

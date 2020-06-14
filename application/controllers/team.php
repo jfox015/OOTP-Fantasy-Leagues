@@ -31,11 +31,11 @@ class team extends BaseEditor {
 	 */
 	var $rules = array();
 	/**
-	 *	User Waivers.
+	 *	Use Waivers.
 	 *	TRUE if waivers enabled, FALSE if not
-	 *	@var $userWaivers:Boolean
+	 *	@var $useWaivers:Boolean
 	 */
-	var $userWaivers = false;
+	var $useWaivers = false;
 	/*--------------------------------
 	/	C'TOR
 	/-------------------------------*/
@@ -99,7 +99,7 @@ class team extends BaseEditor {
 		$this->views['LINEUP'] = 'team/team_lineup';
 		//$this->views['STARTERS'] = 'team/team_starters';
 		$this->debug = false;
-		$this->useWaivers = (isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) ? true : false;
+		$this->useWaivers = (isset($this->league_model->useWaivers) && $this->league_model->useWaivers == 1) ? true : false;
 	}
 	/**
 	 *	ADMIN.
@@ -334,6 +334,8 @@ class team extends BaseEditor {
 			
 			$this->data['showAdmin'] = ($this->params['loggedIn'] && ($this->params['currUser'] == $this->dataModel->owner_id && $curr_period_id == $configPeriodId) || $this->params['accessLevel'] == ACCESS_ADMINISTRATE) ? true : false;
 			if (($curr_period['id']) >= $total_periods) $this->data['showAdmin'] = false;
+			// EDIT 1.2 PROD, DISABLE ROSTER MOVES IF ROSTERS ARE LOCKED
+			if (isset($this->params['config']['rostersLocked']) && $this->params['config']['rostersLocked'] == 1) $this->data['showAdmin'] = false;
 			
 			$this->params['content'] = $this->load->view($this->views['LINEUP'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
@@ -398,6 +400,10 @@ class team extends BaseEditor {
 			}
 			$this->data['theContent'] .= "Trades are no longer allowed.";
 			
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		// EDIT 1.2 PROD, DISABLE ROSTER MOVES IF ROSTERS ARE LOCKED
+		} else if (isset($this->params['config']['rostersLocked']) && $this->params['config']['rostersLocked'] == 1) {
+			$this->data['theContent'] .= "Sim update in progress. Roster changes are not allowed at this time.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
 			
@@ -1518,7 +1524,12 @@ class team extends BaseEditor {
 		
 		$error = false;
 		$rosterError = false;
-		$roster = $this->dataModel->applyRosterChanges($this->input,$this->getScoringPeriod(),$this->dataModel->id);
+		// EDIT 1.2 PROD, DISABLE ROSTER MOVES IF ROSTERS ARE LOCKED
+		if (isset($this->params['config']['rostersLocked']) && $this->params['config']['rostersLocked'] == 1) {
+			$error = "League Sim Update in progress. Roster changes are disabled.";
+		} else {
+			$roster = $this->dataModel->applyRosterChanges($this->input,$this->getScoringPeriod(),$this->dataModel->id);
+		}
 		if (!isset($roster)) {
 			$error = true;
 		} else {
@@ -1580,6 +1591,10 @@ class team extends BaseEditor {
 			}
 			$this->data['theContent'] .= "Roster Add/Drops are no longer allowed.";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
+		// EDIT 1.2 PROD, DISABLE ROSTER MOVES IF ROSTERS ARE LOCKED
+		} else if (isset($this->params['config']['rostersLocked']) && $this->params['config']['rostersLocked'] == 1) {
+			$this->data['theContent'] .= "Sim update in progress. Roster changes are not allowed at this time.";
+			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
 		} else {
 
 			if (!function_exists('getCurrentScoringPeriod')) {
@@ -1596,7 +1611,7 @@ class team extends BaseEditor {
 			if (isset($this->data['list_type']) && $this->data['list_type'] == 2) {
 				$returnVar= 'formatted_stats';
 			} // END if
-			if(isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1) {
+			if(isset($this->league_model->useWaivers) && $this->league_model->useWaivers == 1) {
 				$this->data['waiver_order'] = $this->dataModel->getWaiverOrder();
 				$this->data['waiver_claims'] = $this->dataModel->getWaiverClaims();
 			} // END if
@@ -2039,6 +2054,8 @@ class team extends BaseEditor {
 		if (!function_exists('getScoringPeriod')) {
 			$this->load->helper('admin');
 		}
+		$this->data['min_game_current'] = $this->league_model->min_game_current;
+
 		$scoring_type = $this->league_model->getScoringType();
 		$total_periods = 0;
 		if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
@@ -2720,7 +2737,7 @@ class team extends BaseEditor {
 		if ($this->params['loggedIn'] && ($this->params['currUser'] == $this->dataModel->owner_id || $this->params['accessLevel'] == ACCESS_ADMINISTRATE)) {
 			$tm_admin = true;
 		}
-		array_push($this->params['subNavSection'],team_nav($this->dataModel->id,$this->dataModel->teamname." ".$this->dataModel->teamnick, $tm_admin, (($this->params['config']['useTrades'] == 1)?true:false)));
+		array_push($this->params['subNavSection'],team_nav($this->dataModel->id,$this->dataModel->teamname." ".$this->dataModel->teamnick, $tm_admin, (($this->league_model->useTrades == 1)?true:false)));
 	}
 }
 /* End of file team.php */
