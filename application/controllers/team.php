@@ -2135,8 +2135,8 @@ class team extends BaseEditor {
 		
 		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
 		
-			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules,$this->data['batters'], false, false, false, false, false, false, false, false, false, $this->dataModel->league_id);
-			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules,$this->data['pitchers'], false, false, false, false, false, false, false, false, false, $this->dataModel->league_id);
+			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules,$this->data['batters'], false, 'all', false, QUERY_STANDARD, -1, -1, 0, $this->dataModel->league_id);
+			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules,$this->data['pitchers'], false, 'all', false, QUERY_STANDARD, -1, -1, 0, $this->dataModel->league_id);
 			
 			$this->data['title'] = array();
 			$this->data['formatted_stats'] = array();
