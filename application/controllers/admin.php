@@ -1416,27 +1416,20 @@ class admin extends MY_Controller {
 		$this->output->set_output($result);
 	}
 	/**
-	 *	POSITION ELIDGIBILITY.
+	 *	POSITION ELIGIBILITY.
 	 */
-	function elidgibility() {
+	function eligibility() {
 		$result = '';
 		$status = '';
 		$error = false;
 		// CHECK FOR DUPLICATE
-		if (!function_exists('position_elidgibility')) {
+		if (!function_exists('position_eligibility')) {
 			$this->load->helper('roster');
 		}
 		$this->load->model('league_model');
 		$leagues = $this->league_model->getLeagues();
 		if (sizeof($leagues) > 0) {
-			foreach($leagues as $id =>$details) {
-				$mess = position_elidgibility($this->params['config']['ootp_league_id'], $details['min_game_current'], $details['min_game_last']);
-				if ($mess != "OK") {
-					$error = true;
-					$status .= "Elidibility Check Error. League <b>".$details['league_name']."</b>".$mess."<br />";
-					break;
-				}
-			}
+			position_eligibility($leagues, $this->params['config']['ootp_league_id']);
 		} else {
 			$error = true;
 			$status = "No Leagues Found!";

@@ -2,8 +2,7 @@
 /**
  * 	BUG MODEL.
  * 	A model for tracking bugs within a site
- *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
- *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@author			Jeff Fox (Github ID: jfox015)
  * 
  */
 

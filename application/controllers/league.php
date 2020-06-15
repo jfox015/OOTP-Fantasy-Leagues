@@ -527,6 +527,8 @@ class league extends BaseEditor {
 					$this->makeNav();
 					$this->data['form'] = $form->get();
 					$this->data['subTitle'] = $this->params['subTitle'] = "Fantasy Settings";
+					$this->data['thisItem']['id'] = $this->uriVars['id'];
+
 					$this->params['pageType'] = PAGE_FORM;
 					$this->params['content'] = $this->load->view($this->views['LEAGUE_FANTASY_SETTINGS'], $this->data, true);
 				} else {

@@ -164,8 +164,13 @@ class players extends MY_Controller {
 		$status = "";
 		$code = 0;
 		$result = "";
+		if (isset($this->uriVars['league_id'])) {
+			$league_id = $this->uriVars['league_id'];
+		} else {
+			$league_id = -1;
+		}
 		if (isset($this->uriVars['player_id'])) {
-			$result = $this->loadPlayerInfo($this->uriVars['player_id'], true);
+			$result = $this->loadPlayerInfo($this->uriVars['player_id'], true, $league_id);
 			if (!empty($result)) {
 				$status .= "OK";
 				$code = 200;
@@ -184,17 +189,17 @@ class players extends MY_Controller {
 		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
-	public function loadPlayerInfo($player_id = false, $return = false) {
+	public function loadPlayerInfo($player_id = false, $return = false, $league_id = false) {
 
 		$status = "";
 		$code = 0;
 		if (!isset($this->player_model)) {
 			$this->load->model('player_model');
 		}
-		$data = $this->player_model->getPlayerDetails($player_id);
+		$data = $this->player_model->getPlayerDetails($player_id, $this->params['config']['ootp_version'], $league_id);
 		$result = "";
 		if (sizeof($data) > 0 && $data['id'] != -1) {
-			$result .= '{"id":"'.$data['id'].'","player_id":"'.$data['player_id'].'","player_name":"'.$data['first_name'].' '.$data['last_name'].'","team_id":"'.$data['team_id'].'","team_name":"'.$data['team_name'].' '.$data['teamNickname'].'","pos":"'.makeElidgibilityString($data['positions']).'","position":"'.get_pos($data['position']).'","role":"'.get_pos($data['role']).'"}';
+			$result .= '{"id":"'.$data['id'].'","player_id":"'.$data['player_id'].'","player_name":"'.$data['first_name'].' '.$data['last_name'].'","team_id":"'.$data['team_id'].'","team_name":"'.$data['team_name'].' '.$data['teamNickname'].'","pos":"'.makeEligibilityString($data['positions']).'","position":"'.get_pos($data['position']).'","role":"'.get_pos($data['role']).'"}';
 		}
 		return $result;
 	}
@@ -324,8 +329,22 @@ class players extends MY_Controller {
 		if (!$pid === false && $pid != -1) {
 			$this->dataModel->load($pid);
 
+			// LEAGUE SPECIFIC INFO IF LEAGUE_ID EXISTS
+			$league_id = -1;
+			if(isset($this->uriVars['league_id'])) {
+				$league_id = $this->uriVars['league_id'];
+			} else {
+				$league_id = $this->session->userdata('league_id');
+				if (!isset($league_id)) {
+					$league_id = -1;
+				}
+			}
+			//print($this->data['currentScoringPeriod']['id']."<br />");
+			$this->data['league_id'] = $league_id;
+			$this->data['current_team'] = array('id'=>-1);
+
 			$this->data['teamList'] = getOOTPTeams($this->params['config']['ootp_league_id'], false);
-			$this->data['thisItem'] = $this->dataModel->getPlayerDetails($pid, intval($this->params['config']['ootp_version']));
+			$this->data['thisItem'] = $this->dataModel->getPlayerDetails($pid, intval($this->params['config']['ootp_version']), $league_id);
 
 			$this->load->model('news_model');
 			$this->data['playerNews'] = $this->news_model->getNewsByParams(NEWS_PLAYER,$pid,1);
@@ -350,20 +369,6 @@ class players extends MY_Controller {
 			$this->data['careerStats'] = $this->dataModel->getCareerStats($this->params['config']['ootp_league_id']);
 			$this->data['teams'] = getOOTPTeamAbbrs($this->params['config']['ootp_league_id'],date('Y',strtotime($this->ootp_league_model->current_date)));
 			$this->data['year'] = date('Y',strtotime($this->ootp_league_model->current_date));
-
-			// LEAGUE SPECIFIC INFO IF LEAGUE_ID EXISTS
-			$league_id = -1;
-			if(isset($this->uriVars['league_id'])) {
-				$league_id = $this->uriVars['league_id'];
-			} else {
-				$league_id = $this->session->userdata('league_id');
-				if (!isset($league_id)) {
-					$league_id = -1;
-				}
-			}
-			//print($this->data['currentScoringPeriod']['id']."<br />");
-			$this->data['league_id'] = $league_id;
-			$this->data['current_team'] = array('id'=>-1);
 
 			$league_for_query = $league_id;
 			if (isset($league_id) && !empty($league_id) && $league_id != -1) {
@@ -394,7 +399,7 @@ class players extends MY_Controller {
 					$this->data['draftCompleted'] = $this->draft_model->completed;
 					$this->data['draftEnabled'] = $this->draft_model->draftEnable;
 					$this->data['draftStatus'] = $this->draft_model->getDraftStatus();
-					$this->data['draftEligible'] = ($this->draft_model->getDraftElidgibility($pid)) ? 1 : -1;
+					$this->data['draftEligible'] = ($this->draft_model->getDraftEligibility($pid)) ? 1 : -1;
 					// GET CURRENT DRAFT PICK<br />
 					$pick = $this->draft_model->getCurrentPick();
 					if ($pick) {

@@ -3,8 +3,8 @@
      *	PLAYER MODEL CLASS.
      *
      *	@author			Jeff Fox (Github ID: jfox015)
-	 *	@version		1.0
-	 *  @lastModified	04/16/20
+	 *	@version		1.2
+	 *  @lastModified	6/15/20
      *
      */
 class player_model extends base_model {
@@ -50,7 +50,7 @@ class player_model extends base_model {
 		$this->conditionList = array();
 		$this->readOnlyList = array();
 
-		$this->columns_select = array('id','player_id','team_id','player_status','elidgibility','player_position','player_role');
+		$this->columns_select = array('id','player_id','team_id','player_status','eligibility','player_position','player_role');
 
 		parent::_init();
 	}
@@ -73,7 +73,16 @@ class player_model extends base_model {
 		$count = $this->db->count_all_results();
 		return $count;
 	}
-
+	/**
+	 * 	GET STARTING PITCHERS
+	 *  Gets most details for the request player ID
+	 *  
+	 *  @param	$playerList		Array		The list of players to check starts for
+	 *  @return					Array		Array of starting pitcher IDs
+	 * 
+	 * 	@since	1.1 PROD
+	 * 
+	 */
 	public function getStartingPitchers($playerList = false) {
 		
 		//if ($league_id === false) { return; }
@@ -158,7 +167,7 @@ class player_model extends base_model {
 	}
 	/**
 	 * 	GET PLAYER POSITIONS
-	 * 	A function to return basic details including positions. Acceptrs a single player or sirng of player Ids
+	 * 	A function to return basic details including positions. Acceptrs a single player or string of player Ids
 
 	 *  @param	$player_id		{int}		Fantasy Player ID
 	 *  @return					{Array}		Array of Player Details
@@ -183,14 +192,33 @@ class player_model extends base_model {
 		$query->free_result();
 		return $details;
 	}
-
-	public function getPlayerDetails($player_id = false, $ootp_ver = OOTP_CURRENT_VERSION) {
+	/**
+	 * 	GET PLAYER DETAILS
+	 *  Gets most details for the request player ID
+	 *  
+	 *  @param	$player_id		Int			The request Player ID (REQUIRED)
+	 * 	@param	$ootp_ver		Int			(OPTIONAL) OOTP game Version, defaults to mod constant OOTP_CURRENT_VERSION
+	 *  @param	$league_id		Int			The League ID, required for getting player positions array
+	 *  @return					Array		Array of Player details arrays
+	 * 
+	 * 	@since	1.0
+	 *  @changelog				1.2 PROD	Added league ID as now required for getting Player positions Array
+	 * 
+	 */
+	public function getPlayerDetails($player_id = false, $ootp_ver = OOTP_CURRENT_VERSION, $league_id = false) {
 
 		if ($player_id === false) { return; }
-		$details = array();
 
-		$this->db->select('fantasy_players.id,fantasy_players.player_id,players.first_name,players.last_name,players.nick_name as playerNickname,teams.team_id, teams.name AS team_name, teams.nickName as teamNickname, positions, position,role, date_of_birth,weight,height,bats,throws,draft_year,draft_round,draft_pick,draft_team_id,retired,
-						  injury_is_injured, injury_dtd_injury, injury_career_ending, injury_dl_left, injury_left, injury_id, logo_file_name, players.city_of_birth_id, age, own, own_last, start, start_last');
+		$details = array();
+		$ootp_ver = intval($ootp_ver);
+		$select = 'fantasy_players.id,fantasy_players.player_id,players.first_name,players.last_name,players.nick_name as playerNickname,teams.team_id, teams.name AS team_name, teams.nickName as teamNickname, position,role, date_of_birth,weight,height,bats,throws,draft_year,draft_round,draft_pick,draft_team_id,retired,
+						  injury_is_injured, injury_dtd_injury, injury_career_ending, injury_dl_left, injury_left, injury_id, logo_file_name, players.city_of_birth_id, age, own, own_last, start, start_last';
+		if ($league_id !== false) {
+			$select .=  ', (SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fantasy_players.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions';
+		} else {
+			$select .=  ', players.position as positions';
+		}
+		$this->db->select($select);			
 		$this->db->join('players','players.player_id = fantasy_players.player_id','left');
 		$this->db->join('teams','teams.team_id = players.team_id','left');
 		$this->db->where('fantasy_players.id',$player_id);
@@ -208,7 +236,7 @@ class player_model extends base_model {
                 $select = 'cities.name as birthCity, nations.short_name as birthNation';
                 /* UPDATE 1.0.1
 				 * 	OOTP 12 removed the cities.region column, use states.name for 12 onward >
-				 */
+				*/
 				if ($ootp_ver < 12) {
                     $select .= ',cities.region as birthRegion';
                 } else {
@@ -241,19 +269,49 @@ class player_model extends base_model {
 		}
 		//echo($this->db->last_query()."<br />");
 		return $details;
-    }
-	public function getPlayersDetails($players = array()) {
+	}
+	/**
+	 * 	GET PLAYERS DETAILS
+	 *  Batch call for $this->getPlayerDetails(). Send an array of player IDs to get player details for
+	 *  
+	 *  @param	$players		Array		Array of players IDs
+	 * 	@param	$ootp_ver		Int			(OPTIONAL) OOTP game Version, defaults to mod constant OOTP_CURRENT_VERSION
+	 *  @param	$league_id		Int			The League ID, required for getting player positions array
+	 *  @return					Array		Array of Player details arrays
+	 * 
+	 * 	@since	1.0
+	 *  @changelog				1.2 PROD	Added league ID as now required for getting Player positions Array
+	 * 
+	 */
+	public function getPlayersDetails($players = array(), $ootp_ver = OOTP_CURRENT_VERSION, $league_id = false) {
 
 		if (sizeof($players) == 0) { return; }
 		$playersInfo = array();
 
 		foreach($players as $row) {
-			$playersInfo = $playersInfo + array($row['player_id'] => $this->getPlayerDetails($row['player_id']));
+			$playersInfo = $playersInfo + array($row['player_id'] => $this->getPlayerDetails($row['player_id'], $ootp_ver, $league_id));
 		}
 		//echo($this->db->last_query()."<br />");
 		return $playersInfo;
 	}
-
+	/*----------------------------------------------------------------------------
+	/
+	/
+	/	WAIVERS
+	/
+	/
+	/---------------------------------------------------------------------------*/
+	/**
+	 * 	GET WAIVER STATUS
+	 *  Returns if a Player is on Waivers and for what scoring period
+	 *  
+	 *  @param	$league_id		Int			The League ID, required for getting player positions array
+	 *  @param	$player_id		Array		The Players ID to check
+	 *  @return					Array		Array of Player details arrays
+	 * 
+	 * 	@since	1.0
+	 * 
+	 */
 	public function getWaiverStatus($league_id, $player_id = false) {
 
 		if ($player_id === false) { $player_id = $this->id; }
@@ -270,7 +328,17 @@ class player_model extends base_model {
 			return -1;
 		}
 	}
-
+	/**
+	 * 	GET WAIVER CLAIMS
+	 *  Returns iclaims made for a player of Waivers
+	 *  
+	 *  @param	$league_id		Int			The League ID, required for getting player positions array
+	 *  @param	$player_id		Array		The Players ID to check
+	 *  @return					Array		Array of Team Ids with claims for the Player
+	 * 
+	 * 	@since	1.0
+	 * 
+	 */
 	public function getWaiverClaims($league_id, $player_id = false) {
 
 		if ($league_id === false) { return; }
@@ -290,7 +358,18 @@ class player_model extends base_model {
 		$query->free_result();
 		return $teams;
 	}
-
+	/**
+	 * 	GET PLAYERS WAIVERS
+	 *  Returns a list of Players currently on Waivers
+	 *  
+	 *  @param	$period_id		Int			The scoring period to check
+	 *  @param	$league_id		Int			The League ID, required for getting player positions array
+	 *  @param	$idsOnly		Boolean		TURE FOR ONLY IDs, FALSE for IDs and Player Details			
+	 *  @return					Array		Array of Team Ids with claims for the Player
+	 * 
+	 * 	@since	1.0
+	 * 
+	 */
 	public function getPlayersOnWaivers($period_id = false, $league_id = false, $idsOnly = false) {
 
 		if ($period_id === false || $league_id === false) { return; }
@@ -315,7 +394,16 @@ class player_model extends base_model {
 		$query->free_result();
 		return $players;
 	}
-
+	/**
+	 * 	GET PLAYER NEWS
+	 *  Returns a list of Particles for the given Player ID
+	 *  
+	 *  @param	$player_id		Int			The Player ID, required		
+	 *  @return					Array		Array of Articles
+	 * 
+	 * 	@since	1.0
+	 * 
+	 */
 	public function getPlayerNews($player_id = false) {
 
 		if ($player_id === false) { return; }
@@ -332,7 +420,8 @@ class player_model extends base_model {
 
 		$query->free_result();
 		return $news;
-    }
+	}
+	
 	public function getHighestScoring($league_id, $player_id = false) {
 		if ($player_id === false) { $player_id = $this->player_id; }
 
@@ -418,6 +507,33 @@ class player_model extends base_model {
 
 	}
 	/**
+	 * 	GET PLAYER POSITIONS.
+	 * 	Returns the positons ;list for a player for a specific league.
+	 *
+	 * 	@param	$player_id				{int}		The Fantasy Player Id
+	 * 	@param	$league_id				{int}		The Fantasy League Id
+	 * 	@return							{Array}   	Array of Player Details
+	 *
+	 *  @since	1.2 PROD
+	 *  @access	public
+	 */
+	public function getPlayerFantasyPositions($player_id = false, $league_id = false) {
+
+		if ($player_id === false || $league_id === false) { return false; }
+		$posList = '';
+		$sql = "SELECT positions ";
+		$sql .= "FROM fantasy_leagues_player_eligibility ";
+		$sql .= "WHERE player_id = ".$player_id;
+		$sql .= "AND league_id = ".$league_id;
+		$query = $this->db->query($sql);
+		//echo($this->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$posList = $row->positions;
+		}
+		return $posList;
+	}
+	/**
 	 * 	GET INJURED PLAYERS.
 	 * 	Returns a list of player details and injury data for injured players for the given team.
 	 *
@@ -430,8 +546,9 @@ class player_model extends base_model {
 	 *  @since	1.0.3 PROD
 	 *  @access	public
 	 */
-	public function getInjuredPlayers($score_period = false, $team_id = false, $idsOnly = false) {
+	public function getInjuredPlayers($score_period = false, $team_id = false, $league_id = false, $idsOnly = false) {
 
+		
 		if ($score_period === false) { $score_period = array('id'=>1) ; }
 		
 		$playerIds = "";
@@ -448,7 +565,12 @@ class player_model extends base_model {
 		}
 		// ASSURE THERE ARE PLAYERS ON THE TEAMS ROSTER TO CHECK
 		if (!empty($playerIds)) {
-			$sql = "SELECT fp.id, fp.player_id,first_name,last_name,positions,injury_is_injured,injury_dtd_injury,injury_id,injury_career_ending,injury_dl_left,injury_left,is_on_dl,is_on_dl60,is_active,is_on_secondary,dl_days_this_year ";
+			$sql = "SELECT fp.id, fp.player_id,first_name,last_name,injury_is_injured,injury_dtd_injury,injury_id,injury_career_ending,injury_dl_left,injury_left,is_on_dl,is_on_dl60,is_active,is_on_secondary,dl_days_this_year, ";
+			if ($league_id !== false) {
+				$sql .=  '(SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fp.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions ';
+			} else {
+				$sql .=  'players.position as positions ';
+			}
 			$sql .= "FROM fantasy_players as fp ";
 			$sql .= "LEFT JOIN players as p ON p.player_id = fp.player_id ";
 			$sql .= "LEFT JOIN players_roster_status as prs ON prs.player_id = fp.player_id ";
@@ -463,7 +585,7 @@ class player_model extends base_model {
 				foreach($query->result() as $row) {
 					if ($idsOnly === false) {
 						array_push($players, array('id'=>$row->id,'player_id'=>$row->player_id, 'player_name'=>$row->first_name." ".$row->last_name,
-												'positions'=>$row->positions,'injury_is_injured'=>$row->injury_is_injured, 'injury_dtd_injury'=>$row->injury_dtd_injury,
+												'positions'=>$positions,'injury_is_injured'=>$row->injury_is_injured, 'injury_dtd_injury'=>$row->injury_dtd_injury,
 												'injury_career_ending'=>$row->injury_career_ending, 'injury_dl_left'=>$row->injury_dl_left,
 												'is_on_dl'=>$row->is_on_dl, 'is_on_dl60'=>$row->is_on_dl60,'is_active'=>$row->is_active, 'is_on_secondary'=>$row->is_on_secondary, 
 												'dl_days_this_year'=>$row->dl_days_this_year,'injury_id'=>$row->injury_id
@@ -525,14 +647,22 @@ class player_model extends base_model {
 		$query->free_result();
 		return $team;
 	}
-	public function getActiveOOTPPlayers($league_id = false,$searchType = 'all', $searchParam = false,$current_scoring_period = 1, $nonFreeAgents = array()) {
-		return $this->getOOTPPlayers($league_id,$searchType, $searchParam,$current_scoring_period, $nonFreeAgents,1);
+
+	public function getActiveOOTPPlayers($ootp_league_id = false,$searchType = 'all', $searchParam = false,$current_scoring_period = 1, $nonFreeAgents = array(), $league_id = false) {
+		return $this->getOOTPPlayers($ootp_league_id,$searchType, $searchParam,$current_scoring_period, $nonFreeAgents,1, false, $league_id);
 	}
-	public function getOOTPPlayers($league_id = false,$searchType = 'all', $searchParam = false,$current_scoring_period = 1, $nonFreeAgents = array(),
-								  $playerStatus = false, $selectBox = false) {
+
+	public function getOOTPPlayers($ootp_league_id = false,$searchType = 'all', $searchParam = false,$current_scoring_period = 1, $nonFreeAgents = array(),
+								  $playerStatus = false, $selectBox = false, $league_id = false) {
 		$players = array();
 
-		$this->db->select('fantasy_players.id,fantasy_players.player_id, fantasy_players.player_status, first_name, last_name, fantasy_players.positions, players.position, players.role, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, ');
+		$select = 'fantasy_players.id,fantasy_players.player_id, fantasy_players.player_status, first_name, last_name, players.position, players.role, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id';
+		if ($league_id !== false) {
+			$select .=  ', (SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fantasy_players.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions';
+		} else {
+			$select .=  ', players.position as positions';
+		}
+		$this->db->select($select);
 		$this->db->from('fantasy_players');
 		$this->db->join('players','players.player_id = fantasy_players.player_id','left');
 		switch ($searchType) {
@@ -556,6 +686,9 @@ class player_model extends base_model {
 			default:
 				break;
 		} // END switch
+		if ($ootp_league_id  !== false) {
+			$this->db->where('players.league_id',$ootp_league_id);
+		}
 		if ($playerStatus  !== false) {
 			$this->db->where('fantasy_players.player_status',$playerStatus);
 		}
@@ -618,7 +751,7 @@ class player_model extends base_model {
 	public function getStatsforPeriod($playerType = 1, $scoring_period = array(), $rules = array(),
 									  $players = array(),$excludeList = array(), $searchType = 'all', $searchParam = false,
 									  $query_type = QUERY_STANDARD, $stats_range = -1, $limit = -1, $startIndex = 0,
-									  $batting_sort = false, $pitching_sort = false) {
+									  $batting_sort = false, $pitching_sort = false, $league_id = false) {
 		$stats = array();
 
 		$playerList = "(";
@@ -640,7 +773,12 @@ class player_model extends base_model {
 		$excludeLostStr .= ")";
 
 		// BUILD QUERY TO PULL CURRENT GAME DATA FOR THIS PLAYER
-		$sql = 'SELECT fantasy_players.id, fantasy_players.positions, players.position, players.role, players.player_id ,first_name, last_name,players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,rating,';
+		$sql = 'SELECT fantasy_players.id, players.position, players.role, players.player_id ,first_name, last_name,players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,rating, ';
+		if ($league_id !== false) {
+			$sql .=  '(SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fantasy_players.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions, ';
+		} else {
+			$sql .=  'players.position as positions, ';
+		}
 		$sql .= player_stat_query_builder($playerType, $query_type, $rules);
 		if ($playerType == 1) {
 			$sql .= ",players.position as pos ";
@@ -775,7 +913,12 @@ class player_model extends base_model {
 
 		//echo("Size of Rules = ".sizeof($rules)."<br />");
 		$this->db->flush_cache();
-		$sql="SELECT 'add','teamname', fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,rating,";
+		$sql="SELECT 'add','teamname', fantasy_players.id, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,rating,";
+		if ($league_id !== false) {
+			$sql .=  '(SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fantasy_players.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions, ';
+		} else {
+			$sql .=  'players.position as positions, ';
+		}
 		if ($player_type == 2) {
 			$sql .= player_stat_query_builder(2, QUERY_STANDARD, $rules)." ";
 

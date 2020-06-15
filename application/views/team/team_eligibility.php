@@ -63,7 +63,13 @@
 					
 				<tr class='hsc2_c' valign="top" style="background-color:<?php print((($rowNum % 2) == 0) ? '#fff' : '#E0E0E0'); ?>">
 					<td class='hsc2_l'><?php print(anchor('/players/info/player_id/'.$player_data['player_id'].'/league_id/'.$league_id,$player_data['player_name'])); 
-					if ($player_data['position'] == 1) { print(" ".get_pos($player_data['role'])); } else { print(" ".get_pos($player_data['position'])); } 
+					$playerPos = -1;
+					if ($player_data['position'] == 1) { 
+						$playerPos = $player_data['role'];
+					} else {
+						$playerPos = $player_data['position'];
+					}
+					print(" ".get_pos($playerPos));
 					?></td>
 					<?php
 					foreach($roster_rules as $ruleId => $ruleData) { 
@@ -74,7 +80,12 @@
 					if (isset($player_data[$ruleId])) {
 						$posGames = $player_data[$ruleId];
 					} // END if
-					if ($posGames > $min_game_current) {
+					// EDIT 1.2 PROD, SET DISPLAY TO MATCH APPROPRIATE SEETIGNS BASED ON TIME
+					$lvl = $min_game_current;
+					if ($curr_period <= 1) {
+						$lvl = $min_game_last;
+					}
+					if ($ruleId == $playerPos || $posGames > $lvl || $ruleId == 25) {
 						$style = 'style="font-weight:bold;"';
 					} // END if
 					print ('<span '.$style.'>'.$posGames.'</span>');

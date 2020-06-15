@@ -21,7 +21,7 @@
 			event.preventDefault();
 		});
 		$('a[rel=elidg]').click(function (event) {
-			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/elidgibility"+cacheBuster());
+			runAjax("<?php echo($config['fantasy_web_root']); ?>admin/eligibility"+cacheBuster());
 			event.preventDefault();
 		});
 		$('a[rel=rating]').click(function (event) {
@@ -222,7 +222,7 @@
 			<?php } // END if
 			?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
-			Update Player Elidgibility
+			Update Player ELIGIBILITY
 			<?php
 			if (isset($update_eligible_run) && $update_eligible_run == -1) { ?>
 				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Eligibility outdated" title="Player Eligibility outdated" /></span>
@@ -284,7 +284,7 @@
 			?>
 			</li>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
-			Update Player Elidgibility<?php
+			Update Player ELIGIBILITY<?php
 			if (isset($update_eligible_run) && $update_eligible_run == -1) { ?>
 				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Eligibility outdated" title="Player Eligibility outdated" /></span>
 			<?php
@@ -616,7 +616,7 @@
 					}
 					echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
 				}
-				// PLAYER ELIDGIBILITY CHECK
+				// PLAYER ELIGIBILITY CHECK
 				if (isset($update_eligible_run)) {
 					if ($update_eligible_run == -1) { 
 						$class = "error";

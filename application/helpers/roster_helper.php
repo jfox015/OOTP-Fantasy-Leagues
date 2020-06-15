@@ -1,12 +1,12 @@
 <?php
-function getFantasyPlayersDetails($players = array()) {
+function getFantasyPlayersDetails($players = array(), $ootp_ver = OOTP_CURRENT_VERSION, $league_id = false) {
 	$ci =& get_instance();
 	$ci->load->model('player_model');
 	$requestArray = array();
 	foreach($players as $id) {
 		array_push($requestArray,array('player_id'=>$id));
 	}
-	return $ci->player_model->getPlayersDetails($requestArray);
+	return $ci->player_model->getPlayersDetails($requestArray, $ootp_ver, $league_id);
 }
 function getPlayerBasics($player_id = false) {
 	$ci =& get_instance();
@@ -88,6 +88,17 @@ function get_available_players($league_id = false) {
 		$errors = "No League Id";
 	} else {
 		$ci =& get_instance();
+		
+		// GET LEAGUES
+		$leagues = array();
+		$ci->db->flush_cache();
+		$ci->db->select("id");
+		$ci->db->from("fantasy_leagues");
+		$query = $ci->db->get();
+		if ($query->num_rows() > 0) {
+			$leagues = $query->result_array();
+		}
+		$query->free_result();
 		// GET all orgs for this league
 		$teamList = getOOTPTeams($league_id,false);
 		$player_list = array();
@@ -100,24 +111,24 @@ function get_available_players($league_id = false) {
 				$whereClause .= ' OR ';
 			}
 			$whereClause .= 'organization_id ='.$id;
+			$whereClause .= ' OR last_organization_id ='.$id;
 		}
 		$whereClause .= ")";
 		$ci->db->where($whereClause);
 		$ci->db->where("retired",0);
-		$ci->db->where("free_agent",0);
 		$ci->db->order_by("player_id");
 		$query = $ci->db->get();
-		//echo("Result size = ".$query->num_rows()."<br />");
+		//echo($ci->db->last_query()."<br />");
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				array_push($player_list,array('player_id'=>$row->player_id,'team_id'=>$row->team_id,'status'=>$row->injury_is_injured,'position'=>$row->position,'role'=>$row->role));
 			}
 		}
 		if (sizeof($player_list) > 0) {
-			// CLEAR PLAYERS TABLE
-			
+			// CLEAR PLAYERS AND ELIGIBILITY TABLES
 			$ci->db->flush_cache();
 			$ci->db->query('TRUNCATE TABLE fantasy_players'); 
+			$ci->db->query('TRUNCATE TABLE fantasy_leagues_player_eligibility'); 
 			
 			foreach ($player_list as $player) {
 				$status = 1;
@@ -146,9 +157,14 @@ function get_available_players($league_id = false) {
 					$positions = array($thisPos);
 				}
 				$ci->db->flush_cache();
-				$ci->db->insert('fantasy_players', array('player_id'=>$player['player_id'],'player_status'=>$status, 'positions'=>serialize($positions))); 
+				$ci->db->insert('fantasy_players', array('player_id'=>$player['player_id'],'player_status'=>$status));
 				if ($ci->db->affected_rows() == 0) {
 					$errors .= "insert of player_id ".$player['player_id']." failed.<br />\n";
+				} else {
+					$player_id = $ci->db->insert_id();
+					foreach($leagues as $league) {
+						$ci->db->insert('fantasy_leagues_player_eligibility', array('player_id'=>$player_id, 'league_id'=> $league['id'], 'positions'=>serialize($positions)));
+					}
 				}
 			}
 		} else {
@@ -250,115 +266,144 @@ if (!function_exists('getFreeAgentList')) {
 	} // END function
 } // END if
 /*---------------------------------------------------------
-/	POSITION ELIDGIBILITY
+/	POSITION ELIGIBILITY
 /----------------------------------------------------------
 / UPDATES THE POSITIONS A PLAYER CAN BE USED IN N A FANTASY ROSTER
 */
-function position_elidgibility($league_id = false,$min_game_current = 5, $min_game_last = 20, $season_status = "regular") {
+function position_eligibility($leagues = false, $ootp_league_id = 100, $season_status = "regular") {
 	$errors = "";
-	$ci =& get_instance();
-	$ci->db->select('id, player_id, positions');
-	$ci->db->where('player_status',1);
-	$ci->db->from('fantasy_players');
-	$query = $ci->db->get();
-	$player_count = 0;
-	$players = array();
-	if ($query->num_rows() > 0) {
-		foreach($query->result() as $row) {
-			array_push($players,$row);
-		}
-	}
-	$query->free_result();
-	foreach($players as $row) {
-		$positions = unserialize($row->positions);
-		if ($positions[0] == 11 || $positions[0] == 12 || $positions[0] == 13) {
-			$row->position = 1;
-			$row->role = $positions[0];
-		} else {
-			$thisPos = $positions[0];
-			if ($thisPos == 7 || $thisPos == 8 || $thisPos == 9) {
-				$thisPos = 20;
-			}
-			$row->position = $thisPos;
-			$row->role = -1;
-		}	
-		$lgDetails = getOOTPLeagueDetails($league_id);
-		$league_yr_time = strtotime($lgDetails->current_date);
-		$league_yr_last = $league_yr_time - (60*60*24*365);
-		$league_yr = date('Y',$league_yr_time);
-		$last_yr = date('Y',$league_yr_last);
 
-		// NOW LOOKUP PREVIOUS YEARS POSITIONS USING FIELDING STATS IF THEY EXIST
-		$years = array($league_yr, $last_yr);
-		$count = 0;
-		foreach($years as $year) {
-			if ($count == 0) {
-				$lvl = $min_game_current; 
-			} else {
-				$lvl = $min_game_last;
+		// EDIT 1.2 PROD, ELIGIBILITY NOW DETERMINED FOR EACH LEAGUE
+	if ($leagues === false) { 
+		$errors = "No Leagues were provided.";  
+	} else {
+		$ci =& get_instance();
+		$ci->db->select('id, player_id');
+		$ci->db->from('fantasy_players');
+		$ci->db->where('player_status',1);
+		$query = $ci->db->get();
+		$player_count = 0;
+		$players = array();
+		if ($query->num_rows() > 0) {
+			foreach($query->result() as $row) {
+				array_push($players,$row);
 			}
-			if ($row->position != 1) {
-				$ci->db->flush_cache();
-				$ci->db->select("g, position");
-				$ci->db->from("players_career_fielding_stats");
-				$ci->db->where("player_id",$row->player_id);
-				$ci->db->where("level_id",1);
-				$ci->db->where("league_id",$league_id);
-				$ci->db->where("year",$year);
-				$gquery = $ci->db->get();
-				if ($gquery->num_rows() > 0) {
-					foreach ($gquery->result() as $grow) {
-						if ($grow->g >= $lvl) {
-							$thisPos = $grow->position;
-							if ($grow->position == 7 || $grow->position == 8 || $grow->position == 9) {
-								$thisPos = 20;
-							}
-							if (!in_array($thisPos,$positions)) {
-								array_push($positions,$thisPos);
-							}
-						}
-					}
-				}
-				$gquery->free_result();
-			} else {
-				$ci->db->flush_cache();
-				$ci->db->select("g, gs");
-				$ci->db->from("players_career_pitching_stats");
-				$ci->db->where("player_id",$row->player_id);
-				$ci->db->where("level_id",1);
-				$ci->db->where("split_id",1);
-				$ci->db->where("league_id",$league_id);
-				$ci->db->where("year",$year);
-				$gquery = $ci->db->get();
-				if ($gquery->num_rows() > 0) {
-					foreach ($gquery->result() as $grow) {
-						if ($row->role == 11) {
-							$gDiff = ($grow->g - $grow->gs);
-							if ($gDiff >= $lvl) {
-								if (!in_array(12,$positions)) {
-									array_push($positions,12);
-								}
-							}
-						} else if ($row->role == 12 || $row->role == 13) {
-							if ($grow->gs >= $lvl) {
-								if (!in_array(11,$positions)) {
-									array_push($positions,11);
-								}
-							}
-						}
-					}
-				}
-				$gquery->free_result();
-			}
-			$count++;
 		}
-		asort($positions);
-		$ci->db->flush_cache();
-		$pData = array('positions'=>serialize($positions));
-		$ci->db->where('id',$row->id);
-		$ci->db->update('fantasy_players',$pData);
-		$player_count++;
-	}
+		$query->free_result();
+		foreach($players as $row) {
+
+			//foreach($leagues as $id => $details) {
+
+				$lgPositions = array();
+				$lgDetails = getOOTPLeagueDetails($league_id);
+				$league_yr_time = strtotime($lgDetails->current_date);
+				$league_yr_last = $league_yr_time - (60*60*24*365);
+				$league_yr = date('Y',$league_yr_time);
+				$last_yr = date('Y',$league_yr_last);
+
+				// NOW LOOKUP PREVIOUS YEARS POSITIONS USING FIELDING STATS IF THEY EXIST
+				//$years = array($league_yr, $last_yr);
+				//$count = 0;
+				//foreach($years as $year) {
+					/*if ($count == 0) {
+						$lvl = $min_game_current; 
+					} else {
+						$lvl = $min_game_last;
+					}*/
+					if ($row->position != 1) {
+						$gameData = array();
+						$ci->db->flush_cache();
+						$ci->db->select("year, g, position");
+						$ci->db->from("players_career_fielding_stats");
+						$ci->db->where("player_id",$row->player_id);
+						$ci->db->where("level_id",1);
+						$ci->db->where("league_id",$ootp_league_id);
+						$ci->db->where("year",$year);
+						$ci->db->or_where("year",$last_yr);
+						$gquery = $ci->db->get();
+						if ($gquery->num_rows() > 0) {
+							$gameData = $gquery->result_array();
+						}
+						$gquery->free_result();
+						foreach($leagues as $id => $details) {
+							$positions = array();
+							foreach ($gameData as $grow) {
+								if ($grow->year == $league_yr) {
+									$lvl = $details['min_game_current']; 
+								} else {
+									$lvl = $details['min_game_last'];
+								}
+								if ($grow->g >= $lvl) {
+									$thisPos = $grow->position;
+									if ($grow->position == 7 || $grow->position == 8 || $grow->position == 9) {
+										$thisPos = 20;
+									}
+									if (!in_array($thisPos,$positions)) {
+										array_push($positions,$thisPos);
+									}
+								}
+							}
+							array_push($lgPositions,array('league_id'=>$id, 'player_id' => $row->id, 'positions' => $positions));
+						}
+					} else {
+						$ci->db->flush_cache();
+						$ci->db->select("year, g, gs");
+						$ci->db->from("players_career_pitching_stats");
+						$ci->db->where("player_id",$row->player_id);
+						$ci->db->where("level_id",1);
+						$ci->db->where("split_id",1);
+						$ci->db->where("league_id",$ootp_league_id);
+						$ci->db->where("year",$year);
+						$gquery = $ci->db->get();
+						$gquery = $ci->db->get();
+						if ($gquery->num_rows() > 0) {
+							$gameData = $gquery->result_array();
+						}
+						$gquery->free_result();
+						foreach($leagues as $id => $details) {
+							$positions = array();
+							foreach ($gameData as $grow) {
+								if ($grow->year == $league_yr) {
+									$lvl = $details['min_game_current']; 
+								} else {
+									$lvl = $details['min_game_last'];
+								}
+								if ($row->role == 11) {
+									$gDiff = ($grow->g - $grow->gs);
+									if ($gDiff >= $lvl) {
+										if (!in_array(12,$positions)) {
+											array_push($positions,12);
+										}
+									}
+								} else if ($row->role == 12 || $row->role == 13) {
+									if ($grow->gs >= $lvl) {
+										if (!in_array(11,$positions)) {
+											array_push($positions,11);
+										}
+									}
+								}
+							}
+							array_push($lgPositions,array('league_id'=>$id, 'player_id' => $row->id, 'positions' => $positions));
+						}
+					}
+				//}
+				if (sizeof($lgPositions) > 0) {
+					$ci->db->flush_cache();
+					$ci->db->where('player_id',$row->id);
+					$ci->db->where('league_id',$league_id);
+					$ci->db->delete('fantasy_leagues_player_eligibility');
+					foreach($lgPositions as $posRow) {
+						asort($posRow['positions']);
+						$ci->db->flush_cache();
+						$pData = array('positions'=>serialize($posRow['positions']));
+						$ci->db->where('player_id',$row->id);
+						$ci->db->where('league_id',$league_id);
+						$ci->db->update('fantasy_leagues_player_eligibility',$pData);
+					}
+				}
+			$player_count++;
+		} // END FOREACH
+	} // END if
 	if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 	return $errors;
 }

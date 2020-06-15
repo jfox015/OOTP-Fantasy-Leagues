@@ -172,6 +172,10 @@ INSERT INTO `fantasy_config` ( `cfg_key`, `cfg_value`) VALUES('simUploadTimeEnd'
 
 ALTER TABLE `fantasy_leagues` ADD  `transactionFrequency` tinyint(1) NOT NULL DEFAULT '-1', ADD `min_game_current` Int(11) NOT NULL DEFAULT 5, ADD `min_game_last` Int(11) NOT NULL DEFAULT 20, ADD `useWaivers` tinyint(1) NOT NULL DEFAULT '1', ADD `waiverPeriod` tinyint(4) NOT NULL DEFAULT '1', ADD `useTrades` tinyint(1) NOT NULL DEFAULT '1', ADD `approvalType` tinyint(1) NOT NULL DEFAULT '-1', ADD `tradesExpire` tinyint(1) NOT NULL DEFAULT '1', ADD `defaultExpiration` int(11) NOT NULL DEFAULT 500, ADD `minProtests` tinyint(4) NOT NULL DEFAULT 3, ADD `protestPeriodDays` tinyint(4) NOT NULL DEFAULT 3;
 
-UPDATE `fantasy_leagues_scoring_batting` SET `league_id` = -1 WHERE `league_id` = 0
-UPDATE `fantasy_leagues_scoring_pitching` SET `league_id` = -1 WHERE `league_id` = 0
-UPDATE `fantasy_roster_rules` SET `league_id` = -1 WHERE `league_id` = 0
+UPDATE `fantasy_leagues_scoring_batting` SET `league_id` = -1 WHERE `league_id` = 0;
+UPDATE `fantasy_leagues_scoring_pitching` SET `league_id` = -1 WHERE `league_id` = 0;
+UPDATE `fantasy_roster_rules` SET `league_id` = -1 WHERE `league_id` = 0;
+
+DROP TABLE IF EXISTS `fantasy_leagues_player_eligibility`;
+CREATE TABLE IF NOT EXISTS `fantasy_leagues_player_eligibility` (`id` int(11) NOT NULL auto_increment,`league_id` int(11) NOT NULL DEFAULT -1, `player_id` int(11) NOT NULL DEFAULT -1, `positions` varchar(2000) NOT NULL DEFAULT '', PRIMARY KEY  (`id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;
+ALTER TABLE `fantasy_players` DROP  `positions`;

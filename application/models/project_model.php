@@ -3,8 +3,7 @@
  * PROJECT MODEL.
  * A model for manipulating project data
  * 
- *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
- *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
+ *	@author			Jeff Fox (Github ID: jfox015)
  *	@version		1.0
  */
 

@@ -532,7 +532,7 @@ class team extends BaseEditor {
 						$idStr = explode(";",$tmpPlayer[0]);
 						$tmpPlayer[0] = $idStr[0];
 					}
-					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
+					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0], intval($this->params['config']['ootp_version']), $this->dataModel->league_id);
 					array_push($sendList['players'], $playerData);
 				} // END foreach
 				$this->data['sendList'] = $sendList['players'];
@@ -545,7 +545,7 @@ class team extends BaseEditor {
 						$idStr = explode(";",$tmpPlayer[0]);
 						$tmpPlayer[0] = $idStr[0];
 					}
-					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0]);
+					$playerData = $this->player_model->getPlayerDetails($tmpPlayer[0], intval($this->params['config']['ootp_version']), $this->dataModel->league_id);
 					array_push($receiveList['players'], $playerData);
 				} // END foreach
 				$this->data['receiveList'] = $receiveList['players'];
@@ -1138,7 +1138,7 @@ class team extends BaseEditor {
 			
 			$this->load->model('player_model');
 			foreach($sendList['ids'] as $playerId) {
-				$playerData = $this->player_model->getPlayerDetails($playerId);
+				$playerData = $this->player_model->getPlayerDetails($playerId, intval($this->params['config']['ootp_version']), $this->dataModel->league_id);
 				//echo("Send player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
 				if ($playerData['position'] == 1) {
 					$sendList['pitchers'] = $sendList['pitchers'] + array($playerData['player_id']=>array());
@@ -1148,7 +1148,7 @@ class team extends BaseEditor {
 			}
 			
 			foreach($receiveList['ids'] as $playerId) {
-				$playerData = $this->player_model->getPlayerDetails($playerId);
+				$playerData = $this->player_model->getPlayerDetails($playerId, intval($this->params['config']['ootp_version']), $this->dataModel->league_id);
 				//echo("recieve player id = ".$playerId.", playerData['position'] ".$playerData['position']."<br />");
 				if ($playerData['position'] == 1) {
 					$receiveList['pitchers'] = $receiveList['pitchers'] + array($playerData['player_id']=>array());
@@ -1957,7 +1957,7 @@ class team extends BaseEditor {
 					foreach($row as $key => $value) {
 						if ($this->uriVars['list_type'] == 1 && !strpos($key,"injury")) {
 							if ($key == "positions") {
-								$value = makeElidgibilityString($value);
+								$value = makeEligibilityString($value);
 							}
 							if ($key == "pos") {
 								$value = get_pos($value);
@@ -2055,6 +2055,7 @@ class team extends BaseEditor {
 			$this->load->helper('admin');
 		}
 		$this->data['min_game_current'] = $this->league_model->min_game_current;
+		$this->data['min_game_last'] = $this->league_model->min_game_last;
 
 		$scoring_type = $this->league_model->getScoringType();
 		$total_periods = 0;
@@ -2134,8 +2135,8 @@ class team extends BaseEditor {
 		
 		if (sizeof($this->data['batters']) > 0 && sizeof($this->data['pitchers']) > 0) {
 		
-			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules,$this->data['batters']);
-			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules,$this->data['pitchers']);
+			$stats['batters'] = $this->player_model->getStatsforPeriod(1, $this->scoring_period, $this->rules,$this->data['batters'], false, false, false, false, false, false, false, false, false, $this->dataModel->league_id);
+			$stats['pitchers'] = $this->player_model->getStatsforPeriod(2, $this->scoring_period, $this->rules,$this->data['pitchers'], false, false, false, false, false, false, false, false, false, $this->dataModel->league_id);
 			
 			$this->data['title'] = array();
 			$this->data['formatted_stats'] = array();
@@ -2683,7 +2684,7 @@ class team extends BaseEditor {
 		if (!isset($this->player_model)) {
 			$this->load->model('player_model');
 		}
-		$this->data['injured_list'] = $this->player_model->getInjuredPlayers($curr_period, $this->dataModel->id);
+		$this->data['injured_list'] = $this->player_model->getInjuredPlayers($curr_period, $this->dataModel->id, $this->data['league_id']);
 		$this->makeNav();
 
 		// EDIT 1.1 PROD - PLAYOFFS BANNER

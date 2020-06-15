@@ -4,9 +4,9 @@
  *	This class is a companion model to the USer Auth model. it provides extended meta infomration
  *	in the form of name, address, and other personal, no authoritative information.
  *
- *	@author			Jeff Fox <jfox015 (at) gmail (dot) com>
- *  @copyright   	(c)2009-11 Jeff Fox/Aeolian Digital Studios
- *	@version		1.0
+ *	@author			Jeff Fox (Github ID: jfox015)
+ *	@version		1.2
+ *  @lastModified	06/15/20
  *
 */
 class user_meta_model extends base_model {

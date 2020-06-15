@@ -79,6 +79,7 @@ class team_model extends base_model {
 		$this->tables['ROSTERS'] = 'fantasy_rosters';
 		$this->tables['PLAYERS'] = 'fantasy_players';
 		$this->tables['LEAGUES'] = 'fantasy_leagues';
+		$this->tables['LEAGUES_PLAYER_ELIGIBILITY'] = 'fantasy_leagues_player_eligibility';
 		$this->tables['DIVISIONS'] = 'fantasy_divisions';
 		$this->tables['OOTP_PLAYERS'] = 'players';
 		$this->tables['TRANSACTIONS'] = 'fantasy_transactions';
@@ -862,7 +863,7 @@ class team_model extends base_model {
 								}
 								array_push($playerDataArr, implode("_",$playerData));
 							}
-							$playerDetails = getFantasyPlayersDetails($playerDataArr);
+							$playerDetails = getFantasyPlayersDetails($playerDataArr, intval($this->params['config']['ootp_version']), $league_id);
 							foreach ($playerDataArr as $playerId) {
 								//echo($field." player id = ".$playerId."<br />");
 								$playerStr = '';
@@ -914,8 +915,15 @@ class team_model extends base_model {
 				$players = $this->getPitchers($scoring_period_id, $team_id, -999);
 			}
 		}
+
+		$league_id = $this->getTeamLeague($team_id);
 		$this->db->flush_cache();
-		$sql = 'SELECT fantasy_players.id, "add", fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,rating,';
+		$sql = 'SELECT fantasy_players.id, "add", fantasy_players.id, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,rating, ';
+		if ($league_id !== false) {
+			$sql .=  '(SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fantasy_players.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions, ';
+		} else {
+			$sql .=  'players.position as positions, ';
+		}
 		$where = '';
 		if ($player_type == 1) {
 			if ($stats_range == 4) {
@@ -1794,7 +1802,14 @@ class team_model extends base_model {
 		if ($team_id === false && $this->id != -1) { $team_id = $this->id; } // END if
 
 		$players = array();
-		$this->db->select('fantasy_players.id, fantasy_players.player_id, first_name, last_name, position, teams.abbr, players.team_id, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, player_position, players.team_id, fantasy_players.positions, fantasy_players.player_status, own, own_last, start, start_last');
+		$league_id = $this->getTeamLeague($team_id);
+		$select = 'fantasy_players.id, fantasy_players.player_id, first_name, last_name, position, teams.abbr, players.team_id, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, player_position, players.team_id, fantasy_players.player_status, own, own_last, start, start_last, ';
+		if ($league_id !== false) {
+			$select .=  '(SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fantasy_players.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions';
+		} else {
+			$select .=  'players.position as positions';
+		}
+		$this->db->select($select);
 		$this->db->join('fantasy_players','fantasy_players.id = fantasy_rosters.player_id','left');
 		$this->db->join('players','players.player_id = fantasy_players.player_id','right outer');
 		$this->db->join('teams','teams.team_id = players.team_id','right outer');
@@ -1827,7 +1842,7 @@ class team_model extends base_model {
 
 	/**
 	 *	GET PITCHERS.
-	 *	Returns a list of pitchers for the specified team. Scoring period ID gets the list fot eh current or requested scoring period.
+	 *	Returns a list of pitchers for the specified team. Scoring period ID gets the list for the current or requested scoring period.
 	 *  @param	$scoring_period - The scoring period 
 	 *  @param	$team_id - (OPTIONAL)
 	 *  @param	$status - (OPTIONAL)
@@ -1837,7 +1852,14 @@ class team_model extends base_model {
 		if ($team_id === false && $this->id != -1) { $team_id = $this->id; }
 
 		$players = array();
-		$this->db->select('fantasy_players.id, fantasy_players.player_id, first_name, last_name, position, players.team_id,players.role,teams.abbr, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, player_position, player_role, fantasy_players.positions, fantasy_players.player_status, own, own_last, start, start_last');
+		$league_id = $this->getTeamLeague($team_id);
+		$select = 'fantasy_players.id, fantasy_players.player_id, first_name, last_name, position, players.team_id,players.role,teams.abbr, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, player_position, player_role, fantasy_players.player_status, own, own_last, start, start_last, ';
+		if ($league_id !== false) {
+			$select .=  '(SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fantasy_players.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions';
+		} else {
+			$select .=  'players.position as positions';
+		}
+		$this->db->select($select);
 		$this->db->join('fantasy_players','fantasy_players.id = fantasy_rosters.player_id','left');
 		$this->db->join('players','players.player_id = fantasy_players.player_id','right outer');
 		$this->db->join('teams','teams.team_id = players.team_id','left');
@@ -1880,7 +1902,25 @@ class team_model extends base_model {
 		return array($this->getBatters($scoring_period, $team_id)+$this->getPitchers($scoring_period, $team_id),
 				    $this->getBatters($scoring_period, $team_id,-1)+$this->getPitchers($scoring_period, $team_id, -1),
 					$this->getBatters($scoring_period, $team_id,2)+$this->getPitchers($scoring_period, $team_id, 2));
+	}
+	/**
+	 *	GET TEAM LEAGUE.
+	 *  @param	$team_id
+	 *	@return	Int 	League ID or -1 on error
+	 *  @since 	1.2 PROD
+	 */
+	public function getTeamLeague($team_id = false) {
+		if ($team_id === false ||  $this->id == -1) { return false; }
 
+		$league_id = -1;
+		$this->db->select('league_id');
+		$this->db->where('id', $team_id);
+		$query = $this->db->get($this->tblName);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$league_id = $row->league_id;
+		}
+		return $league_id;
 	}
 	/*---------------------------------------------------------
 	/

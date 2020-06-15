@@ -625,11 +625,11 @@
                 }  // END if ($gameDate != strtotime($game_data['game_date']." 00:00:00"))
             } // END foreach ($games as $game_id => $game_data)
             echo($dateStr.$startStr."</td>\n</tr>\n");
-					} else {
+					} /*else {
 						for ($i = 0; $i < $config['sim_length']; $i++) {
               echo('<tr height="17" class="bg2"><td class="hsc2_c"></td></tr>\n');
             }
-          }  // END if (isset($games) && sizeof($games) > 0)
+          }  */ // END if (isset($games) && sizeof($games) > 0)
           ?>
                 </table>
                 	</td>
@@ -920,7 +920,7 @@
                 </table>
                 </div>
 
-                	<!-- CURRETN ELIDIBILITY -->
+                	<!-- CURRENT POSITION ELIDIBILITY -->
                 <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" width="575">
                 <tr class='title'>
@@ -928,7 +928,7 @@
                 </tr>
 				<tr class='headline'>
 					<td>
-                    <?php $pos = unserialize($thisItem['positions']); ?>
+          <?php $pos = unserialize($thisItem['positions']); ?>
 					<table width=100% cellpadding=2 cellspacing=1>
                 	<!--tr  height=17  class="bg2" align="center" valign="middle">
                         <td colspan="10">
@@ -957,7 +957,7 @@
                         <?php
 						$posToTest = array(2,3,4,5,6,20,25,11,12);
 						foreach($posToTest as $testPos) { ?>
-                        	<td>
+                        	<td class="hsc2_c">
 							<?php if (in_array($testPos,$pos)) { ?><b>X</b><?php } ?>
                             </td>
                         <?php } ?>
@@ -1026,28 +1026,28 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "    <table cellpadding=2 cellspacing=0 class='sortable' width='910px'>\n";
    echo "     <thead><tr class='headline'>";
    echo "<td class='hsc2_l'>Year/Team</td>";
-   echo "<td class='hsc2'>Age</td>";
-   echo "<td class='hsc2'>G</td>";
-   echo "<td class='hsc2'>AB</td>";
-   echo "<td class='hsc2'>H</td>";
-   echo "<td class='hsc2'>2B</td>";
-   echo "<td class='hsc2'>3B</td>";
-   echo "<td class='hsc2'>HR</td>";
-   echo "<td class='hsc2'>RBI</td>";
-   echo "<td class='hsc2'>R</td>";
-   echo "<td class='hsc2'>BB</td>";
-   echo "<td class='hsc2'>HP</td>";
-   echo "<td class='hsc2'>SH</td>";
-   echo "<td class='hsc2'>SF</td>";
-   echo "<td class='hsc2'>K</td>";
-   echo "<td class='hsc2'>SB</td>";
-   echo "<td class='hsc2'>CS</td>";
-   echo "<td class='hsc2'>AVG</td>";
-   echo "<td class='hsc2'>OBP</td>";
-   echo "<td class='hsc2'>SLG</td>";
-   echo "<td class='hsc2'>OPS</td>";
-   echo "<td class='hsc2'>WAR</td>";
-   echo "<td class='hsc2'>wOBA</td>";
+   echo "<td class='hsc2_r'>Age</td>";
+   echo "<td class='hsc2_r'>G</td>";
+   echo "<td class='hsc2_r'>AB</td>";
+   echo "<td class='hsc2_r'>H</td>";
+   echo "<td class='hsc2_r'>2B</td>";
+   echo "<td class='hsc2_r'>3B</td>";
+   echo "<td class='hsc2_r'>HR</td>";
+   echo "<td class='hsc2_r'>RBI</td>";
+   echo "<td class='hsc2_r'>R</td>";
+   echo "<td class='hsc2_r'>BB</td>";
+   echo "<td class='hsc2_r'>HP</td>";
+   echo "<td class='hsc2_r'>SH</td>";
+   echo "<td class='hsc2_r'>SF</td>";
+   echo "<td class='hsc2_r'>K</td>";
+   echo "<td class='hsc2_r'>SB</td>";
+   echo "<td class='hsc2_r'>CS</td>";
+   echo "<td class='hsc2_r'>AVG</td>";
+   echo "<td class='hsc2_r'>OBP</td>";
+   echo "<td class='hsc2_r'>SLG</td>";
+   echo "<td class='hsc2_r'>OPS</td>";
+   echo "<td class='hsc2_r'>WAR</td>";
+   echo "<td class='hsc2_r'>wOBA</td>";
   echo "</tr></thead>\n";
    $prevYr=-1;
    $cnt=0;
@@ -1282,33 +1282,33 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	 echo "<td class='".$cls."_l'>$prevYr - Tot";
 	 if (isset($as[$yr])) {echo " (AS)";}
          echo "</td>";
-         echo "<td>".$yearStats[$prevYr]['age']."</td>";
-         echo "<td>".$yearStats[$prevYr]['g']."</td>";
-         echo "<td>".$yearStats[$prevYr]['ab']."</td>";
-         echo "<td>".$yearStats[$prevYr]['h']."</td>";
-         echo "<td>".$yearStats[$prevYr]['d']."</td>";
-         echo "<td>".$yearStats[$prevYr]['t']."</td>";
-         echo "<td>".$yearStats[$prevYr]['hr']."</td>";
-         echo "<td>".$yearStats[$prevYr]['rbi']."</td>";
-         echo "<td>".$yearStats[$prevYr]['r']."</td>";
-         echo "<td>".$yearStats[$prevYr]['bb']."</td>";
-         echo "<td>".$yearStats[$prevYr]['hp']."</td>";
-         echo "<td>".$yearStats[$prevYr]['sh']."</td>";
-         echo "<td>".$yearStats[$prevYr]['sf']."</td>";
-         echo "<td>".$yearStats[$prevYr]['k']."</td>";
-         echo "<td>".$yearStats[$prevYr]['sb']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['cs']."</td>";
-	 echo "<td>$Yavg</td>";
-	 echo "<td>$Yobp</td>";
-	 echo "<td>$Yslg</td>";
-	 echo "<td>$Yops</td>";
-	 echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
-	 echo "<td>$YwOBA</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['age']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['g']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['ab']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['h']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['d']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['t']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['hr']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['rbi']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['r']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['bb']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['hp']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['sh']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['sf']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['k']."</td>";
+         echo "<td class='hsc2_r'>".$yearStats[$prevYr]['sb']."</td>";
+        echo "<td class='hsc2_r'>".$yearStats[$prevYr]['cs']."</td>";
+        echo "<td class='hsc2_r'>$Yavg</td>";
+        echo "<td class='hsc2_r'>$Yobp</td>";
+        echo "<td class='hsc2_r'>$Yslg</td>";
+        echo "<td class='hsc2_r'>$Yops</td>";
+        echo "<td class='hsc2_r'>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
+        echo "<td class='hsc2_r'>$YwOBA</td>";
    	 if ($noWS!=1)
           {
             $ows=$yearStats[$prevYr]['ows'];
             if ($ows!="") {$ows=sprintf("%.1f",$ows);}
-            echo "<td>$ows</td>";
+            echo "<td class='hsc2_r'>$ows</td>";
           }
          if (($noPSM!=1)&&($playerPos!=1))
           {
@@ -1323,7 +1323,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	       $EqAP=sprintf("%.3f",$EqAP);
 	       if ($EqAP<1) {$EqAP=strstr($EqAP,".");}
              }
-            echo "<td>$opsP</td><td>$EqAP</td>";
+            echo "<td class='hsc2_r'>$opsP</td><td>$EqAP</td>";
           }
 	 echo "</tr>\n";
 
@@ -1332,23 +1332,23 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	 $expTable.="<td class='".$cls."_l'>$prevYr - Tot";
 	 if (isset($as[$yr])) {$expTable.=" (AS)";}
          $expTable.="</td>";
-         $expTable.="<td>".$yearStats[$prevYr]['age']."</td>";
-         $expTable.="<td>$Ypa</td>";
-         $expTable.="<td>$Youts</td>";
-         $expTable.="<td>$Yebh</td>";
-         $expTable.="<td>$Ytb</td>";
-         $expTable.="<td>$Yibb</td>";
-         $expTable.="<td>$Ypi</td>";
-         $expTable.="<td>$YpiPerPA</td>";
-         $expTable.="<td>$YpaPerHR</td>";
-         $expTable.="<td>$YbbPerK</td>";
-         $expTable.="<td>$Ygdp</td>";
-         $expTable.="<td>$YpwrSpd</td>";
-         $expTable.="<td>$YsbPct</td>";
-         $expTable.="<td>$Yrc</td>";
-         $expTable.="<td>$Yrc27</td>";
-         $expTable.="<td>$Ybabip</td>";
-         $expTable.="<td>$Yiso</td>";
+         $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['age']."</td>";
+         $expTable.="<td class='hsc2_r'>$Ypa</td>";
+         $expTable.="<td class='hsc2_r'>$Youts</td>";
+         $expTable.="<td class='hsc2_r'>$Yebh</td>";
+         $expTable.="<td class='hsc2_r'>$Ytb</td>";
+         $expTable.="<td class='hsc2_r'>$Yibb</td>";
+         $expTable.="<td class='hsc2_r'>$Ypi</td>";
+         $expTable.="<td class='hsc2_r'>$YpiPerPA</td>";
+         $expTable.="<td class='hsc2_r'>$YpaPerHR</td>";
+         $expTable.="<td class='hsc2_r'>$YbbPerK</td>";
+         $expTable.="<td class='hsc2_r'>$Ygdp</td>";
+         $expTable.="<td class='hsc2_r'>$YpwrSpd</td>";
+         $expTable.="<td class='hsc2_r'>$YsbPct</td>";
+         $expTable.="<td class='hsc2_r'>$Yrc</td>";
+         $expTable.="<td class='hsc2_r'>$Yrc27</td>";
+         $expTable.="<td class='hsc2_r'>$Ybabip</td>";
+         $expTable.="<td class='hsc2_r'>$Yiso</td>";
 	 $expTable.="</tr>\n";
 
 	 $cnt++;
@@ -1388,28 +1388,28 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
        }
 	   if (!empty($awrdStr)) { echo("&nbsp;".$awrdStr.")"); }
       echo "</td>";
-      echo "<td>$age</td>";
-      echo "<td>$g</td>";
-      echo "<td>$ab</td>";
-      echo "<td>$h</td>";
-      echo "<td>$d</td>";
-      echo "<td>$t</td>";
-      echo "<td>$hr</td>";
-      echo "<td>$rbi</td>";
-      echo "<td>$r</td>";
-      echo "<td>$bb</td>";
-      echo "<td>$hp</td>";
-      echo "<td>$sh</td>";
-      echo "<td>$sf</td>";
-      echo "<td>$k</td>";
-      echo "<td>$sb</td>";
-      echo "<td>$cs</td>";
-      echo "<td>$avg</td>";
-      echo "<td>$obp</td>";
-      echo "<td>$slg</td>";
-      echo "<td>$ops</td>";
-      echo "<td>$war</td>";
-      echo "<td>$wOBA</td>";
+      echo "<td class='hsc2_r'>$age</td>";
+      echo "<td class='hsc2_r'>$g</td>";
+      echo "<td class='hsc2_r'>$ab</td>";
+      echo "<td class='hsc2_r'>$h</td>";
+      echo "<td class='hsc2_r'>$d</td>";
+      echo "<td class='hsc2_r'>$t</td>";
+      echo "<td class='hsc2_r'>$hr</td>";
+      echo "<td class='hsc2_r'>$rbi</td>";
+      echo "<td class='hsc2_r'>$r</td>";
+      echo "<td class='hsc2_r'>$bb</td>";
+      echo "<td class='hsc2_r'>$hp</td>";
+      echo "<td class='hsc2_r'>$sh</td>";
+      echo "<td class='hsc2_r'>$sf</td>";
+      echo "<td class='hsc2_r'>$k</td>";
+      echo "<td class='hsc2_r'>$sb</td>";
+      echo "<td class='hsc2_r'>$cs</td>";
+      echo "<td class='hsc2_r'>$avg</td>";
+      echo "<td class='hsc2_r'>$obp</td>";
+      echo "<td class='hsc2_r'>$slg</td>";
+      echo "<td class='hsc2_r'>$ops</td>";
+      echo "<td class='hsc2_r'>$war</td>";
+      echo "<td class='hsc2_r'>$wOBA</td>";
       if ($noWS!=1)
        {
          $ows=$row['ows'];
@@ -1420,7 +1420,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	    $yearStats[$yr]['ows']=$yearStats[$yr]['ows']+$ows;
 	    $ows=sprintf("%.1f",$ows);
 	  }
-         echo "<td>$ows</td>";
+         echo "<td class='hsc2_r'>$ows</td>";
        }
       if (($noPSM!=1)&&($playerPos!=1))
        {
@@ -1441,7 +1441,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	    $yearStats[$yr]['sabrPA']=$yearStats[$yr]['sabrPA']+$pa;
 	    $TsabrPA+=$pa;
 	  }
-         echo "<td>$opsP</td><td>$EqAP</td>";
+         echo "<td class='hsc2_r'>$opsP</td><td>$EqAP</td>";
        }
       echo "</tr>\n";
 
@@ -1462,23 +1462,23 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       if (isset($as[$yr])) {$expTable.=" (AS)";}
       
       $expTable.="</td>";
-      $expTable.="<td>$age</td>";
-      $expTable.="<td>$pa</td>";
-      $expTable.="<td>$outs</td>";
-      $expTable.="<td>$ebh</td>";
-      $expTable.="<td>$tb</td>";
-      $expTable.="<td>$ibb</td>";
-      $expTable.="<td>$pi</td>";
-      $expTable.="<td>$piPerPA</td>";
-      $expTable.="<td>$paPerHR</td>";
-      $expTable.="<td>$bbPerK</td>";
-      $expTable.="<td>$gdp</td>";
-      $expTable.="<td>$pwrSpd</td>";
-      $expTable.="<td>$sbPct</td>";
-      $expTable.="<td>$rc</td>";
-      $expTable.="<td>$rc27</td>";
-      $expTable.="<td>$babip</td>";
-      $expTable.="<td>$iso</td>";
+      $expTable.="<td class='hsc2_r'>$age</td>";
+      $expTable.="<td class='hsc2_r'>$pa</td>";
+      $expTable.="<td class='hsc2_r'>$outs</td>";
+      $expTable.="<td class='hsc2_r'>$ebh</td>";
+      $expTable.="<td class='hsc2_r'>$tb</td>";
+      $expTable.="<td class='hsc2_r'>$ibb</td>";
+      $expTable.="<td class='hsc2_r'>$pi</td>";
+      $expTable.="<td class='hsc2_r'>$piPerPA</td>";
+      $expTable.="<td class='hsc2_r'>$paPerHR</td>";
+      $expTable.="<td class='hsc2_r'>$bbPerK</td>";
+      $expTable.="<td class='hsc2_r'>$gdp</td>";
+      $expTable.="<td class='hsc2_r'>$pwrSpd</td>";
+      $expTable.="<td class='hsc2_r'>$sbPct</td>";
+      $expTable.="<td class='hsc2_r'>$rc</td>";
+      $expTable.="<td class='hsc2_r'>$rc27</td>";
+      $expTable.="<td class='hsc2_r'>$babip</td>";
+      $expTable.="<td class='hsc2_r'>$iso</td>";
       $expTable.="</tr>\n";
 
       $prevYr=$yr;
@@ -1563,33 +1563,33 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       echo "<td class='".$cls."_l'>$prevYr - Tot";
       if (isset($as[$yr])) {echo " (AS)";}
       echo "</td>";
-      echo "<td>".$yearStats[$prevYr]['age']."</td>";
-      echo "<td>".$yearStats[$prevYr]['g']."</td>";
-      echo "<td>".$yearStats[$prevYr]['ab']."</td>";
-      echo "<td>".$yearStats[$prevYr]['h']."</td>";
-      echo "<td>".$yearStats[$prevYr]['d']."</td>";
-      echo "<td>".$yearStats[$prevYr]['t']."</td>";
-      echo "<td>".$yearStats[$prevYr]['hr']."</td>";
-      echo "<td>".$yearStats[$prevYr]['rbi']."</td>";
-      echo "<td>".$yearStats[$prevYr]['r']."</td>";
-      echo "<td>".$yearStats[$prevYr]['bb']."</td>";
-      echo "<td>".$yearStats[$prevYr]['hp']."</td>";
-      echo "<td>".$yearStats[$prevYr]['sh']."</td>";
-      echo "<td>".$yearStats[$prevYr]['sf']."</td>";
-      echo "<td>".$yearStats[$prevYr]['k']."</td>";
-      echo "<td>".$yearStats[$prevYr]['sb']."</td>";
-      echo "<td>".$yearStats[$prevYr]['cs']."</td>";
-      echo "<td>$Yavg</td>";
-      echo "<td>$Yobp</td>";
-      echo "<td>$Yslg</td>";
-      echo "<td>$Yops</td>";
-      echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
-      echo "<td>$YwOBA</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['age']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['g']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['ab']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['h']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['d']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['t']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['hr']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['rbi']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['r']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['bb']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['hp']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['sh']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['sf']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['k']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['sb']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['cs']."</td>";
+      echo "<td class='hsc2_r'>$Yavg</td>";
+      echo "<td class='hsc2_r'>$Yobp</td>";
+      echo "<td class='hsc2_r'>$Yslg</td>";
+      echo "<td class='hsc2_r'>$Yops</td>";
+      echo "<td class='hsc2_r'>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
+      echo "<td class='hsc2_r'>$YwOBA</td>";
       if ($noWS!=1)
        {
          $ows=$yearStats[$prevYr]['ows'];
          if ($ows!="") {$ows=sprintf("%.1f",$ows);}
-         echo "<td>$ows</td>";
+         echo "<td class='hsc2_r'>$ows</td>";
        }
       if (($noPSM!=1)&&($playerPos!=1))
        {
@@ -1604,7 +1604,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	    $EqAP=sprintf("%.3f",$EqAP);
 	    if ($EqAP<1) {$EqAP=strstr($EqAP,".");}
 	  }
-	 echo "<td>$opsP</td><td>$EqAP</td>";
+	 echo "<td class='hsc2_r'>$opsP</td><td>$EqAP</td>";
        }
       echo "</tr>\n";
 
@@ -1613,23 +1613,23 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       $expTable.="<td class='".$cls."_l'>$prevYr - Tot";
       if (isset($as[$yr])) {$expTable.=" (AS)";}
       $expTable.="</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['age']."</td>";
-      $expTable.="<td>$Ypa</td>";
-      $expTable.="<td>$Youts</td>";
-      $expTable.="<td>$Yebh</td>";
-      $expTable.="<td>$Ytb</td>";
-      $expTable.="<td>$Yibb</td>";
-      $expTable.="<td>$Ypi</td>";
-      $expTable.="<td>$YpiPerPA</td>";
-      $expTable.="<td>$YpaPerHR</td>";
-      $expTable.="<td>$YbbPerK</td>";
-      $expTable.="<td>$Ygdp</td>";
-      $expTable.="<td>$YpwrSpd</td>";
-      $expTable.="<td>$YsbPct</td>";
-      $expTable.="<td>$Yrc</td>";
-      $expTable.="<td>$Yrc27</td>";
-      $expTable.="<td>$Ybabip</td>";
-      $expTable.="<td>$Yiso</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['age']."</td>";
+      $expTable.="<td class='hsc2_r'>$Ypa</td>";
+      $expTable.="<td class='hsc2_r'>$Youts</td>";
+      $expTable.="<td class='hsc2_r'>$Yebh</td>";
+      $expTable.="<td class='hsc2_r'>$Ytb</td>";
+      $expTable.="<td class='hsc2_r'>$Yibb</td>";
+      $expTable.="<td class='hsc2_r'>$Ypi</td>";
+      $expTable.="<td class='hsc2_r'>$YpiPerPA</td>";
+      $expTable.="<td class='hsc2_r'>$YpaPerHR</td>";
+      $expTable.="<td class='hsc2_r'>$YbbPerK</td>";
+      $expTable.="<td class='hsc2_r'>$Ygdp</td>";
+      $expTable.="<td class='hsc2_r'>$YpwrSpd</td>";
+      $expTable.="<td class='hsc2_r'>$YsbPct</td>";
+      $expTable.="<td class='hsc2_r'>$Yrc</td>";
+      $expTable.="<td class='hsc2_r'>$Yrc27</td>";
+      $expTable.="<td class='hsc2_r'>$Ybabip</td>";
+      $expTable.="<td class='hsc2_r'>$Yiso</td>";
       $expTable.="</tr>\n";
     }
 
@@ -1723,32 +1723,32 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
       echo "     <tr class='headline'>";
       echo "<td class='hsc2_l' colspan=2>w/ ".$teams[$tid][$year].$awTxt."</td>";
-      echo "<td class='hsc2'>$g</td>";
-      echo "<td class='hsc2'>$ab</td>";
-      echo "<td class='hsc2'>$h</td>";
-      echo "<td class='hsc2'>$d</td>";
-      echo "<td class='hsc2'>$t</td>";
-      echo "<td class='hsc2'>$hr</td>";
-      echo "<td class='hsc2'>$rbi</td>";
-      echo "<td class='hsc2'>$r</td>";
-      echo "<td class='hsc2'>$bb</td>";
-      echo "<td class='hsc2'>$hp</td>";
-      echo "<td class='hsc2'>$sh</td>";
-      echo "<td class='hsc2'>$sf</td>";
-      echo "<td class='hsc2'>$k</td>";
-      echo "<td class='hsc2'>$sb</td>";
-      echo "<td class='hsc2'>$cs</td>";
-      echo "<td class='hsc2'>$avg</td>";
-      echo "<td class='hsc2'>$obp</td>";
-      echo "<td class='hsc2'>$slg</td>";
-      echo "<td class='hsc2'>$ops</td>";
-      echo "<td class='hsc2'>$war</td>";
-      echo "<td class='hsc2'>$wOBA</td>";
+      echo "<td class='hsc2_r'>$g</td>";
+      echo "<td class='hsc2_r'>$ab</td>";
+      echo "<td class='hsc2_r'>$h</td>";
+      echo "<td class='hsc2_r'>$d</td>";
+      echo "<td class='hsc2_r'>$t</td>";
+      echo "<td class='hsc2_r'>$hr</td>";
+      echo "<td class='hsc2_r'>$rbi</td>";
+      echo "<td class='hsc2_r'>$r</td>";
+      echo "<td class='hsc2_r'>$bb</td>";
+      echo "<td class='hsc2_r'>$hp</td>";
+      echo "<td class='hsc2_r'>$sh</td>";
+      echo "<td class='hsc2_r'>$sf</td>";
+      echo "<td class='hsc2_r'>$k</td>";
+      echo "<td class='hsc2_r'>$sb</td>";
+      echo "<td class='hsc2_r'>$cs</td>";
+      echo "<td class='hsc2_r'>$avg</td>";
+      echo "<td class='hsc2_r'>$obp</td>";
+      echo "<td class='hsc2_r'>$slg</td>";
+      echo "<td class='hsc2_r'>$ops</td>";
+      echo "<td class='hsc2_r'>$war</td>";
+      echo "<td class='hsc2_r'>$wOBA</td>";
       if ($noWS!=1)
        {
          $ows=$teamStats[$tid]['ows'];
          if ($ows!="") {$ows=sprintf("%.1f",$ows);}
-         echo "<td class='hsc2'>$ows</td>";
+         echo "<td class='hsc2_r'>$ows</td>";
        }
       if (($noPSM!=1)&&($playerPos!=1))
        {
@@ -1763,29 +1763,29 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
             $EqAP=sprintf("%.3f",$EqAP);
             if ($EqAP<1) {$EqAP=strstr($EqAP,".");}
 	  }
-         echo "<td class='hsc2'>$opsP</td><td class='hsc2'>$EqAP</td>";
+         echo "<td class='hsc2_r'>$opsP</td><td class='hsc2'>$EqAP</td>";
        }
       echo "</tr>\n";
 
       #Expanded
       $expTable.="     <tr class='headline'>";
       $expTable.="<td class='hsc2_l' colspan=2>w/ ".$teams[$tid][$year].$awTxt."</td>";
-      $expTable.="<td class='hsc2'>$pa</td>";
-      $expTable.="<td class='hsc2'>$outs</td>";
-      $expTable.="<td class='hsc2'>$ebh</td>";
-      $expTable.="<td class='hsc2'>$tb</td>";
-      $expTable.="<td class='hsc2'>$ibb</td>";
-      $expTable.="<td class='hsc2'>$pi</td>";
-      $expTable.="<td class='hsc2'>$piPerPA</td>";
-      $expTable.="<td class='hsc2'>$paPerHR</td>";
-      $expTable.="<td class='hsc2'>$bbPerK</td>";
-      $expTable.="<td class='hsc2'>$gdp</td>";
-      $expTable.="<td class='hsc2'>$pwrSpd</td>";
-      $expTable.="<td class='hsc2'>$sbPct</td>";
-      $expTable.="<td class='hsc2'>$rc</td>";
-      $expTable.="<td class='hsc2'>$rc27</td>";
-      $expTable.="<td class='hsc2'>$babip</td>";
-      $expTable.="<td class='hsc2'>$iso</td>";
+      $expTable.="<td class='hsc2_r'>$pa</td>";
+      $expTable.="<td class='hsc2_r'>$outs</td>";
+      $expTable.="<td class='hsc2_r'>$ebh</td>";
+      $expTable.="<td class='hsc2_r'>$tb</td>";
+      $expTable.="<td class='hsc2_r'>$ibb</td>";
+      $expTable.="<td class='hsc2_r'>$pi</td>";
+      $expTable.="<td class='hsc2_r'>$piPerPA</td>";
+      $expTable.="<td class='hsc2_r'>$paPerHR</td>";
+      $expTable.="<td class='hsc2_r'>$bbPerK</td>";
+      $expTable.="<td class='hsc2_r'>$gdp</td>";
+      $expTable.="<td class='hsc2_r'>$pwrSpd</td>";
+      $expTable.="<td class='hsc2_r'>$sbPct</td>";
+      $expTable.="<td class='hsc2_r'>$rc</td>";
+      $expTable.="<td class='hsc2_r'>$rc27</td>";
+      $expTable.="<td class='hsc2_r'>$babip</td>";
+      $expTable.="<td class='hsc2_r'>$iso</td>";
       echo "</tr>\n";
     }
    #for career
@@ -1841,32 +1841,32 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
    echo "     <tr class='headline'>";
    echo "<td class='hsc2_l'>Totals</td>";
-   echo "<td class='hsc2'>&nbsp;</td>";
-   echo "<td class='hsc2'>$Tg</td>";
-   echo "<td class='hsc2'>$Tab</td>";
-   echo "<td class='hsc2'>$Th</td>";
-   echo "<td class='hsc2'>$Td</td>";
-   echo "<td class='hsc2'>$Tt</td>";
-   echo "<td class='hsc2'>$Thr</td>";
-   echo "<td class='hsc2'>$Trbi</td>";
-   echo "<td class='hsc2'>$Tr</td>";
-   echo "<td class='hsc2'>$Tbb</td>";
-   echo "<td class='hsc2'>$Thp</td>";
-   echo "<td class='hsc2'>$Tsh</td>";
-   echo "<td class='hsc2'>$Tsf</td>";
-   echo "<td class='hsc2'>$Tk</td>";
-   echo "<td class='hsc2'>$Tsb</td>";
-   echo "<td class='hsc2'>$Tcs</td>";
-   echo "<td class='hsc2'>$avg</td>";
-   echo "<td class='hsc2'>$obp</td>";
-   echo "<td class='hsc2'>$slg</td>";
-   echo "<td class='hsc2'>$ops</td>";
-   echo "<td class='hsc2'>$Twar</td>";
-   echo "<td class='hsc2'>$TwOBA</td>";
+   echo "<td class='hsc2_r'>&nbsp;</td>";
+   echo "<td class='hsc2_r'>$Tg</td>";
+   echo "<td class='hsc2_r'>$Tab</td>";
+   echo "<td class='hsc2_r'>$Th</td>";
+   echo "<td class='hsc2_r'>$Td</td>";
+   echo "<td class='hsc2_r'>$Tt</td>";
+   echo "<td class='hsc2_r'>$Thr</td>";
+   echo "<td class='hsc2_r'>$Trbi</td>";
+   echo "<td class='hsc2_r'>$Tr</td>";
+   echo "<td class='hsc2_r'>$Tbb</td>";
+   echo "<td class='hsc2_r'>$Thp</td>";
+   echo "<td class='hsc2_r'>$Tsh</td>";
+   echo "<td class='hsc2_r'>$Tsf</td>";
+   echo "<td class='hsc2_r'>$Tk</td>";
+   echo "<td class='hsc2_r'>$Tsb</td>";
+   echo "<td class='hsc2_r'>$Tcs</td>";
+   echo "<td class='hsc2_r'>$avg</td>";
+   echo "<td class='hsc2_r'>$obp</td>";
+   echo "<td class='hsc2_r'>$slg</td>";
+   echo "<td class='hsc2_r'>$ops</td>";
+   echo "<td class='hsc2_r'>$Twar</td>";
+   echo "<td class='hsc2_r'>$TwOBA</td>";
    if ($noWS!=1)
     {
       $Tows=sprintf("%.1f",$Tows);
-      echo "<td class='hsc2'>$Tows</td>";
+      echo "<td class='hsc2_r'>$Tows</td>";
     }
    if (($noPSM!=1)&&($playerPos!=1))
     {
@@ -1881,7 +1881,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
          $EqAP=sprintf("%.3f",$EqAP);
          if ($EqAP<1) {$EqAP=strstr($EqAP,".");}
        }
-      echo "<td class='hsc2'>$opsP</td><td class='hsc2'>$EqAP</td>";
+      echo "<td class='hsc2_r'>$opsP</td><td class='hsc2'>$EqAP</td>";
     }
    echo "</tr>";
    echo "     </tfoot>\n";
@@ -1889,22 +1889,22 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    #Expanded
    $expTable.="     <tr class='headline'>";
    $expTable.="<td class='hsc2_l' colspan=2>Totals</td>";
-   $expTable.="<td class='hsc2'>$Tpa</td>";
-   $expTable.="<td class='hsc2'>$outs</td>";
-   $expTable.="<td class='hsc2'>$ebh</td>";
-   $expTable.="<td class='hsc2'>$tb</td>";
-   $expTable.="<td class='hsc2'>$Tibb</td>";
-   $expTable.="<td class='hsc2'>$Tpi</td>";
-   $expTable.="<td class='hsc2'>$piPerPA</td>";
-   $expTable.="<td class='hsc2'>$paPerHR</td>";
-   $expTable.="<td class='hsc2'>$bbPerK</td>";
-   $expTable.="<td class='hsc2'>$Tgdp</td>";
-   $expTable.="<td class='hsc2'>$pwrSpd</td>";
-   $expTable.="<td class='hsc2'>$sbPct</td>";
-   $expTable.="<td class='hsc2'>$rc</td>";
-   $expTable.="<td class='hsc2'>$rc27</td>";
-   $expTable.="<td class='hsc2'>$babip</td>";
-   $expTable.="<td class='hsc2'>$iso</td>";
+   $expTable.="<td class='hsc2_r'>$Tpa</td>";
+   $expTable.="<td class='hsc2_r'>$outs</td>";
+   $expTable.="<td class='hsc2_r'>$ebh</td>";
+   $expTable.="<td class='hsc2_r'>$tb</td>";
+   $expTable.="<td class='hsc2_r'>$Tibb</td>";
+   $expTable.="<td class='hsc2_r'>$Tpi</td>";
+   $expTable.="<td class='hsc2_r'>$piPerPA</td>";
+   $expTable.="<td class='hsc2_r'>$paPerHR</td>";
+   $expTable.="<td class='hsc2_r'>$bbPerK</td>";
+   $expTable.="<td class='hsc2_r'>$Tgdp</td>";
+   $expTable.="<td class='hsc2_r'>$pwrSpd</td>";
+   $expTable.="<td class='hsc2_r'>$sbPct</td>";
+   $expTable.="<td class='hsc2_r'>$rc</td>";
+   $expTable.="<td class='hsc2_r'>$rc27</td>";
+   $expTable.="<td class='hsc2_r'>$babip</td>";
+   $expTable.="<td class='hsc2_r'>$iso</td>";
    $expTable.="</tr>";
    $expTable.="     </tfoot>\n";
 
@@ -1921,23 +1921,23 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "    <table cellpadding=2 cellspacing=0 class='sortable' width='910px'>\n";
    echo "     <thead><tr class='headline'>";
    echo "<td class='hsc2_l'>Year/Team</td>";
-   echo "<td class='hsc2'>Age</td>";
-   echo "<td class='hsc2'>PA</td>";
-   echo "<td class='hsc2'>Outs</td>";
-   echo "<td class='hsc2'>EBH</td>";
-   echo "<td class='hsc2'>TB</td>";
-   echo "<td class='hsc2'>IBB</td>";
-   echo "<td class='hsc2'>PS</td>";
-   echo "<td class='hsc2'>PS/PA</td>";
-   echo "<td class='hsc2'>PA/HR</td>";
-   echo "<td class='hsc2'>BB/K</td>";
-   echo "<td class='hsc2'>GDP</td>";
-   echo "<td class='hsc2'>PwrSpd</td>";
-   echo "<td class='hsc2'>SB%</td>";
-   echo "<td class='hsc2'>RC</td>";
-   echo "<td class='hsc2'>RC/27</td>";
-   echo "<td class='hsc2'>BABIP</td>";
-   echo "<td class='hsc2'>ISO</td>";
+   echo "<td class='hsc2_r'>Age</td>";
+   echo "<td class='hsc2_r'>PA</td>";
+   echo "<td class='hsc2_r'>Outs</td>";
+   echo "<td class='hsc2_r'>EBH</td>";
+   echo "<td class='hsc2_r'>TB</td>";
+   echo "<td class='hsc2_r'>IBB</td>";
+   echo "<td class='hsc2_r'>PS</td>";
+   echo "<td class='hsc2_r'>PS/PA</td>";
+   echo "<td class='hsc2_r'>PA/HR</td>";
+   echo "<td class='hsc2_r'>BB/K</td>";
+   echo "<td class='hsc2_r'>GDP</td>";
+   echo "<td class='hsc2_r'>PwrSpd</td>";
+   echo "<td class='hsc2_r'>SB%</td>";
+   echo "<td class='hsc2_r'>RC</td>";
+   echo "<td class='hsc2_r'>RC/27</td>";
+   echo "<td class='hsc2_r'>BABIP</td>";
+   echo "<td class='hsc2_r'>ISO</td>";
    echo "</tr></thead>\n";
    echo $expTable;
    echo "    </table>\n";
@@ -1956,28 +1956,28 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "    <table cellpadding=2 cellspacing=0 class='sortable' width='910px'>\n";
    echo "     <thead><tr class='headline'>";
    echo "<td class='hsc2_l'>Year/Team</td>";
-   echo "<td class='hsc2'>Age</td>";
-   echo "<td class='hsc2'>G</td>";
-   echo "<td class='hsc2'>GS</td>";
-   echo "<td class='hsc2'>W</td>";
-   echo "<td class='hsc2'>L</td>";
-   echo "<td class='hsc2'>SV</td>";
-   echo "<td class='hsc2'>ERA</td>";
-   echo "<td class='hsc2'>IP</td>";
-   echo "<td class='hsc2'>HA</td>";
-   echo "<td class='hsc2'>R</td>";
-   echo "<td class='hsc2'>ER</td>";
-   echo "<td class='hsc2'>HR</td>";
-   echo "<td class='hsc2'>BB</td>";
-   echo "<td class='hsc2'>K</td>";
-   echo "<td class='hsc2'>HLD</td>";
-   echo "<td class='hsc2'>CG</td>";
-   echo "<td class='hsc2'>SHO</td>";
-   echo "<td class='hsc2'>WHIP</td>";
-   echo "<td class='hsc2'>BABIP</td>";
-   echo "<td class='hsc2'>WAR</td>";
-   if ($noWS!=1) {echo "<td class='hsc2'>WS</td>";}
-   if (($noPSM!=1)&&($playerPos==1)) {echo "<td class='hsc2'>ERA+</td><td class='hsc2'>ERC</td>";}
+   echo "<td class='hsc2_r'>Age</td>";
+   echo "<td class='hsc2_r'>G</td>";
+   echo "<td class='hsc2_r'>GS</td>";
+   echo "<td class='hsc2_r'>W</td>";
+   echo "<td class='hsc2_r'>L</td>";
+   echo "<td class='hsc2_r'>SV</td>";
+   echo "<td class='hsc2_r'>ERA</td>";
+   echo "<td class='hsc2_r'>IP</td>";
+   echo "<td class='hsc2_r'>HA</td>";
+   echo "<td class='hsc2_r'>R</td>";
+   echo "<td class='hsc2_r'>ER</td>";
+   echo "<td class='hsc2_r'>HR</td>";
+   echo "<td class='hsc2_r'>BB</td>";
+   echo "<td class='hsc2_r'>K</td>";
+   echo "<td class='hsc2_r'>HLD</td>";
+   echo "<td class='hsc2_r'>CG</td>";
+   echo "<td class='hsc2_r'>SHO</td>";
+   echo "<td class='hsc2_r'>WHIP</td>";
+   echo "<td class='hsc2_r'>BABIP</td>";
+   echo "<td class='hsc2_r'>WAR</td>";
+   if ($noWS!=1) {echo "<td class='hsc2_r'>WS</td>";}
+   if (($noPSM!=1)&&($playerPos==1)) {echo "<td class='hsc2_r'>ERA+</td><td class='hsc2'>ERC</td>";}
    echo "</tr></thead>\n";
    $cnt=0;
    $prevYr=-1;
@@ -2251,31 +2251,31 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
          echo "<td class='".$cls."_l'>$prevYr - Tot";
 	 if (isset($as[$prevYr])) {echo " (AS)";}
 	 echo "</td>";
-	 echo "<td>".$yearStats[$prevYr]['age']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['g']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['gs']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['w']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['l']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['s']."</td>";
-	 echo "<td>".$Yera."</td>";
-	 echo "<td>".sprintf("%.1f",$Yip)."</td>";
-	 echo "<td>".$yearStats[$prevYr]['ha']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['r']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['er']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['hra']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['bb']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['k']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['hld']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['cg']."</td>";
-	 echo "<td>".$yearStats[$prevYr]['sho']."</td>";
-	 echo "<td>".$Ywhip."</td>";
-	 echo "<td>".$Ybabip."</td>";
-	 echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['age']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['g']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['gs']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['w']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['l']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['s']."</td>";
+	 echo "<td class='hsc2_r'>".$Yera."</td>";
+	 echo "<td class='hsc2_r'>".sprintf("%.1f",$Yip)."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['ha']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['r']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['er']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['hra']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['bb']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['k']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['hld']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['cg']."</td>";
+	 echo "<td class='hsc2_r'>".$yearStats[$prevYr]['sho']."</td>";
+	 echo "<td class='hsc2_r'>".$Ywhip."</td>";
+	 echo "<td class='hsc2_r'>".$Ybabip."</td>";
+	 echo "<td class='hsc2_r'>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
 	 if ($noWS!=1)
 	  {
 	    $pws=$yearStats[$prevYr]['pws'];
 	    if ($pws!="") {$pws=sprintf("%.1f",$pws);}
-   	    echo "<td>$pws</td>";
+   	    echo "<td class='hsc2_r'>$pws</td>";
   	  }
          if (($noPSM!=1)&&($playerPos==1))
           {
@@ -2294,32 +2294,32 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	       $ceraP=$ceraP/$sabrIP;
                $ceraP=sprintf("%.2f",$ceraP);
 	     }
-	    echo "<td>$eraP</td><td>$ceraP</td>";
+	    echo "<td class='hsc2_r'>$eraP</td><td>$ceraP</td>";
 	  }
 	 echo "</tr>\n";
 
          #Expanded
 	 $expTable.="     <tr class='$cls'>";
          $expTable.="<td class='".$cls."_l'>$prevYr - Tot</td>";
-	 $expTable.="<td>".$yearStats[$prevYr]['age']."</td>";
- 	 $expTable.="<td>".$yearStats[$prevYr]['bf']."</td>";
- 	 $expTable.="<td>".$yearStats[$prevYr]['pi']."</td>";
- 	 $expTable.="<td>$YrPer9</td>";
- 	 $expTable.="<td>$YhPer9</td>";
- 	 $expTable.="<td>$YkPer9</td>";
- 	 $expTable.="<td>$YbbPer9</td>";
- 	 $expTable.="<td>$YhrPer9</td>";
- 	 $expTable.="<td>$YkPerBB</td>";
- 	 $expTable.="<td>".$yearStats[$prevYr]['qs']."</td>";
- 	 $expTable.="<td>$YqsPct</td>";
- 	 $expTable.="<td>$YcgPct</td>";
- 	 $expTable.="<td>".$yearStats[$prevYr]['gf']."</td>";
- 	 $expTable.="<td>$YgbPct</td>";
- 	 $expTable.="<td>".$yearStats[$prevYr]['wp']."</td>";
- 	 $expTable.="<td>".$yearStats[$prevYr]['bk']."</td>";
- 	 $expTable.="<td>".$yearStats[$prevYr]['bs']."</td>";
- 	 $expTable.="<td>$YsvPct</td>";
- 	 $expTable.="<td>".$yearStats[$prevYr]['svo']."</td>";
+	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['age']."</td>";
+ 	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['bf']."</td>";
+ 	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['pi']."</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YrPer9</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YhPer9</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YkPer9</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YbbPer9</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YhrPer9</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YkPerBB</td>";
+ 	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['qs']."</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YqsPct</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YcgPct</td>";
+ 	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['gf']."</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YgbPct</td>";
+ 	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['wp']."</td>";
+ 	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['bk']."</td>";
+ 	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['bs']."</td>";
+ 	 $expTable.="<td class='hsc2_r'>$YsvPct</td>";
+ 	 $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['svo']."</td>";
 	 $expTable.="</tr>\n";
 
          $cnt++;
@@ -2359,26 +2359,26 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
        }
 	   if (!empty($awrdStr)) { echo("&nbsp;".$awrdStr.")"); }
       echo "</td>";
-      echo "<td>$age</td>";
-      echo "<td>$g</td>";
-      echo "<td>$gs</td>";
-      echo "<td>$w</td>";
-      echo "<td>$l</td>";
-      echo "<td>$s</td>";
-      echo "<td>$era</td>";
-      echo "<td>$ip</td>";
-      echo "<td>$ha</td>";
-      echo "<td>$r</td>";
-      echo "<td>$er</td>";
-      echo "<td>$hra</td>";
-      echo "<td>$bb</td>";
-      echo "<td>$k</td>";
-      echo "<td>$hld</td>";
-      echo "<td>$cg</td>";
-      echo "<td>$sho</td>";
-      echo "<td>$whip</td>";
-      echo "<td>$babip</td>";
-      echo "<td>$war</td>";
+      echo "<td class='hsc2_r'>$age</td>";
+      echo "<td class='hsc2_r'>$g</td>";
+      echo "<td class='hsc2_r'>$gs</td>";
+      echo "<td class='hsc2_r'>$w</td>";
+      echo "<td class='hsc2_r'>$l</td>";
+      echo "<td class='hsc2_r'>$s</td>";
+      echo "<td class='hsc2_r'>$era</td>";
+      echo "<td class='hsc2_r'>$ip</td>";
+      echo "<td class='hsc2_r'>$ha</td>";
+      echo "<td class='hsc2_r'>$r</td>";
+      echo "<td class='hsc2_r'>$er</td>";
+      echo "<td class='hsc2_r'>$hra</td>";
+      echo "<td class='hsc2_r'>$bb</td>";
+      echo "<td class='hsc2_r'>$k</td>";
+      echo "<td class='hsc2_r'>$hld</td>";
+      echo "<td class='hsc2_r'>$cg</td>";
+      echo "<td class='hsc2_r'>$sho</td>";
+      echo "<td class='hsc2_r'>$whip</td>";
+      echo "<td class='hsc2_r'>$babip</td>";
+      echo "<td class='hsc2_r'>$war</td>";
       if ($noWS!=1)
        {
          $pws=$row['pws'];
@@ -2389,7 +2389,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	    $yearStats[$yr]['pws']=$yearStats[$yr]['pws']+$pws;
 	    $pws=sprintf("%.1f",$pws);
 	  }
-         echo "<td>$pws</td>";
+         echo "<td class='hsc2_r'>$pws</td>";
        }
       if (($noPSM!=1)&&($playerPos==1))
        {
@@ -2410,7 +2410,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
          if ($eraP==0) {$eraP="";}
 	 if ($ceraP==0) {$ceraP="";}
  	  else {$ceraP=sprintf("%.2f",$ceraP);}
-	 echo "<td>$eraP</td><td>$ceraP</td>";
+	 echo "<td class='hsc2_r'>$eraP</td><td>$ceraP</td>";
        }
       echo "</tr>\n";
 
@@ -2431,25 +2431,25 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
       if (isset($as[$yr])) {$expTable.=" (AS)";}
       $expTable.="</td>";
-      $expTable.="<td>$age</td>";
-      $expTable.="<td>$bf</td>";
-      $expTable.="<td>$pi</td>";
-      $expTable.="<td>$rPer9</td>";
-      $expTable.="<td>$hPer9</td>";
-      $expTable.="<td>$kPer9</td>";
-      $expTable.="<td>$bbPer9</td>";
-      $expTable.="<td>$hrPer9</td>";
-      $expTable.="<td>$kPerBB</td>";
-      $expTable.="<td>$qs</td>";
-      $expTable.="<td>$qsPct</td>";
-      $expTable.="<td>$cgPct</td>";
-      $expTable.="<td>$gf</td>";
-      $expTable.="<td>$gbPct</td>";
-      $expTable.="<td>$wp</td>";
-      $expTable.="<td>$bk</td>";
-      $expTable.="<td>$bs</td>";
-      $expTable.="<td>$svPct</td>";
-      $expTable.="<td>$svo</td>";
+      $expTable.="<td class='hsc2_r'>$age</td>";
+      $expTable.="<td class='hsc2_r'>$bf</td>";
+      $expTable.="<td class='hsc2_r'>$pi</td>";
+      $expTable.="<td class='hsc2_r'>$rPer9</td>";
+      $expTable.="<td class='hsc2_r'>$hPer9</td>";
+      $expTable.="<td class='hsc2_r'>$kPer9</td>";
+      $expTable.="<td class='hsc2_r'>$bbPer9</td>";
+      $expTable.="<td class='hsc2_r'>$hrPer9</td>";
+      $expTable.="<td class='hsc2_r'>$kPerBB</td>";
+      $expTable.="<td class='hsc2_r'>$qs</td>";
+      $expTable.="<td class='hsc2_r'>$qsPct</td>";
+      $expTable.="<td class='hsc2_r'>$cgPct</td>";
+      $expTable.="<td class='hsc2_r'>$gf</td>";
+      $expTable.="<td class='hsc2_r'>$gbPct</td>";
+      $expTable.="<td class='hsc2_r'>$wp</td>";
+      $expTable.="<td class='hsc2_r'>$bk</td>";
+      $expTable.="<td class='hsc2_r'>$bs</td>";
+      $expTable.="<td class='hsc2_r'>$svPct</td>";
+      $expTable.="<td class='hsc2_r'>$svo</td>";
       $expTable.="</tr>\n";
 
       $prevYr=$yr;
@@ -2521,31 +2521,31 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
       echo "<td class='".$cls."_l'>$prevYr - Tot";
       if (isset($as[$prevYr])) {echo " (AS)";}
       echo "</td>";
-      echo "<td>".$yearStats[$prevYr]['age']."</td>";
-      echo "<td>".$yearStats[$prevYr]['g']."</td>";
-      echo "<td>".$yearStats[$prevYr]['gs']."</td>";
-      echo "<td>".$yearStats[$prevYr]['w']."</td>";
-      echo "<td>".$yearStats[$prevYr]['l']."</td>";
-      echo "<td>".$yearStats[$prevYr]['s']."</td>";
-      echo "<td>".$Yera."</td>";
-      echo "<td>".sprintf("%.1f",$Yip)."</td>";
-      echo "<td>".$yearStats[$prevYr]['ha']."</td>";
-      echo "<td>".$yearStats[$prevYr]['r']."</td>";
-      echo "<td>".$yearStats[$prevYr]['er']."</td>";
-      echo "<td>".$yearStats[$prevYr]['hra']."</td>";
-      echo "<td>".$yearStats[$prevYr]['bb']."</td>";
-      echo "<td>".$yearStats[$prevYr]['k']."</td>";
-      echo "<td>".$yearStats[$prevYr]['hld']."</td>";
-      echo "<td>".$yearStats[$prevYr]['cg']."</td>";
-      echo "<td>".$yearStats[$prevYr]['sho']."</td>";
-      echo "<td>".$Ywhip."</td>";
-      echo "<td>".$Ybabip."</td>";
-      echo "<td>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['age']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['g']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['gs']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['w']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['l']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['s']."</td>";
+      echo "<td class='hsc2_r'>".$Yera."</td>";
+      echo "<td class='hsc2_r'>".sprintf("%.1f",$Yip)."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['ha']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['r']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['er']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['hra']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['bb']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['k']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['hld']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['cg']."</td>";
+      echo "<td class='hsc2_r'>".$yearStats[$prevYr]['sho']."</td>";
+      echo "<td class='hsc2_r'>".$Ywhip."</td>";
+      echo "<td class='hsc2_r'>".$Ybabip."</td>";
+      echo "<td class='hsc2_r'>".sprintf("%.1f",$yearStats[$prevYr]['war'])."</td>";
       if ($noWS!=1)
        {
          $pws=$yearStats[$prevYr]['pws'];
          if ($pws!="") {$pws=sprintf("%.1f",$pws);}
-         echo "<td>$pws</td>";
+         echo "<td class='hsc2_r'>$pws</td>";
        }
       if (($noPSM!=1)&&($playerPos==1))
        {
@@ -2564,32 +2564,32 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
             $ceraP=$ceraP/$sabrIP;
             $ceraP=sprintf("%.2f",$ceraP);
           }
-         echo "<td>$eraP</td><td>$ceraP</td>";
+         echo "<td class='hsc2_r'>$eraP</td><td>$ceraP</td>";
        }
       echo "</tr>\n";
 
       #Expanded
       $expTable.="     <tr class='$cls'>";
       $expTable.="<td class='".$cls."_l'>$prevYr - Tot</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['age']."</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['bf']."</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['pi']."</td>";
-      $expTable.="<td>$YrPer9</td>";
-      $expTable.="<td>$YhPer9</td>";
-      $expTable.="<td>$YkPer9</td>";
-      $expTable.="<td>$YbbPer9</td>";
-      $expTable.="<td>$YhrPer9</td>";
-      $expTable.="<td>$YkPerBB</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['qs']."</td>";
-      $expTable.="<td>$YqsPct</td>";
-      $expTable.="<td>$YcgPct</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['gf']."</td>";
-      $expTable.="<td>$YgbPct</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['wp']."</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['bk']."</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['bs']."</td>";
-      $expTable.="<td>$YsvPct</td>";
-      $expTable.="<td>".$yearStats[$prevYr]['svo']."</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['age']."</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['bf']."</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['pi']."</td>";
+      $expTable.="<td class='hsc2_r'>$YrPer9</td>";
+      $expTable.="<td class='hsc2_r'>$YhPer9</td>";
+      $expTable.="<td class='hsc2_r'>$YkPer9</td>";
+      $expTable.="<td class='hsc2_r'>$YbbPer9</td>";
+      $expTable.="<td class='hsc2_r'>$YhrPer9</td>";
+      $expTable.="<td class='hsc2_r'>$YkPerBB</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['qs']."</td>";
+      $expTable.="<td class='hsc2_r'>$YqsPct</td>";
+      $expTable.="<td class='hsc2_r'>$YcgPct</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['gf']."</td>";
+      $expTable.="<td class='hsc2_r'>$YgbPct</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['wp']."</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['bk']."</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['bs']."</td>";
+      $expTable.="<td class='hsc2_r'>$YsvPct</td>";
+      $expTable.="<td class='hsc2_r'>".$yearStats[$prevYr]['svo']."</td>";
       $expTable.="</tr>\n";
     }
 
@@ -2681,30 +2681,30 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
       echo "     <tr class='headline'>";
       echo "<td class='hsc2_l' colspan=2>w/ ".$teams[$tid][$year].$awTxt."</td>";
-      echo "<td class='hsc2'>$g</td>";
-      echo "<td class='hsc2'>$gs</td>";
-      echo "<td class='hsc2'>$w</td>";
-      echo "<td class='hsc2'>$l</td>";
-      echo "<td class='hsc2'>$s</td>";
-      echo "<td class='hsc2'>$era</td>";
-      echo "<td class='hsc2'>$ip</td>";
-      echo "<td class='hsc2'>$ha</td>";
-      echo "<td class='hsc2'>$r</td>";
-      echo "<td class='hsc2'>$er</td>";
-      echo "<td class='hsc2'>$hra</td>";
-      echo "<td class='hsc2'>$bb</td>";
-      echo "<td class='hsc2'>$k</td>";
-      echo "<td class='hsc2'>$hld</td>";
-      echo "<td class='hsc2'>$cg</td>";
-      echo "<td class='hsc2'>$sho</td>";
-      echo "<td class='hsc2'>$whip</td>";
-      echo "<td class='hsc2'>$babip</td>";
-      echo "<td class='hsc2'>$war</td>";
+      echo "<td class='hsc2_r'>$g</td>";
+      echo "<td class='hsc2_r'>$gs</td>";
+      echo "<td class='hsc2_r'>$w</td>";
+      echo "<td class='hsc2_r'>$l</td>";
+      echo "<td class='hsc2_r'>$s</td>";
+      echo "<td class='hsc2_r'>$era</td>";
+      echo "<td class='hsc2_r'>$ip</td>";
+      echo "<td class='hsc2_r'>$ha</td>";
+      echo "<td class='hsc2_r'>$r</td>";
+      echo "<td class='hsc2_r'>$er</td>";
+      echo "<td class='hsc2_r'>$hra</td>";
+      echo "<td class='hsc2_r'>$bb</td>";
+      echo "<td class='hsc2_r'>$k</td>";
+      echo "<td class='hsc2_r'>$hld</td>";
+      echo "<td class='hsc2_r'>$cg</td>";
+      echo "<td class='hsc2_r'>$sho</td>";
+      echo "<td class='hsc2_r'>$whip</td>";
+      echo "<td class='hsc2_r'>$babip</td>";
+      echo "<td class='hsc2_r'>$war</td>";
       if ($noWS!=1)
        {
          $pws=$teamStats[$tid]['pws'];
          if ($pws!="") {$pws=sprintf("%.1f",$pws);}
-         echo "<td class='hsc2'>$pws</td>";
+         echo "<td class='hsc2_r'>$pws</td>";
        }
       if (($noPSM!=1)&&($playerPos==1))
        {
@@ -2723,31 +2723,31 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 	    $ceraP=$ceraP/$ip;
             $ceraP=sprintf("%.2f",$ceraP);
 	  }
-         echo "<td class='hsc2'>$eraP</td><td class='hsc2'>$ceraP</td>";
+         echo "<td class='hsc2_r'>$eraP</td><td class='hsc2'>$ceraP</td>";
        }
       echo "</tr>\n";
 
       #Expanded
       $expTable.="     <tr class='headline'>";
       $expTable.="<td class='hsc2_l' colspan=2>w/ ".$teams[$tid][$year].$awTxt."</td>";
-      $expTable.="<td class='hsc2'>$bf</td>";
-      $expTable.="<td class='hsc2'>$pi</td>";
-      $expTable.="<td class='hsc2'>$rPer9</td>";
-      $expTable.="<td class='hsc2'>$hPer9</td>";
-      $expTable.="<td class='hsc2'>$kPer9</td>";
-      $expTable.="<td class='hsc2'>$bbPer9</td>";
-      $expTable.="<td class='hsc2'>$hrPer9</td>";
-      $expTable.="<td class='hsc2'>$kPerBB</td>";
-      $expTable.="<td class='hsc2'>$qs</td>";
-      $expTable.="<td class='hsc2'>$qsPct</td>";
-      $expTable.="<td class='hsc2'>$cgPct</td>";
-      $expTable.="<td class='hsc2'>$gf</td>";
-      $expTable.="<td class='hsc2'>$gbPct</td>";
-      $expTable.="<td class='hsc2'>$wp</td>";
-      $expTable.="<td class='hsc2'>$bk</td>";
-      $expTable.="<td class='hsc2'>$bs</td>";
-      $expTable.="<td class='hsc2'>$svPct</td>";
-      $expTable.="<td class='hsc2'>$svo</td>";
+      $expTable.="<td class='hsc2_r'>$bf</td>";
+      $expTable.="<td class='hsc2_r'>$pi</td>";
+      $expTable.="<td class='hsc2_r'>$rPer9</td>";
+      $expTable.="<td class='hsc2_r'>$hPer9</td>";
+      $expTable.="<td class='hsc2_r'>$kPer9</td>";
+      $expTable.="<td class='hsc2_r'>$bbPer9</td>";
+      $expTable.="<td class='hsc2_r'>$hrPer9</td>";
+      $expTable.="<td class='hsc2_r'>$kPerBB</td>";
+      $expTable.="<td class='hsc2_r'>$qs</td>";
+      $expTable.="<td class='hsc2_r'>$qsPct</td>";
+      $expTable.="<td class='hsc2_r'>$cgPct</td>";
+      $expTable.="<td class='hsc2_r'>$gf</td>";
+      $expTable.="<td class='hsc2_r'>$gbPct</td>";
+      $expTable.="<td class='hsc2_r'>$wp</td>";
+      $expTable.="<td class='hsc2_r'>$bk</td>";
+      $expTable.="<td class='hsc2_r'>$bs</td>";
+      $expTable.="<td class='hsc2_r'>$svPct</td>";
+      $expTable.="<td class='hsc2_r'>$svo</td>";
       $expTable.="</tr>\n";
 
     }
@@ -2796,31 +2796,31 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
 
    echo "     <tr class='headline'>";
    echo "<td class='hsc2_l'>Totals</td>";
-   echo "<td class='hsc2'>&nbsp;</td>";
-   echo "<td class='hsc2'>$Tg</td>";
-   echo "<td class='hsc2'>$Tgs</td>";
-   echo "<td class='hsc2'>$Tw</td>";
-   echo "<td class='hsc2'>$Tl</td>";
-   echo "<td class='hsc2'>$Ts</td>";
-   echo "<td class='hsc2'>$era</td>";
-   echo "<td class='hsc2'>$Tip</td>";
-   echo "<td class='hsc2'>$Tha</td>";
-   echo "<td class='hsc2'>$Tr</td>";
-   echo "<td class='hsc2'>$Ter</td>";
-   echo "<td class='hsc2'>$Thra</td>";
-   echo "<td class='hsc2'>$Tbb</td>";
-   echo "<td class='hsc2'>$Tk</td>";
-   echo "<td class='hsc2'>$Thld</td>";
-   echo "<td class='hsc2'>$Tcg</td>";
-   echo "<td class='hsc2'>$Tsho</td>";
-   echo "<td class='hsc2'>$whip</td>";
-   echo "<td class='hsc2'>$babip</td>";
-   echo "<td class='hsc2'>$Twar</td>";
+   echo "<td class='hsc2_r'>&nbsp;</td>";
+   echo "<td class='hsc2_r'>$Tg</td>";
+   echo "<td class='hsc2_r'>$Tgs</td>";
+   echo "<td class='hsc2_r'>$Tw</td>";
+   echo "<td class='hsc2_r'>$Tl</td>";
+   echo "<td class='hsc2_r'>$Ts</td>";
+   echo "<td class='hsc2_r'>$era</td>";
+   echo "<td class='hsc2_r'>$Tip</td>";
+   echo "<td class='hsc2_r'>$Tha</td>";
+   echo "<td class='hsc2_r'>$Tr</td>";
+   echo "<td class='hsc2_r'>$Ter</td>";
+   echo "<td class='hsc2_r'>$Thra</td>";
+   echo "<td class='hsc2_r'>$Tbb</td>";
+   echo "<td class='hsc2_r'>$Tk</td>";
+   echo "<td class='hsc2_r'>$Thld</td>";
+   echo "<td class='hsc2_r'>$Tcg</td>";
+   echo "<td class='hsc2_r'>$Tsho</td>";
+   echo "<td class='hsc2_r'>$whip</td>";
+   echo "<td class='hsc2_r'>$babip</td>";
+   echo "<td class='hsc2_r'>$Twar</td>";
 
    if ($noWS!=1)
     {
       $Tpws=sprintf("%.1f",$Tpws);
-      echo "<td class='hsc2'>$Tpws</td>";
+      echo "<td class='hsc2_r'>$Tpws</td>";
     }
    if (($noPSM!=1)&&($playerPos==1))
     {
@@ -2839,7 +2839,7 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
          $ceraP=$ceraP/$ip;
          $ceraP=sprintf("%.2f",$ceraP);
        }
-      echo "<td class='hsc2'>$eraP</td><td class='hsc2'>$ceraP</td>";
+      echo "<td class='hsc2_r'>$eraP</td><td class='hsc2'>$ceraP</td>";
     }
    echo "</tr>";
    echo "     </tfoot>\n";
@@ -2847,24 +2847,24 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    #Expanded
    $expTable.="     <tr class='headline'>";
    $expTable.="<td class='hsc2_l' colspan=2>Totals</td>";
-   $expTable.="<td class='hsc2'>$Tbf</td>";
-   $expTable.="<td class='hsc2'>$Tpi</td>";
-   $expTable.="<td class='hsc2'>$rPer9</td>";
-   $expTable.="<td class='hsc2'>$hPer9</td>";
-   $expTable.="<td class='hsc2'>$kPer9</td>";
-   $expTable.="<td class='hsc2'>$bbPer9</td>";
-   $expTable.="<td class='hsc2'>$hrPer9</td>";
-   $expTable.="<td class='hsc2'>$kPerBB</td>";
-   $expTable.="<td class='hsc2'>$Tqs</td>";
-   $expTable.="<td class='hsc2'>$qsPct</td>";
-   $expTable.="<td class='hsc2'>$cgPct</td>";
-   $expTable.="<td class='hsc2'>$Tgf</td>";
-   $expTable.="<td class='hsc2'>$gbPct</td>";
-   $expTable.="<td class='hsc2'>$Twp</td>";
-   $expTable.="<td class='hsc2'>$Tbk</td>";
-   $expTable.="<td class='hsc2'>$Tbs</td>";
-   $expTable.="<td class='hsc2'>$svPct</td>";
-   $expTable.="<td class='hsc2'>$Tsvo</td>";
+   $expTable.="<td class='hsc2_r'>$Tbf</td>";
+   $expTable.="<td class='hsc2_r'>$Tpi</td>";
+   $expTable.="<td class='hsc2_r'>$rPer9</td>";
+   $expTable.="<td class='hsc2_r'>$hPer9</td>";
+   $expTable.="<td class='hsc2_r'>$kPer9</td>";
+   $expTable.="<td class='hsc2_r'>$bbPer9</td>";
+   $expTable.="<td class='hsc2_r'>$hrPer9</td>";
+   $expTable.="<td class='hsc2_r'>$kPerBB</td>";
+   $expTable.="<td class='hsc2_r'>$Tqs</td>";
+   $expTable.="<td class='hsc2_r'>$qsPct</td>";
+   $expTable.="<td class='hsc2_r'>$cgPct</td>";
+   $expTable.="<td class='hsc2_r'>$Tgf</td>";
+   $expTable.="<td class='hsc2_r'>$gbPct</td>";
+   $expTable.="<td class='hsc2_r'>$Twp</td>";
+   $expTable.="<td class='hsc2_r'>$Tbk</td>";
+   $expTable.="<td class='hsc2_r'>$Tbs</td>";
+   $expTable.="<td class='hsc2_r'>$svPct</td>";
+   $expTable.="<td class='hsc2_r'>$Tsvo</td>";
    $expTable.="</tr>\n";
    $expTable.="     </tfoot>\n";
 
@@ -2881,25 +2881,25 @@ if (isset($careerStats) && sizeof($careerStats) > 0) {
    echo "    <table cellpadding=2 cellspacing=0 class='sortable' width='910px'>\n";
    echo "     <thead><tr class='headline'>";
    echo "<td class='hsc2_l'>Year/Team</td>";
-   echo "<td class='hsc2'>Age</td>";
-   echo "<td class='hsc2'>BF</td>";
-   echo "<td class='hsc2'>PI</td>";
-   echo "<td class='hsc2'>R/9</td>";
-   echo "<td class='hsc2'>H/9</td>";
-   echo "<td class='hsc2'>K/9</td>";
-   echo "<td class='hsc2'>BB/9</td>";
-   echo "<td class='hsc2'>HR/9</td>";
-   echo "<td class='hsc2'>K/BB</td>";
-   echo "<td class='hsc2'>QS</td>";
-   echo "<td class='hsc2'>QS%</td>";
-   echo "<td class='hsc2'>CG%</td>";
-   echo "<td class='hsc2'>GF</td>";
-   echo "<td class='hsc2'>GB%</td>";
-   echo "<td class='hsc2'>WP</td>";
-   echo "<td class='hsc2'>BK</td>";
-   echo "<td class='hsc2'>BS</td>";
-   echo "<td class='hsc2'>SV%</td>";
-   echo "<td class='hsc2'>SVO</td>";
+   echo "<td class='hsc2_r'>Age</td>";
+   echo "<td class='hsc2_r'>BF</td>";
+   echo "<td class='hsc2_r'>PI</td>";
+   echo "<td class='hsc2_r'>R/9</td>";
+   echo "<td class='hsc2_r'>H/9</td>";
+   echo "<td class='hsc2_r'>K/9</td>";
+   echo "<td class='hsc2_r'>BB/9</td>";
+   echo "<td class='hsc2_r'>HR/9</td>";
+   echo "<td class='hsc2_r'>K/BB</td>";
+   echo "<td class='hsc2_r'>QS</td>";
+   echo "<td class='hsc2_r'>QS%</td>";
+   echo "<td class='hsc2_r'>CG%</td>";
+   echo "<td class='hsc2_r'>GF</td>";
+   echo "<td class='hsc2_r'>GB%</td>";
+   echo "<td class='hsc2_r'>WP</td>";
+   echo "<td class='hsc2_r'>BK</td>";
+   echo "<td class='hsc2_r'>BS</td>";
+   echo "<td class='hsc2_r'>SV%</td>";
+   echo "<td class='hsc2_r'>SVO</td>";
    echo "</tr></thead>\n";
    echo $expTable;
    echo "    </table>\n";

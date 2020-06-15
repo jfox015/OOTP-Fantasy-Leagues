@@ -431,7 +431,7 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 							} else {
 								$link .= $id;
 							}
-							$val = anchor($link,$row['first_name']." ".$row['last_name'],array('target'=>'_blank')).' <span style="font-size:smaller;">'.makeElidgibilityString($row['positions']).'</span>';
+							$val = anchor($link,$row['first_name']." ".$row['last_name'],array('target'=>'_blank')).' <span style="font-size:smaller;">'.makeEligibilityString($row['positions']).'</span>';
 
 							// INJURY STATUS
 							$injStatus = "";
@@ -496,7 +496,7 @@ function formatStatsForDisplay($player_stats = array(), $fields = array(), $conf
 					case 'pos':
 					case 'positions':
 						if (strpos($row[$col],":")) {
-							$newRow[$col] = makeElidgibilityString($row[$col]);
+							$newRow[$col] = makeEligibilityString($row[$col]);
 						} else {
 							$newRow[$col] = get_pos($row[$col]);
 						}
@@ -606,14 +606,14 @@ function makeInjuryStatusString($row) {
 	return $injStatus;
 }
 /**
- *	MAKE ELIDGIBILITY STRING
+ *	MAKE ELIGIBILITY STRING
  *
  *	Converts an array of positions into a readable list of position acroymns.
  *
  * 	@author	Jeff Fox
  *	@since	1.0
  */
-function makeElidgibilityString($positions) {
+function makeEligibilityString($positions) {
 	$gmPos = "";
 	if (strpos($positions,":")) {
 		$pos = unserialize($positions);

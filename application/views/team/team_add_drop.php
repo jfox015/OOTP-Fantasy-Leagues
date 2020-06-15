@@ -730,7 +730,7 @@
 									<li><a rel="itemPick" id="<?php echo($itemArr['id']); ?>|<?php echo($itemArr['position']); ?>|<?php echo($itemArr['role']); ?>" href="#"><img src="<?php echo($config['fantasy_web_root']); ?>images/icons/add.png" width="16" height="16" alt="Add" title="Add" /></a>&nbsp;<a href="<?php 
 									$gmPos = '';
 									if (isset($itemArr['positions']) || !empty($itemArr['positions'])) {
-										$gmPos = makeElidgibilityString($itemArr['positions']);
+										$gmPos = makeEligibilityString($itemArr['positions']);
 									}
 									echo($config['fantasy_web_root']); ?>players/info/<?php echo($itemArr['id']); ?>" target="_blank"><?php echo($itemArr['player_name']); ?></a><?php if (!empty($gmPos)) { echo("&nbsp;<span style='font-size:smaller'>".$gmPos."</span>"); } ?></li>
 							<?php 	$countDrawn++;

@@ -5,8 +5,8 @@
  *	The League Model is the powerhouse of the Fantasy process. It manages many of the
  *  admin functionality and provides tools and methods to run the league.
  *	@author			Jeff Fox (Github ID: jfox015)
- *	@version		1.0.4
- *  @lastModified	04/17/20
+ *	@version		1.2
+ *  @lastModified	06/15/20
  *
 */
 require_once('./application/libraries/CompiledStats.php');
@@ -2005,7 +2005,7 @@ class league_model extends base_model {
 						$fieldData = unserialize($row->$field);
 						if (is_array($fieldData) && sizeof($fieldData) > 0) {
 							//echo("size of ".$field." data = ".sizeof($fieldData)."<br />");
-							$playerDetails = getFantasyPlayersDetails($fieldData);
+							$playerDetails = getFantasyPlayersDetails($fieldData, intval($this->params['config']['ootp_version']), $league_id);
 							foreach ($fieldData as $playerId) {
 								//echo($field." player id = ".$playerId."<br />");
 								$transStr = '';

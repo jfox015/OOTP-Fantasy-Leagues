@@ -6,8 +6,8 @@
  *
  *	@author			Jeff Fox (Github ID: jfox015)
  *	@author			Frank Esselink	(fhommes) Where noted
-  *	@version		1.0.5
- *  @lastModified	04/17/20
+  *	@version		1.2
+ *  @lastModified	06/15/20
   */
 class draft_model extends base_model {
 	/*--------------------------------
@@ -388,14 +388,14 @@ class draft_model extends base_model {
 		return $draft_date;
 	}
 	/**
-	 *	GET DRAFT Elidgibility.
+	 *	GET DRAFT ELIGIBILITY.
 	 *
 	 *	Returns the date of the specified leagues draft or -1 if it is not yet set.
 	 *
 	 *	@param	$league_id	Optional league Id param. If not passed, the internal league id is used
 	 *	@return				The highest overall pick value
 	 */
-	public function getDraftElidgibility($player_id = false, $league_id = false) {
+	public function getDraftEligibility($player_id = false, $league_id = false) {
 		
 		if ($player_id === false || $player_id == -1) { return; }
 		
@@ -1269,7 +1269,12 @@ class draft_model extends base_model {
 		$sql = '';
 		$where = '';
 		if (!$noStats) {
-			$sql = 'SELECT fantasy_players.id, "add", "draft", age, throws, bats, fantasy_players.id,fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';		
+			$sql = 'SELECT fantasy_players.id, "add", "draft", age, throws, bats, fantasy_players.id, players.player_id, players.position as position, players.role as role, players.first_name, players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id,';		
+			if ($league_id !== false) {
+				$select .=  '(SELECT fantasy_leagues_player_eligibility.positions FROM fantasy_leagues_player_eligibility WHERE fantasy_leagues_player_eligibility.player_id = fantasy_players.id AND fantasy_leagues_player_eligibility.league_id = '.$league_id.') as positions, ';
+			} else {
+				$select .=  'players.position as positions, ';
+			}
 			if ($player_type == 1) {
 				if ($stats_range == 4) {
 					$sql .= player_stat_query_builder(1, QUERY_STANDARD, $rules, false)." ";
