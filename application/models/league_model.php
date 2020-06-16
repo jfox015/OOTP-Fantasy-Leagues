@@ -81,6 +81,11 @@ class league_model extends base_model {
 	 */
 	var $accept_requests = 0;
 	/**
+	 *	ALLOW PLAYOFF ROSTER CHANGES.
+	 *	@var $allow_playoff_roster_changes:Int
+	 */
+	var $allow_playoff_roster_changes = 1;
+	/**
 	 *	ALLOW PLAYOFF TRANSACTIONS.
 	 *	@var $allow_playoff_trans:Int
 	 */
@@ -189,8 +194,10 @@ class league_model extends base_model {
 		$this->tables['TRADES_STATUS'] = 'fantasy_teams_trades_status';
 		$this->tables['PLAYERS'] = 'fantasy_players';
 
-		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams','playoff_rounds','accept_requests','allow_playoff_trans','allow_playoff_trades',
-								'transactionFrequency','min_game_current','min_game_last','useWaivers','useTrades','approvalType','minProtests','protestPeriodDays','tradesExpire','defaultExpiration');
+		$this->fieldList = array('league_name','description','league_type','games_per_team','access_type','league_status','regular_scoring_periods','max_teams',
+								 'playoff_rounds','accept_requests','allow_playoff_roster_changes','allow_playoff_trans','allow_playoff_trades',
+								 'transactionFrequency','min_game_current','min_game_last','useWaivers','useTrades','approvalType','minProtests',
+								 'protestPeriodDays','tradesExpire','defaultExpiration');
 		$this->conditionList = array('avatarFile','new_commisioner');
 		$this->readOnlyList = array('avatar','commissioner_id');
 		$this->textList = array('description');
@@ -1370,7 +1377,7 @@ class league_model extends base_model {
 		$query->free_result();
 
 		// LOAD RELEVANT SCORING CATEGORIES
-		$scoring_rules = $this->getScoringRules($this->id);
+		$scoring_rules = $this->getScoringRules($this->id, $this->getScoringType($this->id));
 
 		// NOW GET EACH TEAMS ROSTERS
 		$rosters = array('home'=>array(),'away'=>array());
@@ -1633,7 +1640,7 @@ class league_model extends base_model {
 			case LEAGUE_SCORING_ROTO:
 			case LEAGUE_SCORING_ROTO_5X5:
 			case LEAGUE_SCORING_ROTO_PLUS:
-				$rules = $this->getScoringRules($league_id);
+				$rules = $this->getScoringRules($league_id, $this->getScoringType($league_id));
 				$teams = array();
 				$this->db->flush_cache();
 				$this->db->select($this->tables['TEAMS'].'.id, teamname, teamnick, avatar, value_0 as val_0, value_1 as val_1, value_2 as val_2, value_3 as val_3, value_4 as val_4,
@@ -2336,14 +2343,13 @@ class league_model extends base_model {
 	 * 	@since 	1.0
 	 * 
 	 */
-	public function validateRoster($roster,$league_id = false) {
+	public function validateRoster($roster,$rules) {
 
-		//echo("Validate Roser<br />");
+		//echo("Validate Roster<br />");
+		
 		$valid = true;
-		if ($league_id === false) { $league_id = $this->id; }
+		//if ($league_id === false) { $league_id = $this->id; }
 		$errors = "";
-
-		$rules = $this->getRosterRules($league_id);
 		$errCount = 0;
 		$activePos = array();
 		$activeCount = 0;
@@ -2471,6 +2477,8 @@ class league_model extends base_model {
 		if (!function_exists('getBasicRoster')) {
 			$this->load->helper('roster');
 		}
+
+		//echo("league_id = ".$league_id."<br />");
 		$teams = $this->getTeamDetails($league_id);
 		if (sizeof($teams) > 0) {
 			foreach($teams as $team_id => $details) {
@@ -2478,8 +2486,11 @@ class league_model extends base_model {
 					$playoffSettings = $this->getPlayoffSettings($league_id);
 					$total_periods = intval($playoffSettings['regular_scoring_periods']) + intval($playoffSettings['playoff_rounds']);
 					if ($scoring_period['id'] <= $total_periods) {
+						//echo("-------------------------------------------------------------<br />");
+						//echo("<b>team_id</b> = ".$team_id."<br />");
 						$roster = getBasicRoster($team_id, $scoring_period);
-						$valid = $this->validateRoster($roster, $league_id);
+						$rules = $this->getRosterRules($league_id);
+						$valid = $this->validateRoster($roster, $rules);
 					} else {
 						$valid = true;
 					}					
@@ -2716,7 +2727,7 @@ class league_model extends base_model {
 			$excludeList = array();
 			$valSum = "";
 			foreach($teams as $team_id => $teamData) {
-				if (!$this->validateRoster(getBasicRoster($team_id, $scoring_period), $league_id )) {
+				if (!$this->validateRoster(getBasicRoster($team_id, $scoring_period), $this->getRosterRules($league_id) )) {
 					array_push($excludeList,$team_id);
 					$valSum .= str_replace('[LEAGUE_NAME]',$league_name,$this->lang->line('sim_roster_validation_error'));
 					$valSum = str_replace('[TEAM_NAME]',$teamData['teamname']." ".$teamData['teamnick'],$valSum);
@@ -3740,341 +3751,4 @@ class league_model extends base_model {
 
 		return true;
 	}
-	/*---------------------------------------
-	/	DEPRECATED FUNCTIONS
-	/--------------------------------------*/
-	/**
-	 * 	AUTO DRAFT.
-	 *  Runs automatic roster drafts for a given league.
-	 *
-	 *	@param	$max_rounds 	Maximum number of rounds to run
-	 *	@param	$curr_year		The current league year
-	 *	@param	$league_id		The fatntasy league ID, defaults to $id property if nothing is passed
-	 *	@return					Error string or "OK" on success
-	 *	@deprecated
-	 */
-	/*public function _auto_draft($max_rounds,$curr_year, $league_id = false) {
-		$errors = "";
-		if ($league_id === false) { $league_id = $this->id; }
-
-		// GET ALL TEAMS
-		$teams = array();
-		$this->db->select("id");
-		$this->db->where("league_id",$league_id);
-		$query = $this->db->get($this->tables['TEAMS']);
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				array_push($teams,$row->id);
-				$this->db->where("team_id",$row->id);
-				$this->db->delete("fantasy_rosters");
-				//echo("Roster rows deleted = ".$this->db->affected_rows()."<br />");
-			}
-		}
-
-		$last_year = date('Y',strtotime($curr_year)-(60*60*24*365));
-		$query->free_result();
-		$pos_batters = array(2,3,4,5,6,7,8,9,25);
-		for ($i = 0; $i < sizeof($pos_batters); $i++) {
-			$batters = array();
-			if ($pos_batters[$i] == 25) {
-				$sqlPos = $pos_batters[rand(0,(sizeof($pos_batters)-2))];
-				$pickedBatters = array();
-				$this->db->select("player_id");
-				$this->db->where('league_id',$league_id);
-				$query = $this->db->get("fantasy_rosters");
-				if ($query->num_rows() > 0) {
-					foreach($query->result() as $row) {
-						array_push($pickedBatters,$row->player_id);
-					}
-				}
-				$query->free_result();
-			} else {
-				$sqlPos = $pos_batters[$i];
-			}
-			$this->db->select("fantasy_players.id");
-			$this->db->join("players_career_batting_stats",'players_career_batting_stats.player_id = fantasy_players.player_id','left');
-			$this->db->join("players",'players.player_id = fantasy_players.player_id','left');
-			$this->db->where("(fantasy_players.player_status = 1 OR fantasy_players.player_status = 3)");
-			$this->db->where('players.position',$sqlPos);
-			$this->db->where('players.retired',0);
-			$this->db->where('players_career_batting_stats.year',$last_year);
-			if(isset($pickedBatters) && !empty($pickedBatters)) $this->db->where_not_in('fantasy_players.id',$pickedBatters);
-			$this->db->order_by("players_career_batting_stats.war",'desc');
-			$query = $this->db->get("fantasy_players");
-
-			//echo("sql = ".$this->db->last_query()."<br />");
-			if ($query->num_rows() > 0) {
-				$count = 0;
-				foreach($query->result() as $row) {
-					array_push($batters,$row->id);
-					//echo("batter id = ".$row->id."<br />");
-					$count++;
-					if ($count >= sizeof($teams)) break;
-				}
-				shuffle($batters);
-				foreach($teams as $team_id) {
-					if ($pos_batters[$i] == 7 || $pos_batters[$i] == 8 || $pos_batters[$i] == 9) {
-						$pos = 20;
-					} else {
-						$pos = $pos_batters[$i];
-					}
-					$data = array('player_id'=>$batters[0],'league_id'=>$league_id,'team_id'=>$team_id,'scoring_period_id'=>1,'player_position'=>$pos,
-								  'player_role'=>-1,'player_status'=>1);
-					$this->db->insert('fantasy_rosters',$data);
-					array_shift($batters);
-				}
-			}
-		}
-		$pos_pitchers = array(11=>5,12=>2);
-		foreach ($pos_pitchers as $pos => $draftCount) {
-			$pitchers = array();
-			$this->db->select("fantasy_players.id");
-			$this->db->join("players_career_pitching_stats",'players_career_pitching_stats.player_id = fantasy_players.player_id','left');
-			$this->db->join("players",'players.player_id = fantasy_players.player_id','left');
-			$this->db->where("fantasy_players.player_status",1);
-			$this->db->where('players.position',1);
-			if ($pos == 12) {
-				$this->db->where('players.role',13);
-			} else {
-				$this->db->where('players.role',$pos);
-			}
-			$this->db->where('players.retired',0);
-			$this->db->where('players_career_pitching_stats.year',$last_year);
-			$this->db->order_by("players_career_pitching_stats.war",'desc');
-			$query = $this->db->get("fantasy_players");
-			//echo("last query = ".$this->db->last_query()."<br />");
-			if ($query->num_rows() > 0) {
-				$count = 0;
-				foreach($query->result() as $row) {
-					array_push($pitchers,$row->id);
-					$count++;
-					if ($count >= (sizeof($teams)*$draftCount)) break;
-				}
-				shuffle($pitchers);
-				for ($i = 0; $i < $draftCount; $i++) {
-					foreach($teams as $team_id) {
-						$data = array('player_id'=>$pitchers[0],'league_id'=>$league_id,'team_id'=>$team_id,'scoring_period_id'=>1,'player_position'=>1,
-									  'player_role'=>$pos,'player_status'=>1);
-						$this->db->insert('fantasy_rosters',$data);
-						array_shift($pitchers);
-					}
-				}
-			}
-		}
-		if (empty($errors)) $errors = "OK"; else  $errors = $errors;
-		return $errors;
-	}*/
-	/**
-	 * 	UPDATE LEAGUE SCORING
-	 *  Runs scoring against each leagues scoring rules for all players.
-	 *
-	 *	@param	$scoring_period The scoring period to compile
-	 *	@param	$league_id		The fatntasy league ID, defaults to $id property if nothing is passed
-	 *	@param	$ootp_league_id	The OOTP League ID to run stats from
-	 *	@return	TRUE on success, FALSE on ERROR
-	 *	@deprecated		Use $this->updateLeagueScoring() instead
-	 */
-	/*private function _updateLeagueScoring($scoring_period, $excludeList = array(), $league_id = false) {
-
-		if ($league_id === false) { $league_id = $this->id; }
-
-		// LOAD RELEVANT SCORING CATEGORIES
-		$rules = $this->getScoringRules($league_id);
-
-		if (isset($rules) && sizeof($rules) > 0) {
-
-			// UPDATE SCORING FOR ALL PLAYERS FOR THIS PERIOD
-			$player_list = array();
-			$this->db->flush_cache();
-			$this->db->select("fantasy_players.id, fantasy_players.player_id, position, role, player_status");
-			$this->db->join("players","players.player_id = fantasy_players.player_id","left");
-			$this->db->where("player_status",1);
-			$query = $this->db->get("fantasy_players");
-			//echo($this->db->last_query()."<br />");
-			if ($query->num_rows() > 0) {
-				//echo("Number of players found = ".$query->num_rows()."<br />");
-				foreach($query->result() as $row) {
-					// BUILD QUERY TO PULL CURRENT GAME DATA FOR THIS PLAYER
-					if ($row->position != 1) {
-						$type = "batting";
-						$table = "players_game_batting";
-					} else {
-						$type = "pitching";
-						$table = "players_game_pitching_stats";
-					}
-					$select = "";
-					foreach($rules[$type] as $cat => $val) {
-						if ($select != '') { $select.=","; }
-						$select .= strtolower(get_ll_cat($cat, true));
-					}
-					$this->db->flush_cache();
-					$this->db->select($select);
-					$this->db->join($table,'games.game_id = '.$table.'.game_id','left');
-					$this->db->where($table.'.player_id',$row->player_id);
-					$this->db->where("DATEDIFF('".$scoring_period['date_start']."',games.date)<=",0);
-					$this->db->where("DATEDIFF('".$scoring_period['date_end']."',games.date)>=",0);
-					$gQuery = $this->db->get('games');
-					//echo("Num of games found for player ".$row->player_id." = ".$gQuery->num_rows() .", status = ".$row->player_status."	<br/>");
-					//echo($this->db->last_query()."<br />");
-					if ($gQuery->num_rows() > 0) {
-
-						$score_vals = array();
-						$totalVal = 0;
-						foreach ($gQuery->result() as $sRow) {
-							$colCount = 0;
-							// APPLY VALUES TO THE STATS AND SAVE THEM TO THE SCORING TABLE
-							foreach($rules[$type] as $cat => $val) {
-								$fVal = 0;
-								$colName = strtolower(get_ll_cat($cat, true));
-								if (isset($score_vals['value_'.$colCount])) {
-									$score_vals['value_'.$colCount] += $sRow->$colName;
-								} else {
-									$score_vals['value_'.$colCount] = $sRow->$colName;
-								}
-								if ($sRow->$colName != 0) {
-									$totalVal += $sRow->$colName * $val;
-								}
-								$colCount++;
-							}
-						}
-						$score_vals['total'] = $totalVal;
-						//echo("Player ".$row->player_id." total = ".$totalVal.", status = ".$row->player_status."	<br/>");
-						//if ($row->player_status == 1) { $team_score += $totalVal; }
-						//echo("Team ".$team_id." total = ".$team_score."<br/>");
-						if (sizeof($score_vals) > 0) {
-							$this->db->flush_cache();
-							$this->db->select('id');
-							$this->db->where('player_id',$row->id);
-							$this->db->where('scoring_period_id',$scoring_period['id']);
-							$this->db->where('league_id',$rules['league_id']);
-							$tQuery = $this->db->get('fantasy_players_scoring');
-							if ($tQuery->num_rows() == 0) {
-								$this->db->flush_cache();
-								$score_vals['player_id'] = $row->id;
-								$score_vals['scoring_period_id'] = $scoring_period['id'];
-								$score_vals['league_id'] = $rules['league_id'];
-								$this->db->insert('fantasy_players_scoring',$score_vals);
-							} else {
-								$this->db->flush_cache();
-								$this->db->where('player_id',$row->id);
-								$this->db->where('scoring_period_id',$scoring_period['id']);
-								$this->db->where('league_id',$rules['league_id']);
-								$this->db->update('fantasy_players_scoring',$score_vals);
-							}
-							$tQuery->free_result();
-						}
-					}
-					$gQuery->free_result();
-				}
-			}
-		}
-		// GET ALL TEAMS
-		$teams = array();
-		$this->db->select("id");
-		$this->db->where("league_id",$league_id);
-		$query = $this->db->get($this->tables['TEAMS']);
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				array_push($teams,$row->id);
-			}
-		}
-		$query->free_result();
-		foreach($teams as $team_id) {
-			//echo("Team Id = ".$team_id."<br />");
-
-			// GET PLAYERS FOR TEAM
-			$teamRoster = array();
-			$team_score = 0;
-			// ONLY GET ROSTERS AND CORES IF THIS TEAM IF IT HAS VALID ROSTERS
-			if (sizeof($excludeList) == 0 || (sizeof($excludeList) > 0  && !in_array($team_id, $excludeList))) {
-				$this->db->select("player_id");
-				$this->db->where("team_id",intval($team_id));
-				$this->db->where("player_status",1);
-				$this->db->where("scoring_period_id",intval($scoring_period['id']));
-				$query = $this->db->get("fantasy_rosters");
-				if ($query->num_rows() > 0) {
-					foreach($query->result() as $row) {
-						array_push($teamRoster,$row->player_id);
-					}
-				}
-				$query->free_result();
-
-				$this->db->flush_cache();
-				$this->db->distinct();
-				$this->db->where_in("player_id",$teamRoster);
-				$this->db->where("fantasy_players_scoring.scoring_period_id",intval($scoring_period['id']));
-				$query = $this->db->get("fantasy_players_scoring");
-				//echo($this->db->last_query()."<br />");
-					if ($query->num_rows() > 0) {
-					foreach($query->result() as $row) {
-						$team_score += $row->total;
-					}
-				}
-				$query->free_result();
-			}
-			// LOOK UP AND UPDATE THE SCORES OF ANY GAMES THIS TEAM IS PLAYING IN
-			$this->db->flush_cache();
-			$this->db->select('id, away_team_id, home_team_id');
-			$this->db->where('(away_team_id = '.$team_id.' OR home_team_id = '.$team_id.')');
-			$this->db->where('scoring_period_id',$scoring_period['id']);
-			$this->db->where('league_id',$league_id );
-			$query = $this->db->get('fantasy_leagues_games');
-			//echo($this->db->last_query()."<br />");
-			//echo("scoring period id = ".$scoring_period['id']."<br />");
-			//echo("Number of games found for team ".$team_id." = ".$query->num_rows()."<br />");
-			if ($query->num_rows() > 0) {
-				foreach($query->result() as $row) {
-					$score = array();
-					if ($row->away_team_id == $team_id) {
-						$col = 'away_team';
-					} else {
-						$col = 'home_team';
-					}
-					//echo("update col = ".$col."<br />");
-					$score[$col.'_score'] = $team_score;
-					$this->db->flush_cache();
-					$this->db->where('id',$row->id);
-					$this->db->update('fantasy_leagues_games',$score);
-					//echo($this->db->last_query()."<br />");
-				}
-			}
-			$query->free_result();
-		}
-		return false;
-	}*/
-	/**
-	*	GET OPEN LEAGUES.
-	*	Returns a list of league available to the current player.
-	*  	@param	$user_id - The user ID to check against
-	*	@return	leagues array, empty if not league found on failure
-	*
-	*  	@deprecated		1.0.3 PROD onward, use $this->getLeagueList() instead
-	*/
-	/*public function getOpenLeagues($user_id = false) {
-
-		$leagues = array();
-		$select = $this->tblName.'.id,league_name,commissioner_id,username,leagueType, max_teams, (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND (owner_id = 0 OR owner_id = -1)) as openCount';
-		if ($user_id !== false) {
-			$select .=  ', (SELECT COUNT(id) FROM fantasy_teams WHERE league_id = '.$this->tblName.'.id AND owner_id = '.$user_id.') as teamsOwned';
-		}
-		$this->db->select($select);
-		$this->db->join("fantasy_leagues_types","fantasy_leagues_types.id = ".$this->tblName.".league_type", "left");
-		$this->db->join("users_core","users_core.id = ".$this->tblName.".commissioner_id", "left");
-		$this->db->where('accept_requests',1);
-		$this->db->where('league_status',1);
-		$query = $this->db->get($this->tblName);
-		if ($query->num_rows() > 0) {
-			foreach($query->result() as $row) {
-				if ($row->openCount > 0 && ($user_id === false || ($user_id !== false && isset($row->teamsOwned) && $row->teamsOwned == 0))) {
-					array_push($leagues,array('id'=>$row->id,'league_name'=>$row->league_name, 'max_teams'=>$row->max_teams,
-											'leagueType'=>$row->leagueType, 'openings'=>$row->openCount,
-											'commissioner_id'=>$row->commissioner_id,'commissioner_name'=>$row->username));
-
-				} // END if
-			} // END foreach
-		} // END if
-		$query->free_result();
-		unset($query);
-		return $leagues;
-	}*/
 }

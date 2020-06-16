@@ -63,8 +63,8 @@
 								break;
 						}
 						echo($label); ?></td>
-						<td class="hsc2_r" class="hsc2_c"><?php echo($data['active_min']); ?></td>
-						<td class="hsc2_r" class="hsc2_c"><?php echo($data['active_max']); ?></td>
+						<td class="hsc2_c"><?php echo($data['active_min']); ?></td>
+						<td class="hsc2_c"><?php echo($data['active_max']); ?></td>
 					</tr>
 						<?php 
 						$rowCount++;
@@ -100,7 +100,7 @@
                     
 				    	<td class="hsc2_l"><?php echo(get_ll_cat($cat)); ?></td>
 						<?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
-						<td class="hsc2_r" class="hsc2_c"><?php echo($val); ?></td>
+						<td class="hsc2_c"><?php echo($val); ?></td>
                         <?php }?>
 					</tr>
 						<?php 
@@ -121,7 +121,7 @@
 						
 				    	<td class="hsc2_l"><?php echo(get_ll_cat($cat)); ?></td>
 						<?php if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) { ?>
-						<td class="hsc2_r" class="hsc2_c"><?php echo($val); ?></td>
+						<td class="hsc2_c"><?php echo($val); ?></td>
                         <?php }?>
 					</tr>
 						<?php 
@@ -351,8 +351,17 @@
                 	<td>&nbsp;</td>
                 	<td>Playoffs start in Period <?php echo(($scorePeriods + 1)); ?> and last for <?php echo($playoffRounds); ?> Periods.
                 <?php 
-                    if (isset($allow_playoff_trans) && isset($allow_playoff_trades)) {
+                    if (isset($allow_playoff_roster_changes) && isset($allow_playoff_trans) && isset($allow_playoff_trades)) {
                         echo('<br/><br /><table cellpadding="1" cellspacing="0">');
+                        if (intval($allow_playoff_roster_changes) == 1) {
+                            $func = 'allowed';
+                        } else {
+                             $func = 'disabled';
+                        } // END if
+                        echo('<tr valign="top">
+                        <td width="25">&nbsp;</td>
+                        <td> &#149;</td>
+                        <td>Roster Changes are <i>'.$func.'</i> during the playoffs</td></tr>');
                         if (intval($allow_playoff_trans) == 1) {
                             $func = 'allowed';
                         } else {
@@ -388,4 +397,4 @@
 			</div>
 		</div>
     </div>
-    <p /><br />
+    <p><br />

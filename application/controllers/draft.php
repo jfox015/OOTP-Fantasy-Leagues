@@ -269,7 +269,7 @@ class draft extends BaseEditor {
 				$results = $this->dataModel->getDraftResults();
 				//echo("Draft results = ".sizeof($results)."<br />");
 				$playersAdded = 0;
-				$rules = $this->league_model->getRosterRules();
+				$rules = $this->league_model->getRosterRules($this->dataModel->league_id);
 				
 				if (sizeof($results) > 0) {
 					$quota = array(); 
@@ -531,7 +531,7 @@ class draft extends BaseEditor {
 							} // END foreach
 						} // END if
 
-						$rules = $this->league_model->getRosterRules();
+						$rules = $this->league_model->getRosterRules($this->dataModel->league_id);
 						$nextPick = 0;
 						if ($this->debug) {
 							echo("Size of teams array = ".sizeof($teams)."<br />");
@@ -1334,7 +1334,6 @@ class draft extends BaseEditor {
 						} // END if
 					} // END if
 					$this->data['team_list'] = array();
-					$this->data['scoring_rules'] = $rules = $this->league_model->getScoringRules(0);
 					if ($league_id != -1) {
 						$this->data['team_list'] = $this->league_model->getTeamDetails($league_id);
 						//if ($this->params['loggedIn']) {
@@ -1342,9 +1341,10 @@ class draft extends BaseEditor {
 						//}
 						$rules = $this->league_model->getScoringRules($league_id);
 						if (sizeof($rules) == 0) {
-							$rules = $this->league_model->getScoringRules(0);
+							$rules = $this->league_model->getScoringRules(-1);
 						} // END if
 					} // END if
+					$this->data['scoring_rules'] = $rules;
 					$this->data['league_id'] = $league_id;
 					
 					$this->data['league_date'] = EMPTY_DATE_STR;

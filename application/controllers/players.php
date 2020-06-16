@@ -104,7 +104,7 @@ class players extends MY_Controller {
 				}
 			}
 			$this->data['team_list'] = array();
-			$this->data['scoring_rules'] = $rules = $this->league_model->getScoringRules(0);
+			$rules = $this->league_model->getScoringRules(-1);
 			if ($league_id != -1) {
 				$this->data['team_list'] = $this->league_model->getTeamDetails($league_id);
 				if ($this->params['loggedIn']) {
@@ -116,6 +116,7 @@ class players extends MY_Controller {
 				//	$rules = $this->league_model->getScoringRules(0);
 				//}
 			}
+			$this->data['scoring_rules'] = $rules;
 			$this->data['league_id'] = $league_id;
 
 			// RAW Record Count total with no limit

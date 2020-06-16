@@ -1461,14 +1461,14 @@ class league extends BaseEditor {
 		$this->load->model($this->modelName,'dataModel');
 		$this->dataModel->load($this->uriVars['id']);
 		$this->data['league_id'] = $this->uriVars['id'];
-		$scoringRules = $this->dataModel->getScoringRules();
+		$scoringRules = $this->dataModel->getScoringRules($this->uriVars['id'], $this->dataModel->league_type);
 		if (isset($scoringRules['batting'])) {
 			$this->data['scoring_batting']=	$scoringRules['batting'];
 		}
 		if (isset($scoringRules['pitching'])) {
 			$this->data['scoring_pitching'] = $scoringRules['pitching'];
 		}
-		$this->data['rosters'] = $this->dataModel->getRosterRules();
+		$this->data['rosters'] = $this->dataModel->getRosterRules($this->uriVars['id']);
 
 		$leagueType = loadSimpleDataList('leagueType');
 		$this->data['scoring_type_str'] = $leagueType[$this->dataModel->league_type];
@@ -1490,6 +1490,7 @@ class league extends BaseEditor {
 			$this->data['draftRounds'] = 0;
 		}
 		$this->data['draftTimer'] = $this->draft_model->timerEnable;
+		$this->data['allow_playoff_roster_changes'] = $this->dataModel->allow_playoff_roster_changes;
 		$this->data['allow_playoff_trans'] = $this->dataModel->allow_playoff_trans;
 		$this->data['allow_playoff_trades'] = $this->dataModel->allow_playoff_trades;
 		$this->data['playoffRounds'] = $this->dataModel->playoff_rounds;
@@ -1615,7 +1616,7 @@ class league extends BaseEditor {
 		$teams = $this->dataModel->getTeamIdList();
 		$excludeList = array();
 		foreach($teams as $team_id) {
-			if (!$this->dataModel->validateRoster($this->team_model->getBasicRoster($curr_period_id,$team_id))) {
+			if (!$this->dataModel->validateRoster($this->team_model->getBasicRoster($curr_period_id,$team_id),$this->dataModel->getRosterRules($this->uriVars['id']))) {
 				array_push($excludeList,$team_id);
 			}
 		}
@@ -2811,6 +2812,8 @@ class league extends BaseEditor {
 				$form->html('<script> var scoring_periods_available = '.$periodCount.';</script>');
 				$form->br();
 				$form->select('playoff_rounds|playoff_rounds',array(1=>1,2=>2,3=>3),'Playoff Rounds',($this->input->post('playoff_rounds')) ? $this->input->post('playoff_rounds') : $this->dataModel->playoff_rounds);
+				$form->fieldset('',array('class'=>'radioGroup','id'=>'optPlayoffRosters'));
+				$form->radiogroup ('allow_playoff_roster_changes',$responses,'Allow Roster changes during Playoffs',($this->input->post('allow_playoff_roster_changes') ? $this->input->post('allow_playoff_roster_changes') : $this->dataModel->allow_playoff_roster_changes));
 				$form->fieldset('',array('class'=>'radioGroup','id'=>'optPlayoffTrans'));
 				$form->radiogroup ('allow_playoff_trans',$responses,'Allow Add/Drops during Playoffs',($this->input->post('allow_playoff_trans') ? $this->input->post('allow_playoff_trans') : $this->dataModel->allow_playoff_trans));
 				$form->fieldset('',array('class'=>'radioGroup','id'=>'optPlayoffTrades'));

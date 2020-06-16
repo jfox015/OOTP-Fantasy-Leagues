@@ -222,7 +222,7 @@
 			<?php } // END if
 			?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
-			Update Player ELIGIBILITY
+			Update Player Eligibility
 			<?php
 			if (isset($update_eligible_run) && $update_eligible_run == -1) { ?>
 				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Eligibility outdated" title="Player Eligibility outdated" /></span>
@@ -284,7 +284,7 @@
 			?>
 			</li>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/baseball-icon.png" width="48" height="48" />',array('rel'=>'elidg')); ?><br />
-			Update Player ELIGIBILITY<?php
+			Update Player Eligibility<?php
 			if (isset($update_eligible_run) && $update_eligible_run == -1) { ?>
 				<span class="badge"><img src="<?php echo(PATH_IMAGES.'icons/icon_alert.png'); ?>" width="16" height="16" alt="Player Eligibility outdated" title="Player Eligibility outdated" /></span>
 			<?php

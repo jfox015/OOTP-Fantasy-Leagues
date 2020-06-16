@@ -354,6 +354,7 @@ class admin extends MY_Controller {
 			'stats_lab_compatible' => 'StatsLab Compatibility Mode',
 			'stats_lab_url' => 'StatsLab URL',
 			'primary_contact' => 'Primary Contact',
+			'emailAdminOnReg' => 'E-Mail Admin on Registration',
 			'timezone' => 'Timezone',
 			'user_activation_method' => 'User Activiation Method');
 			foreach($fields as $field => $label) {
@@ -1416,7 +1417,7 @@ class admin extends MY_Controller {
 		$this->output->set_output($result);
 	}
 	/**
-	 *	POSITION ELIGIBILITY.
+	 *	POSITION Eligibility.
 	 */
 	function eligibility() {
 		$result = '';
