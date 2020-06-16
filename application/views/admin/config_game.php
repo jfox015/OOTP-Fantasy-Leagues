@@ -42,6 +42,9 @@
 			$form->select('user_activation_method|user_activation_method',loadSimpleDataList('activationType'),'Activation Method',($this->input->post('user_activation_method')) ? $this->input->post('user_activation_method') : $config['user_activation_method'],'required');
 			$form->space();
             $form->select('primary_contact|primary_contact',$adminList,'Primary Contact',($this->input->post('primary_contact')) ? $this->input->post('primary_contact') : $config['primary_contact'],'required');
+			$form->br();
+			$form->fieldset('',array('class'=>'radioGroup'));
+			$form->radiogroup ('emailAdminOnReg',$responses,'Send Email on user Reg',($this->input->post('emailAdminOnReg') ? $this->input->post('emailAdminOnReg') : $config['emailAdminOnReg']),'required');	
 			$form->space();
 			$form->fieldset('OOTP Links and Tools');
 			$form->text('ootp_html_report_path','OOTP HTML Reports URL','required|trim',($input->post('ootp_html_report_path') ? $input->post('ootp_html_report_path') : $config['ootp_html_report_path']),array("class"=>"longtext"));

@@ -53,7 +53,11 @@ class Auth
 	 **/
 	public function activate($code) {
 		if (($id = $this->ci->user_auth_model->activate($code)) !== false) {
-			return $this->confirmationEmail($this->ci->user_auth_model->getEmail($id),$this->ci->user_auth_model->getUsername($id));
+			$email = $this->ci->user_auth_model->getEmail($id);
+			$username = $this->ci->user_auth_model->getUsername($id);
+			if (isset($this->ci->params['config']['emailAdminOnReg']) && $this->ci->params['config']['emailAdminOnReg'] == 1)
+				$this->emailAdminAboutReg($email,$username,$debug);
+			return $this->confirmationEmail($email,$username,$debug);
 		} else {
 			return false;
 		}
@@ -372,6 +376,18 @@ class Auth
 		return sendEmail($email,$this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']), $this->ci->params['config']['site_name']." Administrator",
 				  $this->ci->params['config']['site_name'].' Registration Confirmation',$message,$username,'email_reg_confirm_');
 	}
+
+	protected function emailAdminAboutReg($email, $username,$debug = false) {
+
+		$data = array('siteName'=>$this->ci->params['config']['site_name'],
+					  'username' => $username,
+					  'email'=> $email);
+		$message = $this->ci->load->view($this->ci->config->item('email_templates').'admin_reg_alert', $data, true);
+		$adminEmail = $this->ci->user_auth_model->getEmail($this->ci->params['config']['primary_contact']);
+		return sendEmail($adminEmail,$adminEmail,$this->ci->params['config']['site_name']." Administrator",
+				  $this->ci->params['config']['site_name'].' Registration Alert',$message,$username,'admin_reg_alert_');
+	}
+
 	
 	/**
 	 * load user

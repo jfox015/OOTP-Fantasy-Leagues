@@ -28,6 +28,7 @@
 			type = "block";
 		}
 		$('#optHeadToHead').css('display',type);
+		$('#optPlayoffRosters').css('display',type);
 		$('#optPlayoffTrans').css('display',type);
 		$('#optPlayoffTrades').css('display',type);
 	}
