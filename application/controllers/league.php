@@ -355,7 +355,8 @@ class league extends BaseEditor {
 				$requests = count($this->dataModel->getLeagueRequests(true));
 				$this->data['invites_requets'] = $invites + $requests;
 				// ROSTER ALERTS
-				$rosterValidation = $this->dataModel->validateRosters($this->params['config']['current_period'], $this->uriVars['id']);
+				$game_date = $this->dataModel->getGameDateForLeague($this->dataModel->id, false, $this->params['config']['simType']);
+				$rosterValidation = $this->dataModel->validateRosters(getScoringPeriod($this->params['config']['current_period']), $this->uriVars['id'], false, $game_date);
 				$rosterIssues = 0;
 				if ($this->dataModel->errorCode == 1) {
 					foreach($rosterValidation as $status) {
@@ -370,7 +371,7 @@ class league extends BaseEditor {
 				$this->data['tradeSettings'] = $this->dataModel->getLeagueTradeSettings();
 
 				// WAIVERS AND WAIVER ORDER
-				$this->data['useWaivers'] = $this->useWaivers;
+				$this->data['useWaivers'] = $this->dataModel->useWaivers;
 				$this->data['waiverOrder'] = $this->team_model->getWaiverOrder($this->dataModel->id);
 				$this->data['current_period'] = $this->params['config']['current_period'];
 
@@ -418,7 +419,8 @@ class league extends BaseEditor {
 					$curr_period_id = $this->params['config']['current_period'];
 				}
 				$curr_period = getScoringPeriod($curr_period_id);
-				$this->data['rosterStatus'] = $this->dataModel->validateRosters($curr_period, $this->data['league_id']);
+				$game_date = $this->dataModel->getGameDateForLeague($this->dataModel->id, false, $this->params['config']['simType']);
+				$this->data['rosterStatus'] = $this->dataModel->validateRosters($curr_period, $this->data['league_id'], false, $game_date);
 				$this->data['statusMessage'] = $this->dataModel->statusMess;
 
 				$this->makeNav();
@@ -464,12 +466,12 @@ class league extends BaseEditor {
 
 				if ($this->form_validation->run() == false) {
 					$form = new Form();
-            		if (isset($this->params['config']['simType']) && $this->params['config']['simType'] == 1) {
+            		if (isset($this->params['config']['simType']) && $this->params['config']['simType'] == SIM_TYPE_DAILY) {
 						$freqResponses[] = array('1','Daily');
 						$freqResponses[] = array('-1','Weekly');
 						$form->fieldset('Roster Transaction Frequency');
 						$form->fieldset('',array('class'=>'radioGroup'));
-						$form->radiogroup ('transactionFrequency',$freqResponses,'Roster Edits',($this->input->post('transactionFrequency') ? $this->input->post('transactionFrequency') : $this->dataModel->transactionFrequency));
+						$form->radiogroup ('transactionFrequency',$freqResponses,'Owners Submit Rosters',($this->input->post('transactionFrequency') ? $this->input->post('transactionFrequency') : $this->dataModel->transactionFrequency));
 						$form->br();
 					}
 					$responses[] = array('1','Yes');
@@ -1614,9 +1616,24 @@ class league extends BaseEditor {
 		$this->data['curr_period'] = $curr_period_id;
 
 		$teams = $this->dataModel->getTeamIdList();
+		// EDIT 1.2 PROD - GAME DATE DISPLAY
+		$this->data['simType'] = $this->params['config']['simType'];
+		$this->data['leagueTransFreq'] = $this->dataModel->transactionFrequency;
+		if ($this->data['simType'] == SIM_TYPE_DAILY && $this->data['leagueTransFreq'] == SIM_TYPE_DAILY) {
+			//GET CURRENT GAME DATE RANGE FOR SCOING PERIOD
+			$this->data['currPeriod'] = $curr_period;
+			$this->data['game_date'] = $this->dataModel->getGameDateForLeague($this->dataModel->id, false, $this->data['simType']);
+			$display_date = $this->data['game_date'];
+			if (isset($this->uriVars['display_date']) && !empty($this->uriVars['display_date']) && $this->uriVars['display_date'] != -1) {
+				$display_date = $this->uriVars['display_date'];
+			}
+			$this->data['display_date'] = $display_date;
+			$this->data['sim_length'] = $this->params['config']['sim_length'];
+			$this->data['league_id'] = $this->dataModel->id;
+		}
 		$excludeList = array();
 		foreach($teams as $team_id) {
-			if (!$this->dataModel->validateRoster($this->team_model->getBasicRoster($curr_period_id,$team_id),$this->dataModel->getRosterRules($this->uriVars['id']))) {
+			if (!$this->dataModel->validateRoster($this->team_model->getBasicRoster($curr_period_id,$team_id, null, $this->data['game_date']),$this->dataModel->getRosterRules($this->uriVars['id']))) {
 				array_push($excludeList,$team_id);
 			}
 		}
@@ -1638,7 +1655,7 @@ class league extends BaseEditor {
 					break;
 				 }
 			}
-			$game_display_data = $this->dataModel->loadGameData($game_id, $this->team_model,$excludeList);
+			$game_display_data = $this->dataModel->loadGameData($game_id, $this->team_model,$excludeList, $this->params['config']['simType']);
 		}
 
 		// EDIT 1.0.3 PROD

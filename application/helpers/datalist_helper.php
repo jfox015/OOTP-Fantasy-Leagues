@@ -342,6 +342,28 @@ if ( ! function_exists('getLeagueStartDate')) {
 
 // ------------------------------------------------------------------------
 
+if ( ! function_exists('getLeagueCurrentDate')) {
+	function getLeagueCurrentDate($league_id = -1) {
+		//$date = date('Y-m-d');
+		if ($league_id == -1) return;
+		//echo("<b>getLeagueCurrentDate</b><br />");
+		$ci =& get_instance();
+		// LOAD CHARACTERS
+		$ci->db->select('current_date');
+		$ci->db->from('leagues');
+		$ci->db->where('league_id',$league_id);
+		$query = $ci->db->get();
+		//echo($ci->db->last_query()."<br />");
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$date = $row->current_date;
+		} // END if
+		$query->free_result();
+		return $date;
+	}
+}
+// ------------------------------------------------------------------------
+
 if ( ! function_exists('getVisibleDays')) {
 	function getVisibleDays($league_date, $sim_length) {
 

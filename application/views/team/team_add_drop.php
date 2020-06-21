@@ -607,7 +607,7 @@
         
         <h2><?php echo($team_name); ?></h2>
             <p><br />
-            <b>Players  on roster:</b>
+            <b>Players on roster<?php if ($game_date != null) { echo(" for game date <i>".date('M j, Y',strtotime($game_date))."</i>"); } ?></b>
             <br />
     </div>
     

@@ -825,6 +825,35 @@ class league_model extends base_model {
 		$query->free_result();
 		return $waivers;
 	}
+	/**
+	 * 	GET GAME DATE FOR LEAGUE
+	 * 	Returns a game date value as the game date for daily transactions leagues and 
+	 *  null for weekly leagues.
+	 *  @param	$league_id	{int}	League ID var, if FALSE, uses team_id instead
+	 *  @param	$team_id	{int}	Team ID var, used to lookup league_id if not available
+	 *  @return				{Array}	Array of settings value
+	 * 
+	 * 	@since	1.2 PROD
+	 */
+	public function getGameDateForLeague($league_id = false, $team_id = false, $simType = SIM_TYPE_WEEKLY) {
+		
+		if ($league_id === false && $team_id === false) {
+			if( $this->id == -1) { return null; } else { $league_id = $this->id; } 
+		}else if ($league_id === false && $team_id !== false) { 
+			$league_id = getLeagueIdByTeam($team_id);
+		}
+		$game_date = null;
+		if ($this->id == -1) {
+			$this->load($league_id);
+		}
+		if ($simType == SIM_TYPE_DAILY && $this->transactionFrequency == SIM_TYPE_DAILY) {
+			if (!function_exists('getLeagueCurrentDate')) {
+				$this->helper->load('datalist_helper');
+			}
+			$game_date = getLeagueCurrentDate($this->params['config']['ootp_league_id']);
+		}
+		return $game_date;
+	}
 	/*----------------------------------------------------------------------
 	/
 	/	INVITES AND REQUESTS
@@ -1359,7 +1388,7 @@ class league_model extends base_model {
 		$query->free_result();
 		return $teamNames;
 	}
-	public function loadGameData($game_id = false, $team_model, $excludeList = array(), $league_id = false, $debug = false) {
+	public function loadGameData($game_id = false, $team_model, $excludeList = array(), $simType = false, $league_id = false, $debug = false) {
 
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($game_id === false) return false;
@@ -1390,7 +1419,8 @@ class league_model extends base_model {
 				$statuses = array(1, -1,2);
 				foreach ($statuses as $status) {
 					$player_list = array();
-					$players = $team_model->getBatters($scoring_period, false,$status) + $team_model->getPitchers($scoring_period, false,$status);
+					$game_date = $this->getGameDateForLeague($league_id, false, $simType);
+					$players = $team_model->getBatters($scoring_period, false,$status, $game_date) + $team_model->getPitchers($scoring_period, false,$status, $game_date);
 					foreach ($players as $player_id => $player_data) {
 						//echo("PLayer position = ".$player_data['player_position']."<br />");
 						if ($player_data['player_position'] != 1) {
@@ -1435,7 +1465,7 @@ class league_model extends base_model {
 									if ($player_stats->$colName != 0) {
 										if (!empty($stats)) $stats .= ", ";
 										$stats .= $player_stats->$colName." ".strtoupper(get_ll_cat($cat));
-										//if (($colCount+1) != sizeof($scoring_rules[$type])) { $stats.=", "; }
+										if (($colCount+1) != sizeof($scoring_rules[$type])) { $stats.=", "; }
 										$useStatus = $status;
 										if ($status == 2) {
 											$useStatus = -1;
@@ -2464,7 +2494,7 @@ class league_model extends base_model {
 	 *	@return						{Array}		Array of validation reports for each team
 	 *	@since	1.0.3 PROD
 	 */
-	public function validateRosters($scoring_period = false, $league_id = false, $excludeList = array()) {
+	public function validateRosters($scoring_period = false, $league_id = false, $excludeList = array(), $game_date = false) {
 		
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($excludeList === false) { $excludeList = array(); }
@@ -2488,7 +2518,8 @@ class league_model extends base_model {
 					if ($scoring_period['id'] <= $total_periods) {
 						//echo("-------------------------------------------------------------<br />");
 						//echo("<b>team_id</b> = ".$team_id."<br />");
-						$roster = getBasicRoster($team_id, $scoring_period);
+						
+						$roster = getBasicRoster($team_id, $scoring_period, false, $game_date);
 						$rules = $this->getRosterRules($league_id);
 						$valid = $this->validateRoster($roster, $rules);
 					} else {
@@ -2508,7 +2539,11 @@ class league_model extends base_model {
 			$this->$errorCount = $errorCount;
 			$this->statusMess = "error|One or more rosters are currently invalid!";
 		} else {
-			$this->statusMess = "success|All rosters are currently valid!";
+			$this->statusMess = "success|All rosters are currently valid";
+			if ($game_date != false && $game_date != null) {
+				$this->statusMess .= " for game date <b>".date('M j, Y',strtotime($game_date)."</b>");
+			}
+			$this->statusMess .= "!";
 		}
 		return $validation;
 	}

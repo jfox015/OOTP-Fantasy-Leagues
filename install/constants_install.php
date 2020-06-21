@@ -126,6 +126,9 @@ define('SQL_OPERATOR_NONE',0);
 define('SQL_OPERATOR_SUM',1);
 define('SQL_OPERATOR_AVG',2);
 
+define('SIM_TYPE_DAILY',1);
+define('SIM_TYPE_WEEKLY',-1);
+
 // SET THE DEFAULT PATH SEPERATOR
 if (substr(PHP_OS, 0, 3) == 'WIN') {
     define("URL_PATH_SEPERATOR","\\");

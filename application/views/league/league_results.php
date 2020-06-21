@@ -4,11 +4,14 @@
 			document.location.href = '<?php echo($config['fantasy_web_root']); ?>league/results/id/<?php echo($league_id); ?>/period_id/<?php echo($curr_period['id']); ?>/game_id/'+this.id;
 			return false;
 		});
+        $('div[rel=datePick]').live('click',function () {
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>league/results/id/' + <?php echo($league_id); ?> + '/display_date/' + this.id ;
+		});
 	});
     </script>
     <div id="subPage">
         <div class="top-bar"> <h1><?php echo $subTitle; ?></h1></div>
-		
+
 		<?php if (isset($avail_periods) && sizeof($avail_periods) > 0) {  ?>
             <?php echo("<b>Period: </b>");
             foreach($avail_periods as $period) { 
@@ -19,10 +22,33 @@
                 }
                 echo("&nbsp;");
             } 
-        }
-        ?>
+        } // END if (isset($avail_periods) && sizeof($avail_periods) > 0)
+        // EDIT 1.2 PROD - GAME DATE DISPLAY
+        if ($simType == SIM_TYPE_DAILY && $leagueTransFreq == SIM_TYPE_DAILY) {
+            ?>
+            <div class="dateCal">
+                <?php 
+                $day = 60*60*24;
+                $count = 0;
+                $date = strtotime($currPeriod['date_start']." ".EMPTY_TIME_STR);
+                $gameDate = strtotime($game_date);
+                while ($count < $sim_length) { 
+                    ?>
+                    <div class="dateCal-item<?php if ($date == $gameDate) { echo(' active'); } ?>"
+                    <?php if ($date <= $gameDate) { echo(' rel="datePick" id="'.date('Y-n-j', $date).'"'); } ?>>
+                        <p><?php echo(date('M', $date)); ?>
+                        <h4><?php echo(date('d', $date)); ?></h4>
+                        <?php echo(date('Y', $date)); ?></p>
+                    </div>
+                <?php 
+                    $date += $day;
+                    $count++;
+                } // END while($count < $sim_length)
+                ?>
+            </div>
+            <?php 
+        } // END if ($simType == SIM_TYPE_DAILY)
 
-        <?php 
         $winners = array();
         if (isset($games) && sizeof($games) > 0) { ?>
         <div class='hsc2_c' style="width:800px;margin:auto 0;">

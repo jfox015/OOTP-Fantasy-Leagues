@@ -900,7 +900,8 @@ class team_model extends base_model {
 	public function getTeamStats($countOnly = false, $team_id = false, $player_type=1, $position_type = -1,
 								 $role_type = -1, $stats_range = 1, $scoring_period_id = -1, $min_var = 0, $limit = -1, $startIndex = 0, 
 								 $ootp_league_id = false, $ootp_league_date = false, $rules = array(),
-								 $includeList = array(), $searchType = 'all', $searchParam = -1, $sortOrder = false, $queryType = QUERY_STANDARD) {
+								 $includeList = array(), $searchType = 'all', $searchParam = -1, $sortOrder = false, $queryType = QUERY_STANDARD,
+								 $game_date = null) {
 		$stats = array();
 		$players = array();
 		if ($team_id === false) $team_id = $this->team_id;
@@ -910,9 +911,9 @@ class team_model extends base_model {
 			$players = $includeList;
 		} else {
 			if ($player_type == 1) {
-				$players = $this->getBatters($scoring_period_id, $team_id, -999);
+				$players = $this->getBatters($scoring_period_id, $team_id, -999, $game_date);
 			} else {
-				$players = $this->getPitchers($scoring_period_id, $team_id, -999);
+				$players = $this->getPitchers($scoring_period_id, $team_id, -999, $game_date);
 			}
 		}
 
@@ -1122,10 +1123,11 @@ class team_model extends base_model {
 	 * 
 	 * @param $roster
 	 * @param $score_period
+	 * @param $game_date
 	 * @param $team_id
 	 * 
 	 */
-	public function saveRosterChanges($roster,$score_period, $team_id = false) {
+	public function saveRosterChanges($roster,$score_period, $game_date = null, $team_id = false) {
 		$success = true;
 		if (!isset($roster) || sizeof($roster) == 0) return;
 
@@ -1137,6 +1139,9 @@ class team_model extends base_model {
 			$this->db->where('player_id',$id);
 			$this->db->where('team_id',$team_id);
 			$this->db->where('scoring_period_id',$score_period['id']);
+			if ($game_date != null) {
+				$this->db->where("game_date = '".$game_date."' ");
+			}
 			$this->db->update('fantasy_rosters',$player_info);
 			if (!function_exists('updateOwnership')) {
 				$this->load->helper('roster');
@@ -1158,13 +1163,16 @@ class team_model extends base_model {
 	 * @param $team_id
 	 * 
 	 */
-	public function applyRosterChanges($input, $score_period, $team_id = false) {
+	public function applyRosterChanges($input, $score_period, $team_id = false, $simSettings = false) {
 
-		if (!isset($input)) return;
+		if (!isset($input) || $simSettings == false) return;
+		if ($team_id === false && $this->id != -1) { $team_id = $this->id; } else { return false; }
 
-		if ($team_id === false) { $team_id = $this->id; }
-
-		$roster = $this->dataModel->getBasicRoster($score_period['id']);
+		$game_date = null;
+		if ($simSettings['simType'] == SIM_TYPE_DAILY && $simSettings['transactionFrequency'] == SIM_TYPE_DAILY) {
+			$game_date = $input->post('game_date');
+		}
+		$roster = $this->getBasicRoster($score_period['id'], $team_id, false, $game_date);
 		$new_roster = array();
 
 		foreach($roster as $player_info) {
@@ -1521,14 +1529,14 @@ class team_model extends base_model {
 	 *
 	 *
 	 */
-    public function getGamesPlayedByRoster($team_id = false, $scoring_period_id = false, $ootp_league_id = 100, $year = false, $league_id = false) {
+    public function getGamesPlayedByRoster($team_id = false, $scoring_period_id = false, $ootp_league_id = 100, $year = false, $league_id = false, $game_date = null) {
 
         if ($team_id === false) { $team_id = $this->id; } // END if
         if ($year === false) { $year = date('Y'); } // END if
 		if ($league_id === false) { $league_id = $this->league_id; } // END if
 
         $game_stats= array();
-        $player_list=$this->getBasicRoster($scoring_period_id,$team_id,true);
+        $player_list=$this->getBasicRoster($scoring_period_id,$team_id,true, $game_date);
         foreach($player_list as $data) {
             $player_stats = array('player_id'=>$data['player_id'],"player_name" =>$data['player_name'],'role'=>$data['player_role'],'position'=>$data['player_position']);
             if ($data['player_position'] != 1) {
@@ -1710,7 +1718,7 @@ class team_model extends base_model {
 	 *  @param	$extendedIds - (OPTIONAL) Adds Fnatasy Player ID and OOTP Player IDs for linking to player profiles
 	 *	@return	array of pitchers
 	 */
-	public function getBasicRoster($score_period = -1, $team_id = false, $extendedIds = false) {
+	public function getBasicRoster($score_period = -1, $team_id = false, $extendedIds = false, $game_date = null) {
 
 		if ($team_id === false) { $team_id = $this->id; }
 		$roster = array();
@@ -1718,6 +1726,9 @@ class team_model extends base_model {
 		$sql = "SELECT player_id FROM fantasy_rosters WHERE team_id = ".$team_id;
 		if (!empty($score_period) && $score_period != -1) {
 			$sql .= " AND scoring_period_id = ".$score_period;
+		} // END if
+		if ($game_date != null) {
+			$sql .= " AND game_date = '".$game_date."' ";
 		} // END if
 		$query = $this->db->query($sql);
 		$playerIds = array();
@@ -1735,6 +1746,9 @@ class team_model extends base_model {
 			$this->db->where('fantasy_rosters.team_id',$team_id);
 			if ($score_period != -1) {
 				$this->db->where('fantasy_rosters.scoring_period_id',$score_period);
+			} // END if
+			if ($game_date != null) {
+				$this->db->where("fantasy_rosters.game_date = '".$game_date."' ");
 			} // END if
 			$this->db->order_by('player_position, player_role');
 			$query = $this->db->get('fantasy_players');
@@ -1797,7 +1811,7 @@ class team_model extends base_model {
 	 *  @param	$status - (OPTIONAL)
 	 *	@return	array of pitchers
 	 */
-	public function getBatters($scoring_period = -1, $team_id = false, $status = 1) {
+	public function getBatters($scoring_period = -1, $team_id = false, $status = 1, $game_date = null) {
 
 		if ($team_id === false && $this->id != -1) { $team_id = $this->id; } // END if
 
@@ -1821,6 +1835,11 @@ class team_model extends base_model {
 		if ($scoring_period != -1) {
 			$this->db->where('fantasy_rosters.scoring_period_id',$scoring_period);
 		} // END if
+		//echo("game_date = ".$game_date."<br />");
+		if ($game_date != null && $game_date != false) {
+			$this->db->where("fantasy_rosters.game_date = '".$game_date."' ");
+		} // END if
+		
 		$this->db->group_by('fantasy_rosters.player_id');
 		$this->db->order_by('fantasy_rosters.player_position');
 		$query = $this->db->get($this->tables['ROSTERS']);
@@ -1848,7 +1867,7 @@ class team_model extends base_model {
 	 *  @param	$status - (OPTIONAL)
 	 *	@return	array of pitchers
 	 */
-	public function getPitchers($scoring_period = -1, $team_id = false, $status = 1) {
+	public function getPitchers($scoring_period = -1, $team_id = false, $status = 1, $game_date = null) {
 		if ($team_id === false && $this->id != -1) { $team_id = $this->id; }
 
 		$players = array();
@@ -1871,6 +1890,9 @@ class team_model extends base_model {
 		if ($scoring_period != -1) {
 			$this->db->where('fantasy_rosters.scoring_period_id',$scoring_period);
 		}
+		if ($game_date != null && $game_date != false) {
+			$this->db->where("fantasy_rosters.game_date = '".$game_date."' ");
+		} // END if
 		$this->db->group_by('fantasy_rosters.player_id');
 		$this->db->order_by('fantasy_rosters.player_role');
 		$query = $this->db->get($this->tables['ROSTERS']);
@@ -1893,15 +1915,16 @@ class team_model extends base_model {
 	/**
 	 *	GET COMPLETE ROSTER.
 	 *  @param	$scoring_period - The scoring period 
+	 *  @param	$game_date      - The game date for daily rosters, NULL is weekyl rosters 
 	 *  @param	$team_id - (OPTIONAL)
 	 *	@return	array of pitchers and batters
 	 */
-	public function getCompleteRoster($scoring_period, $team_id = false) {
+	public function getCompleteRoster($scoring_period, $game_date = null, $team_id = false) {
 		if ($team_id === false) { $team_id = $this->id; }
 
-		return array($this->getBatters($scoring_period, $team_id)+$this->getPitchers($scoring_period, $team_id),
-				    $this->getBatters($scoring_period, $team_id,-1)+$this->getPitchers($scoring_period, $team_id, -1),
-					$this->getBatters($scoring_period, $team_id,2)+$this->getPitchers($scoring_period, $team_id, 2));
+		return array($this->getBatters($scoring_period, $team_id, 1, $game_date)+$this->getPitchers($scoring_period, $team_id, 1, $game_date),
+				    $this->getBatters($scoring_period, $team_id,-1, $game_date)+$this->getPitchers($scoring_period, $team_id, -1, $game_date),
+					$this->getBatters($scoring_period, $team_id,2, $game_date)+$this->getPitchers($scoring_period, $team_id, 2, $game_date));
 	}
 	/**
 	 *	GET TEAM LEAGUE.

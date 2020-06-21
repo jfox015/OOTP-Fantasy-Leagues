@@ -474,6 +474,49 @@ a.teamLargeLink {
 	margin:0;
 }
 
+/*------------------------------
+/ 	TEAM
+/-----------------------------*/
+.dateCal .dateCal-item {
+    width: 38px;
+    float: left;
+	text-align: center;
+	vertical-align: middle;
+    text-transform: uppercase;
+	padding: 0 10px;
+	border: 1px solid white;
+    background: rgb(242,242,242);
+	background: -moz-linear-gradient(top,  rgba(242,242,242,1) 0%, rgba(191,191,191,1) 100%);
+	background: -webkit-linear-gradient(top,  rgba(242,242,242,1) 0%,rgba(191,191,191,1) 100%);
+	background: linear-gradient(to bottom,  rgba(242,242,242,1) 0%,rgba(191,191,191,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f2f2', endColorstr='#bfbfbf',GradientType=0 );
+	height:75px;
+	cursor: default;
+}
+.dateCal .dateCal-item h4 {
+    font-weight: 700;
+	margin-bottom: 1px;
+	margin-top: 0;
+}
+.dateCal .dateCal-item p {
+    margin-bottom: 0;
+}
+.dateCal .dateCal-item.active {
+	background: rgb(230,237,230);
+	background: -moz-linear-gradient(top,  rgba(230,237,230,1) 0%, rgba(121,188,111,1) 100%);
+	background: -webkit-linear-gradient(top,  rgba(230,237,230,1) 0%,rgba(121,188,111,1) 100%);
+	background: linear-gradient(to bottom,  rgba(230,237,230,1) 0%,rgba(121,188,111,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e6ede6', endColorstr='#79bc6f',GradientType=0 );
+	cursor: pointer;
+}
+.dateCal .dateCal-item.past {
+	background: rgb(221,234,255);
+	background: -moz-linear-gradient(top,  rgba(221,234,255,1) 1%, rgba(90,114,145,1) 100%);
+	background: -webkit-linear-gradient(top,  rgba(221,234,255,1) 1%,rgba(90,114,145,1) 100%);
+	background: linear-gradient(to bottom,  rgba(221,234,255,1) 1%,rgba(90,114,145,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ddeaff', endColorstr='#5a7291',GradientType=0 );
+	cursor: pointer;
+}
 /*---------------------------
 /	2020 Site Button update
 /---------------------------*/

@@ -4,7 +4,7 @@
  *	The primary controller for the Admin Section.
  *	@author			Jeff Fox
  *	@dateCreated	11/13/09
- *	@lastModified	02/07/12
+ *	@lastModified	06/15/20
  *
  */
 class admin extends MY_Controller {
@@ -234,7 +234,8 @@ class admin extends MY_Controller {
 					// IF DRAFT IS COMPLETE, VALIDATE ROSTERS
 					if ($draftStatus == 5 && $details['league_status'] == 1 && $this->ootp_league_model->league_id != -1) {
 						$this->league_model->errorCode = -1;
-						$this->league_model->validateRosters($this->data['currPeriodConfig'], $id);
+						$game_date = $this->league_model->getGameDateForLeague($id, false, $this->params['config']['simType']);
+						$this->league_model->validateRosters($this->data['currPeriodConfig'], $id, false, $game_date);
 						if ($this->league_model->errorCode == 1) $invalidRosters[$id] = $details['league_name'];
 					}
 				}
@@ -289,18 +290,21 @@ class admin extends MY_Controller {
 			$fields = array('Fantasy Settings'=>array('seasonStart'=>'Season Start',
 			'sim_length' => 'Sim length',
 			'default_scoring_periods' => 'Default Scoring Periods',
-			'useWaivers' => 'Waivers Enabled?',
+			/*'useWaivers' => 'Waivers Enabled?',
 			'useTrades' => 'Trading Enabled?',
 			'tradesExpire' => 'Trade offers Can Expire',
 			'defaultExpiration' => 'Default Expiration (in Days)?',
 			'approvalType' => 'Trade Approval Type',
 			'minProtests' => 'Min # Protest to void trade?',
-			'protestPeriodDays' => 'Protest Period (in Days) '),
+			'protestPeriodDays' => 'Protest Period (in Days) '
+			*/
+			),
 			'Draft Settings'=>array('draftPeriod'=>'Draft Period',
 			'draft_rounds_min' => 'Minimum Draft Rounds',
 			'draft_rounds_max' => 'Maximum Draft Rounds'),
-			'Roster Settings'=>array('min_game_current' => 'Eligibility: Games This Season',
-			'min_game_last' => 'Eligibility: Games Last Season'));
+			//'Roster Settings'=>array('min_game_current' => 'Eligibility: Games This Season',
+			//'min_game_last' => 'Eligibility: Games Last Season')
+			);
 			$this->data['fields'] = $fields;
 
 			$gameStart = $this->params['config']['season_start'];

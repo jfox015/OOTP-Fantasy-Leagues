@@ -308,7 +308,8 @@ class draft extends BaseEditor {
 								$role = $player['role'];
 							}
 						}
-						$data = array('player_id'=>$pid,'league_id'=>$this->dataModel->league_id,'team_id'=>$tid,'scoring_period_id'=>1,'player_position'=>$pos,
+						$game_date = $this->league_model->getGameDateForLeague($this->dataModel->league_id, false, $this->params['config']['simType']);
+						$data = array('player_id'=>$pid,'league_id'=>$this->dataModel->league_id,'team_id'=>$tid,'scoring_period_id'=>1,'game_date'=>$game_date,'player_position'=>$pos,
 									  'player_role'=>$role,'player_status'=>1);
 						$this->db->insert('fantasy_rosters',$data);
 						if ($this->db->affected_rows() == 1) {

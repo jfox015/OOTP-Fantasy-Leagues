@@ -17,6 +17,9 @@
 			$('td.'+params[1]).addClass('field_hide');
 			return false;
 		});
+		$('div[rel=datePick]').live('click',function () {
+			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/lineup/id/' + <?php echo($thisItem['team_id']); ?> + '/display_date/' + this.id ;
+		});
 	});
 	</script>
 	<style>
@@ -37,7 +40,7 @@
 				$avatar = PATH_TEAMS_AVATARS.DEFAULT_AVATAR;
 			}
 			?>
-			<img src="<?php echo($avatar); ?>" width="75" height="75" border="0" align="absmiddle" />
+			<img src="<?php echo($avatar); ?>" width="75" height="75" align="absmiddle" />
 			&nbsp;&nbsp;<?php echo($thisItem['teamname']." ".$thisItem['teamnick']); ?> Lineup</h1></div>
 
                     <div id="content">
@@ -53,10 +56,39 @@
                                     echo($period);
                                 }
                                 echo("&nbsp;");
-                            } 
-                        	?>
+							}
+							// EDIT 1.2 PROD - GAME DATE DISPLAY
+							if ($simType == SIM_TYPE_DAILY && $leagueTransFreq == SIM_TYPE_DAILY) {
+								//$dateStart = ;
+								//$dateEnd = strtotime($curr_period['date_end']);
+								?>
+								<div class="dateCal">
+									<?php 
+									$day = 60*60*24;
+									$count = 0;
+									$date = strtotime($currPeriod['date_start']." ".EMPTY_TIME_STR);
+									$gameDate = strtotime($game_date);
+									while ($count < $sim_length) { 
+										?>
+										<div class="dateCal-item<?php if ($date == $gameDate) { echo(' active'); } ?>"
+										<?php if ($date <= $gameDate) { echo(' rel="datePick" id="'.date('Y-n-j', $date).'"'); } ?>>
+											<p><?php echo(date('M', $date)); ?>
+											<h4><?php echo(date('d', $date)); ?></h4>
+											<?php echo(date('Y', $date)); ?></p>
+										</div>
+									<?php 
+										$date += $day;
+										$count++;
+									} // END while($count < $sim_length)
+									?>
+								</div>
+								<?php 
+							} // END if ($simType == SIM_TYPE_DAILY)
+							?>
                         </div>
-                        <?php } ?>
+						<?php
+						} 
+						?>
 						
 						<div style="float:left; width:50%">
 							<div style="float:left; text-align:left; width:40%; padding-top:5px;">
@@ -272,7 +304,7 @@
 								<?php
 								}
 							}// END if (isset($playerData['stats'])
-							
+							$drawn = 0;
 							$playerSched = $schedules['players_'.$type][$id];
 							if (isset($playerSched) && sizeof($playerSched) > 0) {
 								//$drawn = 0;
@@ -384,7 +416,15 @@
             		</div>  <!-- end batting stat div -->
                     <?php if ($showAdmin) { ?>
                     <div class="roster-actions-box">
-                    <input type="hidden" name="id" value="<?php echo($thisItem['team_id']); ?>" />
+					<input type="hidden" name="id" value="<?php echo($thisItem['team_id']); ?>" />
+					<?php
+					// EDIT 1.2 PROD - DAILY ROSTER SUPPORT
+					if ($simType == SIM_TYPE_DAILY && $leagueTransFreq == SIM_TYPE_DAILY) {
+						?>
+					<input type="hidden" name="game_date" value="<?php echo($game_date); ?>" />
+					<?php
+					}
+					?>
                     <button class="sitebtn lineup" onclick="document.lineupForm.submit();">Set Lineup</button></div>
                     <?php } ?>
                     </td>

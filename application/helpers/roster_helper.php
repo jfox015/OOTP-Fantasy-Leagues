@@ -66,14 +66,19 @@ function getLeagueName($league_id = false) {
 	}
 	return $ci->league_model->getLeagueName($league_id);
 }
-
-
 function getBasicRoster($team_id = false, $score_period = false) {
 	$ci =& get_instance();
 	if (!isset($ci->team_model)) {
 		$ci->load->model('team_model');
 	}
 	return $ci->team_model->getBasicRoster($score_period['id'],$team_id);
+}
+function getLeagueIdByTeam($team_id = false) {
+	$ci =& get_instance();
+	if (!isset($ci->team_model)) {
+		$ci->load->model('team_model');
+	}
+	return $ci->team_model->getTeamLeague($team_id);
 }
 	
 /*---------------------------------------------------------

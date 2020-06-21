@@ -181,3 +181,4 @@ UPDATE `fantasy_roster_rules` SET `league_id` = -1 WHERE `league_id` = 0;
 DROP TABLE IF EXISTS `fantasy_leagues_player_eligibility`;
 CREATE TABLE IF NOT EXISTS `fantasy_leagues_player_eligibility` (`id` int(11) NOT NULL auto_increment,`league_id` int(11) NOT NULL DEFAULT -1, `player_id` int(11) NOT NULL DEFAULT -1, `positions` varchar(2000) NOT NULL DEFAULT '', PRIMARY KEY  (`id`)) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;
 ALTER TABLE `fantasy_players` DROP  `positions`;
+ALTER TABLE `fantasy_rosters` ADD `game_date` datetime DEFAULT null;

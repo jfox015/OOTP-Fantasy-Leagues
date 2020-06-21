@@ -702,12 +702,12 @@
 		return outHTML;
 	}
     </script>
-<div id="single-column" class="trades">
+	<div id="single-column" class="trades">
         <div class="top-bar"><h1><?php echo($subTitle); ?></h1></div>
         
         <h2><?php echo($team_name); ?></h2>
-            <p /><br />
-            <b>Players on roster:</b>
+            <p><br />
+            <b>Players on roster<?php if ($game_date != null) { echo(" for game date <i>".date('M j, Y',strtotime($game_date))."</i>"); } ?></b>
             <br />
     </div>
     
@@ -759,7 +759,7 @@
 				}
 			?>
             </div>
-            <p />&nbsp;<br clear="all" /><br />
+            <p>&nbsp;<br clear="all" /><br />
             <b>Add a Player</b>
             <br />
             <div id="pickStatusBox"><div id="pickStatus"></div></div>
