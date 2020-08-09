@@ -138,11 +138,25 @@ function sendEmail($to,$fromEmail, $fromName,$subject,$message,$to_name = '',$fi
 		if (mail($to,$subject,$message,$headers)) {
 			return true;
 		} else {
-			return false;
+			// BACK UP, TRY THE OLD METHOD
+			$ci =& get_instance();
+			$ci->email->clear();
+			$ci->email->set_newline("\r\n");
+			$ci->email->charset("\r\n");
+			$ci->email->mailtype("html");
+			$ci->email->from($fromEmail,$fromName);
+			$ci->email->to($to,$to_name);
+			$ci->email->subject($subject);
+			$ci->email->message($message);
+			if ($ci->email->send()) {
+				return true;
+			} else {
+				return false;
+			} // END if	
 		} // END if
 	} else {
 		return false;
-	}// END if
+	} // END if
 }
 /**
  * 	GET SECURITY CODE

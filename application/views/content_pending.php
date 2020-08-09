@@ -1,6 +1,6 @@
     <div id="one-column">
         <div class="top-bar"> <h1>Content Pending</h1></div>
-		<p /><br />
+		<p><br />
         The content for this page is pending. please check back again soon.
-        <p />&nbsp;<br />
+        <p>&nbsp;<br />
     </div>

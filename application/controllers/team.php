@@ -781,14 +781,15 @@ class team extends BaseEditor {
 			
 			$msg = "";
 			$trade = $this->dataModel->getTrade($this->data['trade_id']);
-
+			$game_date = $this->league_model->getGameDateForLeague($this->dataModel->league_id, false, $this->params['config']['simType']);
+			
 			$recipient_id = $trade['team_1_id'];
 			if ($this->data['type'] == TRADE_ACCEPTED) {
 				if ($this->data['scoring_period']['id'] == $trade['in_period']) {
-					$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period']);
+					$rosterMessages = $this->verifyRostersForTrade($trade['team_1_id'], $trade['send_players'], $trade['team_2_id'], $trade['receive_players'], $trade['in_period'], $game_date);
 					if (empty($rosterMessages)) {
 						if ($this->params['config']['approvalType'] == -1) {
-							$processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments']);
+							$processResponse = $this->dataModel->processTrade($this->data['trade_id'],$this->data['type'],$this->data['comments'], $game_date);
 							if ($processResponse) {
 								$msg = $this->lang->line('team_trade_accepted_no_approvals');
 								$this->dataModel->logTransaction(NULL, NULL, NULL, $trade['send_players'], $trade['receive_players'],
@@ -1040,8 +1041,13 @@ class team extends BaseEditor {
 		} // END if
 		if (!$error) {
 			$this->dataModel->load($team_id);
+			if (!isset($this->league_model)) {
+				$this->load->model('league_model');
+			}
+			$game_date = $this->league_model->getGameDateForLeague($this->dataModel->league_id, false, $this->params['config']['simType']);
+			
 			// TEST ALL PLAYERS ROSTER STATUS
-			$rosterMessages = $this->verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $this->data['scoring_period']['id']);
+			$rosterMessages = $this->verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $this->data['scoring_period']['id'], $game_date);
 			if (empty($rosterMessages)) {
 				$trade_id = $this->dataModel->makeTradeOffer($sendList, $team2Id, $receiveList, $this->data['scoring_period']['id'], $comments, $prevTradeId,$expiresIn,$this->params['config']['defaultExpiration']);
 				
@@ -1985,6 +1991,9 @@ class team extends BaseEditor {
 				 // END if$update = true;
 			}
 			$query->free_result();
+
+			if (!isset($this->league_model)) { $this->load->model('league_model'); }
+			$game_date = $this->league_model->getGameDateForLeague($this->uriVars['league_id'], false, $this->params['config']['simType']);
 			
 			$this->db->flush_cache();
 			$this->db->set('team_id',$this->uriVars['team_id']);
@@ -1996,12 +2005,18 @@ class team extends BaseEditor {
 				if ($this->uriVars['curr_team'] != -1) {
 					$this->db->where('team_id',$this->uriVars['curr_team']);
 				} // END if
+				if ($game_date != NULL) {
+					$this->db->where('game_date',$game_date);
+				}
 				$this->db->where('scoring_period_id',$this->params['config']['current_period']);
 				$this->db->update('fantasy_rosters');
 			} else {
 				$this->db->set('league_id',$this->uriVars['league_id']);
 				$this->db->set('player_id',$this->uriVars['player_id']);
 				$this->db->set('scoring_period_id',$this->params['config']['current_period']);
+				if ($game_date != NULL) {
+					$this->db->set('game_date',$game_date);
+				}
 				$this->db->insert('fantasy_rosters');
 			} // END if
 			if ($this->db->affected_rows() > 0) {
@@ -2046,6 +2061,7 @@ class team extends BaseEditor {
 			if (!isset($this->league_model)) { $this->load->model('league_model'); }
 			$this->league_model->load($this->dataModel->league_id);
 			$playoffSettings = $this->league_model->getPlayoffSettings($this->dataModel->league_id);
+			$game_date = $this->league_model->getGameDateForLeague($this->uriVars['league_id'], false, $this->params['config']['simType']);
 
 			// EDIT 1.2 PROD, DISABLE ROSTER MOVES IF ROSTERS ARE LOCKED
 			if (isset($this->params['config']['rostersLocked']) && $this->params['config']['rostersLocked'] == 1) {
@@ -2091,6 +2107,9 @@ class team extends BaseEditor {
 					$this->db->where('team_id',$this->uriVars['team_id']);
 					$this->db->where('player_id',$this->uriVars['player_id']);
 					$this->db->where('scoring_period_id',$this->params['config']['current_period']);
+					if ($game_date != NULL) {
+						$this->db->where('game_date',$game_date);	
+					}
 					$this->db->limit(1);
 					$query = $this->db->get();
 					if ($query->num_rows() > 0) {
@@ -2107,6 +2126,9 @@ class team extends BaseEditor {
 						$this->db->set('player_position',$this->uriVars['position']);
 						$this->db->set('player_role',$this->uriVars['role']);
 						$this->db->set('scoring_period_id',$this->params['config']['current_period']);
+						if ($game_date != NULL) {
+							$this->db->set('game_date',$game_date);	
+						}
 						$this->db->insert('fantasy_rosters');
 						
 						if (!function_exists('updateOwnership')) {
@@ -2157,6 +2179,7 @@ class team extends BaseEditor {
 			if (!isset($this->league_model)) { $this->load->model('league_model'); }
 			$this->league_model->load($this->dataModel->league_id);
 			$playoffSettings = $this->league_model->getPlayoffSettings($this->dataModel->league_id);
+			$game_date = $this->league_model->getGameDateForLeague($this->uriVars['league_id'], false, $this->params['config']['simType']);
 
 			// EDIT 1.2 PROD, DISABLE ROSTER MOVES IF ROSTERS ARE LOCKED
 			if (isset($this->params['config']['rostersLocked']) && $this->params['config']['rostersLocked'] == 1) {
@@ -2170,6 +2193,9 @@ class team extends BaseEditor {
 				$this->db->where('team_id',$this->uriVars['team_id']);
 				$this->db->where('player_id',$this->uriVars['player_id']);
 				$this->db->where('scoring_period_id',$this->params['config']['current_period']);
+				if ($game_date != NULL) {
+					$this->db->where('game_date',$game_date);	
+				}
 				$this->db->delete('fantasy_rosters');
 				
 				// IF WAIVER ENABLED, PUT PLAYER ON WAIVERS
@@ -2461,7 +2487,7 @@ class team extends BaseEditor {
 	 *	@since							1.0.4 Beta
 	 *	@see							tradeResponse
 	 */
-	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period_id) {
+	protected function verifyRostersForTrade($team_id, $sendList, $team2Id, $receiveList, $scoring_period_id, $game_date) {
 		
 		$rosterMessages = "";
 		$sendIds = array();
@@ -2474,13 +2500,13 @@ class team extends BaseEditor {
 			$tmpPlayer = explode("_",$data);
 			array_push($receiveListIds,$tmpPlayer[0]);
 		}
-		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period_id, $team_id);
+		$sendRosterStatus = $this->dataModel->getPlayersRosterStatus($sendIds,$scoring_period_id, $team_id, $game_date);
 		foreach($sendRosterStatus as $status) {
 			if($status['code'] == 404) {
 				$rosterMessages .= $this->dataModel->getTeamName($team_id).": ".$status['message']."<br />";
 			}
 		}
-		$recieveRosterStatus = $this->dataModel->getPlayersRosterStatus($receiveListIds,$scoring_period_id,$team2Id);
+		$recieveRosterStatus = $this->dataModel->getPlayersRosterStatus($receiveListIds,$scoring_period_id,$team2Id, $game_date);
 		foreach($recieveRosterStatus as $status) {
 			if($status['code'] == 404) {
 				$rosterMessages .= $this->dataModel->getTeamName($team2Id).": ".$status['message']."<br />";

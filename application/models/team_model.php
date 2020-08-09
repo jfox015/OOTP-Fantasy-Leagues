@@ -533,7 +533,7 @@ class team_model extends base_model {
 	 * @param $status			The trade status type
 	 * @param $comments			(OPTIONAL) Response comments
 	 */
-	public function processTrade($trade_id, $status, $comments = "", $league_id = false){
+	public function processTrade($trade_id, $status, $comments = "", $league_id = false, $game_date = null){
 
 		$outMess = "";
 
@@ -563,6 +563,9 @@ class team_model extends base_model {
 						$this->db->where('player_id',$tmpPlayer[0]);
 						$this->db->where('league_id',$league_id);
 						$this->db->where('scoring_period_id',$trade['in_period']);
+						if ($game_date != null) {
+							$this->db->where('game_date',$game_date);
+						}
 						if ($tmpPlayer[1] == "LF" || $tmpPlayer[1] == "CF" || $tmpPlayer[1] == "RF") {
 							$tmpPlayer[1] = "OF";
 						}
@@ -1066,7 +1069,7 @@ class team_model extends base_model {
 	 * @param  $score_period
 	 * @param  $team_id
 	 */
-	public function getPlayerRosterStatus($player_id = false,$score_period_id = false, $team_id = false) {
+	public function getPlayerRosterStatus($player_id = false,$score_period_id = false, $team_id = false, $game_date = null) {
 		$status = array();
 		$code = -1;
 		$message = "";
@@ -1090,6 +1093,9 @@ class team_model extends base_model {
 		$this->db->where('player_id',$player_id);
 		$this->db->where('team_id',$team_id);
 		$this->db->where('scoring_period_id',$score_period_id);
+		if ($game_date != NULL) {
+			$this->db->where('game_date',$game_date);	
+		}
 		$count = $this->db->count_all_results($this->tables['ROSTERS']);
 		if ($count > 0) {
 			$code = 200;
@@ -1107,13 +1113,13 @@ class team_model extends base_model {
 	 * @param $score_period_id
 	 * @param $team_id
 	 */
-	public function getPlayersRosterStatus($players,$score_period_id, $team_id) {
+	public function getPlayersRosterStatus($players,$score_period_id, $team_id, $game_date) {
 		$status = array();
 		if ($players === false || !is_array($players) || sizeof($players) <= 0 ||
 		$score_period_id === false || $team_id === false) { return false; }
 
 		foreach($players as $player_id) {
-			array_push($status,$this->getPlayerRosterStatus($player_id,$score_period_id,$team_id));
+			array_push($status,$this->getPlayerRosterStatus($player_id,$score_period_id,$team_id, $game_date));
 		}
 		return $status;
 	}
