@@ -581,7 +581,7 @@
 				if (isset($upcomingOpponent) && sizeof($upcomingOpponent) > 0) {
 				?>
 				<tr class='headline'>
-					<th colspan="3">Next Games in Period <?php echo($curr_period); ?></th>
+					<th colspan="3">Next Games in Period <?php echo($curr_period+1); ?></th>
 				</tr>
 				<?php
 					foreach($upcomingOpponent as $opponent) {

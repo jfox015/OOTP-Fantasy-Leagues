@@ -12,7 +12,8 @@ require_once('base_editor.php');
  *	@author			Jeff Fox (Github ID: jfox015)
  *	@author			Frank Esslink (OOTP ID: fhommes)
  *	@dateCreated	03/23/10
- *	@lastModified	04/16/20
+ *	@version		1.1.1 Prod Bug Fix
+ *  @lastModified	11/26/24
  *
  */
 class draft extends BaseEditor {
@@ -445,9 +446,9 @@ class draft extends BaseEditor {
 						$this->dataModel->debug = $this->debug;
 						// GET DRAFT ELIDGIBLE PLAYERS
 						if ($this->dataModel->draftBy == 1) {
-							$values = $this->dataModel->getPlayerValues(); 
+							$values = $this->dataModel->getPlayerValues($this->params['config']['ootp_league_id']); 
 						} else {
-							$values = $this->dataModel->getPlayerRatings();
+							$values = $this->dataModel->getPlayerRatings($this->params['config']['ootp_league_id']);
 						} // END if
 
 						// DRAFT SETTINGS FROM CONFIG
@@ -1198,7 +1199,7 @@ class draft extends BaseEditor {
 			if (!isset($teamQuotas[$team_id])) {
 				$teamQuotas[$team_id] = array();
 			}
-			echo("players_str = ".$players_str."<br />");
+			//echo("players_str = ".$players_str."<br />");
 			$playersInfo = $this->player_model->getPlayerPositions(false, $players_str);
 			foreach($playersInfo as $details) {
 				$pos = 0;
@@ -1974,6 +1975,28 @@ class draft extends BaseEditor {
 		$this->makeNav();
 		parent::showInfo();
 	}
+	/*---------------------------------------
+	/ Utility Functions for debugging
+	/--------------------------------------*/
+	public function showValues() {
+		$this->loadModel();		
+		$values = $this->dataModel->getPlayerValues($this->params['config']['ootp_league_id']); 
+		if (sizeof ($values) > 0) {
+			foreach ($values as $pid => $val) {
+				echo("player ".$pid.", value = ".$val."<br/>");
+			}
+		}
+	}
+	public function showRatings() {
+		$this->loadModel();		
+		$values = $this->dataModel->getPlayerRatings($this->params['config']['ootp_league_id']); 
+		if (sizeof ($values) > 0) {
+			foreach ($values as $pid => $val) {
+				echo("player ".$pid.", value = ".$val."<br/>");
+			}
+		}
+	}
+
 	/*-----------------------------------
 	/	DEPRECATED FUNCTIONS
 	/	SALTED FOR REMOVAL, BUT STILL 
