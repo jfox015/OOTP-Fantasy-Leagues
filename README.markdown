@@ -14,7 +14,7 @@ OOTP Fantasy Leagues is a web based online mod for Out of the Park Baseball (OOT
 
 ## Technical Information
 
-- Version: 1.1
+- Version: 1.1.1
 - License: MIT License and GNU GENERAL PUBLIC LICENSE v3
 
 ## Keep Current on the Mod
@@ -27,7 +27,7 @@ OOTP Fantasy Leagues is a 100% free and open source project. The source code is 
 
 ## License
 
-Copyright (c) 2010-20 Jeff Fox.
+Copyright (c) 2010-2024 Jeff Fox.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to dealin the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
