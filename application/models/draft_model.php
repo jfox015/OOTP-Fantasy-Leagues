@@ -6,8 +6,8 @@
  *
  *	@author			Jeff Fox (Github ID: jfox015)
  *	@author			Frank Esselink	(fhommes) Where noted
-  *	@version		1.2
- *  @lastModified	06/15/20
+  *	@version		1.1.1 Prod Bug Fix
+ *  @lastModified	11/26/24
   */
 class draft_model extends base_model {
 	/*--------------------------------
@@ -1476,10 +1476,10 @@ class draft_model extends base_model {
 		$sql.="10*pb.batting_ratings_talent_gap+";
 		$sql.="17*pb.batting_ratings_talent_power+";
 		$sql.="15*pb.batting_ratings_talent_eye+";
-		$sql.="8*pb.batting_ratings_talent_strikeouts+";
-		$sql.="3*p.running_ratings_speed+";
-		$sql.="3*p.running_ratings_stealing+";
-		$sql.="1*p.running_ratings_baserunning";
+		$sql.="8*pb.batting_ratings_talent_strikeouts";
+		//$sql.="3*p.running_ratings_speed+";
+		//$sql.="3*p.running_ratings_stealing+";
+		//$sql.="1*p.running_ratings_baserunning";
 		$sql.=")/68 as value FROM players as p,players_batting as pb, fantasy_players as fp ";
 		//$sql.="LEFT JOIN  ON  ";
 		$sql.="WHERE p.player_id=pb.player_id AND p.player_id = fp.player_id AND p.retired=0 AND p.league_id=$ootp_league_id ";
