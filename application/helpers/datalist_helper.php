@@ -7,7 +7,8 @@
  * @category	Helpers
  * @author		Jeff Fox
  * @description	Various helpers for handling data lists
- * @version		1.0.1
+ * @version		1.1.1 Prod Bug Fix
+ * @lastModified	11/26/24
  */
 // ------------------------------------------------------------------------
 /**
@@ -888,7 +889,12 @@ if ( ! function_exists('loadOOTPVersions')) {
 					 "18"=>"OOTP 18",
 					 "19"=>"OOTP 19",
 					 "20"=>"OOTP 20",
-					 "21"=>"OOTP 21"
+					 "21"=>"OOTP 21",
+					 "22"=>"OOTP 22",
+					 "23"=>"OOTP 23",
+					 "24"=>"OOTP 24",
+					 "25"=>"OOTP 25",
+					 "26"=>"OOTP 26"
 					 );
 	}
 }

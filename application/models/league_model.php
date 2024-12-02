@@ -6,7 +6,7 @@
  *  admin functionality and provides tools and methods to run the league.
  *	@author			Jeff Fox (Github ID: jfox015)
  *	@version		1.2
- *  @lastModified	06/15/20
+ *  @lastModified	11/26/24
  *
 */
 require_once('./application/libraries/CompiledStats.php');
@@ -3246,9 +3246,18 @@ class league_model extends base_model {
 				break;
 			case LEAGUE_SCORING_HEADTOHEAD:
 			default:
+				$summary .= "Processing Head to Head Results for League ID".$league_id."<br />";
 				$this->db->select("fantasy_teams.id, g, w, l");
 				$this->db->join("fantasy_teams_record","fantasy_teams_record.team_id = fantasy_teams.id","left");
 				$this->db->where("fantasy_teams.league_id",$league_id);
+				$this->db->where('scoring_period_id',$scoring_period['id']-1);
+				$recordsQuery = $this->db->get($this->tables['TEAMS']);
+				$summary .= "Records from Scoring Period ".($scoring_period['id']-1)." = ".$recordsQuery->num_rows()."<br />";
+				
+				$this->db->flush_cache();
+
+				$this->db->select("id");
+				$this->db->where("league_id",$league_id);
 				$query = $this->db->get($this->tables['TEAMS']);
 				if ($query->num_rows() > 0) {
 					foreach($query->result() as $row) {
@@ -3279,9 +3288,19 @@ class league_model extends base_model {
 							}
 						}
 						$gQuery->free_result();
-						$games += $row->g;
-						$wins += $row->w;
-						$losses += $row->l;
+						// EDIT 1.1.1
+						// ADD IN RESULTS FROM THE PREVIOUS SIM PERIOD IF THEY EXIST (I.E. scoring period is over 1)
+						if ($recordsQuery->num_rows() > 0) {
+							$summary .= "Updated Win Loss record for current team ". $row->id." with previous results<br />";
+							foreach($recordsQuery->result() as $rRow) {
+								if ($rRow->id == $row->id) {
+									$games += $rRow->g;
+									$wins += $rRow->w;
+									$losses += $rRow->l;
+									break;
+								}
+							}
+						}
 						$perc = 0;
 						if ($games > 0) {
 							$perc = ($wins/$games);
