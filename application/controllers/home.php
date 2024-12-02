@@ -36,22 +36,7 @@ class home extends MY_Controller {
 	public function index() {
 		// GET Fantasy Details
 		$status = getFantasyStatus();
-		switch($status) {
-			case 1:
-				$this->data['fantasyStatus'] = "Pre-Season";
-				break;
-			case 2:
-				$this->data['fantasyStatus'] = "Active OOTP Season";
-				break;
-			case 3:
-				$this->data['fantasyStatus'] = "Season Completed!";
-				break;
-			case -1:
-			default:
-				$this->data['fantasyStatus'] = "Status Unknown";
-				break;
-			
-		}
+		$this->data['fantasyStatus'] = getFantasyStatusLabel($status);
 		$this->data['fantasyStatusID'] = $status;
 		$this->data['fantasyStartDate'] = date('m/d/Y',(strtotime($this->params['config']['season_start'])));
 		

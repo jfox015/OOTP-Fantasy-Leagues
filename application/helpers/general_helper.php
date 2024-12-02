@@ -53,6 +53,22 @@ function getFantasyStatus() {
 	}
 	return $status;
 }
+function getFantasyStatusLabel($status) {
+	$label = "Status Unknown";
+	switch($status) {
+			case 1:
+				$label = "Pre-Season";
+				break;
+			case 2:
+				$label = "Active OOTP Season";
+				break;
+			case 3:
+				$label = "Season Completed!";
+				break;
+	}
+	return $label;
+}
+
 /**
  *	GET USERNAME
  *

@@ -184,8 +184,21 @@
 			<?php
 			}
 			?>
-			<span style="margin-left: 12px;"><b><?php echo($fantasyStatus); ?></b></span><br />&nbsp;<br />
-			<?php if ($fantasyStatusID == 1) { ?>
+			<span style="margin-left: 12px;">
+			<?php if ($fantasyStatusID == 3) { ?>
+				<div class="season_over_small show">
+					<h3><?php echo($fantasyStatus); ?></h3>
+				</div>
+			<?php 
+			} else { ?>
+				<b><?php echo($fantasyStatus); ?></b>
+			<?php
+			} // END if
+			?>
+			</span><br />&nbsp;<br />
+
+			<?php
+			if ($fantasyStatusID == 1) { ?>
 			The fantasy season begins:<br />
 			<span style="margin-left: 12px;"><b><?php echo($fantasyStartDate); ?></b></span><br />&nbsp;<br />
 			<?php

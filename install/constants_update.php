@@ -215,7 +215,8 @@ define("ACCESS_ADMINISTRATE",6);
 |--------------------------------------------------------------------------
 */
 define('SITE_NAME','OOTP Fantasy Baseball Leagues');
-define('SITE_VERSION','1.0.3');
+define('SITE_VERSION','1.1.1');
+define('RELEASE_DATE','12/9/2024');
 define('MOD_SITE_URL','http://ootpfantasyleagues.jfox015.com/');
 define("BUG_URL",'https://github.com/jfox015/OOTP-Fantasy-Leagues/issues');
 define("UPDATE_URL",'http://www.jfox015.com/ootp_fantasy/curr_version.txt');

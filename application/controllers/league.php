@@ -317,6 +317,14 @@ class league extends BaseEditor {
 		}
 		$this->data['playoffs'] = $playoffArr;
 
+		// EDIT 1.1.1 Add a header when the season is over
+		if (!function_exists('getFantasyStatus')){
+			$this->load->helper('general');
+		}
+		$status = getFantasyStatus();
+		$this->data['fantasyStatus'] = getFantasyStatusLabel($status);
+		$this->data['fantasyStatusID'] = $status;
+
 		$this->params['content'] = $this->load->view($this->views['HOME'], $this->data, true);
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;
@@ -1192,6 +1200,15 @@ class league extends BaseEditor {
 		$this->data['leagueName'] =  $this->ootp_league_model->name;
 		$this->data['current_year'] =  date('Y',(strtotime($this->ootp_league_model->current_date)));
 		$this->data['league_list'] = $this->dataModel->getLeagueList($userVar, true, true);
+		
+		// EDIT 1.1.1 Add a header when the season is over
+		if (!function_exists('getFantasyStatus')){
+			$this->load->helper('general');
+		}
+		$status = getFantasyStatus();
+		$this->data['fantasyStatus'] = getFantasyStatusLabel($status);
+		$this->data['fantasyStatusID'] = $status;
+
 		$this->data['loggedIn'] =$this->params['loggedIn'];
 		$this->makeNav();
 		$this->params['pageType'] = PAGE_FORM;
