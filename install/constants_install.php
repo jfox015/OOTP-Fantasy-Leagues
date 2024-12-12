@@ -151,7 +151,7 @@ define('QUERY_COMPACT',4);
 
 define('SECURITY_RECAPTHCA',1);
 
-define('OOTP_CURRENT_VERSION',21);
+define('OOTP_CURRENT_VERSION',25);
 /*
 |--------------------------------------------------------------------------
 | File/Path Defaults

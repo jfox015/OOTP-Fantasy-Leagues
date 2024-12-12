@@ -210,14 +210,14 @@
         </form>
 	</div>
 	
-	<div id="autoForm" class="dialog" style="width="650px; min-height:450px;">
+	<div id="autoForm" class="dialog" style="width: 650px; min-height:450px;">
 		<form method='post' action="<?php echo($config['fantasy_web_root']); ?>draft/processDraft" name='frmAuto' id="frmAuto">
         <input type='hidden' id="action" name='action' value='auto'></input>
         <input type='hidden' id="team_id" name='team_id' value=''></input>
         <input type='hidden' id="pick_id" name='pick_id' value=''></input>
         <input type='hidden' id="league_id" name='league_id' value=''></input>
         <div class='textbox'>
-         <table cellpadding=2 cellspacing=0 cellborder=0 style="width="600px;">
+         <table cellpadding=2 cellspacing=0 cellborder=0 style="width:600px">
           <tr class='title'><td colspan="3">Auto Pick Options</td></tr>
           <tr>
            <td width="15">&nbsp;</td>
