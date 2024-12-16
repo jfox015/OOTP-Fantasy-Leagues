@@ -267,7 +267,9 @@ if ( ! function_exists('reset_sim')) {
 		$ci->db->query('DELETE FROM `fantasy_rosters` WHERE scoring_period_id = '.$scoring_period_id);
 		$scoring_period_id = $scoring_period_id -1;
 		$ci->db->query('DELETE FROM `fantasy_players_compiled_batting` WHERE scoring_period_id = '.$scoring_period_id);
+		$ci->db->query('DELETE FROM `fantasy_teams_players_compiled_batting` WHERE scoring_period_id = '.$scoring_period_id);
 		$ci->db->query('DELETE FROM `fantasy_players_compiled_pitching` WHERE scoring_period_id = '.$scoring_period_id);
+		$ci->db->query('DELETE FROM `fantasy_teams_players_compiled_pitching` WHERE scoring_period_id = '.$scoring_period_id);
 		$ci->db->query('DELETE FROM `fantasy_players_scoring` WHERE scoring_period_id = '.$scoring_period_id);
 		$ci->db->query('DELETE FROM `fantasy_sim_summary` WHERE scoring_period_id = '.$scoring_period_id);
 		$ci->db->query('DELETE FROM `fantasy_teams_record` WHERE scoring_period_id = '.$scoring_period_id);
@@ -285,7 +287,9 @@ if ( ! function_exists('reset_scoring')) {
 		$ci =& get_instance();
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_players_compiled_batting');
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_players_compiled_batting');
 		$ci->db->query('TRUNCATE TABLE fantasy_players_compiled_pitching');
+		$ci->db->query('TRUNCATE TABLE fantasy_teams_players_compiled_pitching');
 		$ci->db->query('TRUNCATE TABLE fantasy_players_scoring');
 		$ci->db->query('TRUNCATE TABLE fantasy_sim_summary');
 		$ci->db->query('TRUNCATE TABLE fantasy_teams_record');
@@ -326,24 +330,30 @@ if ( ! function_exists('reset_draft')) {
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('reset_team_data')) {
-	function reset_team_data() {
+	function reset_team_data($softReset = false) {
 		$ci =& get_instance();
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_teams_record');
-		$ci->db->query('TRUNCATE TABLE fantasy_rosters');
 		$ci->db->query('TRUNCATE TABLE fantasy_teams_waiver_claims');
+		if(!$softReset) {
+			$ci->db->query('TRUNCATE TABLE fantasy_rosters');
+		} else {
+			$ci->db->query('DELETE FROM fantasy_rosters WHERE scoring_period_id > 1');
+		}
 		return true;
 	}
 }
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('reset_player_data')) {
-	function reset_player_data() {
+	function reset_player_data($softReset = false) {
 		$ci =& get_instance();
 		$ci->db->flush_cache();
 		$ci->db->query('TRUNCATE TABLE fantasy_players_scoring');
-		$ci->db->query('TRUNCATE TABLE fantasy_players');
 		$ci->db->query('TRUNCATE TABLE fantasy_players_waivers');
+		if(!$softReset) {
+			$ci->db->query('TRUNCATE TABLE fantasy_players');
+		}	
 		return true;
 	}
 }

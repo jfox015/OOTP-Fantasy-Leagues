@@ -74,6 +74,15 @@
 			}
 			event.preventDefault();
 		});
+		$('a[rel=sftreset]').click(function (event) {
+			refreshAfterUpdate = true;
+			if (confirm("Are you sure you want to perform this operation? This will reset the entire season to after the draft and will remove all processed sims and related data.")) {
+				if (confirm("Are you sure you want to do this? This operation will restart the season to before the first sim and CANNOT be undone."))
+					runAjax("<?php echo($config['fantasy_web_root']); ?>admin/softReset"+cacheBuster());
+			}
+			event.preventDefault();
+		});
+		
         $('a[rel=remove]').click(function (event) {
             refreshAfterUpdate = true; 
 			alertAfterUpdate = "All fantasy tables have been deleted. Thank you for using the mod. You will redirected to a new page in 5 second.";
@@ -182,11 +191,14 @@
 		<h4 class="success_txt">Season Completed!</h4> Your Fantasy Season has completed. To begin a new Fantasy season, click the button below.<br />
 		<b>NOTE:</b> This will reset <b class="error_txt"><i>ALL SEASON SPECIFIC INFORMATION</i></b> including draft history, rosters, transactions, team and player fantasy 
 		scoring, standings, etc. back to Pre-Season status. Only perform this operation when you're ready to begin a new Fantasy Season.<br />
-		This function <b class="success_txt">DOES NOT</b> affect Site membership, League structure or setttings, team ownership or settings or News.
+		This function <b class="success_txt">DOES NOT</b> affect Site membership, League structure or setttings, team ownership or settings or News.<br />
+		If you wish to reset the season back to before the first Sim was processed without affecting players, rosters, schedules or scoring periods, use the <b>Soft Reset</b> option.
 		<br clear="all" /><br />
 		<ul class="iconmenu">
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'reset')); ?><br />
             Reset game to Pre-season</li>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'sftreset')); ?><br />
+            Soft Reset game to season start</li>
 		</ul>
         <br clear="all" />
 		<?php 
@@ -263,10 +275,6 @@
         <ul class="iconmenu">
            	<?php
 			$hidden_funcs = false;
-			?>
-            <li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'reset')); ?><br />
-            Reset game to Pre-season</li>
-            <?php
 			if ($playerCount <= 0) { 
 			?>
 			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/users.png" width="48" height="48" />',array('rel'=>'avail')); ?><br />
@@ -338,7 +346,10 @@
             Load All SQL Data Files</li>
 			<li><?php echo anchor('admin/listSQLFiles','<img src="'.$config['fantasy_web_root'].'images/icons/database_search.png" width="48" height="48" />'); ?><br />
             Load Individual SQL Files</li>
-
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'reset')); ?><br />
+            Reset game to Pre-season</li>
+			<li><?php echo anchor('#','<img src="'.$config['fantasy_web_root'].'images/icons/database_remove.png" width="48" height="48" />',array('rel'=>'sftreset')); ?><br />
+            Soft Reset game to season start</li>
         </ul>
         <?php } ?>
         <br clear="all" />

@@ -3,8 +3,9 @@
  *	Admin Access.
  *	The primary controller for the Admin Section.
  *	@author			Jeff Fox
+ *  @version		1.1.1
  *	@dateCreated	11/13/09
- *	@lastModified	02/07/12
+ *	@lastModified	12/16/24
  *
  */
 class admin extends MY_Controller {
@@ -1440,7 +1441,7 @@ class admin extends MY_Controller {
 	/**
 	 *	CREATE SCORING SCHEDULE.
 	 */
-	function scoringSchedule() {
+	function scoringSchedule($runOnly = false) {
 		// DIVIDE THE LEAGUE GAME SCHEDULE STARTING AT THE LEAGUE DATE BY THE SIM/PERIODS
 		$result = '';
 		$status = '';
@@ -1451,11 +1452,13 @@ class admin extends MY_Controller {
 		} else {
 			$status = "OK";
 		}
-		$code = 200;
-
-		$result = '{"result":"'.$mess.'","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json');
-		$this->output->set_output($result);
+		if ($runOnly) { return $status; }
+		else {
+			$code = 200;
+			$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
+			$this->output->set_header('Content-type: application/json');
+			$this->output->set_output($result);
+		}
 	}
 	/**
 	 *	MANUALY PROCCESS WAIVERS
@@ -1508,7 +1511,40 @@ class admin extends MY_Controller {
 		$this->output->set_header('Content-type: application/json');
 		$this->output->set_output($result);
 	}
-
+	/**
+	 *	SOFT RESET
+	 *  This function performs a "soft" reset back to before the first sim is processed. This
+	 *  does not delete, rosters, the draft or other setup funrction prior to the first sim is
+	 *  processed.
+	 *  @since 	1.1.1. 
+	 */
+	public function softReset() {
+		$result = '';
+		$status = '';
+		$mess = reset_transactions();
+		$mess = reset_sim_summary();
+		$mess = reset_player_data(true);
+		$mess = reset_team_data(true);
+		$mess = reset_league_data();
+		$mess = $this->scoringSchedule(true);
+		$mess = $this->generateSchedules(true);
+		$mess = reset_scoring();
+		update_config('current_period',1);
+		update_config('last_sql_load_time',date('Y-m-d',(strtotime(date('Y-m-d'))-(60*60*24))));
+		update_config('last_process_time','1970-01-01 00:00:00');
+		update_config('player_update_run','-1');
+		update_config('update_eligible_run','-1');
+		update_config('ratings_run','-1');
+		if (!$mess) {
+			$status = "error:".$mess;
+		} else {
+			$status = "OK";
+		}
+		$code = 200;
+		$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
+		$this->output->set_header('Content-type: application/json');
+		$this->output->set_output($result);
+	}
 	/**
 	 *	RESET SEASON DATA.
 	 *  CAUTION: THIS WILL WIPE OUT ALL SEASON WIDE DATA AND REST THE MOD BACK TO
@@ -1571,7 +1607,7 @@ class admin extends MY_Controller {
 	 *	GENERATE LEAGUE SCHEDULES.
 	 *	Creates game schedule for head to head scoring leagues.
 	 */
-	function generateSchedules() {
+	function generateSchedules($runOnly = false) {
 		// DIVIDE THE LEAGUE GAME SCHEDULE STARTING AT THE LEAGUE DATE BY THE SIM/PERIODS
 		$result = '';
 		$status = '';
@@ -1592,10 +1628,14 @@ class admin extends MY_Controller {
 		} else {
 			$status = "OK";
 		}
-		$code = 200;
-		$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
-		$this->output->set_header('Content-type: application/json');
-		$this->output->set_output($result);
+		if ($runOnly) { return $status; }
+		else {
+			$code = 200;
+			$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
+			$this->output->set_header('Content-type: application/json');
+			$this->output->set_output($result);
+		}
+
 	}
     /**
      * Uninstall Database Tables
