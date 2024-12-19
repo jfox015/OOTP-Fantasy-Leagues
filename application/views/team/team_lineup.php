@@ -10,11 +10,25 @@
 		/	Bug #36, Add FF point total to lineup screen
 		/--------------------------------------------------*/
 		$('a[rel=listPick]').live('click',function () {
-			var params = this.id.split("|");
-			$('td.'+params[0]).removeClass('field_hide');
-			$('td.'+params[0]).addClass('field_show');
-			$('td.'+params[1]).removeClass('field_show');
-			$('td.'+params[1]).addClass('field_hide');
+			//var params = this.id.split("|");
+			//console.log("Link clicked. Option = " + this.id);
+			var options = ['years_stat', 'team_stat', 'sched'];
+			for (var i = 0; i < options.length; i++) {
+				if (this.id == options[i]) {
+					$('td.'+options[i]).removeClass('field_hide');
+					$('td.'+options[i]).addClass('field_show');
+				} else {
+					$('td.'+options[i]).removeClass('field_show');
+					$('td.'+options[i]).addClass('field_hide');
+				}
+			}
+			if (this.id.indexOf("stat") != -1) {
+				$('td.stat').removeClass('field_hide');
+				$('td.stat').addClass('field_show');
+			} else {
+				$('td.stat').removeClass('field_show');
+				$('td.stat').addClass('field_hide');
+			}
 			return false;
 		});
 		$('div[rel=datePick]').live('click',function () {
@@ -47,7 +61,7 @@
                     
                     <div style="display:block;width:98%;position:relative; clear:right;">
 						<?php if (isset($avail_periods) && sizeof($avail_periods) > 0) {  ?>
-                        <div style="width:48%;text-align:left;float:left;">
+                        <div style="width:45%;text-align:left;float:left;">
 							<?php echo("<b>Period: </b>");
                             foreach($avail_periods as $period) { 
                                 if ($period != $curr_period) {
@@ -90,13 +104,14 @@
 						} 
 						?>
 						
-						<div style="float:left; width:50%">
-							<div style="float:left; text-align:left; width:40%; padding-top:5px;">
+						<div style="float:left; width:54%;">
+							<div style="float:left; text-align:left; width:70%; padding-top:5px;">
 								<label for="display" style="min-width:55px; margin-top:0;">Show:</label> 
-								<a href="#" id="stat|sched" rel="listPick">Stats</a> | <a href="#" id="sched|stat" rel="listPick">Schedule</a> 
+								<a href="#" id="years_stat" rel="listPick">Season Stats</a> | <a href="#" id="team_stat" rel="listPick">Team Stats</a> | 
+								<a href="#" id="sched" rel="listPick">Schedule</a> 
 							</div>
 							<?php if (isset($thisItem['fantasy_teams']) && sizeof($thisItem['fantasy_teams']) > 0 ) { ?>
-							<div style="width:59%;text-align:right;float:left;">
+							<div style="width:30%;text-align:right;float:left;">
 							
 								<label for="teams" style="min-width:95px; margin-right: 5px; margin-top:5px;display: inline-block;">Fantasy Teams:</label> 
 								<select id="teams" style="clear:none;display: inline-block;">
@@ -221,7 +236,8 @@
 							}
 							echo($infoColumns+$config['sim_length']); ?>' class='lhl'><?php echo($rosterTitle); ?> Roster</td></tr> 
 						<?php
-						if (isset($thisItem['players_'.$type]) && sizeof($thisItem['players_'.$type]) > 0) { 
+						$statsTypes = array("years","team");
+						if ((isset($thisItem['players_'.$type]) && sizeof($thisItem['players_'.$type]) > 0)) {
 						$rowcount = 0;
 						//echo($headlines['batting']);
 						foreach($thisItem['players_'.$type] as $id => $playerData) {
@@ -276,35 +292,48 @@
 								case 2: $statusCode = "M"; break;
 								case 3: $statusCode = "DL"; break;
 								case 4: $statusCode = "R"; break;
+								case 5: $statusCode = "I"; break;
 							}
 							?>
                             <td class='hsc2_c'><?php echo($statusCode); ?></td>
-							<?php 
+							<?php
 							/*----------------------------------------------
 							/	PLAYER STATS
 							/---------------------------------------------*/
-							if (isset($playerData['stats']) && sizeof($playerData['stats'])> 0) {
-								foreach($playerData['stats'] as $key=>$val) {
-									$color = "#000";
-									if ($key == 'rating' || $key == "fpts") {
-										if ($val > 0) {
-											$color = "#080";
-										} else if ($val < 0) {
-											$color = "#C00";
+							// 1.1.1 UPDATED TO DISPLAY BOTH TEAM ONLY AND SEASON STATS
+							// LOOP THROUGH AND DRAW BOTH TYPES OF STATS FIRST
+							$playerType = 'batters';
+							if ($playerData['position'] == 1) $playerType = 'pitchers';
+							foreach ($statsTypes as $statType) {
+								
+								$classStr = "hsc2_r ".$statType."_stat field_";
+								if ($statType == "team") $classStr .= "hide"; else $classStr .= "show";
+								$theseStats = $playerStats['stats_'.$statType.'_'.$playerType][$playerData['id']];
+								//echo("Size of theseStats for player ".$playerData['id']." = ".sizeof($theseStats));
+								if (isset($theseStats) && sizeof($theseStats)> 0) {
+									foreach($theseStats as $key=>$val) {
+										if ($key != "id" && $key != "player_id") {
+											$color = "#000";
+											if ($key == 'rating' || $key == "fpts") {
+												if ($val > 0) {
+													$color = "#080";
+												} else if ($val < 0) {
+													$color = "#C00";
+												} // END if
+											} // END if
+									?>
+									<td class="<?php echo($classStr); ?>"><?php echo('<span style="color:'.$color.';">'.$val.'</span>'); ?></td>
+									<?php
 										} // END if
-									} // END if
-								?>
-								<td class='hsc2_r stat field_show'><?php echo('<span style="color:'.$color.';">'.$val.'</span>'); ?></td>
-								<?php
-								} // END foreach
-
-							} else {
-								for ($i = 0; $i < 7; $i++) { ?>
-									<td class='hsc2_r stat field_show'>0</td>
-								<?php
-								}
-							}// END if (isset($playerData['stats'])
-							$drawn = 0;
+									} // END foreach
+								} else {
+									for ($i = 0; $i < 7; $i++) { ?>
+										<td class="<?php echo($classStr); ?>">0</td>
+									<?php
+									}
+								}// END if (isset($playerData['stats'])
+							}
+							
 							$playerSched = $schedules['players_'.$type][$id];
 							if (isset($playerSched) && sizeof($playerSched) > 0) {
 								//$drawn = 0;

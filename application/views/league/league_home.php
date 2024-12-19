@@ -2,6 +2,9 @@
     if (isset($playoffs) && $playoffs['inPlayoffs'] == 1) { ?>
         <div id="single-column"><div class="playoff_banner show"><h2><?php echo($playoffs['league_year']." ".$playoffs['league_name']); ?> Playoffs</h2></div></div>
     <?php
+    } else if (isset($fantasyStatusID) && $fantasyStatusID == 3) { ?>
+        <div id="single-column"><div class="seasonOver_banner show"><h2><?php echo($playoffs['league_year']." ".$playoffs['league_name']." ".$this->lang->line('season_over_title')); ?></h2></div></div>
+    <?php
     }
     ?>
     <div id="center-column" class="league-home">

@@ -1476,10 +1476,11 @@ class draft_model extends base_model {
 		$sql.="10*pb.batting_ratings_talent_gap+";
 		$sql.="17*pb.batting_ratings_talent_power+";
 		$sql.="15*pb.batting_ratings_talent_eye+";
-		$sql.="8*pb.batting_ratings_talent_strikeouts";
-		//$sql.="3*p.running_ratings_speed+";
-		//$sql.="3*p.running_ratings_stealing+";
-		//$sql.="1*p.running_ratings_baserunning";
+		$sql.="3*pb.batting_ratings_talent_strikeouts+";
+		$sql.="3*pb.running_ratings_speed+";
+		$sql.="5*pb.running_ratings_stealing+";
+		$sql.="3*pb.running_ratings_stealing_rate+";
+		$sql.="1*pb.running_ratings_baserunning";
 		$sql.=")/68 as value FROM players as p,players_batting as pb, fantasy_players as fp ";
 		//$sql.="LEFT JOIN  ON  ";
 		$sql.="WHERE p.player_id=pb.player_id AND p.player_id = fp.player_id AND p.retired=0 AND p.league_id=$ootp_league_id ";
@@ -1495,7 +1496,8 @@ class draft_model extends base_model {
 			$bvalues[$pid]=$value;
 		}
 		$query->free_result();
-		
+		/*
+		/ EDIT 1.1.1 - Deprecating Fielding Stats since they do not impact fantasy baseball so removing them from the calculations
 		## Fielding
 		$sql="SELECT fp.id, p.player_id";
 		$sql.=",pf.fielding_ratings_infield_arm";
@@ -1541,7 +1543,7 @@ class draft_model extends base_model {
 				default: break;
 			}
 			$bvalues[$pid]=$bvalues[$pid]*(1+$mod);
-		}
+		}*/
 		
 		$pvalues = array();
 		## Pitchers

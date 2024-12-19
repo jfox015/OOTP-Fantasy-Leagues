@@ -27,3 +27,5 @@ $lang['league_trade_approved_league_accepting_team'] = 'To [USERNAME],
 <p>The  trade offer from the [OFFERING_TEAM_NAME] has been completed. The minimum number of trade protests were not received by the deadline. All players have been assigned to their new rosters.</p>
 <p>
 You can should view and [URL_LINEUP] immediately to assure your rosters are still legal before the next sim occurs. This trade will now appear in the league transactions list as well.</p>';
+
+$lang['season_over_title'] = 'Season Complete!';

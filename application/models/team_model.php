@@ -3,7 +3,8 @@
  *	TEAM MODEL CLASS.
  *
  *	@author			Jeff Fox (Github ID: jfox015)
- *	@version		1.0.6.127
+ *	@version		1.1.1
+ *  @lastModified	12/16/24
  *	@since			1.0
  *
 */
@@ -90,6 +91,8 @@ class team_model extends base_model {
 		$this->tables['TRADES_STATUS'] = 'fantasy_teams_trades_status';
 		$this->tables['TRADE_PROTESTS'] = 'fantasy_teams_trade_protests';
 		$this->tables['TEAM_RECORDS'] = 'fantasy_teams_record';
+		$this->tables['COMPILED_TEAM_STATS_BATTING'] = 'fantasy_teams_players_compiled_batting';
+		$this->tables['COMPILED_TEAM_STATS_PITCHING'] = 'fantasy_teams_players_compiled_pitching';
 
 		$this->fieldList = array('league_id','division_id','teamname','teamnick','owner_id','auto_draft','auto_list','auto_round_x');
 		$this->conditionList = array('avatarFile');
@@ -1032,6 +1035,89 @@ class team_model extends base_model {
 		}
 		return $stats;
 	}
+	/**
+	 * 	GET COMPILED TEAMS STATS
+	 *  Gets the results form the Teams Compiled Player stats table for the team and league. Stats are generated
+	 *  As the season progresses so years and scoring period ids are not needed.
+	 * 
+	 *  @since					1.1.1
+	 * 
+	 *  @param $player_type		1 = Batters, 2 = Pitchers
+	 *  @param $team_id			The ID of the team. Defaults to $this->team_id if FALSE
+	 *  @param $league_id		The ID of the league. Defaults to $this->league_id if FALSE
+	 *  @param $includeList		List of player IDs to retrieve
+	 *  @param $queryType		The type of stats to display
+	 *  @param $rules			Rules Object, used to determine league scopring type for sorting
+	 *  @return array			Stats result
+	 */
+	public function getCompiledTeamStats($player_type=1, $team_id = false, $league_id = false, $includeList = array(), 
+										$rules = array(), $scoring_period = array(), $queryType = QUERY_STANDARD, $indexById = false) {
+
+		if ($team_id === false) $team_id = $this->team_id;
+		if ($league_id === false) $league_id = $this->league_id;
+		
+		$stats = array();
+		$this->db->flush_cache();
+		$sql = 'SELECT fantasy_players.id, fantasy_players.positions, players.player_id, players.position as position, players.role as role, players.first_name, 
+				players.last_name, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, 
+				players.injury_id,';
+		if ($player_type == 1) {
+			$sql .= player_simple_query_builder(1,$queryType, $rules);
+			$tblName = $this->tables['COMPILED_TEAM_STATS_BATTING'];
+			$order = 'ab';
+		} else {
+			$sql .= player_simple_query_builder(2,$queryType, $rules);
+			$tblName = $this->tables['COMPILED_TEAM_STATS_PITCHING'];
+			$order = 'ip';
+		}
+		$joinSQL = '';
+		if (sizeof($rules) > 0 && (isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD)) {
+			$order = 'fpts';
+		} else {
+			$sql .= ', rating';
+			$order = 'rating';
+		}
+		//echo("SQL = ".$sql."<br />");
+		$sql .= ' FROM players';
+		$sql .= ' LEFT JOIN fantasy_players ON fantasy_players.player_id = players.player_id';
+		$sql .= ' LEFT JOIN '.$tblName.' ON players.player_id = '.$tblName.'.ootp_player_id';
+		$sql .= $joinSQL;
+		$sql .= ' WHERE '.$tblName.'.team_id = '.$team_id.' AND '.$tblName.'.league_id = '.$league_id.' AND '.$tblName.'.scoring_period_id = '.($scoring_period['id']-1).' ';
+		$playerStr = "(";
+		if (sizeof($includeList) > 0) {
+			foreach ($includeList as $id => $data) {
+				if ($playerStr != "(") { $playerStr .= ","; }
+				$playerStr .= $data;
+			}
+		}
+		$playerStr .= ")";
+		if ($playerStr != "()") {
+			$sql .= ' AND players.player_id IN '.$playerStr;
+		}
+		
+		$sql.=" ORDER BY ".$order." DESC ";
+		$query = $this->db->query($sql);
+		//echo($this->db->last_query()."<br />");
+		$fields = $query->list_fields();
+		if ($query->num_rows() > 0) {
+			foreach ($query->result() as $row) {
+				$player = array();
+				foreach($fields as $field) {
+					$player[$field] = $row->$field;
+				}
+				$player['player_name'] = $row->first_name." ".$row->last_name;
+				if ($row->position == 1) {
+					$player['pos'] = $row->role;
+				} else {
+					$player['pos'] = $row->position;
+				}
+				if (!$indexById) array_push($stats,$player); else $stats = $stats + array($row->player_id=>$player); 
+			}
+		}
+		$query->free_result();
+		return $stats;				 
+	}
+
 	/*----------------------------------------
 	/	DRAFT
 	----------------------------------------*/
@@ -1951,6 +2037,94 @@ class team_model extends base_model {
 		}
 		return $league_id;
 	}
+
+	/**
+	 * 	GET PLAYER SCORING PERIODS
+	 * 	Used to retrieve the scoring periods a player was on the roster for a given team
+	 * 
+	 * 	@param $players	- Array of player IDS
+	 * 	@param $status	- PLayers roster status
+	 *  @param $team_id
+	 *  @param $league_id
+	 *  @return array of scoruing period with player id as index
+	 *  @since 1.1.1
+	 */
+	public function getPlayersScoringPeriods($players = array(), $status = 1, $team_id = false, $league_id = false) {
+		
+		if (sizeof($players) == 0) { return false; }
+		if ($team_id === false && $this->id != -1) { $team_id = $this->id; }
+		if ($league_id === false) { $league_id = $this->league_id; }
+
+		$newPlayers = array();
+		foreach($players as $id=>$playerId) {
+			$this->db->select('scoring_period_id');
+			$this->db->where('player_id',intval($id));
+			$this->db->where('league_id',intval($league_id));
+			$this->db->where('team_id',intval($team_id));
+			if ($status <> -999) {
+				$this->db->where('player_status', $status);
+			}
+			$this->db->order_by('scoring_period_id','asc');
+			$query = $this->db->get('fantasy_rosters');
+			//echo($this->db->last_query()."<br />");
+			if ($query->num_rows > 0) {
+				$tmpList = "";
+				foreach($query->result() as $row) {
+					if ($tmpList != "") $tmpList .= ",";
+					$tmpList .=  $row->scoring_period_id;
+				}
+				$data['stats_scoring_periods']=$tmpList;
+			}
+			$newPlayers = $newPlayers + array($id => $data);
+		}
+		
+		return $newPlayers;
+	}
+	/**
+	 * 	GET ROSTERED PLAYERS
+	 * 	Used to retrieve fantasy ids of players that have been on the teams roster in the current season
+	 * 
+	 * 	@param $team_id
+	 *  @param $league_id
+	 *  @param $hitter	- TRUE of batter, FALSE for pitcher
+	 * 	@param $status	- Players roster status
+	 * 	@param $period_id	- Limit to a single scoring period
+	 *  @return array of scoring period IDs indexed by player ids
+	 *  @since 1.1.1
+	 */
+	function getRosteredPlayers($team_id = false, $league_id = false, $hitter = false, $status = 1, $period_id = false) {
+
+		if ($team_id === false && $this->id != -1) { $team_id = $this->id; }
+		if ($league_id === false) { $league_id = $this->league_id; }
+
+		$playerIds = array();
+		$this->db->select('fantasy_players.id, fantasy_players.player_id');
+		$this->db->join('fantasy_players','fantasy_players.id = fantasy_rosters.player_id','left');
+		$this->db->where('fantasy_rosters.league_id',intval($league_id));
+		$this->db->where('fantasy_rosters.team_id',intval($team_id));
+		if ($period_id !== false) {
+			$this->db->where('fantasy_rosters.scoring_period_id', $period_id);
+		}
+		if ($status <> -999) {
+			$this->db->where('fantasy_rosters.player_status', $status);
+		}
+		if ($hitter == false ) {
+			$this->db->where('fantasy_rosters.player_position', 1);
+		} else {
+			$this->db->where('fantasy_rosters.player_position <> 1');
+		}
+		$this->db->group_by('fantasy_rosters.player_id');
+		$this->db->order_by('fantasy_rosters.player_id','asc');
+		$query = $this->db->get('fantasy_rosters');
+		//echo($this->db->last_query()."<br />");
+		if ($query->num_rows > 0) {
+			foreach($query->result() as $row) {
+				$playerIds = $playerIds + array($row->id => $row->player_id);
+			}
+		}
+		return $playerIds;
+	}
+	
 	/*---------------------------------------------------------
 	/
 	/	DATA OPERATIONS

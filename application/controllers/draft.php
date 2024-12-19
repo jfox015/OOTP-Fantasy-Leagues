@@ -1808,15 +1808,15 @@ class draft extends BaseEditor {
        	$form->span('<b style="color:#c00;">WARNING:</b> This will set ALL the leagues team\'s auto draft settings to <strong>true</strong> after the first team with auto pick enabled is encountered. Use this options with caution.',array('class'=>'field_caption'));
 		$form->space();
 		$this->load->model('league_model');
-		$this->league_model->load($this->dataModel->league_id);
-		if ($this->league_model->getScoringType() != LEAGUE_SCORING_HEADTOHEAD) {
+		//$this->league_model->load($this->dataModel->league_id);
+		//if ($this->league_model->getScoringType() != LEAGUE_SCORING_HEADTOHEAD) {
 			$byResponses[] = array('1','Values');
 			$byResponses[] = array('2','Ratings');
 			$form->fieldset('',array('class'=>'radioGroup'));
 			$form->radiogroup ('draftBy',$byResponses,'Draft Players based on:',($this->input->post('draftBy') ? $this->input->post('draftBy') : $this->dataModel->draftBy));
 			$form->span('<b style="color:#c00;">WARNING:</b> Selecting RATINGS requires that the site Admin has generated ratings for all Players. If no ratings appear on the PLAYERS page, ask the Site Admin to run UPDATE PLAYER RATINS.',array('class'=>'field_caption'));
 			$form->space();  
-		}
+		//}
 		
 		$form->fieldset('Email Settings');
 		$form->fieldset('',array('class'=>'radioGroup'));

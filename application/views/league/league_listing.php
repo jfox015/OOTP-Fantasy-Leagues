@@ -115,6 +115,13 @@
     </form>
 </div>
 
+<?php
+    if (isset($fantasyStatusID) && $fantasyStatusID == 3) { ?>
+        <div id="single-column"><div class="seasonOver_banner show"><h2><?php echo($playoffs['league_year']." ".$playoffs['league_name']." ".$this->lang->line('season_over_title')); ?></h2></div></div>
+    <?php
+    }
+?>
+
 <div id="single-column">
     <h1><?php echo($subTitle); ?></h1>
     <?php print($league_list_intro_str); ?>

@@ -288,6 +288,60 @@ a.register:hover {
 .playoff_banner.show {
 	display:block;
 }
+.seasonOver_banner {
+	width: 100%;
+	background: url('../images/season_over_header.jpg') 0 0 no-repeat;
+	height:90px;
+	clear:left;
+	margin: 0 0 18px 0;
+	padding: 0;
+	display:none;
+	position: relative;
+	text-align: center;
+}
+.seasonOver_banner h2 {
+	padding: 6px;
+	margin: 3px 0 0 0;
+	font: bold 20px/26px Tahoma, Geneva, sans-serif;
+	color:#ddd;
+	background: rgba(6, 6, 128, 0.6);
+	z-index: 999;
+	width: auto;
+	position: absolute;               /* 2 */
+	left: 42%;                         /* 3 */
+	/*top: 50%;
+  	transform: translate(0, -50%)     4 */
+}
+.seasonOver_banner.show {
+	display:block;
+}
+.season_over_small {
+	width: 253px;
+	background: url('../images/season_over_header_sml.jpg') 0 0 no-repeat;
+	height:36px;
+	clear:left;
+	margin: 0;
+	padding: 0;
+	display:none;
+	position: relative;
+	text-align: center;
+}
+.season_over_small h3 {
+	padding: 6px;
+	margin: 4px 0 0 0;
+	font: bold 15px/18px Tahoma, Geneva, sans-serif;
+	color:#ffe600;
+	background: rgba(223, 223, 223, 0.5);
+	z-index: 999;
+	width: auto;
+	position: absolute;               /* 2 */
+	left: 25%;                         /* 3 */
+	/*top: 50%;
+  	transform: translate(0, -50%)     4 */
+}
+.season_over_small.show {
+	display:block;
+}
 
 .news_title > h3 {
 	position: relative;
