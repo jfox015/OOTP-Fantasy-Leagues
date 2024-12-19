@@ -270,7 +270,7 @@
                 <table cellpadding="2" cellspacing="0" width="325">
                 <tr>
                   <td>
-                  <b>OOTP Roster Status:</b><br />
+                  <b>OOTP Roster Status:</b>
                   </td>
                 </tr>
                 <tr class='title'>
@@ -308,6 +308,9 @@
                       echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
                       ?>
                     </td>
+                </tr>
+                <tr class='title'>
+                    <td>Roster Status:</b></td>
                 </tr>
                 <tr>
                 	<td>
