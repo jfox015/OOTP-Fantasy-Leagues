@@ -268,8 +268,46 @@
             <?php if (isset($league_id) && !empty($league_id) && $league_id != -1) { ?>
             <div class='textbox'>
                 <table cellpadding="2" cellspacing="0" width="325">
+                <tr>
+                  <td>
+                  <b>OOTP Roster Status:</b><br />
+                  </td>
+                </tr>
                 <tr class='title'>
-                    <td>Roster Status</td>
+                    <td>
+                      <?php 
+                      $icons = array();
+                      $icons['warn'] = '<img src="'.PATH_IMAGES.'icons/icon_alert.png" width="20" height="20" align="absmiddle" />';
+                      $icons['error'] = '<img src="'.PATH_IMAGES.'icons/icon_fail.png" width="20" height="20" align="absmiddle" />';
+                      $icons['success'] = '<img src="'.PATH_IMAGES.'icons/icon_pass.png" width="20" height="20" align="absmiddle" />';
+                      $icons['info'] = '<img src="'.PATH_IMAGES.'icons/icon_info.gif" width="20" height="20" align="absmiddle" />';
+                      $class = "success";        
+                      //echo("Player current status = ".$thisItem['player_status']."<br />");
+                      switch($thisItem['player_status']) {
+                          case 4:
+                            $class = "info";
+					                  $message = "Retired";
+                            break;
+                          case 3:
+                            $class = "error";
+					                  $message = "Currently on the DL";
+                            break;
+                          case 2:
+                            $class = "warn";
+					                  $message = "Player is in the MINORS";
+                            break;
+                          case 5:
+                            $class = "warn";
+                            $message = "Player is INACTIVE";
+                            break;
+                          case 1:
+                          default:
+                            $message = "Player is ACTIVE";
+                            break;
+                      }
+                      echo('<span class="'.$class.'">'.$icons[$class].' '.$message.'</span>');
+                      ?>
+                    </td>
                 </tr>
                 <tr>
                 	<td>
