@@ -197,6 +197,67 @@ function getSecurityCode($viewJS = false) {
 /**
  *	PLAYERS STAT QUERY BUILDER
  *
+ *	Builds SELECT statements for stat queries that use compiled fantasy side data tables.
+ *
+ *	@since	1.1.1
+ */
+function player_simple_query_builder($player_type = 1, $query_type = QUERY_STANDARD, $rules = array()) {
+	$sql = '';
+
+	if ($player_type == 1) {
+		// BATTERS
+		switch ($query_type) {
+			case QUERY_COMPACT:
+				$sql .= 'if(ab=0,0,h/ab) as avg,r,hr,rbi,sb, if (ab+bb+hp+sf=0,0,(h+bb+hp)/(ab+bb+hp+sf))+if(ab=0,0,(h+d+2*t+3*hr)/ab) as ops ';
+				break;
+			case QUERY_BASIC:
+				$sql .= 'if(ab=0,0,h/ab) as avg,hr,rbi,bb,k,sb, if (ab+bb+hp+sf=0,0,(h+bb+hp)/(ab+bb+hp+sf))+if(ab=0,0,(h+d+2*t+3*hr)/ab) as ops ';
+				break;
+			case QUERY_EXTENDED:
+				$sql .= 'g,ab,r,h,d,t,hr,rbi,bb,k,sb,cs,if(ab=0,0,h/ab) as avg,if ((ab+bb+hp+sf)=0,0,(h+bb+hp)/(ab+bb+hp+sf)) as obp,if(ab=0,0,(h+d+2*t+3*hr)/ab) as slg,if (ab+bb+hp+sf=0,0,(h+bb+hp)/(ab+bb+hp+sf))+if(ab=0,0,(h+d+2*t+3*hr)/ab) as ops ,if(pa=0,0,(0.72*bb+0.75*hp+0.9*(h-d-t-hr)+0.92*0+1.24*d+1.56*t+1.95*hr)/pa) as wOBA,pa, if ((k/ab)*100=0,0,(k/ab)*100) as wiff, if (bb/(ab+bb)*100=0,0,(bb/(ab+bb))*100) as walk';
+				break;
+			case QUERY_STANDARD:
+			default:
+				$sql .= 'g,ab,r,h,d,t,hr,rbi,bb,k,sb,cs,if(ab=0,0,h/ab) as avg,if ((ab+bb+hp+sf)=0,0,(h+bb+hp)/(ab+bb+hp+sf)) as obp,if(ab=0,0,(h+d+2*t+3*hr)/ab) as slg,if (ab+bb+hp+sf=0,0,(h+bb+hp)/(ab+bb+hp+sf))+if(ab=0,0,(h+d+2*t+3*hr)/ab) as ops ,if(pa=0,0,(0.72*bb+0.75*hp+0.9*(h-d-t-hr)+0.92*0+1.24*d+1.56*t+1.95*hr)/pa) as wOBA, pa, if ((k/ab)*100=0,0,(k/ab)*100) as wiff, if (bb/(ab+bb)*100=0,0,(bb/(ab+bb))*100) as walk,hp,sf,(d+t+hr) as xbh';
+				break;
+		} // END switch
+		$rulesType = 'batting';
+	} else {
+		// PITCHERS
+		switch ($query_type) {
+			case QUERY_COMPACT:
+				$sql .= 'w,l,if(ip+(ipf/3)=0,0,9*er/(ip+(ipf/3))) as era,k,s, if(ip+(ipf/3)=0,0,(ha+bb)/(ip+(ipf/3))) as whip';
+				break;
+			case QUERY_BASIC:
+				$sql .= 'w,l,if(ip+(ipf/3)=0,0,9*er/(ip+(ipf/3))) as era,ip+(ipf/3) as ip,bb,k, if(ip+(ipf/3)=0,0,(ha+bb)/(ip+(ipf/3))) as whip,s';
+				break;
+			case QUERY_EXTENDED:
+				$sql .= 'w,l,s,cg,sho,if(ip+(ipf/3)=0,0,9*er/(ip+(ipf/3))) as era,g,gs,ip+(ipf/3) as ip,ha,r,er,hra,bb,k, if ((k*9)/ip=0,0,(k*9)/ip) as k9, if ((bb*9)/ip=0,0,(bb*9)/ip) as bb9, if ((hra*9)/ip=0,0,(hra*9)/ip) as hr9, if(ip+(ipf/3)=0,0,(ha+bb)/(ip+(ipf/3))) as whip,if (ab=0,0,ha/ab) as oavg,if((ab-k-hra+sf)=0,0,(ha-hra)/(ab-k-hra+sf)) as babip';
+				break;
+			case QUERY_STANDARD:
+			default:
+				$sql .= 'w,l,s,cg,sho,if(ip+(ipf/3)=0,0,9*er/(ip+(ipf/3))) as era,g,gs,ip+(ipf/3) as ip,ha,r,er,hra,bb,k, if ((k*9)/ip=0,0,(k*9)/ip) as k9, if ((bb*9)/ip=0,0,(bb*9)/ip) as bb9, if ((hra*9)/ip=0,0,(hra*9)/ip) as hr9, if(ip+(ipf/3)=0,0,(ha+bb)/(ip+(ipf/3))) as whip';
+				break;
+		} // END switch
+		$rulesType = 'pitching';
+	}
+	if (sizeof($rules) > 0 && isset($rules['scoring_type']) && $rules['scoring_type'] == LEAGUE_SCORING_HEADTOHEAD) {
+		$ptsSQL = ',';
+		foreach($rules[$rulesType] as $cat => $val) {
+			if ($ptsSQL != ',') { $ptsSQL .= '+'; }
+			$ptsSQL .= '('.strtolower(get_ll_cat($cat, true)).' * '.$val.')';
+		}
+		$ptsSQL .= ' as fpts ';
+		$sql .= $ptsSQL;
+	} else {
+		// TODO - GET PLAYER RATING (AS SUBQUERY?)
+	}
+	return $sql;
+}
+
+/**
+ *	PLAYERS STAT QUERY BUILDER
+ *
  *	Builds the standard SELECT statements for stat queries sitewide.
  *
  * 	@author	Jeff Fox
@@ -253,6 +314,7 @@ function player_stat_query_builder($player_type = 1, $query_type = QUERY_STANDAR
 		$sql .= $ptsSQL;
 	} else {
 		// TODO - GET PLAYER RATING (AS SUBQUERY?)
+		$sql .= ', rating';
 	}
 	return $sql;
 }
@@ -332,8 +394,18 @@ function player_stat_column_headers($player_type = 1, $query_type = QUERY_STANDA
  */
 function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD, $showFpts = true, $statsOnly = false,
 								 $showTrans = false, $showDraft = false, $showGenInfo = false,
-								 $showRating = false, $addFPid = false, $addOOTPId = false) {
+								 $showRating = false, $addFPid = false, $addOOTPId = false, $ooptorFntsy = false) {
 
+	$stats_k = "k";
+	$stats_bb = "bb";
+	$stats_r = "r";
+	$stats_g = "g";
+	if (!$ooptorFntsy) {
+		$stats_k = "pk";
+		$stats_bb = "pbb";
+		$stats_r = "pr";
+		$stats_g = "pg";
+	}
 	$defaultFields = array('player_name','teamname','pos','positions');
 	$genInfoFields = array('age','throws','bats');
 	$fieldList = array();
@@ -357,17 +429,17 @@ function player_stat_fields_list($player_type = 1, $query_type = QUERY_STANDARD,
 	} else {
 		switch ($query_type) {
 			case QUERY_COMPACT:
-				$fieldList = array('era','w','l','pk','s','whip');
+				$fieldList = array('era','w','l',$stats_k ,'s','whip');
 				break;
 			case QUERY_BASIC:
-				$fieldList = array('w','l','era','ip','pbb','pk','s','whip');
+				$fieldList = array('w','l','era','ip',$stats_bb,$stats_k ,'s','whip');
 				break;
 			case QUERY_EXTENDED:
-				$fieldList = array('w','l','s','era','pg','gs','ip','cg','sho','ha','pr','er','hra','pbb','pk','k9','bb9','hr9','whip');;
+				$fieldList = array('w','l','s','era',$stats_g ,'gs','ip','cg','sho','ha',$stats_r,'er','hra',$stats_bb,$stats_k ,'k9','bb9','hr9','whip');;
 				break;
 			case QUERY_STANDARD:
 			default:
-				$fieldList = array('w','l','s','era','pg','gs','ip','cg','sho','ha','pr','er','hra','pbb','pk','k9','bb9','hr9','whip');;
+				$fieldList = array('w','l','s','era',$stats_g ,'gs','ip','cg','sho','ha',$stats_r,'er','hra',$stats_bb,$stats_k ,'k9','bb9','hr9','whip');;
 				break;
 		} // END switch
 	}
@@ -1092,6 +1164,7 @@ function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 	switch ($type) {
 		case 1:
 			$stats = array(
+			1=>"G",
 			2=>"AB",
 			//1=>"PA",
 			3=>"1B",
@@ -1129,6 +1202,7 @@ function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 			// PITCHING STATS
 			$stats = array(
 			27=>"G",
+			28=>"GS",
 			29=>"W",
 			30=>"L",
 			32=>"SV",
@@ -1148,7 +1222,6 @@ function get_stats_for_scoring($type=1,$scoring_type = LEAGUE_SCORING_ROTO) {
 			60=>"ER",
 			61=>"BS",
 			62=>"IPF"
-			//28=>"GS",
 			);
 			if ($scoring_type != LEAGUE_SCORING_HEADTOHEAD) {
 				$stats = $stats + array(
@@ -1281,7 +1354,7 @@ function get_ll_cat($catID,$forSQL = false)
     {
       ## Batter Stats
       case 0: $txt="GS"; break;
-      case 1: $txt="PA"; break;
+      case 1: $txt="G"; break;
       case 2: $txt="AB"; break;
       case 3: if($forSQL) $txt="h"; else $txt="H"; break;
       case 4: $txt="K"; break;

@@ -1452,12 +1452,13 @@ class admin extends MY_Controller {
 		} else {
 			$status = "OK";
 		}
-		if ($runOnly) { return $status; }
-		else {
+		if (!$runOnly || $runOnly == "uid") {
 			$code = 200;
 			$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
 			$this->output->set_header('Content-type: application/json');
 			$this->output->set_output($result);
+		} else {
+			return $status; 
 		}
 	}
 	/**
@@ -1628,14 +1629,15 @@ class admin extends MY_Controller {
 		} else {
 			$status = "OK";
 		}
-		if ($runOnly) { return $status; }
-		else {
+		//echo("Run only = ".$runOnly."<br />");
+		if (!$runOnly || $runOnly == "uid") { 
 			$code = 200;
 			$result = '{"result":"Complete","code":"'.$code.'","status":"'.$status.'"}';
 			$this->output->set_header('Content-type: application/json');
 			$this->output->set_output($result);
+		} else {
+			return $status; 
 		}
-
 	}
     /**
      * Uninstall Database Tables
@@ -1742,7 +1744,7 @@ class admin extends MY_Controller {
 		/	UPDATE PLAYER SCORING
 		/---------------------------*/
 		$this->load->model('player_model');
-		$summary .= $this->player_model->updatePlayerScoring($score_period);
+		$summary .= $this->player_model->updatePlayerScoring($score_period, $this->ootp_league_model->league_id);
 
 		/*------------------------------
 		/	LOAD LEAGUES
@@ -1791,7 +1793,7 @@ class admin extends MY_Controller {
 			if ((isset($this->params['config']['useWaivers']) && $this->params['config']['useWaivers'] == 1)) {
 				update_config('waivers_processed','1');
 			}
-			update_config('player_update_run','-1');
+			//update_config('player_update_run','-1');
 			update_config('update_eligible_run','-1');
 			if ($typeRot > 0)
 				update_config('ratings_run','-1');

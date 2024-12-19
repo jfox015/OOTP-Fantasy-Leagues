@@ -362,6 +362,153 @@ function position_elidgibility($league_id = false,$min_game_current = 5, $min_ga
 	if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 	return $errors;
 }
+/**
+ * 	UPDATE PLAYER AVAILABILITY
+ *  Updates players status codes and ownership/starting stats
+ * 	@since		1.0.3
+ *  @param		$league_id	The OOTP League ID (Necessary if league is not the deafult 100)
+ * 	@return		String		OK on success, error message on error
+ * 
+ */
+function update_player_availability($league_id = false) {
+    $errors = "";
+	if ($league_id === false) { 
+		$errors = "No League Id";
+	} else {
+		$ci =& get_instance();
+		/*---------------------------------------------------------------
+		/ GET FANTASY LEAGUE COUNT
+		/-------------------------------------------------------------*/
+		$ci->db->select('id');
+		$ci->db->where('league_status',1);
+		$lQuery = $ci->db->get('fantasy_leagues');
+		$league_count = $lQuery->num_rows();
+		$lQuery->free_result();
+
+		// GET SITE CONFIG DATA FOR CURRENT SCORING PERIOD ID
+		if (!function_exists('load_config')) {
+			$ci->load->helper('config');
+		}
+		$config = load_config(FANTASY_CONFIG, 'cfg_key', 'current_period');
+		
+		/*---------------------------------------------------------------
+		/ QUERY FOR ALL PLAYERS IN THE GAME
+		/-------------------------------------------------------------*/
+		$ci->db->flush_cache();
+		$ci->db->select('fantasy_players.id,fantasy_players.player_id, fantasy_players.player_status, first_name, last_name, fantasy_players.positions, players.position, players.role, players.injury_is_injured, players.injury_dtd_injury, players.injury_career_ending, players.injury_dl_left, players.injury_left, players.injury_id, players.team_id, is_on_dl, is_on_dl60, is_active, own, start');
+		$ci->db->from('fantasy_players');
+		$ci->db->join('players','players.player_id = fantasy_players.player_id','left');
+		$ci->db->join('players_roster_status','players_roster_status.player_id = fantasy_players.player_id','left');
+		$pQuery = $ci->db->get();
+		$processedCount = 0;
+		if ($pQuery->num_rows() > 0) {
+			// GET LIST OF OOTP TEAMS
+			$teamList = getOOTPTeams($league_id,false);
+			//echo("Size of OOTP Teams list = ".sizeof($teamList)."<br />");
+			/*---------------------------------------------------------------
+			/ BEGIN PLAYER LOOP
+			/-------------------------------------------------------------*/
+			foreach($pQuery->result() as $row) {
+				/*---------------------------------------------------------------
+				/ SET PLAYER STATSUS
+				/-------------------------------------------------------------*/
+				$status = $row->is_active == 1 ? 1 : -1;
+				$teamFound = false;
+				foreach($teamList as $id => $data) {
+					if ($row->team_id == $id) {
+						$teamFound = true;
+						break;
+					}
+				}
+				//echo("Player ".$row->id."is on a team? ".$teamFound."<br />");
+				if (!$teamFound)
+					$status = 2;
+				//
+				if($teamFound && $status == -1) {
+					$status = 5;
+				}
+				if ($row->injury_is_injured == 1 && ($row->is_on_dl == 1 || $row->is_on_dl60 == 1 || $row->injury_dl_left > 0 || $row->injury_career_ending == 1)) {
+					$status = 3;
+				}
+				if ($row->retired == 1) {
+					$status = 4;
+				}
+				//echo("Set status for player= ".$row->id." to ".$status."<br />");
+				// OWNERSHIP
+				$own = 0;
+				$start = 0;
+				$ci->db->flush_cache();
+				$ci->db->select('team_id,league_id, player_status');
+				$ci->db->where('player_id', $row->id);
+				$ci->db->where('scoring_period_id', $config['current_period']);
+				$rQuery = $ci->db->get('fantasy_rosters');
+				foreach($rQuery->result() as $rRow) {
+					$own++;
+					if ($rRow->player_status == 1) {
+						$start++;
+					}
+				}
+				if ($league_count > 0) {
+					$own = ($own == $league_count) ? 100 : (($own / $league_count) * 100);
+					if ($own > 100) $own = 100;
+					$start = ($start == $league_count) ? 100 : (($start / $league_count) * 100);
+					if ($start > 100) $start = 100;
+				}
+				//echo("Updated ownership for player ".$row->id." own = ".$own.", start = ".$start."<br />");
+				$pData = array('player_status'=>$status, 'own_last'=>$row->own,
+							   'start_last'=>$row->start,'own'=>$own,'start'=>$start);
+				//$ci->db->flush_cache();
+				$ci->db->where('id',$row->id);
+				$ci->db->update('fantasy_players',$pData); 
+				//echo("Status updates for player ".$row->id." written sucessfully.<br />");
+				//echo("----------------------------------<br />");
+				$processedCount++;
+			}
+			$pQuery->free_result();
+			//echo($processedCount." players updated.<br />");
+		}
+	}
+	if (empty($errors)) $errors = "OK"; else  $errors = $errors;
+	return $errors;
+}
+function updateOwnership($playerId = false) {
+	
+	$ci =& get_instance();
+	
+	// GET LEAGUE COUNT
+	$ci->db->select('id');
+	$ci->db->from('fantasy_leagues');
+	$ci->db->where('league_status',1);
+	$league_count = $ci->db->count_all_results();
+	
+	if (!function_exists('load_config')) {
+		$ci->load->helper('config');
+	}
+	$config = load_config();
+
+	$own = 0;
+	$start = 0;
+	$ci->db->select("team_id, player_status");
+	$ci->db->from("fantasy_rosters");
+	//$ci->db->group_by("league_id");
+	$ci->db->where("player_id",$playerId);
+	$ci->db->where("scoring_period_id",$config['current_period']);
+	$rQuery = $ci->db->get();
+	foreach($rQuery->result() as $rRow) {
+		$own++;
+		if ($rRow->player_status == 1) {
+			$start++;
+		}
+	}
+	if ($league_count > 0) {
+		$own = ($own == $league_count) ? 100 : (($own / $league_count) * 100);
+		if ($own > 100) $own = 100;
+		$start = ($start == $league_count) ? 100 : (($start / $league_count) * 100);
+		if ($start > 100) $start = 100;
+	}
+	return array($own, $start);
+}
+/*
 function update_player_availability($league_id = false) {
     $errors = "";
 	if ($league_id === false) { 
@@ -417,41 +564,5 @@ function update_player_availability($league_id = false) {
 	if (empty($errors)) $errors = "OK"; else  $errors = $errors;
 	return $errors;
 }
-function updateOwnership($playerId = false) {
-	
-	$ci =& get_instance();
-	
-	// GET LEAGUE COUNT
-	$ci->db->select('id');
-	$ci->db->from('fantasy_leagues');
-	$ci->db->where('league_status',1);
-	$league_count = $ci->db->count_all_results();
-	
-	if (!function_exists('load_config')) {
-		$ci->load->helper('config');
-	}
-	$config = load_config();
-
-	$own = 0;
-	$start = 0;
-	$ci->db->select("team_id, player_status");
-	$ci->db->from("fantasy_rosters");
-	//$ci->db->group_by("league_id");
-	$ci->db->where("player_id",$playerId);
-	$ci->db->where("scoring_period_id",$config['current_period']);
-	$rQuery = $ci->db->get();
-	foreach($rQuery->result() as $rRow) {
-		$own++;
-		if ($rRow->player_status == 1) {
-			$start++;
-		}
-	}
-	if ($league_count > 0) {
-		$own = ($own == $league_count) ? 100 : (($own / $league_count) * 100);
-		if ($own > 100) $own = 100;
-		$start = ($start == $league_count) ? 100 : (($start / $league_count) * 100);
-		if ($start > 100) $start = 100;
-	}
-	return array($own, $start);
-}
+*/
 ?>

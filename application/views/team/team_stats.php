@@ -2,7 +2,25 @@
 	$(document).ready(function(){		   
 
 		$('select#teams').change(function(){
-			document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/stats/' + $('select#teams').val();
+			var src = $('select#teams').val();
+			
+			if (src !== ' ' && src !== undefined)
+				document.location.href = '<?php echo($config['fantasy_web_root']); ?>team/stats/' + src;
+		});
+		var val = $('select#stat_source').val();
+		console.log(val);
+		if (val == "score_period") {
+			$('select#sp_id').show();
+		} else {
+			$('select#sp_id').hide();
+		}
+		$('select#stat_source').change(function(){
+			var src = $('select#stat_source').val();
+			if (src == "score_period") {
+				$('select#sp_id').show();
+			} else {
+				$('select#sp_id').hide();
+			}
 		});
 	});
 	</script>
@@ -27,6 +45,7 @@
 				<?php
 				##### Filters #####
 				echo "<div class='textbox'>";
+				//echo("Stat source =".$stat_source."<br />");
 				echo ' <table cellspacing="0" cellpadding="2" border="0">';
 				echo "  <tr class='title'><td colspan=11  height='17'>Filters</td></tr>";
 				echo "  <form method='post' id='filterform' action='".$config['fantasy_web_root']."team/stats' class='inline'>";
@@ -36,19 +55,32 @@
 				echo '    <td class="formLabel">Stats Source:</td>';
 				echo "     <td>";
 				echo "      <select name='stat_source' id='stat_source'>";
-				//echo '      <option value="ootp">OOTP Game Data</option>\n';
-				echo '      <option value="sp_all"';
-				if ($stat_source=="sp_all") { echo " selected"; }
-				echo '      >All Scoring Periods</option>\n';
-				
+				// FULL YEAR STATS
+				echo '      <option value="full_year"';
+				if ($stat_source =="full_year" || $stat_source == '' || $stat_source === false) { echo " selected='selected'"; }
+				echo '      >Season Scoring</option>\n';
+				echo '      <option value="team_stats"';
+				if ($stat_source =="team_stats") { echo " selected='selected'"; }
+				echo '      >Team Scoring</option>\n';
 				if (isset($scoring_periods) && sizeof($scoring_periods) > 0) {
-				   foreach ($scoring_periods as $scoring_periods) {
-					  echo('<option value="sp_'.$scoring_periods['id'].'"');
-					  if ($stat_source=="sp_".$scoring_periods['id']) { echo " selected"; }
-					  echo ('>Period '.$scoring_periods['id'].'</option>');
+				echo '      <option value="score_period"';
+				if ($stat_source =="score_period") { echo " selected='selected'"; }
+				echo '      >Scoring Period</option>\n';
+				} // END if
+				
+				echo '      <option value="3yr_avg"';
+				if ($stat_source =="3yr_avg") { echo " selected='selected'"; }
+				echo '      >Three Year Avg</option>\n';
+				echo "      </select>&nbsp;&nbsp;";
+				if (isset($scoring_periods) && sizeof($scoring_periods) > 0) {
+					echo "      <select name='sp_id' id='sp_id' style='disply:none'>";
+					foreach ($scoring_periods as $scoring_periods) {
+						echo('<option value="sp_'.$scoring_periods['id'].'"');
+						if ($sp_id=="sp_".$scoring_periods['id']) { echo " selected='selected'"; }
+						echo ('>Period '.$scoring_periods['id'].'</option>');
 					}
+					echo "      </select>&nbsp;&nbsp;";
 				 }
-				echo "      </select>";
 				echo "     </td>";
 				
 				## Close Form
@@ -85,7 +117,7 @@
 					if (isset($formatted_stats[$player_type]) && !empty($formatted_stats[$player_type])) { ?>
                         <div class="textbox" style="width:915px;">
                             <!-- HEADER -->
-                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="border:0px">
                         <tr class="title">
                             <td height="17" style="padding:6px;"><?php echo($title[$player_type]); ?> Stats</td>
                          </tr>
