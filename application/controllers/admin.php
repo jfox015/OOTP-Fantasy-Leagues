@@ -179,9 +179,7 @@ class admin extends MY_Controller {
 			// LEAGUE READINESS CHECKS
 			$currDate = strtotime($this->ootp_league_model->current_date);
 			$startDate = strtotime($this->ootp_league_model->start_date);
-			$firstPeriodStart = strtotime($startDate);
-			$preseason = ($currDate <= $startDate && $currDate<=$firstPeriodStart);
-			$leagueCount = count($this->data['leagues']);
+			$preseason = ($currDate <= $startDate) ? true : false;
 			$activeleagueCount = 0;
 			$missingGames = 0;
 			$invalidRosters = array();
@@ -189,9 +187,8 @@ class admin extends MY_Controller {
 			$draftsInProgress = array();
 			$draftsNotFinished = array();
 			$draftsCompleted = 0;
-			$ratingsCount = 0;
 			$rotisserieCount = 0;
-			if ($leagueCount > 0) {
+			if (sizeof($this->data['leagues']) > 0) {
 				if (!isset($this->draft_model)) {
 					$this->load->model('draft_model');
 				}
@@ -241,7 +238,7 @@ class admin extends MY_Controller {
 				}
 			}
 			$this->data['activeleagueCount'] = $activeleagueCount;
-			$this->data['leagueCount'] = $leagueCount;
+			$this->data['leagueCount'] = sizeof($this->data['leagues']);
 			$this->data['missingGames'] = $missingGames;
 			$this->data['invalidRosters'] = $invalidRosters;
 			$this->data['draftsNotSet'] = $draftsNotSet;
