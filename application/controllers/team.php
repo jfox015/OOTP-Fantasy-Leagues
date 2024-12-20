@@ -400,6 +400,9 @@ class team extends BaseEditor {
 			
 			$this->params['content'] = $this->load->view($this->views['LINEUP'], $this->data, true);
 			$this->params['pageType'] = PAGE_FORM;
+			$this->params['subTitle'] = "Team Lineup";
+			$this->data['subTitle'] = "Team Lineup";
+			
 		} else {
 			$message = "error:Required params missing";
 			$this->params['content'] = $this->load->view($this->views['FAIL'], $this->data, true);
@@ -2411,9 +2414,9 @@ class team extends BaseEditor {
 		$this->data['league_id']  = $this->dataModel->league_id;
 		$this->prepForQuery();
 		$spid  = false; 
-		if (isset($this->data['sp_id'])) {
+		/*if (isset($this->data['sp_id'])) {
 			$spid = explode("_",$this->data['sp_id'])[1];
-		}
+		}*/
 		// EDIT 1.1.1 - Revised the calling of stats base don which type (Season, team Only, Scoring Period, 3year AVG) has been requested
 		$batList = $this->dataModel->getRosteredPlayers($team_id, $this->dataModel->league_id, true, 1,$spid);
 		$pitchList = $this->dataModel->getRosteredPlayers($team_id, $this->dataModel->league_id, false, 1,$spid);
@@ -2437,12 +2440,12 @@ class team extends BaseEditor {
 			
 			} else if ($this->data['stat_source'] == "full_year") {
 				// GET STATS TO DATE FOR PLAYERS
-				$stats['batters'] = $this->player_model->getStatsForSeason(1, $this->rules, $batList, false, $this->ootp_league_model->current_date, $this->data['stat_source'], $this->ootp_league_model->league_id);
-				$stats['pitchers'] = $this->player_model->getStatsForSeason(2, $this->rules, $pitchList, false, $this->ootp_league_model->current_date, $this->data['stat_source'], $this->ootp_league_model->league_id);
+				$stats['batters'] = $this->player_model->getStatsForSeason(1, $this->rules, $batList, false, $this->ootp_league_model->current_date, -1, $this->ootp_league_model->league_id);
+				$stats['pitchers'] = $this->player_model->getStatsForSeason(2, $this->rules, $pitchList, false, $this->ootp_league_model->current_date, -1, $this->ootp_league_model->league_id);
 			} else {
 				// 3 YEAR AVG
-				$stats['batters'] = $this->player_model->getStatsForSeason(1, $this->rules,$batList, false, $this->ootp_league_model->current_date,$this->data['stat_source'], $this->ootp_league_model->league_id);
-				$stats['pitchers'] = $this->player_model->getStatsForSeason(2, $this->rules,$pitchList, false, $this->ootp_league_model->current_date,$this->data['stat_source'], $this->ootp_league_model->league_id);
+				$stats['batters'] = $this->player_model->getStatsForSeason(1, $this->rules,$batList, false, $this->ootp_league_model->current_date,3, $this->ootp_league_model->league_id);
+				$stats['pitchers'] = $this->player_model->getStatsForSeason(2, $this->rules,$pitchList, false, $this->ootp_league_model->current_date,3, $this->ootp_league_model->league_id);
 			}
 			$this->data['title'] = array();
 			$this->data['formatted_stats'] = array();
@@ -2629,6 +2632,7 @@ class team extends BaseEditor {
 		if (isset($this->uriVars['stat_source'])) {
 			$this->data['stat_source'] = $this->uriVars['stat_source'];
 		}
+		$this->data['sp_id'] = 'sp_'.$scoring_period_id;
 		if ($this->data['stat_source'] == 'score_period') {
 			if (isset($this->uriVars['sp_id'])) {
 				$this->data['sp_id'] = $this->uriVars['sp_id'];
@@ -2783,10 +2787,12 @@ class team extends BaseEditor {
 		$form->br();
 		$form->text('teamnick','Nick Name','required|trim',($this->input->post('teamnick')) ? $this->input->post('teamnick') : $this->dataModel->teamnick,array('class','first'));
 		$form->br();
-		if (!isset($this->league_model)) {
+		$this->load->model($this->modelName,'dataModel');
+		$this->dataModel->load($this->uriVars['id']);
+		/*if (!isset($this->league_model)) {
 			$this->load->model('league_model');
-		}
-		$this->league_model->load($this->data['league_id']);
+		}*/
+		$this->league_model->load($this->dataModel->league_id);
 		$scoring_type = $this->league_model->getScoringType();
 		if ($this->params['accessLevel'] == ACCESS_ADMINISTRATE) {
 			if ($scoring_type == LEAGUE_SCORING_HEADTOHEAD) {
@@ -2936,11 +2942,13 @@ class team extends BaseEditor {
 		$date1 = new DateTime($this->ootp_league_model->current_date);
 		$date2 = new DateTime($this->ootp_league_model->start_date);
 		$stats_range = -1;
+		$periodForQuery = $curr_period_id;
 		// IF PRE-SEASON, USE LAST YEARS STATS
 		if ($date1 <= $date2 || $configPeriodId <= 1) {
 			$stats_range = 1;
 			$periodForQuery = -1;
-		} // END if
+		} // END if 
+
 		
 		//EDIT 1.2 PROD - DAILY ROSTER SUPPORT
 		$game_date = $this->league_model->getGameDateForLeague($this->dataModel->league_id, false, $this->params['config']['simType']);

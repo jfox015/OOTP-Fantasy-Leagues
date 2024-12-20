@@ -179,10 +179,10 @@ class CI_Input {
 		}
 
 		// We strip slashes if magic quotes is on to keep things consistent
-		if (get_magic_quotes_gpc())
+		/*if (get_magic_quotes_gpc())
 		{
 			$str = stripslashes($str);
-		}
+		}*/
 
 		// Should we filter the input data?
 		if ($this->use_xss_clean === TRUE)

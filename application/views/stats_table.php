@@ -1,5 +1,5 @@
 			<?php
-			if (isset($colnames) && sizeof($colnames) > 0) { 
+			if (isset($colnames)) { 
 			?>
 
                 <!-- STATS BODY -->

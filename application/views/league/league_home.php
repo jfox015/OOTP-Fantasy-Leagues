@@ -1,5 +1,5 @@
     <?php
-    if (isset($playoffs) && $playoffs['inPlayoffs'] == 1) { ?>
+    if (isset($playoffs) && isset($playoffs['inPlayoffs']) && $playoffs['inPlayoffs'] == 1) { ?>
         <div id="single-column"><div class="playoff_banner show"><h2><?php echo($playoffs['league_year']." ".$playoffs['league_name']); ?> Playoffs</h2></div></div>
     <?php
     } else if (isset($fantasyStatusID) && $fantasyStatusID == 3) { ?>
@@ -144,7 +144,7 @@
         /*------------------------------------------------
 		/	LEAGUE PLAYOFF ALERT BOX FOR H2H
         /-----------------------------------------------*/
-        if (isset($playoffs) && $playoffs['playoffsNext'] == 1) {
+        if (isset($playoffs) && isset($playoffs['playoffsNext']) && $playoffs['playoffsNext'] == 1) {
         ?>
         <div class='textbox right-column'>
                 <table cellpadding="0" cellspacing="0">

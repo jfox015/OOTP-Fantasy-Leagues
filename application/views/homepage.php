@@ -246,6 +246,8 @@
         <tr>
             <td style='padding:6px' >
 		<?php 
+		$title = '';
+		$mess = '';
 		if (isset($events) && sizeof($events) > 0) { 
 			foreach($events as $event) { 
 			?>

@@ -341,6 +341,7 @@
 								$iconStr = $config['ootp_html_report_path'].'images/dot1.gif';
 								$dateStr = '';
 								$startStr = '';
+								$drawn = 0;
 								$gameDate = EMPTY_DATE_STR;
 								foreach ($playerSched as $game_id => $game_data) { 
 									if ($gameDate != strtotime($game_data['game_date']." 00:00:00")) {

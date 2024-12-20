@@ -812,7 +812,7 @@
             </div>
             <div id="pickList" class="listPickerBox">
                 <?php
-				if (isset($formatted_stats) && sizeof($formatted_stats)){
+				if (isset($formatted_stats)){
 					print($formatted_stats['batters']);	
 					print($formatted_stats['pitchers']);	
 				}

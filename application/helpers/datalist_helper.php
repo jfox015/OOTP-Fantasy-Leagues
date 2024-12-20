@@ -559,7 +559,7 @@ if ( ! function_exists('getPlayerSchedules')) {
 								}
 								if (sizeof($games) > 0) {
 									if ($data['position'] == 1 && ($data['role'] == 11 || $data['role'] == 12)) 
-										if ($projStarts[0]['starter_'.$startDay] == $id) $start = 1;
+										if (isset($projStarts) && isset($projStarts[0]) && $projStarts[0]['starter_'.$startDay] == $id) $start = 1;
 									foreach($games as $game_data) {
 										$player_schedule = $player_schedule + array($game_data['game_id']=>array('home_team'=>$game_data['home_team'],
 															   'away_team'=>$game_data['away_team'],'game_date'=>$game_data['game_date'],

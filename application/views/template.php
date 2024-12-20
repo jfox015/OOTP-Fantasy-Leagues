@@ -83,7 +83,11 @@
 
             <div style='float:left;width:821px;height:59px;background-color:<?php echo($header_bg); ?>;margin:0;padding:7px 0 0 8px;'>
                 <span style='color:<?php echo($header_txt); ?>; font-size:24px; font-weight:bold;'><?php echo($league_abbr); ?> Fantasy Leagues</span><br>
-                <span style='color:<?php echo($header_txt); ?>; font-size:18px; font-weight:bold;'><?php echo $subTitle; ?></span>
+                <?php 
+				if (isset($subTitle)) {
+				?>
+				<span style='color:<?php echo($header_txt); ?>; font-size:18px; font-weight:bold;'><?php echo $subTitle; ?></span>
+				<?php } ?>
             </div>
         </div>
     </div>

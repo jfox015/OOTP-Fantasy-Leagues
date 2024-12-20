@@ -213,7 +213,7 @@
                                 if ($leagueData['teamsOwned'] > 0) {
                                     echo('<span style="color:#080;">You own a team in this League!</span>');
                                 } else {
-                                    if (sizeof($leagueData['pendingRequests'][0]) > 0) {
+                                    if (sizeof($leagueData['pendingRequests']) > 0 && isset($leagueData['pendingRequests'][0])) {
                                         $requests = $leagueData['pendingRequests'][0];
                                         echo("You requested to own the <b>".$requests['team']."</b> on ".$requests['date_requested'].". Your request is Pending approval.<br />");
                                         print(anchor('#','Withdraw Request',array('id'=>$requests['id']."|".$leagueData['league_id'],'rel'=>'withdrawInvite')));  

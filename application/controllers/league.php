@@ -365,6 +365,7 @@ class league extends BaseEditor {
 				// ROSTER ALERTS
 				$game_date = $this->dataModel->getGameDateForLeague($this->dataModel->id, false, $this->params['config']['simType']);
 				$rosterValidation = $this->dataModel->validateRosters(getScoringPeriod($this->params['config']['current_period']), $this->uriVars['id'], false, $game_date);
+				$scoring_period = getCurrentScoringPeriod($this->data['league_info']->current_date);
 				$rosterIssues = 0;
 				if ($this->dataModel->errorCode == 1) {
 					foreach($rosterValidation as $status) {

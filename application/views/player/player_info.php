@@ -270,7 +270,7 @@
                 <table cellpadding="2" cellspacing="0" width="325">
                 <tr>
                   <td>
-                  <b>OOTP Roster Status:</b><br />
+                  <b>OOTP Roster Status:</b>
                   </td>
                 </tr>
                 <tr>
@@ -310,7 +310,7 @@
                     </td>
                 </tr>
                 <tr class='title'>
-                    <td>Roster Status</td>
+                    <td><b>Roster Status:</b></td>
                 </tr>
                 <tr>
                 	<td>
