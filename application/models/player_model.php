@@ -810,7 +810,11 @@ class player_model extends base_model {
 			$base_year = strtotime($ootp_league_date);
 		}
 		if ($stats_range != 4) {
-			$sql .= ' AND '.$tblName.'.year = '.date('Y',$base_year-($year_time * $stats_range));
+			if ($stats_range == -1) {
+				$sql .= ' AND '.$tblName.'.year = '.date('Y',$base_year);
+			} else {
+				$sql .= ' AND '.$tblName.'.year = '.date('Y',$base_year-($year_time * $stats_range));
+			}
 		} else {
 			$sql .= ' AND ('.$tblName.'.year = '.date('Y',$base_year-($year_time))." OR ".$tblName.'.year = '.date('Y',time()-($year_time * 2))." OR ".$tblName.'.year = '.date('Y',time()-($year_time * 3)).")";
 		}

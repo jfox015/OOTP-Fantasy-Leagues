@@ -474,7 +474,7 @@ class search extends MY_Controller {
 	 *	DISPLAY VIEW
 	 *
 	 */
-	protected function displayView() {
+	protected function displayView($templateName = '') { 
 		$this->data['totalPages'] = 1;
 		$this->data['resultCount'] = 0;
 		$this->data['accessAllowed'] = ($this->restrictAccess) ? ($this->params['accessLevel'] >= $this->minAccessLevel): true;

@@ -123,7 +123,7 @@
                          </tr>
                          </table>
                         <?php
-                        if (isset($formatted_stats[$player_type]) && sizeof($formatted_stats[$player_type])){
+                        if (isset($formatted_stats[$player_type])){
                             echo($formatted_stats[$player_type]);						 
                         }
 						?>

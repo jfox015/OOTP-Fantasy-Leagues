@@ -1187,14 +1187,16 @@ class league_model extends base_model {
 		if ($query->num_rows() > 0) {
 			foreach ($query->result() as $row) {
 				$openCount = $this->getOpenTeamCount($row->id);
+				$teamsOwned = 0;
 				if ($user_id !== false) {
 					$pendingRequests = $this->getLeagueRequests(true, $row->id, false, $user_id);
+					$teamsowned = $row->teamsOwned;
 				}
 				array_push($leagues,array('league_id'=>$row->id,'league_name'=>$row->league_name,'description'=>$row->description,'avatar'=>$row->avatar,'access_type'=>$row->access_type,
 															'league_status'=>$row->league_status,'accept_requests'=>$row->accept_requests,'max_teams'=>$row->max_teams,
 															'shortDesc'=>$row->shortDesc,'commissioner'=>$row->username, 'commissioner_id'=>$row->commissioner_id,
 															'league_type_desc'=>$row->shortDesc,'league_type_lbl'=>$row->leagueType,'league_status_lbl'=>$row->leagueStatus,
-															'league_type'=>$row->league_type,'openCount'=>$openCount,'teamsOwned'=>$row->teamsOwned, 'pendingRequests'=>$pendingRequests));
+															'league_type'=>$row->league_type,'openCount'=>$openCount,'teamsOwned'=>$teamsOwned, 'pendingRequests'=>$pendingRequests));
 			}
 		}
 		//echo($this->db->last_query()."<br />");
@@ -1278,14 +1280,12 @@ class league_model extends base_model {
 						//echo($this->db->last_query()."<br />");
 						if ($query->num_rows() > 0) {
 							$player_stats = $query->row();
-						} // END if
-						$query->free_result();
-						$pRow = false;
-						$stats = "";
-						$total = 0;
-						if (sizeof($excludeList) == 0 || (sizeof($excludeList) > 0 && !in_array($team_id,$excludeList))) {
-							if (sizeof($player_stats) > 0) {
-								//$pRow = $player_stats->row();
+							//$pRow = false;
+							$stats = "";
+							$total = 0;
+							if (sizeof($excludeList) == 0 || (sizeof($excludeList) > 0 && !in_array($team_id,$excludeList))) {
+								//if (isset($player_stats)) {
+									//$pRow = $player_stats->row();
 								$colCount = 0;
 								foreach($scoring_rules[$type] as $cat => $val) {
 									$colName = strtolower(get_ll_cat($cat, true));
@@ -1306,9 +1306,12 @@ class league_model extends base_model {
 									$colCount++;
 								}
 								$total = $player_stats->total;
+								//}
+								//$pQuery->free_result();
 							}
-							//$pQuery->free_result();
-						}
+						} // END if
+						$query->free_result();
+						
 						$player_list = $player_list + array($player_data['id']=>array('name'=>$player_data['first_name']." ".$player_data['last_name'],
 																			  'stats'=>$stats,'total'=>$total,'position'=>$pos,
 																			  'injury_is_injured'=>$player_data['injury_is_injured'],
@@ -2259,7 +2262,6 @@ class league_model extends base_model {
 		if ($league_id === false) { $league_id = $this->id; }
 		if ($excludeList === false) { $excludeList = array(); }
 		if ($scoring_period === false) { array('id'=>1, 'date_start'=>EMPTY_DATE_STR, 'date_end'=>EMPTY_DATE_STR,'manual_waivers'=>-1); }
-
 		$validation = array();
 		if ($league_id === false) { $league_id = $this->id; }
 		$message = "";

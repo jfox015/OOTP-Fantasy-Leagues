@@ -161,7 +161,7 @@ function &load_class($class, $instantiate = TRUE)
  * @param	object
  * @return	object
  */
-function &instantiate_class(&$class_object)
+function &instantiate_class($class_object)
 {
 	return $class_object;
 }
@@ -267,7 +267,7 @@ function show_404($page = '')
 * @access	public
 * @return	void
 */
-function log_message($level = 'error', $message, $php_error = FALSE)
+function log_message($level = 'error', $message = '', $php_error = FALSE)
 {
 	static $LOG;
 	

@@ -177,8 +177,8 @@ class admin extends MY_Controller {
 			// NEW FIELDS FOR SITE READINLESS LISTING
 			$this->data['members'] = $this->user_auth_model->getUserList();
 			// LEAGUE READINESS CHECKS
-			$currDate = strtotime($league_info->current_date);
-			$startDate = strtotime($league_info->start_date);
+			$currDate = strtotime($this->ootp_league_model->current_date);
+			$startDate = strtotime($this->ootp_league_model->start_date);
 			$firstPeriodStart = strtotime($startDate);
 			$preseason = ($currDate <= $startDate && $currDate<=$firstPeriodStart);
 			$leagueCount = count($this->data['leagues']);

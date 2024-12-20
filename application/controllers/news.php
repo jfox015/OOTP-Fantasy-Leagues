@@ -278,7 +278,7 @@ class news extends BaseEditor {
 			
 			$this->data['related'] = $this->dataModel->getRelatedArticles($this->dataModel->id);
 			$this->data['news_types'] = loadSimpleDataList('newsType');
-			$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
+			$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$this->isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
 											  'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
 											  'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
 			$this->data['type_id'] = $typeId;
@@ -526,7 +526,7 @@ class news extends BaseEditor {
 		} else if (isset($this->dataModel->news_body) && !empty($this->dataModel->news_body)) {
 			$news_body = $this->dataModel->news_body;
 		}
-		if ($news_body[0] == ">") {
+		if (isset($news[0]) && $news_body[0] == ">") {
 			$this->news_body = substr($news_body, 1, strlen($news_body));
 		} else {
 			$this->news_body = $news_body;
@@ -598,7 +598,7 @@ class news extends BaseEditor {
 		if ($typeId > 1) { $this->setSupportingInformation($typeId, $varId); }
 
 		$this->data['news_types'] = loadSimpleDataList('newsType');
-		$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
+		$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$this->isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
 											'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
 											'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
 		$this->data['news_type_name'] = $this->data['news_types'][$typeId];
@@ -646,10 +646,10 @@ class news extends BaseEditor {
 		//$this->data['article']['article_id'] = -1;
 		if ($this->input->post('id') && $this->input->post('id') != 'add')
 			$this->data['article']['article_id'] = $this->input->post('id');
-		if ($typeId > 1) { $this->setSupportingInformation($this->input->post('type_id'), $this->input->post('var_id')); }
+		if ($this->input->post('type_id') > 1) { $this->setSupportingInformation($this->input->post('type_id'), $this->input->post('var_id')); }
 
 		$this->data['news_types'] = loadSimpleDataList('newsType');
-		$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
+		$this->data['extra_data'] = array('isAdmin'=>$this->isAdmin,'isLeagueCommish'=>$this->isLeagueCommish,'isTeamOwner'=>$this->isTeamOwner,
 											'leagueDetails'=>$this->leagueDetails,'playerDetails'=>$this->playerDetails,
 											'teamDetails'=>$this->teamDetails,'isTeamOwner'=>$this->isTeamOwner,'typeTitle'=>$this->typeTitle);
 		$this->data['news_type_name'] = $this->data['news_types'][$this->input->post('type_id')];

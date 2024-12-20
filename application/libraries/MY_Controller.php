@@ -177,8 +177,8 @@ class MY_Controller extends Controller {
 			$this->data['userTimezone'] = $this->params['userTimezone'];
 			
 			// LOAD theme support -- Not used in current version
-			$this->themes = $this->config->item('themes');
-			$this->params['theme'] = $this->themes['current'];
+			//$this->themes = $this->config->item('themes');
+			//$this->params['theme'] = $this->themes['current'];
 			
 			$this->data['message'] = '';
 			

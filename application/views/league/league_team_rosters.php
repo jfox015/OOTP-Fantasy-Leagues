@@ -32,7 +32,7 @@
 					<td class='hsc2_c' width="50%">Details</td>
 				</tr>
 				<?php 
-				if (isset($rosterStatus) && sizeof($rosterStatus > 0)) { 
+				if (isset($rosterStatus) && sizeof($rosterStatus) > 0) { 
 					$rowcount = 0;
 					foreach ($rosterStatus as $status) {
 						

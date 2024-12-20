@@ -162,7 +162,7 @@
              </table>
              
             <?php
-            if (isset($formatted_stats) && sizeof($formatted_stats)){
+            if (isset($formatted_stats)){
 				echo($formatted_stats);						 
 			}
             ?>

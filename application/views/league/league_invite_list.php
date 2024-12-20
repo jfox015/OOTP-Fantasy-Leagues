@@ -178,7 +178,7 @@
 		} else {
 			$typeStr = 'All ';
 		}
-		$introStr = str_replace('[STATUS]', $statusStr, $introStr);
+		$introStr = str_replace('[STATUS]', $typeStr, $introStr);
 		echo($introStr." Show: ".$linkStr);
 		?>
 		</p>

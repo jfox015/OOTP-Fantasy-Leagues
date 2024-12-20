@@ -519,7 +519,7 @@ class BaseEditor extends MY_Controller {
 	 * 
 	 * 	@return	void
 	 */
-	protected function showInfo($template = false) {
+	protected function showInfo() {
 		// Setup header Data
 		$this->data['thisItem']['id'] = $this->recordId;
 		$this->data['thisItem']['ownerId'] = (isset($this->dataModel->recordOwnerId)) ? $this->dataModel->recordOwnerId : -1;

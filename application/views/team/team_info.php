@@ -173,7 +173,7 @@
 				<table style="margin:6px" class="sortable-table" cellpadding="0" cellspacing="0" width="100%">
 				<tr>
 					<td>
-					<?php if (isset($transaction_summary) && sizeof($transaction_summary) > 0) { 
+					<?php if (isset($transaction_summary)) { 
 						echo($transaction_summary); 
 					} else {
 						echo('<table><tr class="title"><td>Recent Transactions</td></tr><tr><td>No Transactions were found.</td></tr></table>'); 
@@ -650,7 +650,7 @@
 						$iconStr = $config['ootp_html_report_path'].'images/dot1.gif';
 						$hasStarts = false;
 						foreach ($playerSched as $game_id => $game_data) {
-							if ($game_data['start'] == 1) {
+							if (isset($game_data['start']) && $game_data['start'] == 1) {
 								$hasStarts = true;
 								break;
 							} // END if
@@ -680,7 +680,7 @@
 
 							<?php
 							foreach ($playerSched as $game_id => $game_data) {
-								if ($game_data['start'] == 1) {
+								if (isset($game_data['start']) && $game_data['start'] == 1) {
 								?>
 								<tr>
 									<td width="75%"><strong>

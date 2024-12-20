@@ -19,12 +19,13 @@
 			</div>
                 <!-- begin content_wrap -->
    		<div id="middle">
-           ','<div id="one-column">
+            <div id="one-column">
 					<h1><?php echo $heading; ?></h1>
 					<?php echo $message; ?>
-                    <p />&nbsp;<br />
-                    <div class="details"><?php echo(SITE_NAME); ?> v.<?php echo(SITE_VERSION); ?> | <?php echo anchor('/admin/login/','Admin Access',array('style'=>'color:#fff;')); ?><br />
-  					<?php echo(date('l, F jS, Y')); ?></div>
+                    <p>&nbsp;<br />
+                    <div class="details"><?php echo(SITE_NAME); ?> v.<?php echo(SITE_VERSION); ?> | <a href='/admin/login/' style="color:#fff;">Admin Access</a><br />
+  					<?php echo(date('l, F jS, Y')); ?>
+                    </p></div>
                 </div>
             </div>
            <div id="footer"></div>

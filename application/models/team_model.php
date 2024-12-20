@@ -338,7 +338,8 @@ class team_model extends base_model {
 									$commish_id = false, $currUser = false, $isAdmin = false, $effective = -1,
 									$league_id = false, $team_id = false, $owner_id = false, $trade_team_id = -1) {
 
-		if (sizeof($added) == 0 && sizeof($dropped) == 0 && sizeof($claimed) == 0 && sizeof($tradedTo) == 0 && sizeof($tradedFrom) == 0) return;
+		if ((isset($added) && sizeof($added) == 0) && (isset($dropped) && sizeof($dropped) == 0) && 
+			(isset($claimed) && sizeof($claimed) == 0) && (isset($tradedTo) && sizeof($tradedTo) == 0) && (isset($tradedFrom) && sizeof($tradedFrom) == 0)) return;
 
 		if ($commish_id === false || $currUser === false) return;
 
@@ -357,23 +358,23 @@ class team_model extends base_model {
 		}
 
 		$addedStr = '';
-		if (sizeof($added) > 0) {
+		if (isset($added) && sizeof($added) > 0) {
 			$addedStr = serialize($added);
 		}
 		$droppedStr = '';
-		if (sizeof($dropped) > 0) {
+		if (isset($dropped) && sizeof($dropped) > 0) {
 			$droppedStr = serialize($dropped);
 		}
 		$claimedStr = '';
-		if (sizeof($claimed) > 0) {
+		if (isset($claimed) && sizeof($claimed) > 0) {
 			$claimedStr = serialize($claimed);
 		}
 		$tradedToStr = '';
-		if (sizeof($tradedTo) > 0) {
+		if (isset($tradedTo) && sizeof($tradedTo) > 0) {
 			$tradedToStr = serialize($tradedTo);
 		}
 		$tradedFromStr = '';
-		if (sizeof($tradedFrom) > 0) {
+		if (isset($tradedFrom) && sizeof($tradedFrom) > 0) {
 			$tradedFromStr = serialize($tradedFrom);
 		}
 
@@ -907,8 +908,9 @@ class team_model extends base_model {
 		$players = array();
 		if ($team_id === false) $team_id = $this->team_id;
 
-		//echo("include list= ".sizeof($includeList)."<br />");
-		if (sizeof($includeList) > 0) {
+		//echo("include list= ".$includeList."<br />");
+		//echo("size of include list= ".sizeof($includeList)."<br />");
+		if (isset($includeList) && sizeof($includeList) > 0) {
 			$players = $includeList;
 		} else {
 			if ($player_type == 1) {

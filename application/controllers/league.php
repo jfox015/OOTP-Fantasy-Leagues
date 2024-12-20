@@ -360,7 +360,8 @@ class league extends BaseEditor {
 				$requests = count($this->dataModel->getLeagueRequests(true));
 				$this->data['invites_requets'] = $invites + $requests;
 				// ROSTER ALERTS
-				$rosterValidation = $this->dataModel->validateRosters($this->params['config']['current_period'], $this->uriVars['id']);
+				$scoring_period = getCurrentScoringPeriod($this->data['league_info']->current_date);
+				$rosterValidation = $this->dataModel->validateRosters($scoring_period, $this->uriVars['id']);
 				$rosterIssues = 0;
 				if ($this->dataModel->errorCode == 1) {
 					foreach($rosterValidation as $status) {

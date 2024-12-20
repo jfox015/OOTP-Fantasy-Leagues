@@ -125,24 +125,25 @@
 				}
 			}
 			if (!empty($outMess)) { print('<span class="'.$msgClass.'">'.$outMess.'</span>'); }
+			if (isset($formatted_stats)) {
 			?>
-			<div id="optionsBar" style="width:100%;position:realtive;">
-                	<div id="trade_options" style="float:right; padding-right:8px;">                    
-                    <label for="stats_range">Stats Range:</label>
-                      <select id='stats_range'>
-                        <?php $types = array(-1=>"This Year", 1=>"Last Year",2=>"Two Years Ago", 4=>"3 Year Average");
-                        foreach ($types as $key => $val) {
-                            echo("<option value='$key'");
-                            if ($key == $stats_range) { echo(" selected");}
-                            echo(">$val</option>");
-                        } ?>
-                      </select>
-                    <input type='submit' id="btnRefresh" class='submitButton' value='Go' />
-                    </div>
-                    <br clear="all" class="clearfix clear" />
-                </div>
-			<?php			
-			if (isset($formatted_stats) && sizeof($formatted_stats) > 0) {
+				<div id="optionsBar" style="width:100%;position:realtive;">
+						<div id="trade_options" style="float:right; padding-right:8px;">                    
+						<label for="stats_range">Stats Range:</label>
+						<select id='stats_range'>
+							<?php $types = array(-1=>"This Year", 1=>"Last Year",2=>"Two Years Ago", 4=>"3 Year Average");
+							foreach ($types as $key => $val) {
+								echo("<option value='$key'");
+								if (isset($stats_range) && $key == $stats_range) { echo(" selected");}
+								echo(">$val</option>");
+							} ?>
+						</select>
+						<input type='submit' id="btnRefresh" class='submitButton' value='Go' />
+						</div>
+						<br clear="all" class="clearfix clear" />
+					</div>
+				<?php			
+				
             
 				$lists = array('team_id2','team_id1');
 				// If this is recipient viewing the trade, swap the order
@@ -174,7 +175,7 @@
                         <div class="textbox" style="width:915px;">
                         <?php
                         foreach($types as $player_type) { 
-							if (isset($formatted_stats[$team][$player_type]) && sizeof($formatted_stats[$team][$player_type])>0){ ?>
+							if (isset($formatted_stats[$team][$player_type])){ ?>
                                 <!-- HEADER -->
                             <table width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr class="title">
